@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using DotNetCore.Collections.Paginable.Internal;
 
 namespace DotNetCore.Collections.Paginable
@@ -26,10 +27,10 @@ namespace DotNetCore.Collections.Paginable
             m_enumerable = enumerable;
             m_queryable = null;
 
-            m_realMemberCount = realPageCount;
+            m_realMemberCount = realMemberCount;
             LimitedType = LimitedMembersTypes.Unlimited;
 
-            MemberCount = realPageCount;
+            MemberCount = realMemberCount;
             PageSize = pageSize;
 
             InitializeEnumerablePagesCache(pageSize, realMemberCount, realPageCount);
@@ -56,20 +57,60 @@ namespace DotNetCore.Collections.Paginable
             InitializeEnumerablePagesCache(pageSize, limitedMembersCount, realPageCount);
         }
 
+        protected PaginableSetBase(IQueryable<T> queryable, int pageSize, int realPageCount, int realMemberCount)
+        {
+            m_realPageCount = realPageCount;
+            m_lazyPinedPagesCache = new List<Lazy<IPage<T>>>(realPageCount);
+            m_enumerable = null;
+            m_queryable = queryable;
+
+            m_realMemberCount = realMemberCount;
+            LimitedType = LimitedMembersTypes.Unlimited;
+
+            MemberCount = realMemberCount;
+            PageSize = pageSize;
+
+            InitializeQueryablePagesCache(pageSize, realMemberCount, realPageCount);
+        }
+
+        protected PaginableSetBase(IQueryable<T> queryable, int pageSize, int realPageCount, int realMemberCount,
+            int limitedMembersCount)
+        {
+            m_realPageCount = realPageCount;
+            m_lazyPinedPagesCache = new List<Lazy<IPage<T>>>(realPageCount);
+            m_enumerable = null;
+            m_queryable = queryable;
+
+            m_realMemberCount = limitedMembersCount <= realMemberCount
+                ? limitedMembersCount
+                : realMemberCount;
+            LimitedMemberCount = m_realMemberCount;
+            LimitedType = LimitedMembersTypes.Customize;
+
+            MemberCount = LimitedMemberCount;
+            PageSize = pageSize;
+
+            InitializeQueryablePagesCache(pageSize, realMemberCount, realPageCount);
+        }
+
         private void InitializeEnumerablePagesCache(int pageSize, int realMemberCount, int realPageCount)
         {
             for (var i = 0; i < realPageCount; i++)
             {
-                var pageNumber = i + 1;
+                var currentPageNumber = i + 1;
                 m_lazyPinedPagesCache[i] = new Lazy<IPage<T>>(() =>
-                    new EnumerablePage<T>(m_enumerable.Skip((pageNumber - 1) * pageSize).Take(pageSize), pageNumber,
-                        pageSize, realMemberCount));
+                    new EnumerablePage<T>(m_enumerable, currentPageNumber, pageSize, realMemberCount));
             }
         }
 
         private void InitializeQueryablePagesCache(int pageSize, int realMemberCount, int realPageCount)
         {
-
+            for (var i = 0; i < realPageCount; i++)
+            {
+                var currentPageNumber = i + 1;
+                m_lazyPinedPagesCache[i] = new Lazy<IPage<T>>(() =>
+                    new QueryablePage<T>(m_queryable, currentPageNumber, pageSize, realMemberCount));
+            }
         }
 
         public IEnumerator<IPage<T>> GetEnumerator()
