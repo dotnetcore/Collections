@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DotNetCore.Collections.Paginable
 {
-    public class EnumerablePage<T> : Page<T>
+    public class EnumerablePage<T> : PageBase<T>
     {
         internal readonly IEnumerable<T> m_pinedEnumerable;
 

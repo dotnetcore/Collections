@@ -5,5 +5,8 @@ namespace DotNetCore.Collections.Paginable
 {
     public interface IPaginable : IEnumerable
     {
+        int PageSize { get; }
+
+        int MemberCount { get; }
     }
 }

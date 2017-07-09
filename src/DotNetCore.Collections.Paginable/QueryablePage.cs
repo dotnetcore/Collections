@@ -5,7 +5,7 @@ using DotNetCore.Collections.Paginable.Internal;
 
 namespace DotNetCore.Collections.Paginable
 {
-    public class QueryablePage<T> : Page<T>
+    public class QueryablePage<T> : PageBase<T>
     {
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         // ReSharper disable once InconsistentNaming

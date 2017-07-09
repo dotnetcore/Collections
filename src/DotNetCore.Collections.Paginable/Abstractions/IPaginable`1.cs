@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace DotNetCore.Collections.Paginable
 {
-    public interface IPaginable<T> : IEnumerable<T>, IPaginable
+    public interface IPaginable<T> : IEnumerable<IPage<T>>, IPaginable
     {
     }
 }

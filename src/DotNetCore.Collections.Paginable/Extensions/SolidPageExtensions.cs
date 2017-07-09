@@ -1,16 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotNetCore.Collections.Paginable.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace DotNetCore.Collections.Paginable
 {
     public static class SolidPageExtensions
     {
+        public static PaginableEnumerable<T> ToPaginable<T>(this IEnumerable<T> enumerable, int? limitedMembersCount = null)
+        {
+            return PaginableCollections.Of(enumerable, limitedMembersCount);
+        }
+
+        public static PaginableEnumerable<T> ToPaginable<T>(this IEnumerable<T> enumerable, int pageSize, int? limitedMembersCount = null)
+        {
+            return PaginableCollections.Of(enumerable, pageSize, limitedMembersCount);
+        }
+
         public static IPage<T> GetPage<T>(this IQueryable<T> queryable, int pageNumber)
         {
-            return GetPage(queryable, pageNumber, PaginableConstants.DEFAULT_PAGE_SIZE);
+            return GetPage(queryable, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize);
         }
 
         public static IPage<T> GetPage<T>(this IQueryable<T> queryable, int pageNumber, int pageSize)
@@ -35,7 +44,7 @@ namespace DotNetCore.Collections.Paginable
 
         public static IPage<T> GetPage<T>(this IEnumerable<T> enumerable, int pageNumber)
         {
-            return GetPage(enumerable, pageNumber, PaginableConstants.DEFAULT_PAGE_SIZE);
+            return GetPage(enumerable, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize);
         }
 
         public static IPage<T> GetPage<T>(this IEnumerable<T> enumerable, int pageNumber, int pageSize)

@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace DotNetCore.Collections.Paginable
 {
-    public abstract class Page<T> : IPage<T>
+    public abstract class PageBase<T> : IPage<T>
     {
         protected readonly IList<IPageMember<T>> m_MemberList;
 
-        protected Page()
+        protected PageBase()
         {
             m_MemberList = new List<IPageMember<T>>();
         }
