@@ -5,9 +5,9 @@ namespace DotNetCore.Collections.Paginable
 {
     public interface IPage : IEnumerable
     {
-        int TotalPagesCount { get; }
+        int TotalPageCount { get; }
 
-        int TotalMembersCount { get; }
+        int TotalMemberCount { get; }
 
         int CurrentPageNumber { get; }
 

@@ -33,7 +33,7 @@ namespace DotNetCore.Collections.Paginable
 
         public static IPage<T> OfPage<T>(IQueryable<T> queryable, int pageNumber)
         {
-            return OfPage(queryable, pageNumber, PaginableConstants.DEFAULT_PAGE_SIZE);
+            return OfPage(queryable, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize);
         }
 
         public static IPage<T> OfPage<T>(IQueryable<T> queryable, int pageNumber, int pageSize)

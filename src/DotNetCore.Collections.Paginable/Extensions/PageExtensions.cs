@@ -52,7 +52,7 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
             }
 
-            if (page.TotalMembersCount == 0)
+            if (page.TotalMemberCount == 0)
             {
                 return 0;
             }
@@ -72,7 +72,7 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
             }
 
-            if (page.TotalMembersCount == 0)
+            if (page.TotalMemberCount == 0)
             {
                 return 0;
             }
@@ -87,7 +87,7 @@ namespace DotNetCore.Collections.Paginable
 
         public static QueryablePage<T> AsQueryable<T>(this EnumerablePage<T> page)
         {
-            return new QueryablePage<T>(page.m_pinedEnumerable, page.CurrentPageNumber, page.PageSize, page.TotalMembersCount);
+            return new QueryablePage<T>(page.m_pinedEnumerable, page.CurrentPageNumber, page.PageSize, page.TotalMemberCount);
         }
     }
 }

@@ -1,25 +1,24 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 
 namespace DotNetCore.Collections.Paginable
 {
     public abstract class PageBase<T> : IPage<T>
     {
-        protected readonly IList<IPageMember<T>> m_MemberList;
+        protected readonly IList<IPageMember<T>> m_memberList;
 
         protected PageBase()
         {
-            m_MemberList = new List<IPageMember<T>>();
+            m_memberList = new List<IPageMember<T>>();
         }
 
-        public IEnumerator<IPageMember<T>> GetEnumerator() => m_MemberList.GetEnumerator();
+        public IEnumerator<IPageMember<T>> GetEnumerator() => m_memberList.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => m_MemberList.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => m_memberList.GetEnumerator();
 
-        public int TotalPagesCount { get; protected set; }
+        public int TotalPageCount { get; protected set; }
 
-        public int TotalMembersCount { get; protected set; }
+        public int TotalMemberCount { get; protected set; }
 
         public int CurrentPageNumber { get; protected set; }
 
@@ -31,6 +30,6 @@ namespace DotNetCore.Collections.Paginable
 
         public bool HasNext { get; protected set; }
 
-        public IPageMember<T> this[int index] => m_MemberList[index];
+        public IPageMember<T> this[int index] => m_memberList[index];
     }
 }

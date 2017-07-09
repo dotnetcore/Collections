@@ -8,27 +8,27 @@ namespace DotNetCore.Collections.Paginable
     {
         internal readonly IEnumerable<T> m_pinedEnumerable;
 
-        public EnumerablePage(IEnumerable<T> enumerable, int currentPageNumber, int pageSize, int totalMembersCount) : base()
+        public EnumerablePage(IEnumerable<T> enumerable, int currentPageNumber, int pageSize, int totalMemberCount) : base()
         {
             var skip = (currentPageNumber - 1) * pageSize;
 
             m_pinedEnumerable = enumerable;
             var list = enumerable.Skip(skip).Take(pageSize).ToList();
 
-            base.TotalPagesCount = (int)Math.Ceiling((double)totalMembersCount / (double)pageSize);
-            base.TotalMembersCount = totalMembersCount;
+            base.TotalPageCount = (int)Math.Ceiling((double)totalMemberCount / (double)pageSize);
+            base.TotalMemberCount = totalMemberCount;
             base.CurrentPageNumber = currentPageNumber;
             base.PageSize = pageSize;
-            base.CurrentPageSize = currentPageNumber == TotalPagesCount
-                ? totalMembersCount % skip
+            base.CurrentPageSize = currentPageNumber == TotalPageCount
+                ? totalMemberCount % skip
                 : pageSize;
 
             base.HasPrevious = currentPageNumber > 1;
-            base.HasNext = currentPageNumber < totalMembersCount;
+            base.HasNext = currentPageNumber < totalMemberCount;
 
             for (var i = 0; i < CurrentPageSize; i++)
             {
-                base.m_MemberList.Add(new PageMember<T>(list[skip + 1], i));
+                base.m_memberList.Add(new PageMember<T>(list[skip + 1], i));
             }
         }
 

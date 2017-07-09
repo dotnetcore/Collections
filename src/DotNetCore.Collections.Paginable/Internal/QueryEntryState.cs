@@ -7,7 +7,7 @@ namespace DotNetCore.Collections.Paginable.Internal
     internal class QueryEntryState<T>
     {
         public IList<T> QueryableMembersPinedCache { get; private set; } = null;
-        private readonly IQueryable<T> m_localQueryableCache;
+        private readonly IQueryable<T> m_localQueryableCache; //raw-full-queryable-result from your linq data source.
         private readonly int m_skip;
         private readonly int m_take;
 
@@ -17,12 +17,12 @@ namespace DotNetCore.Collections.Paginable.Internal
         {
             if (skip < 0)
             {
-                throw new IndexOutOfRangeException($"{nameof(skip)} can not be less than zero");
+                throw new ArgumentOutOfRangeException(nameof(skip), $"{nameof(skip)} can not be less than zero");
             }
 
             if (take < 0)
             {
-                throw new IndexOutOfRangeException($"{nameof(take)} can not be less than zero");
+                throw new ArgumentOutOfRangeException(nameof(take), $"{nameof(take)} can not be less than zero");
             }
 
             m_localQueryableCache = queryable ?? throw new ArgumentNullException(nameof(queryable), $"{nameof(queryable)} can not be null");

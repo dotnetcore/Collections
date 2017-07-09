@@ -15,7 +15,7 @@ namespace DotNetCore.Collections.Paginable
         {
             if (offset < 0)
             {
-                throw new IndexOutOfRangeException("offset can not be less than zero.");
+                throw new ArgumentOutOfRangeException(nameof(offset), "offset can not be less than zero.");
             }
 
             m_memberValue = memberValue;
@@ -27,7 +27,7 @@ namespace DotNetCore.Collections.Paginable
         {
             if (offset < 0)
             {
-                throw new IndexOutOfRangeException("offset can not be less than zero.");
+                throw new ArgumentOutOfRangeException(nameof(offset), "offset can not be less than zero.");
             }
 
             m_memberValue = default(T);

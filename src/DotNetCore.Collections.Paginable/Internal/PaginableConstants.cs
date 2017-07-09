@@ -1,5 +1,6 @@
 ﻿namespace DotNetCore.Collections.Paginable.Internal
 {
+    // ReSharper disable InconsistentNaming
     internal class PaginableConstants
     {
         private PaginableConstants() { }
