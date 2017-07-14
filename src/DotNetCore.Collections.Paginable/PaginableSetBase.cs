@@ -9,7 +9,7 @@ namespace DotNetCore.Collections.Paginable
 {
     public abstract class PaginableSetBase<T> : IPaginable<T>
     {
-        protected readonly IList<Lazy<IPage<T>>> m_lazyPinedPagesCache;
+        protected readonly List<Lazy<IPage<T>>> m_lazyPinedPagesCache;
 
         protected LimitedMembersTypes m_limitedType { get; } = LimitedMembersTypes.Unlimited;//as default, unlimited.
         private readonly int m_limitedMemberCount;//magical number, as default, zero means unlimited.
@@ -19,6 +19,11 @@ namespace DotNetCore.Collections.Paginable
 
         protected PaginableSetBase(int pageSize, int realPageCount, int realMemberCount)
         {
+            if (realMemberCount >= PaginableConstants.MAX_MEMBER_ITEMS_SUPPORT)
+            {
+                throw new ArgumentOutOfRangeException(nameof(realMemberCount), $"Paginable does not support large size result");
+            }
+
             PageSize = pageSize;
             PageCount = realPageCount;
             m_lazyPinedPagesCache = new List<Lazy<IPage<T>>>(realPageCount);

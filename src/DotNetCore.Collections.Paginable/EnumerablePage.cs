@@ -6,7 +6,7 @@ namespace DotNetCore.Collections.Paginable
 {
     public class EnumerablePage<T> : PageBase<T>
     {
-        internal readonly IEnumerable<T> m_pinedEnumerable;
+        private readonly IEnumerable<T> m_pinedEnumerable;
 
         public EnumerablePage(IEnumerable<T> enumerable, int currentPageNumber, int pageSize, int totalMemberCount) : base()
         {
@@ -28,10 +28,12 @@ namespace DotNetCore.Collections.Paginable
 
             for (var i = 0; i < CurrentPageSize; i++)
             {
-                base.m_memberList.Add(new PageMember<T>(list[skip + 1], i));
+                base.m_memberList.Add(new PageMember<T>(list[i], i));
             }
         }
 
         public static EmptyPage<T> Empty() => new EmptyPage<T>();
+
+        internal IEnumerable<T> ExportEnumerable() => m_pinedEnumerable;
     }
 }

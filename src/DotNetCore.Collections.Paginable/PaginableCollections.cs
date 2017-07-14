@@ -7,8 +7,13 @@ namespace DotNetCore.Collections.Paginable
 {
     public static class PaginableCollections
     {
-        public static PaginableEnumerable<T> Of<T>(IEnumerable<T> enumerable, int? pageSize = null, int? limitedMembersCount = null)
+        public static PaginableEnumerable<T> Of<T>(IEnumerable<T> enumerable, int? pageSize = null, int? limitedMemberCount = null)
         {
+            if (enumerable == null)
+            {
+                throw new ArgumentNullException(nameof(enumerable));
+            }
+
             if (pageSize == null)
             {
                 pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
@@ -16,19 +21,51 @@ namespace DotNetCore.Collections.Paginable
 
             var size = pageSize.Value;
             var list = enumerable.ToList();
-            var listCount = list.Count();
+            var count = list.Count();
 
-            var realMemberCount = limitedMembersCount != null && limitedMembersCount.HasValue
-                ? limitedMembersCount.Value > listCount
-                    ? listCount
-                    : limitedMembersCount.Value
-                : listCount;
+            var realMemberCount = limitedMemberCount != null && limitedMemberCount.HasValue
+
+                ? limitedMemberCount.Value > count
+                    ? count
+                    : limitedMemberCount.Value
+                : count;
 
             var realPageCount = (int)Math.Ceiling((double)realMemberCount / (double)size);
 
-            return limitedMembersCount != null && limitedMembersCount.HasValue
-                ? new PaginableEnumerable<T>(list, size, realPageCount, realMemberCount, limitedMembersCount.Value)
+            return limitedMemberCount != null && limitedMemberCount.HasValue
+
+                ? new PaginableEnumerable<T>(list, size, realPageCount, realMemberCount, limitedMemberCount.Value)
                 : new PaginableEnumerable<T>(list, size, realPageCount, realMemberCount);
+        }
+
+        public static PaginableQueryable<T> Of<T>(IQueryable<T> queryable, int? pageSize = null, int? limitedMemberCount = null)
+        {
+            if (queryable == null)
+            {
+                throw new ArgumentNullException(nameof(queryable));
+            }
+
+            if (pageSize == null)
+            {
+                pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
+            }
+
+            var size = pageSize.Value;
+            var count = queryable.Count();
+
+            var realMemberCount = limitedMemberCount != null && limitedMemberCount.HasValue
+
+                ? limitedMemberCount.Value > count
+                    ? count
+                    : limitedMemberCount.Value
+                : count;
+
+            var realPageCount = (int)Math.Ceiling((double)realMemberCount / (double)size);
+
+            return limitedMemberCount != null && limitedMemberCount.HasValue
+
+                ? new PaginableQueryable<T>(queryable, size, realPageCount, realMemberCount, limitedMemberCount.Value)
+                : new PaginableQueryable<T>(queryable, size, realPageCount, realMemberCount);
         }
 
         public static IPage<T> OfPage<T>(IQueryable<T> queryable, int pageNumber)

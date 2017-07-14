@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace DotNetCore.Collections.Paginable
@@ -82,12 +83,27 @@ namespace DotNetCore.Collections.Paginable
                 return (page.CurrentPageNumber - 1) * page.PageSize + page.CurrentPageSize;
             }
 
-            return (page.CurrentPageNumber - 1) * page.PageSize;
+            return page.CurrentPageNumber * page.PageSize;
+        }
+
+        public static PaginableQueryable<T> AsQueryable<T>(this PaginableEnumerable<T> paginable)
+        {
+            return new PaginableQueryable<T>(paginable.ExportEnumerable().AsQueryable(), paginable.PageSize, paginable.PageCount, paginable.MemberCount);
         }
 
         public static QueryablePage<T> AsQueryable<T>(this EnumerablePage<T> page)
         {
-            return new QueryablePage<T>(page.m_pinedEnumerable, page.CurrentPageNumber, page.PageSize, page.TotalMemberCount);
+            return new QueryablePage<T>(page.ExportEnumerable(), page.CurrentPageNumber, page.PageSize, page.TotalMemberCount);
+        }
+
+        public static PaginableEnumerable<T> AsEnumerable<T>(this PaginableQueryable<T> paginable)
+        {
+            return new PaginableEnumerable<T>(paginable.ExportQueryable().AsEnumerable(), paginable.PageSize, paginable.PageCount, paginable.MemberCount);
+        }
+
+        public static EnumerablePage<T> AsEnumerable<T>(this QueryablePage<T> page)
+        {
+            return new EnumerablePage<T>(page.ExportQueryable().AsEnumerable(), page.CurrentPageNumber, page.PageSize, page.TotalMemberCount);
         }
     }
 }

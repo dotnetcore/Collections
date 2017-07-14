@@ -30,9 +30,11 @@ namespace DotNetCore.Collections.Paginable
             for (var i = 0; i < realPageCount; i++)
             {
                 var currentPageNumber = i + 1;
-                m_lazyPinedPagesCache[i] = new Lazy<IPage<T>>(() =>
-                    new EnumerablePage<T>(m_enumerable, currentPageNumber, pageSize, realMemberCount));
+                m_lazyPinedPagesCache.Insert(i, new Lazy<IPage<T>>(() =>
+                    new EnumerablePage<T>(m_enumerable, currentPageNumber, pageSize, realMemberCount)));
             }
         }
+
+        internal IEnumerable<T> ExportEnumerable() => m_enumerable;
     }
 }

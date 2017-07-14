@@ -7,14 +7,24 @@ namespace DotNetCore.Collections.Paginable
 {
     public static class SolidPageExtensions
     {
-        public static PaginableEnumerable<T> ToPaginable<T>(this IEnumerable<T> enumerable, int? limitedMembersCount = null)
+        public static PaginableEnumerable<T> ToPaginable<T>(this IEnumerable<T> enumerable, int? limitedMemberCount = null)
         {
-            return PaginableCollections.Of(enumerable, limitedMembersCount);
+            return PaginableCollections.Of(enumerable, limitedMemberCount);
         }
 
-        public static PaginableEnumerable<T> ToPaginable<T>(this IEnumerable<T> enumerable, int pageSize, int? limitedMembersCount = null)
+        public static PaginableEnumerable<T> ToPaginable<T>(this IEnumerable<T> enumerable, int pageSize, int? limitedMemberCount = null)
         {
-            return PaginableCollections.Of(enumerable, pageSize, limitedMembersCount);
+            return PaginableCollections.Of(enumerable, pageSize, limitedMemberCount);
+        }
+
+        public static PaginableQueryable<T> ToPaginable<T>(this IQueryable<T> queryable, int? limitedMemberCount = null)
+        {
+            return PaginableCollections.Of(queryable, limitedMemberCount);
+        }
+
+        public static PaginableQueryable<T> ToPaginable<T>(this IQueryable<T> queryable, int pageSize, int? limitedMemberCount = null)
+        {
+            return PaginableCollections.Of(queryable, pageSize, limitedMemberCount);
         }
 
         public static IPage<T> GetPage<T>(this IQueryable<T> queryable, int pageNumber)
