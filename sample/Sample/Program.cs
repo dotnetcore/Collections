@@ -50,9 +50,7 @@ namespace Sample
 
             sw.Restart();
 
-            var query = list.AsQueryable();
-
-            var paginableQuery = query.ToPaginable(50);
+            var paginableQuery = list.AsQueryable().ToPaginable(50);
 
             Console.WriteLine($"page size = {paginableQuery.PageSize}");
             Console.WriteLine($"total pages = {paginableQuery.PageCount}");
@@ -74,6 +72,61 @@ namespace Sample
 
             sw.Stop();
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");
+            Console.WriteLine("=====================================");
+
+            #endregion
+
+            #region DotNetCore.Collection.Paginable - Enumerable - GetPage
+
+            Console.WriteLine("DotNetCore.Collection.Paginable - Enumerable - GetPage");
+
+            sw.Restart();
+
+            var page101 = list.GetPage(15, 50);
+
+            Console.WriteLine($"from member line #{page101.FromMemberNumber()}");
+            Console.WriteLine($"  to member line #{page101.ToMemberNumber()}");
+            Console.WriteLine($"Has Previous Page? = {page101.HasPrevious}");
+            Console.WriteLine($"Has Next Page?     = {page101.HasNext}");
+
+            for (var i = 0; i < page101.CurrentPageSize; i++)
+            {
+                Console.Write($"{page101[i].ItemNumber}:{page101[i].Value}   ");
+                if (i % 10 == 9)
+                {
+                    Console.WriteLine();
+                }
+            }
+            sw.Stop();
+            Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");
+            Console.WriteLine("=====================================");
+
+            #endregion
+
+            #region DotNetCore.Collection.Paginable - Queryable - GetPage
+
+            Console.WriteLine("DotNetCore.Collection.Paginable - Queryable - GetPage");
+
+            sw.Restart();
+
+            var page102 = list.AsQueryable().GetPage(15, 50);
+
+            Console.WriteLine($"from member line #{page102.FromMemberNumber()}");
+            Console.WriteLine($"  to member line #{page102.ToMemberNumber()}");
+            Console.WriteLine($"Has Previous Page? = {page102.HasPrevious}");
+            Console.WriteLine($"Has Next Page?     = {page102.HasNext}");
+
+            for (var i = 0; i < page102.CurrentPageSize; i++)
+            {
+                Console.Write($"{page102[i].ItemNumber}:{page102[i].Value}   ");
+                if (i % 10 == 9)
+                {
+                    Console.WriteLine();
+                }
+            }
+            sw.Stop();
+            Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");
+            Console.WriteLine("=====================================");
 
             #endregion
 

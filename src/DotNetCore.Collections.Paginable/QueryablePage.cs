@@ -13,14 +13,16 @@ namespace DotNetCore.Collections.Paginable
 
         public QueryablePage(IQueryable<T> queryable, int currentPageNumber, int pageSize, int totalMembersCount) : base()
         {
-            m_pinedEntryState = new QueryEntryState<T>(queryable, (currentPageNumber - 1) * pageSize, pageSize);
+            var skip = (currentPageNumber - 1) * pageSize;
+
+            m_pinedEntryState = new QueryEntryState<T>(queryable, skip, pageSize);
 
             base.TotalPageCount = (int)Math.Ceiling((double)totalMembersCount / (double)pageSize);
             base.TotalMemberCount = totalMembersCount;
             base.CurrentPageNumber = currentPageNumber;
             base.PageSize = pageSize;
             base.CurrentPageSize = currentPageNumber == TotalPageCount
-                ? totalMembersCount % ((currentPageNumber - 1) * pageSize)
+                ? totalMembersCount % skip
                 : pageSize;
 
             base.HasPrevious = currentPageNumber > 1;
@@ -28,7 +30,7 @@ namespace DotNetCore.Collections.Paginable
 
             for (var i = 0; i < CurrentPageSize; i++)
             {
-                base.m_memberList.Add(new PageMember<T>(m_pinedEntryState, i));
+                base.m_memberList.Add(new PageMember<T>(m_pinedEntryState, i, skip));
             }
         }
 

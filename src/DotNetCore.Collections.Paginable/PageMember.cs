@@ -9,27 +9,30 @@ namespace DotNetCore.Collections.Paginable
     {
         private T m_memberValue { get; }
         private int m_offset { get; }
+        private int m_startIndex { get; }
         private QueryEntryState<T> m_state { get; }
 
-        internal PageMember(T memberValue, int offset)
+        internal PageMember(T memberValue, int offset, int startIndex)
         {
             if (offset < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "offset can not be less than zero.");
             }
 
+            m_startIndex = startIndex;
             m_memberValue = memberValue;
             m_offset = offset;
             m_state = null;
         }
 
-        internal PageMember(QueryEntryState<T> state, int offset)
+        internal PageMember(QueryEntryState<T> state, int offset, int startIndex)
         {
             if (offset < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "offset can not be less than zero.");
             }
 
+            m_startIndex = startIndex;
             m_memberValue = default(T);
             m_offset = offset;
             m_state = state;
@@ -42,6 +45,6 @@ namespace DotNetCore.Collections.Paginable
 
         public int Offset => m_offset;
 
-        public int ItemNumber => m_offset + 1;
+        public int ItemNumber => m_startIndex + m_offset + 1;
     }
 }
