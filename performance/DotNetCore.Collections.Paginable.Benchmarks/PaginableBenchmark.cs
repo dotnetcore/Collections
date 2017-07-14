@@ -17,7 +17,6 @@ namespace DotNetCore.Collections.Paginable.Benchmarks
         {
             _list = Enumerable.Range(0, 10000000);
         }
-
         [Benchmark]
         public int DotNetCoreCollectionEnumerable()
         {

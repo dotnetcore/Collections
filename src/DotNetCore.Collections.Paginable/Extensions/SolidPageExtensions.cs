@@ -75,7 +75,7 @@ namespace DotNetCore.Collections.Paginable
             }
 
             // ReSharper disable PossibleMultipleEnumeration
-            return new EnumerablePage<T>(enumerable, pageNumber, pageSize, enumerable.ToList().Count());
+            return new EnumerablePage<T>(enumerable, pageNumber, pageSize, enumerable.Count());
         }
     }
 }

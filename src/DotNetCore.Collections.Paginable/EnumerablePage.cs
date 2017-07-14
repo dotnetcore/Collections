@@ -26,6 +26,7 @@ namespace DotNetCore.Collections.Paginable
             base.HasPrevious = currentPageNumber > 1;
             base.HasNext = currentPageNumber < totalMemberCount;
 
+            base.m_memberList = new List<IPageMember<T>>(CurrentPageSize);
             for (var i = 0; i < CurrentPageSize; i++)
             {
                 base.m_memberList.Add(new PageMember<T>(list[i], i, skip));
