@@ -14,7 +14,7 @@ namespace DotNetCore.Collections.Paginable
         {
             m_queryable = queryable;
 
-            InitializeQueryablePagesCache(pageSize, realMemberCount, realPageCount);
+            //InitializeQueryablePagesCache(pageSize, realMemberCount, realPageCount);
         }
 
         internal PaginableQueryable(IQueryable<T> queryable, int pageSize, int realPageCount, int realMemberCount, int limitedMemberCount)
@@ -22,17 +22,22 @@ namespace DotNetCore.Collections.Paginable
         {
             m_queryable = queryable;
 
-            InitializeQueryablePagesCache(pageSize, realMemberCount, realPageCount);
+            //InitializeQueryablePagesCache(pageSize, realMemberCount, realPageCount);
         }
 
-        private void InitializeQueryablePagesCache(int pageSize, int realMemberCount, int realPageCount)
+        //private void InitializeQueryablePagesCache(int pageSize, int realMemberCount, int realPageCount)
+        //{
+        //    for (var i = 0; i < realPageCount; i++)
+        //    {
+        //        var currentPageNumber = i + 1;
+        //        m_lazyPinedPagesCache.Insert(i, new Lazy<IPage<T>>(() =>
+        //            new EnumerablePage<T>(m_queryable, currentPageNumber, pageSize, realMemberCount)));
+        //    }
+        //}
+
+        protected override Lazy<IPage<T>> GetSpecialPage(int currentPageNumber, int pageSize, int realMemberCount)
         {
-            for (var i = 0; i < realPageCount; i++)
-            {
-                var currentPageNumber = i + 1;
-                m_lazyPinedPagesCache.Insert(i, new Lazy<IPage<T>>(() =>
-                    new EnumerablePage<T>(m_queryable, currentPageNumber, pageSize, realMemberCount)));
-            }
+            return new Lazy<IPage<T>>(() => new EnumerablePage<T>(m_queryable, currentPageNumber, pageSize, realMemberCount));
         }
 
         internal IQueryable<T> ExportQueryable() => m_queryable;
