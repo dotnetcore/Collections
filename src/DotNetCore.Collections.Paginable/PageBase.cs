@@ -6,11 +6,10 @@ namespace DotNetCore.Collections.Paginable
 {
     public abstract class PageBase<T> : IPage<T>
     {
-        protected readonly IList<IPageMember<T>> m_memberList;
+        protected IList<IPageMember<T>> m_memberList;
 
         protected PageBase()
         {
-            m_memberList = new List<IPageMember<T>>();
         }
 
         public IEnumerator<IPageMember<T>> GetEnumerator() => m_memberList.GetEnumerator();
