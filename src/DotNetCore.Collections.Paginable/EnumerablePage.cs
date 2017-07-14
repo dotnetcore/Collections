@@ -28,7 +28,7 @@ namespace DotNetCore.Collections.Paginable
 
             for (var i = 0; i < CurrentPageSize; i++)
             {
-                base.m_memberList.Add(new PageMember<T>(list[i], i));
+                base.m_memberList.Add(new PageMember<T>(list[i], i, skip));
             }
         }
 
