@@ -55,5 +55,7 @@ namespace DotNetCore.Collections.Paginable.Internal
 
             return QueryableMembersPinedCache;
         }
+
+        internal IQueryable<T> ExporyQueryableCache() => m_localQueryableCache;
     }
 }

@@ -36,6 +36,8 @@ namespace DotNetCore.Collections.Paginable
             : this(enumerable.AsQueryable(), currentPageNumber, pageSize, totalMembersCount) { }
 
         public static EmptyPage<T> Empty() => new EmptyPage<T>();
+
+        internal IQueryable<T> ExportQueryable() => m_pinedEntryState.ExporyQueryableCache();
     }
 }
 
