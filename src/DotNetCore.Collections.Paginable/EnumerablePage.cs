@@ -13,7 +13,10 @@ namespace DotNetCore.Collections.Paginable
             var skip = (currentPageNumber - 1) * pageSize;
 
             m_pinedEnumerable = enumerable;
-            var list = enumerable.Skip(skip).Take(pageSize).ToList();
+            //var list = enumerable.Skip(skip).Take(pageSize).ToList();
+            T[] temp = new T[pageSize];
+            Array.Copy(enumerable.ToArray(), skip, temp, 0, pageSize);
+            var list = temp.ToList();
 
             base.TotalPageCount = (int)Math.Ceiling((double)totalMemberCount / (double)pageSize);
             base.TotalMemberCount = totalMemberCount;
