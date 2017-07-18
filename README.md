@@ -1,6 +1,6 @@
 # Collections
 
-[![Member project of .NET China Foundation](https://github.com/dotnetcore/Home/blob/master/icons/member-project-of-netchina.svg)](https://github.com/dotnetcore)
+[![Member project of .NET China Foundation](https://github.com/dotnetcore/Home/blob/master/icons/member-project-of-netchina.png)](https://github.com/dotnetcore)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/dotnetcore/CAP/master/LICENSE.txt)
 
 Utilities and extensions for Collections.
@@ -40,4 +40,4 @@ for (var i = 0; i < page.CurrentPageSize; i++)
 }
 ```
 
-[![Member project of .NET China Foundation](https://github.com/dotnetcore/Home/blob/master/icons/member-project-of-netchina2.svg)](https://github.com/dotnetcore)
+[![Member project of .NET China Foundation](https://github.com/dotnetcore/Home/blob/master/icons/member-project-of-netchina2.png)](https://github.com/dotnetcore)
