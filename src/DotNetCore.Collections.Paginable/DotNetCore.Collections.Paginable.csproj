@@ -3,6 +3,21 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <Product>Collections.Paginable</Product>
+    <Version>1.0.0-beta1-20170723</Version>
+    <Authors>AlexLEWIS;dotnetcore</Authors>
+    <PackageId>DotNetCore.Collections.Paginable</PackageId>
+    <PackageProjectUrl>https://github.com/dotnetcore/Collections</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/dotnetcore/Collections/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageIconUrl>https://avatars2.githubusercontent.com/u/19404084</PackageIconUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>collection;paginable</PackageTags>
+    <Description>Paginable extension for collection.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
