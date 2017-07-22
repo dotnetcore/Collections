@@ -4,11 +4,20 @@ using System.Linq;
 
 namespace DotNetCore.Collections.Paginable.Internal
 {
+    /// <summary>
+    /// Query entry state
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     internal class QueryEntryState<T>
     {
-        // ReSharper disable once InconsistentNaming
         private readonly Lazy<IEnumerable<T>> m_lazyQueryableMembers;
 
+        /// <summary>
+        /// Query entry state
+        /// </summary>
+        /// <param name="queryable">Orgin queryable result</param>
+        /// <param name="skip">skip number</param>
+        /// <param name="take">take number</param>
         public QueryEntryState(IQueryable<T> queryable, int skip, int take)
         {
             if (skip < 0)
@@ -24,6 +33,9 @@ namespace DotNetCore.Collections.Paginable.Internal
             m_lazyQueryableMembers = new Lazy<IEnumerable<T>>(() => queryable.Skip(skip).Take(take).AsEnumerable());
         }
 
+        /// <summary>
+        /// Get all value.
+        /// </summary>
         public IEnumerable<T> AllValue => m_lazyQueryableMembers.Value;
     }
 }

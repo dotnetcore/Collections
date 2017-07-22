@@ -4,8 +4,19 @@ using System.Linq;
 
 namespace DotNetCore.Collections.Paginable
 {
+    /// <summary>
+    /// Enumerable page
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class EnumerablePage<T> : PageBase<T>
     {
+        /// <summary>
+        /// Enumerable page
+        /// </summary>
+        /// <param name="enumerable"></param>
+        /// <param name="currentPageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="totalMemberCount"></param>
         public EnumerablePage(IEnumerable<T> enumerable, int currentPageNumber, int pageSize, int totalMemberCount) : base()
         {
             var skip = (currentPageNumber - 1) * pageSize;
@@ -13,10 +24,12 @@ namespace DotNetCore.Collections.Paginable
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
 
             base.m_initializeAction = InitializeMemberList()(enumerable)(CurrentPageSize)(skip);
-
-            //base.m_initializeAction();
         }
 
+        /// <summary>
+        /// Get empty page
+        /// </summary>
+        /// <returns></returns>
         public static EmptyPage<T> Empty() => new EmptyPage<T>();
 
         private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () =>

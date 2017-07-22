@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Linq;
 
-// ReSharper disable once CheckNamespace
 namespace DotNetCore.Collections.Paginable
 {
+    /// <summary>
+    /// Page extensions
+    /// </summary>
     public static class PageExtensions
     {
+        /// <summary>
+        /// Is current page thr first page?
+        /// </summary>
+        /// <param name="page"></param>
+        /// <returns></returns>
         public static bool IsFirst(this IPage page)
         {
             if (page == null)
@@ -16,6 +23,11 @@ namespace DotNetCore.Collections.Paginable
             return !page.HasPrevious;
         }
 
+        /// <summary>
+        /// Is current page the last page?
+        /// </summary>
+        /// <param name="page"></param>
+        /// <returns></returns>
         public static bool IsLast(this IPage page)
         {
             if (page == null)
@@ -26,26 +38,11 @@ namespace DotNetCore.Collections.Paginable
             return !page.HasNext;
         }
 
-        public static int FirstMemberNumber(this IPage page)
-        {
-            if (page == null)
-            {
-                throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
-            }
-
-            return (page.CurrentPageNumber - 1) * page.PageSize + 1;
-        }
-
-        public static int LastMemberNumber(this IPage page)
-        {
-            if (page == null)
-            {
-                throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
-            }
-
-            return (page.CurrentPageNumber - 1) * page.PageSize + page.CurrentPageSize;
-        }
-
+        /// <summary>
+        /// The number of the first item of current page.
+        /// </summary>
+        /// <param name="page"></param>
+        /// <returns></returns>
         public static int FromMemberNumber(this IPage page)
         {
             if (page == null)
@@ -66,6 +63,11 @@ namespace DotNetCore.Collections.Paginable
             return (page.CurrentPageNumber - 1) * page.PageSize + 1;
         }
 
+        /// <summary>
+        /// The number of the last item of current page.
+        /// </summary>
+        /// <param name="page"></param>
+        /// <returns></returns>
         public static int ToMemberNumber(this IPage page)
         {
             if (page == null)

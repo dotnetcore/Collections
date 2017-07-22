@@ -7,7 +7,10 @@ using DotNetCore.Collections.Paginable.Internal;
 
 namespace DotNetCore.Collections.Paginable
 {
-    // ReSharper disable InconsistentNaming
+    /// <summary>
+    /// Abstract PaginableSet base
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class PaginableSetBase<T> : IPaginable<T>
     {
         protected readonly Dictionary<int, Lazy<IPage<T>>> m_lazyPinedPagesCache2;
@@ -15,9 +18,6 @@ namespace DotNetCore.Collections.Paginable
         protected LimitedMembersTypes m_limitedType { get; } = LimitedMembersTypes.Unlimited;//as default, unlimited.
         private readonly int m_limitedMemberCount;//magical number, as default, zero means unlimited.
         private readonly int m_realMemberCount;//if LimitedType is customize mode, real_member_count equals to limited_member_count, otherwise, not. 
-
-        //protected Action m_initializeAction;
-        //private bool m_hasInitialized = false;
 
         protected PaginableSetBase() { }
 
@@ -52,8 +52,6 @@ namespace DotNetCore.Collections.Paginable
 
         public IEnumerator<IPage<T>> GetEnumerator()
         {
-            //CheckOrInitializeState();
-
             for (int i = 1; i <= PageCount; i++)
             {
                 if (HasInitializeSpecialPage(i, out var lazyPage))
@@ -82,6 +80,11 @@ namespace DotNetCore.Collections.Paginable
 
         public int PageCount { get; }
 
+        /// <summary>
+        /// Get specific page from current PaginableSet
+        /// </summary>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
         public IPage<T> GetPage(int pageNumber)
         {
             if (pageNumber < 1 || pageNumber > PageCount)
@@ -89,18 +92,14 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than 1 or greater than pages count.");
             }
 
-            //CheckOrInitializeState();
-
             if (HasInitializeSpecialPage(pageNumber, out var lazyPage))
             {
                 return lazyPage.Value;
             }
-            else
-            {
-                var lazyValue = GetSpecialPage(pageNumber, PageSize, m_realMemberCount);
-                m_lazyPinedPagesCache2[pageNumber] = lazyValue;
-                return lazyValue.Value;
-            }
+
+            var lazyValue = GetSpecialPage(pageNumber, PageSize, m_realMemberCount);
+            m_lazyPinedPagesCache2[pageNumber] = lazyValue;
+            return lazyValue.Value;
         }
 
         private bool HasInitializeSpecialPage(int pageNumber, out Lazy<IPage<T>> lazyPage)
@@ -114,14 +113,5 @@ namespace DotNetCore.Collections.Paginable
         }
 
         protected abstract Lazy<IPage<T>> GetSpecialPage(int currentPageNumber, int pageSize, int realMemberCount);
-
-        //private void CheckOrInitializeState()
-        //{
-        //    if (!m_hasInitialized)
-        //    {
-        //        m_initializeAction?.Invoke();
-        //        m_hasInitialized = true;
-        //    }
-        //}
     }
 }

@@ -4,7 +4,10 @@ using System.Collections.Generic;
 
 namespace DotNetCore.Collections.Paginable
 {
-    // ReSharper disable InconsistentNaming
+    /// <summary>
+    /// Abstract page base
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class PageBase<T> : IPage<T>
     {
         protected IList<IPageMember<T>> m_memberList;
@@ -15,7 +18,7 @@ namespace DotNetCore.Collections.Paginable
 
         public IEnumerator<IPageMember<T>> GetEnumerator()
         {
-            //CheckOrInitializePage();
+            CheckOrInitializePage();
 
             return m_memberList.GetEnumerator();
         }
@@ -40,7 +43,7 @@ namespace DotNetCore.Collections.Paginable
         {
             get
             {
-                //CheckOrInitializePage();
+                CheckOrInitializePage();
 
                 return m_memberList[index];
             }

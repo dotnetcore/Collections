@@ -30,14 +30,14 @@ namespace Sample
             Console.WriteLine($"Has Previous Page? = {page.HasPrevious}");
             Console.WriteLine($"Has Next Page?     = {page.HasNext}");
 
-            //for (var i = 0; i < page.CurrentPageSize; i++)
-            //{
-            //    Console.Write($"{page[i].ItemNumber}:{page[i].Value}   ");
-            //    if (i % 10 == 9)
-            //    {
-            //        Console.WriteLine();
-            //    }
-            //}
+            for (var i = 0; i < page.CurrentPageSize; i++)
+            {
+                Console.Write($"{page[i].ItemNumber}:{page[i].Value}   ");
+                if (i % 10 == 9)
+                {
+                    Console.WriteLine();
+                }
+            }
             sw.Stop();
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");
             Console.WriteLine("=====================================");
@@ -55,20 +55,20 @@ namespace Sample
             Console.WriteLine($"page size = {paginableQuery.PageSize}");
             Console.WriteLine($"total pages = {paginableQuery.PageCount}");
 
-            var page2 = paginableList.GetPage(15);
+            var page2 = paginableQuery.GetPage(15);
             Console.WriteLine($"from member line #{page2.FromMemberNumber()}");
             Console.WriteLine($"  to member line #{page2.ToMemberNumber()}");
             Console.WriteLine($"Has Previous Page? = {page2.HasPrevious}");
             Console.WriteLine($"Has Next Page?     = {page2.HasNext}");
 
-            //for (var i = 0; i < page2.CurrentPageSize; i++)
-            //{
-            //    Console.Write($"{page2[i].ItemNumber}:{page2[i].Value}   ");
-            //    if (i % 10 == 9)
-            //    {
-            //        Console.WriteLine();
-            //    }
-            //}
+            for (var i = 0; i < page2.CurrentPageSize; i++)
+            {
+                Console.Write($"{page2[i].ItemNumber}:{page2[i].Value}   ");
+                if (i % 10 == 9)
+                {
+                    Console.WriteLine();
+                }
+            }
 
             sw.Stop();
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");
@@ -84,19 +84,22 @@ namespace Sample
 
             var page101 = list.GetPage(15, 50);
 
+            Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds for paging page");
+            Console.WriteLine("=====================================");
+            
             Console.WriteLine($"from member line #{page101.FromMemberNumber()}");
             Console.WriteLine($"  to member line #{page101.ToMemberNumber()}");
             Console.WriteLine($"Has Previous Page? = {page101.HasPrevious}");
             Console.WriteLine($"Has Next Page?     = {page101.HasNext}");
-
-            //for (var i = 0; i < page101.CurrentPageSize; i++)
-            //{
-            //    Console.Write($"{page101[i].ItemNumber}:{page101[i].Value}   ");
-            //    if (i % 10 == 9)
-            //    {
-            //        Console.WriteLine();
-            //    }
-            //}
+            
+            for (var i = 0; i < page101.CurrentPageSize; i++)
+            {
+                Console.Write($"{page101[i].ItemNumber}:{page101[i].Value}   ");
+                if (i % 10 == 9)
+                {
+                    Console.WriteLine();
+                }
+            }
             sw.Stop();
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");
             Console.WriteLine("=====================================");
@@ -116,14 +119,14 @@ namespace Sample
             Console.WriteLine($"Has Previous Page? = {page102.HasPrevious}");
             Console.WriteLine($"Has Next Page?     = {page102.HasNext}");
 
-            //for (var i = 0; i < page102.CurrentPageSize; i++)
-            //{
-            //    Console.Write($"{page102[i].ItemNumber}:{page102[i].Value}   ");
-            //    if (i % 10 == 9)
-            //    {
-            //        Console.WriteLine();
-            //    }
-            //}
+            for (var i = 0; i < page102.CurrentPageSize; i++)
+            {
+                Console.Write($"{page102[i].ItemNumber}:{page102[i].Value}   ");
+                if (i % 10 == 9)
+                {
+                    Console.WriteLine();
+                }
+            }
             sw.Stop();
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");
             Console.WriteLine("=====================================");
@@ -145,14 +148,14 @@ namespace Sample
             Console.WriteLine($"Has Previous Page? = {paginable3.HasPreviousPage}");
             Console.WriteLine($"Has Next Page?     = {paginable3.HasNextPage}");
 
-            //for (var i = 0; i < paginable3.ItemCountPerPage; i++)
-            //{
-            //    Console.Write($"{paginable3[i].ItemNumber}:{paginable3[i].Item}   ");
-            //    if (i % 10 == 9)
-            //    {
-            //        Console.WriteLine();
-            //    }
-            //}
+            for (var i = 0; i < paginable3.ItemCountPerPage; i++)
+            {
+                Console.Write($"{paginable3[i].ItemNumber}:{paginable3[i].Item}   ");
+                if (i % 10 == 9)
+                {
+                    Console.WriteLine();
+                }
+            }
 
             sw.Stop();
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");
@@ -177,14 +180,14 @@ namespace Sample
             Console.WriteLine($"Has Previous Page? = {paginable4.HasPreviousPage}");
             Console.WriteLine($"Has Next Page?     = {paginable4.HasNextPage}");
 
-            //for (var i = 0; i < paginable4.ItemCountPerPage; i++)
-            //{
-            //    Console.Write($"{paginable4[i].ItemNumber}:{paginable4[i].Item}   ");
-            //    if (i % 10 == 9)
-            //    {
-            //        Console.WriteLine();
-            //    }
-            //}
+            for (var i = 0; i < paginable4.ItemCountPerPage; i++)
+            {
+                Console.Write($"{paginable4[i].ItemNumber}:{paginable4[i].Item}   ");
+                if (i % 10 == 9)
+                {
+                    Console.WriteLine();
+                }
+            }
 
             sw.Stop();
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");

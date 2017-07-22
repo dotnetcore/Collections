@@ -2,9 +2,12 @@
 using System.Linq;
 using DotNetCore.Collections.Paginable.Internal;
 
-// ReSharper disable InconsistentNaming
 namespace DotNetCore.Collections.Paginable
 {
+    /// <summary>
+    /// Page member
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public struct PageMember<T> : IPageMember<T>
     {
         private T m_memberValue { get; }
@@ -38,13 +41,22 @@ namespace DotNetCore.Collections.Paginable
             m_state = state;
         }
 
+        /// <summary>
+        /// Value of current member
+        /// </summary>
         public T Value => m_state == null
 
             ? m_memberValue
             : m_state.AllValue.ElementAt(m_offset);
 
+        /// <summary>
+        /// Offset of current member
+        /// </summary>
         public int Offset => m_offset;
 
+        /// <summary>
+        /// Item number of current member
+        /// </summary>
         public int ItemNumber => m_startIndex + m_offset + 1;
     }
 }

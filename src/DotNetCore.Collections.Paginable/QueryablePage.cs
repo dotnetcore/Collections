@@ -5,45 +5,74 @@ using DotNetCore.Collections.Paginable.Internal;
 
 namespace DotNetCore.Collections.Paginable
 {
+    /// <summary>
+    /// Queryable page
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class QueryablePage<T> : PageBase<T>
     {
-        public QueryablePage(IQueryable<T> queryable, int currentPageNumber, int pageSize, int totalMembersCount) : base()
+        /// <summary>
+        /// Queryable page
+        /// </summary>
+        /// <param name="queryable"></param>
+        /// <param name="currentPageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="totalMemberCount"></param>
+        public QueryablePage(IQueryable<T> queryable, int currentPageNumber, int pageSize, int totalMemberCount) : base()
         {
             var skip = (currentPageNumber - 1) * pageSize;
 
             var state = new QueryEntryState<T>(queryable, skip, pageSize);
 
-            base.TotalPageCount = (int)Math.Ceiling((double)totalMembersCount / (double)pageSize);
-            base.TotalMemberCount = totalMembersCount;
-            base.CurrentPageNumber = currentPageNumber;
-            base.PageSize = pageSize;
-            base.CurrentPageSize = currentPageNumber == TotalPageCount
-                ? totalMembersCount % skip
-                : pageSize;
-
-            base.HasPrevious = currentPageNumber > 1;
-            base.HasNext = currentPageNumber < totalMembersCount;
+            InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
 
             base.m_initializeAction = InitializeMemberList()(state)(CurrentPageSize)(skip);
-
-            base.m_initializeAction();
         }
 
+        /// <summary>
+        /// Queryable page
+        /// </summary>
+        /// <param name="enumerable"></param>
+        /// <param name="currentPageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="totalMembersCount"></param>
         public QueryablePage(IEnumerable<T> enumerable, int currentPageNumber, int pageSize, int totalMembersCount)
             : this(enumerable.AsQueryable(), currentPageNumber, pageSize, totalMembersCount) { }
 
+        /// <summary>
+        /// Get empty page
+        /// </summary>
+        /// <returns></returns>
         public static EmptyPage<T> Empty() => new EmptyPage<T>();
 
-        private Func<QueryEntryState<T>, Func<int, Func<int, Action>>> InitializeMemberList()
-            => state => size => skip => () =>
-            {
-                base.m_memberList = new List<IPageMember<T>>(size);
-                for (var i = 0; i < size; i++)
-                {
-                    base.m_memberList.Add(new PageMember<T>(state, i, skip));
-                }
-            };
+        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () =>
+        {
+            // c = current page number
+            // s = page size
+            // t = total member count
+            // k = skip
+            base.TotalPageCount = (int)Math.Ceiling((double)t / (double)s);
+            base.TotalMemberCount = t;
+            base.CurrentPageNumber = c;
+            base.PageSize = s;
+            base.CurrentPageSize = c == TotalPageCount
+                ? t % k
+                : s;
 
+            base.HasPrevious = c > 1;
+            base.HasNext = c < t;
+        };
+
+        private Func<QueryEntryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () =>
+        {
+            // s = page size
+            // k = skip
+            base.m_memberList = new List<IPageMember<T>>(s);
+            for (var i = 0; i < s; i++)
+            {
+                base.m_memberList.Add(new PageMember<T>(state, i, k));
+            }
+        };
     }
 }
 

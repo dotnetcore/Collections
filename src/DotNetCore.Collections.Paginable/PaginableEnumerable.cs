@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace DotNetCore.Collections.Paginable
 {
+    /// <summary>
+    /// EnumerablePage collection
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class PaginableEnumerable<T> : PaginableSetBase<T>
     {
         private readonly IEnumerable<T> m_enumerable;
@@ -26,7 +29,5 @@ namespace DotNetCore.Collections.Paginable
         {
             return new Lazy<IPage<T>>(() => new EnumerablePage<T>(m_enumerable, currentPageNumber, pageSize, realMemberCount));
         }
-
-        internal IEnumerable<T> ExportEnumerable() => m_enumerable;
     }
 }

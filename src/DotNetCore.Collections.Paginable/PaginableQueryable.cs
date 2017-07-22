@@ -3,6 +3,10 @@ using System.Linq;
 
 namespace DotNetCore.Collections.Paginable
 {
+    /// <summary>
+    /// QueryablePage collection
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class PaginableQueryable<T> : PaginableSetBase<T>
     {
         private readonly IQueryable<T> m_queryable;
@@ -25,7 +29,5 @@ namespace DotNetCore.Collections.Paginable
         {
             return new Lazy<IPage<T>>(() => new EnumerablePage<T>(m_queryable, currentPageNumber, pageSize, realMemberCount));
         }
-
-        internal IQueryable<T> ExportQueryable() => m_queryable;
     }
 }
