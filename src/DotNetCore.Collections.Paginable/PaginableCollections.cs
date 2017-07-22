@@ -20,8 +20,7 @@ namespace DotNetCore.Collections.Paginable
             }
 
             var size = pageSize.Value;
-            var list = enumerable.ToList();
-            var count = list.Count();
+            var count = enumerable.Count();
 
             var realMemberCount = limitedMemberCount != null && limitedMemberCount.HasValue
 
@@ -34,8 +33,8 @@ namespace DotNetCore.Collections.Paginable
 
             return limitedMemberCount != null && limitedMemberCount.HasValue
 
-                ? new PaginableEnumerable<T>(list, size, realPageCount, realMemberCount, limitedMemberCount.Value)
-                : new PaginableEnumerable<T>(list, size, realPageCount, realMemberCount);
+                ? new PaginableEnumerable<T>(enumerable, size, realPageCount, realMemberCount, limitedMemberCount.Value)
+                : new PaginableEnumerable<T>(enumerable, size, realPageCount, realMemberCount);
         }
 
         public static PaginableQueryable<T> Of<T>(IQueryable<T> queryable, int? pageSize = null, int? limitedMemberCount = null)

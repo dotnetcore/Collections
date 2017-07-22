@@ -28,11 +28,9 @@ namespace DotNetCore.Collections.Paginable
             base.HasPrevious = currentPageNumber > 1;
             base.HasNext = currentPageNumber < totalMembersCount;
 
-            base.m_memberList = new List<IPageMember<T>>(CurrentPageSize);
-            for (var i = 0; i < CurrentPageSize; i++)
-            {
-                base.m_memberList.Add(new PageMember<T>(m_pinedEntryState, i, skip));
-            }
+            base.m_initializeAction = InitializeMemberList()(m_pinedEntryState)(CurrentPageSize)(skip);
+
+            base.m_initializeAction();
         }
 
         public QueryablePage(IEnumerable<T> enumerable, int currentPageNumber, int pageSize, int totalMembersCount)
@@ -41,6 +39,18 @@ namespace DotNetCore.Collections.Paginable
         public static EmptyPage<T> Empty() => new EmptyPage<T>();
 
         internal IQueryable<T> ExportQueryable() => m_pinedEntryState.ExporyQueryableCache();
+
+        private Func<QueryEntryState<T>,Func<int,Func<int,Action>>> InitializeMemberList()
+        {
+            return state => size => skip => () =>
+            {
+                base.m_memberList = new List<IPageMember<T>>(size);
+                for (var i = 0; i < size; i++)
+                {
+                    base.m_memberList.Add(new PageMember<T>(state, i, skip));
+                }
+            };
+        }
     }
 }
 

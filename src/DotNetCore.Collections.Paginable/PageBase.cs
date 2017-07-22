@@ -1,20 +1,26 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace DotNetCore.Collections.Paginable
 {
+    // ReSharper disable InconsistentNaming
     public abstract class PageBase<T> : IPage<T>
     {
         protected IList<IPageMember<T>> m_memberList;
+        protected Action m_initializeAction;
+        private bool m_hasInitialized = false;
 
-        protected PageBase()
+        protected PageBase() { }
+
+        public IEnumerator<IPageMember<T>> GetEnumerator()
         {
+            //CheckOrInitializePage();
+
+            return m_memberList.GetEnumerator();
         }
 
-        public IEnumerator<IPageMember<T>> GetEnumerator() => m_memberList.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => m_memberList.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public int TotalPageCount { get; protected set; }
 
@@ -30,6 +36,23 @@ namespace DotNetCore.Collections.Paginable
 
         public bool HasNext { get; protected set; }
 
-        public IPageMember<T> this[int index] => m_memberList[index];
+        public IPageMember<T> this[int index]
+        {
+            get
+            {
+                //CheckOrInitializePage();
+
+                return m_memberList[index];
+            }
+        }
+
+        private void CheckOrInitializePage()
+        {
+            if (!m_hasInitialized)
+            {
+                m_initializeAction?.Invoke();
+                m_hasInitialized = true;
+            }
+        }
     }
 }
