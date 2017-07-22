@@ -45,7 +45,7 @@ namespace DotNetCore.Collections.Paginable.Benchmarks
             return paginable.Count;
         }
 
-        //[Benchmark]
+        [Benchmark]
         public int DotNetCoreCollectionEnumerable_ToPaginable()
         {
             var paginable = _list.ToPaginable(50);
@@ -53,7 +53,7 @@ namespace DotNetCore.Collections.Paginable.Benchmarks
             return page.TotalPageCount;
         }
 
-        //[Benchmark]
+        [Benchmark]
         public int DotNetCoreCollectionQueryable_ToPaginable()
         {
             var paginable = _list.AsQueryable().ToPaginable(50);

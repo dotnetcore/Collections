@@ -41,7 +41,7 @@ namespace DotNetCore.Collections.Paginable
         public T Value => m_state == null
 
             ? m_memberValue
-            : m_state.SolidMembers().Skip(m_offset).First();
+            : m_state.AllValue.ElementAt(m_offset);
 
         public int Offset => m_offset;
 
