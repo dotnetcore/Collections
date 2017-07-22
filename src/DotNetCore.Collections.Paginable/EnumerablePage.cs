@@ -10,23 +10,32 @@ namespace DotNetCore.Collections.Paginable
         {
             var skip = (currentPageNumber - 1) * pageSize;
 
-            base.TotalPageCount = (int)Math.Ceiling((double)totalMemberCount / (double)pageSize);
-            base.TotalMemberCount = totalMemberCount;
-            base.CurrentPageNumber = currentPageNumber;
-            base.PageSize = pageSize;
-            base.CurrentPageSize = currentPageNumber == TotalPageCount
-                ? totalMemberCount % skip
-                : pageSize;
-
-            base.HasPrevious = currentPageNumber > 1;
-            base.HasNext = currentPageNumber < totalMemberCount;
+            InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
 
             base.m_initializeAction = InitializeMemberList()(enumerable)(CurrentPageSize)(skip);
 
-            base.m_initializeAction();
+            //base.m_initializeAction();
         }
 
         public static EmptyPage<T> Empty() => new EmptyPage<T>();
+
+        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () =>
+        {
+            // c = current page number
+            // s = page size
+            // t = total member count
+            // k = skip
+            base.TotalPageCount = (int)Math.Ceiling((double)t / (double)s);
+            base.TotalMemberCount = t;
+            base.CurrentPageNumber = c;
+            base.PageSize = s;
+            base.CurrentPageSize = c == TotalPageCount
+                ? t % k
+                : s;
+
+            base.HasPrevious = c > 1;
+            base.HasNext = c < t;
+        };
 
         private Func<IEnumerable<T>, Func<int, Func<int, Action>>> InitializeMemberList()
             => array => size => skip => () =>
@@ -34,7 +43,7 @@ namespace DotNetCore.Collections.Paginable
                 base.m_memberList = new List<IPageMember<T>>(size);
                 for (var i = 0; i < size; i++)
                 {
-                    base.m_memberList.Add(new PageMember<T>(array.ElementAt(i), i, skip));
+                    base.m_memberList.Add(new PageMember<T>(array.ElementAt(skip + i), i, skip));
                 }
             };
 
