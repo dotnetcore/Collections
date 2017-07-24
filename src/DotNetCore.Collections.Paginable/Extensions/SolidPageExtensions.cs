@@ -158,7 +158,7 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
-        public static Task<IPage<T>> GetPageAsync<T>(this Task<IQueryable<T>> queryableTask, int pageNumber, int pageSize)
+        public static async Task<IPage<T>> GetPageAsync<T>(this Task<IQueryable<T>> queryableTask, int pageNumber, int pageSize)
         {
             if (queryableTask == null)
             {
@@ -175,7 +175,9 @@ namespace DotNetCore.Collections.Paginable
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
             }
 
-            throw new NotImplementedException();
+            var queryable = await queryableTask;
+
+            return new QueryablePage<T>(queryable, pageNumber, pageSize, queryable.Count());
         }
     }
 }
