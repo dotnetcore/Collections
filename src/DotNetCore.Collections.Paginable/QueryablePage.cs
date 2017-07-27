@@ -26,7 +26,7 @@ namespace DotNetCore.Collections.Paginable
 
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
 
-            base.m_initializeAction = InitializeMemberList()(state)(CurrentPageSize)(skip);
+            base._initializeAction = InitializeMemberList()(state)(CurrentPageSize)(skip);
         }
 
         /// <summary>
@@ -67,13 +67,11 @@ namespace DotNetCore.Collections.Paginable
         {
             // s = page size
             // k = skip
-            base.m_memberList = new List<IPageMember<T>>(s);
+            base._memberList = new List<IPageMember<T>>(s);
             for (var i = 0; i < s; i++)
             {
-                base.m_memberList.Add(new PageMember<T>(state, i, k));
+                base._memberList.Add(new PageMember<T>(state, i, ref k));
             }
         };
     }
 }
-
-

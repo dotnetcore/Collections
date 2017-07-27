@@ -10,7 +10,7 @@ namespace DotNetCore.Collections.Paginable.Internal
     /// <typeparam name="T"></typeparam>
     internal class QueryEntryState<T>
     {
-        private readonly Lazy<IEnumerable<T>> m_lazyQueryableMembers;
+        private readonly Lazy<IEnumerable<T>> _mLazyQueryableMembers;
 
         /// <summary>
         /// Query entry state
@@ -30,12 +30,12 @@ namespace DotNetCore.Collections.Paginable.Internal
                 throw new ArgumentOutOfRangeException(nameof(take), $"{nameof(take)} can not be less than zero");
             }
 
-            m_lazyQueryableMembers = new Lazy<IEnumerable<T>>(() => queryable.Skip(skip).Take(take).AsEnumerable());
+            _mLazyQueryableMembers = new Lazy<IEnumerable<T>>(() => queryable.Skip(skip).Take(take).AsEnumerable());
         }
 
         /// <summary>
         /// Get all value.
         /// </summary>
-        public IEnumerable<T> AllValue => m_lazyQueryableMembers.Value;
+        public IEnumerable<T> AllValue => _mLazyQueryableMembers.Value;
     }
 }

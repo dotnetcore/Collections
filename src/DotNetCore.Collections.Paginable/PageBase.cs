@@ -10,9 +10,9 @@ namespace DotNetCore.Collections.Paginable
     /// <typeparam name="T"></typeparam>
     public abstract class PageBase<T> : IPage<T>
     {
-        protected IList<IPageMember<T>> m_memberList;
-        protected Action m_initializeAction;
-        private bool m_hasInitialized = false;
+        protected IList<IPageMember<T>> _memberList;
+        protected Action _initializeAction;
+        private bool _mHasInitialized = false;
 
         protected PageBase() { }
 
@@ -20,7 +20,7 @@ namespace DotNetCore.Collections.Paginable
         {
             CheckOrInitializePage();
 
-            return m_memberList.GetEnumerator();
+            return _memberList.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -45,16 +45,16 @@ namespace DotNetCore.Collections.Paginable
             {
                 CheckOrInitializePage();
 
-                return m_memberList[index];
+                return _memberList[index];
             }
         }
 
         private void CheckOrInitializePage()
         {
-            if (!m_hasInitialized)
+            if (!_mHasInitialized)
             {
-                m_initializeAction?.Invoke();
-                m_hasInitialized = true;
+                _initializeAction?.Invoke();
+                _mHasInitialized = true;
             }
         }
     }

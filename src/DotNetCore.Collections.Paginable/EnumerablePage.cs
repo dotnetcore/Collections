@@ -23,7 +23,7 @@ namespace DotNetCore.Collections.Paginable
 
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
 
-            base.m_initializeAction = InitializeMemberList()(enumerable)(CurrentPageSize)(skip);
+            base._initializeAction = InitializeMemberList()(enumerable)(CurrentPageSize)(skip);
         }
 
         /// <summary>
@@ -51,12 +51,14 @@ namespace DotNetCore.Collections.Paginable
         };
 
         private Func<IEnumerable<T>, Func<int, Func<int, Action>>> InitializeMemberList()
-            => array => size => skip => () =>
+            => array => s => k => () =>
             {
-                base.m_memberList = new List<IPageMember<T>>(size);
-                for (var i = 0; i < size; i++)
+                // s = page size
+                // k = skip
+                base._memberList = new List<IPageMember<T>>(s);
+                for (var i = 0; i < s; i++)
                 {
-                    base.m_memberList.Add(new PageMember<T>(array.ElementAt(skip + i), i, skip));
+                    base._memberList.Add(new PageMember<T>(array.ElementAt(k + i), i, ref k));
                 }
             };
 

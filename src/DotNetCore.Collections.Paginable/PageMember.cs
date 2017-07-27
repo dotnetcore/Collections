@@ -10,53 +10,53 @@ namespace DotNetCore.Collections.Paginable
     /// <typeparam name="T"></typeparam>
     public struct PageMember<T> : IPageMember<T>
     {
-        private T m_memberValue { get; }
-        private int m_offset { get; }
-        private int m_startIndex { get; }
-        private QueryEntryState<T> m_state { get; }
+        private readonly T _memberValue;
+        private readonly int _offset;
+        private readonly int _startIndex;
+        private readonly QueryEntryState<T> _state;
 
-        internal PageMember(T memberValue, int offset, int startIndex)
+        internal PageMember(T memberValue, int offset, ref int startIndex)
         {
             if (offset < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "offset can not be less than zero.");
             }
 
-            m_startIndex = startIndex;
-            m_memberValue = memberValue;
-            m_offset = offset;
-            m_state = null;
+            _startIndex = startIndex;
+            _memberValue = memberValue;
+            _offset = offset;
+            _state = null;
         }
 
-        internal PageMember(QueryEntryState<T> state, int offset, int startIndex)
+        internal PageMember(QueryEntryState<T> state, int offset,ref int startIndex)
         {
             if (offset < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "offset can not be less than zero.");
             }
 
-            m_startIndex = startIndex;
-            m_memberValue = default(T);
-            m_offset = offset;
-            m_state = state;
+            _startIndex = startIndex;
+            _memberValue = default(T);
+            _offset = offset;
+            _state = state;
         }
 
         /// <summary>
         /// Value of current member
         /// </summary>
-        public T Value => m_state == null
+        public T Value => _state == null
 
-            ? m_memberValue
-            : m_state.AllValue.ElementAt(m_offset);
+            ? _memberValue
+            : _state.AllValue.ElementAt(_offset);
 
         /// <summary>
         /// Offset of current member
         /// </summary>
-        public int Offset => m_offset;
+        public int Offset => _offset;
 
         /// <summary>
         /// Item number of current member
         /// </summary>
-        public int ItemNumber => m_startIndex + m_offset + 1;
+        public int ItemNumber => _startIndex + _offset + 1;
     }
 }
