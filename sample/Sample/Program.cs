@@ -83,15 +83,16 @@ namespace Sample
             sw.Restart();
 
             var page101 = list.GetPage(15, 50);
+            var originItem101 = page101.ToOrigonItems();
 
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds for paging page");
             Console.WriteLine("=====================================");
-            
+
             Console.WriteLine($"from member line #{page101.FromMemberNumber()}");
             Console.WriteLine($"  to member line #{page101.ToMemberNumber()}");
             Console.WriteLine($"Has Previous Page? = {page101.HasPrevious}");
             Console.WriteLine($"Has Next Page?     = {page101.HasNext}");
-            
+
             for (var i = 0; i < page101.CurrentPageSize; i++)
             {
                 Console.Write($"{page101[i].ItemNumber}:{page101[i].Value}   ");
@@ -113,6 +114,7 @@ namespace Sample
             sw.Restart();
 
             var page102 = list.AsQueryable().GetPage(15, 50);
+            var originItems102 = page102.ToOrigonItems();
 
             Console.WriteLine($"from member line #{page102.FromMemberNumber()}");
             Console.WriteLine($"  to member line #{page102.ToMemberNumber()}");

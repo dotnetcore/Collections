@@ -25,7 +25,7 @@ namespace DotNetCore.Collections.Paginable.Benchmarks
         }
 
         [Benchmark]
-        public int ABPaginableCollectionEnumerable()
+        public int PaginableCollectionEnumerable()
         {
             var paginable = ABPaginableCollections.EnumerableExtensions.ToPaginable(_list, 15, 50);
             return paginable.Count;
@@ -39,7 +39,7 @@ namespace DotNetCore.Collections.Paginable.Benchmarks
         }
 
         [Benchmark]
-        public int ABPaginableCollectionQueryable()
+        public int PaginableCollectionQueryable()
         {
             var paginable = ABPaginableCollections.PaginableExtensions.ToPaginable(_list.AsQueryable(), 15, 50);
             return paginable.Count;

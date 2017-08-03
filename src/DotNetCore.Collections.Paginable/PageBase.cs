@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DotNetCore.Collections.Paginable
 {
@@ -47,6 +48,13 @@ namespace DotNetCore.Collections.Paginable
 
                 return _memberList[index];
             }
+        }
+
+        public IEnumerable<T> ToOrigonItems()
+        {
+            CheckOrInitializePage();
+
+            return _memberList.Select(x => x.Value);
         }
 
         private void CheckOrInitializePage()
