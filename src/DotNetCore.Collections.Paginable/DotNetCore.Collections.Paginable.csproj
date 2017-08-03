@@ -4,8 +4,8 @@
     <TargetFramework>netstandard1.6</TargetFramework>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
-    <Product>Collections.Paginable</Product>
-    <Version>1.0.0-beta1-20170723</Version>
+    <Product>DotNetCore.Collections</Product>
+    <Version>1.0.0-beta1-20170804</Version>
     <Authors>AlexLEWIS;dotnetcore</Authors>
     <PackageId>DotNetCore.Collections.Paginable</PackageId>
     <PackageProjectUrl>https://github.com/dotnetcore/Collections</PackageProjectUrl>
