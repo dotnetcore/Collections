@@ -6,7 +6,20 @@
 
 Utilities and extensions for Collections.
 
+# Install
+
+for Paginable:
+
+```
+Install-Package DotNetCore.Collections.Paginable
+```
+
 # Usage
+
+[Example for Paginable x EFCore](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.EfCore/Program.cs)
+
+[Example for Paginable x EF](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Ef/Program.cs)
+
 
 ```
 var list = Enumerable.Range(0, 10000);
