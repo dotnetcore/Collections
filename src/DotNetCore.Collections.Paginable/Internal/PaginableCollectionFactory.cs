@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DotNetCore.Collections.Paginable.Internal
-{
-    internal static class PaginableCollectionFactory
-    {
+namespace DotNetCore.Collections.Paginable.Internal {
+    internal static class PaginableCollectionFactory {
         /// <summary>
         /// Get real member count<br />.
         /// first parameter(l) means limitedMemberCount<br />,
@@ -22,7 +20,7 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// </summary>
         /// <returns></returns>
         private static Func<int, Func<int, int>> GetRealPageCountFunc()
-            => m => s => (int)Math.Ceiling((double)m / (double)s);
+            => m => s => (int) Math.Ceiling((double) m / (double) s);
 
         /// <summary>
         /// Make enumerable result to EnumerablePage collection
@@ -32,15 +30,12 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
-        public static PaginableEnumerable<T> CreatePageSet<T>(IEnumerable<T> enumerable, int? pageSize = null, int? limitedMemberCount = null)
-        {
-            if (enumerable == null)
-            {
+        public static PaginableEnumerable<T> CreatePageSet<T>(IEnumerable<T> enumerable, int? pageSize = null, int? limitedMemberCount = null) {
+            if (enumerable == null) {
                 throw new ArgumentNullException(nameof(enumerable));
             }
 
-            if (pageSize == null)
-            {
+            if (pageSize == null) {
                 pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
             }
 
@@ -49,7 +44,6 @@ namespace DotNetCore.Collections.Paginable.Internal
             var realPageCount = GetRealPageCountFunc()(realMemberCount)(size);
 
             return limitedMemberCount != null && limitedMemberCount.HasValue
-
                 ? new PaginableEnumerable<T>(enumerable, size, realPageCount, realMemberCount, limitedMemberCount.Value)
                 : new PaginableEnumerable<T>(enumerable, size, realPageCount, realMemberCount);
         }
@@ -62,15 +56,12 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
-        public static PaginableQueryable<T> CreatePageSet<T>(IQueryable<T> queryable, int? pageSize = null, int? limitedMemberCount = null)
-        {
-            if (queryable == null)
-            {
+        public static PaginableQueryable<T> CreatePageSet<T>(IQueryable<T> queryable, int? pageSize = null, int? limitedMemberCount = null) {
+            if (queryable == null) {
                 throw new ArgumentNullException(nameof(queryable));
             }
 
-            if (pageSize == null)
-            {
+            if (pageSize == null) {
                 pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
             }
 
@@ -79,7 +70,6 @@ namespace DotNetCore.Collections.Paginable.Internal
             var realPageCount = GetRealPageCountFunc()(realMemberCount)(size);
 
             return limitedMemberCount != null && limitedMemberCount.HasValue
-
                 ? new PaginableQueryable<T>(queryable, size, realPageCount, realMemberCount, limitedMemberCount.Value)
                 : new PaginableQueryable<T>(queryable, size, realPageCount, realMemberCount);
         }

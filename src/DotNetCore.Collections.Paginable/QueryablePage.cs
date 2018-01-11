@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using DotNetCore.Collections.Paginable.Internal;
 
-namespace DotNetCore.Collections.Paginable
-{
+namespace DotNetCore.Collections.Paginable {
     /// <summary>
     /// Queryable page
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class QueryablePage<T> : PageBase<T>
-    {
+    public class QueryablePage<T> : PageBase<T> {
         /// <summary>
         /// Queryable page
         /// </summary>
@@ -18,14 +16,10 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="currentPageNumber"></param>
         /// <param name="pageSize"></param>
         /// <param name="totalMemberCount"></param>
-        public QueryablePage(IQueryable<T> queryable, int currentPageNumber, int pageSize, int totalMemberCount) : base()
-        {
+        public QueryablePage(IQueryable<T> queryable, int currentPageNumber, int pageSize, int totalMemberCount) : base() {
             var skip = (currentPageNumber - 1) * pageSize;
-
             var state = new QueryEntryState<T>(queryable, skip, pageSize);
-
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
-
             base._initializeAction = InitializeMemberList()(state)(CurrentPageSize)(skip);
         }
 
@@ -45,13 +39,12 @@ namespace DotNetCore.Collections.Paginable
         /// <returns></returns>
         public static EmptyPage<T> Empty() => new EmptyPage<T>();
 
-        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () =>
-        {
+        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () => {
             // c = current page number
             // s = page size
             // t = total member count
             // k = skip
-            base.TotalPageCount = (int)Math.Ceiling((double)t / (double)s);
+            base.TotalPageCount = (int) Math.Ceiling((double) t / (double) s);
             base.TotalMemberCount = t;
             base.CurrentPageNumber = c;
             base.PageSize = s;
@@ -63,13 +56,11 @@ namespace DotNetCore.Collections.Paginable
             base.HasNext = c < t;
         };
 
-        private Func<QueryEntryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () =>
-        {
+        private Func<QueryEntryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () => {
             // s = page size
             // k = skip
             base._memberList = new List<IPageMember<T>>(s);
-            for (var i = 0; i < s; i++)
-            {
+            for (var i = 0; i < s; i++) {
                 base._memberList.Add(new PageMember<T>(state, i, ref k));
             }
         };

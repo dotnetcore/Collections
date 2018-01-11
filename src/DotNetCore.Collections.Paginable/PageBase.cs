@@ -3,24 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DotNetCore.Collections.Paginable
-{
+namespace DotNetCore.Collections.Paginable {
     /// <summary>
     /// Abstract page base
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class PageBase<T> : IPage<T>
-    {
+    public abstract class PageBase<T> : IPage<T> {
         protected IList<IPageMember<T>> _memberList;
         protected Action _initializeAction;
         private bool _mHasInitialized = false;
 
         protected PageBase() { }
 
-        public IEnumerator<IPageMember<T>> GetEnumerator()
-        {
+        public IEnumerator<IPageMember<T>> GetEnumerator() {
             CheckOrInitializePage();
-
             return _memberList.GetEnumerator();
         }
 
@@ -40,27 +36,20 @@ namespace DotNetCore.Collections.Paginable
 
         public bool HasNext { get; protected set; }
 
-        public IPageMember<T> this[int index]
-        {
-            get
-            {
+        public IPageMember<T> this[int index] {
+            get {
                 CheckOrInitializePage();
-
                 return _memberList[index];
             }
         }
 
-        public IEnumerable<T> ToOrigonItems()
-        {
+        public IEnumerable<T> ToOrigonItems() {
             CheckOrInitializePage();
-
             return _memberList.Select(x => x.Value);
         }
 
-        private void CheckOrInitializePage()
-        {
-            if (!_mHasInitialized)
-            {
+        private void CheckOrInitializePage() {
+            if (!_mHasInitialized) {
                 _initializeAction?.Invoke();
                 _mHasInitialized = true;
             }

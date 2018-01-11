@@ -1,22 +1,18 @@
 ﻿using System;
-using System.Linq;
 
-namespace DotNetCore.Collections.Paginable
-{
+// ReSharper disable once CheckNamespace
+namespace DotNetCore.Collections.Paginable {
     /// <summary>
     /// Page extensions
     /// </summary>
-    public static class PageExtensions
-    {
+    public static class PageExtensions {
         /// <summary>
         /// Is current page thr first page?
         /// </summary>
         /// <param name="page"></param>
         /// <returns></returns>
-        public static bool IsFirst(this IPage page)
-        {
-            if (page == null)
-            {
+        public static bool IsFirst(this IPage page) {
+            if (page == null) {
                 throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
             }
 
@@ -28,10 +24,8 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <param name="page"></param>
         /// <returns></returns>
-        public static bool IsLast(this IPage page)
-        {
-            if (page == null)
-            {
+        public static bool IsLast(this IPage page) {
+            if (page == null) {
                 throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
             }
 
@@ -43,20 +37,16 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <param name="page"></param>
         /// <returns></returns>
-        public static int FromMemberNumber(this IPage page)
-        {
-            if (page == null)
-            {
+        public static int FromMemberNumber(this IPage page) {
+            if (page == null) {
                 throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
             }
 
-            if (page.TotalMemberCount == 0)
-            {
+            if (page.TotalMemberCount == 0) {
                 return 0;
             }
 
-            if (!page.HasPrevious)
-            {
+            if (!page.HasPrevious) {
                 return 1;
             }
 
@@ -68,20 +58,16 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <param name="page"></param>
         /// <returns></returns>
-        public static int ToMemberNumber(this IPage page)
-        {
-            if (page == null)
-            {
+        public static int ToMemberNumber(this IPage page) {
+            if (page == null) {
                 throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
             }
 
-            if (page.TotalMemberCount == 0)
-            {
+            if (page.TotalMemberCount == 0) {
                 return 0;
             }
 
-            if (!page.HasNext)
-            {
+            if (!page.HasNext) {
                 return (page.CurrentPageNumber - 1) * page.PageSize + page.CurrentPageSize;
             }
 

@@ -3,26 +3,22 @@ using System.Collections;
 using System.Collections.Generic;
 using DotNetCore.Collections.Paginable.Internal;
 
-namespace DotNetCore.Collections.Paginable
-{
+namespace DotNetCore.Collections.Paginable {
     /// <summary>
     /// Abstract PaginableSet base
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class PaginableSetBase<T> : IPaginable<T>
-    {
+    public abstract class PaginableSetBase<T> : IPaginable<T> {
         protected readonly Dictionary<int, Lazy<IPage<T>>> _lazyPinedPagesCache;
 
-        protected LimitedMembersTypes _limitedType { get; } = LimitedMembersTypes.Unlimited;//as default, unlimited.
-        private readonly int _limitedMemberCount;//magical number, as default, zero means unlimited.
-        private readonly int _realMemberCount;//if LimitedType is customize mode, real_member_count equals to limited_member_count, otherwise, not. 
+        protected LimitedMembersTypes _limitedType { get; } = LimitedMembersTypes.Unlimited; //as default, unlimited.
+        private readonly int _limitedMemberCount; //magical number, as default, zero means unlimited.
+        private readonly int _realMemberCount; //if LimitedType is customize mode, real_member_count equals to limited_member_count, otherwise, not. 
 
         protected PaginableSetBase() { }
 
-        protected PaginableSetBase(int pageSize, int realPageCount, int realMemberCount)
-        {
-            if (realMemberCount >= PaginableConstants.MAX_MEMBER_ITEMS_SUPPORT)
-            {
+        protected PaginableSetBase(int pageSize, int realPageCount, int realMemberCount) {
+            if (realMemberCount >= PaginableConstants.MAX_MEMBER_ITEMS_SUPPORT) {
                 throw new ArgumentOutOfRangeException(nameof(realMemberCount), "Paginable does not support large size result");
             }
 
@@ -35,8 +31,7 @@ namespace DotNetCore.Collections.Paginable
             _limitedType = LimitedMembersTypes.Unlimited;
         }
 
-        protected PaginableSetBase(int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount)
-        {
+        protected PaginableSetBase(int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount) {
             PageSize = pageSize;
             PageCount = realPageCount;
             _lazyPinedPagesCache = new Dictionary<int, Lazy<IPage<T>>>(realPageCount);
@@ -48,16 +43,11 @@ namespace DotNetCore.Collections.Paginable
             _limitedType = LimitedMembersTypes.Customize;
         }
 
-        public IEnumerator<IPage<T>> GetEnumerator()
-        {
-            for (int i = 1; i <= PageCount; i++)
-            {
-                if (HasInitializeSpecialPage(i, out var lazyPage))
-                {
+        public IEnumerator<IPage<T>> GetEnumerator() {
+            for (int i = 1; i <= PageCount; i++) {
+                if (HasInitializeSpecialPage(i, out var lazyPage)) {
                     yield return lazyPage.Value;
-                }
-                else
-                {
+                } else {
                     var lazyValue = GetSpecialPage(i, PageSize, _realMemberCount);
                     _lazyPinedPagesCache[i] = lazyValue;
                     yield return lazyValue.Value;
@@ -65,8 +55,7 @@ namespace DotNetCore.Collections.Paginable
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
+        IEnumerator IEnumerable.GetEnumerator() {
             return GetEnumerator();
         }
 
@@ -83,15 +72,12 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <param name="pageNumber"></param>
         /// <returns></returns>
-        public IPage<T> GetPage(int pageNumber)
-        {
-            if (pageNumber < 1 || pageNumber > PageCount)
-            {
+        public IPage<T> GetPage(int pageNumber) {
+            if (pageNumber < 1 || pageNumber > PageCount) {
                 throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than 1 or greater than pages count.");
             }
 
-            if (HasInitializeSpecialPage(pageNumber, out var lazyPage))
-            {
+            if (HasInitializeSpecialPage(pageNumber, out var lazyPage)) {
                 return lazyPage.Value;
             }
 
@@ -100,10 +86,8 @@ namespace DotNetCore.Collections.Paginable
             return lazyValue.Value;
         }
 
-        private bool HasInitializeSpecialPage(int pageNumber, out Lazy<IPage<T>> lazyPage)
-        {
-            if (pageNumber < 1 || pageNumber > PageCount)
-            {
+        private bool HasInitializeSpecialPage(int pageNumber, out Lazy<IPage<T>> lazyPage) {
+            if (pageNumber < 1 || pageNumber > PageCount) {
                 throw new ArgumentOutOfRangeException(nameof(pageNumber));
             }
 
