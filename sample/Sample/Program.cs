@@ -4,12 +4,9 @@ using System.Linq;
 using DotNetCore.Collections.Paginable;
 using ABPaginableCollections = PaginableCollections;
 
-namespace Sample
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
+namespace Sample {
+    class Program {
+        static void Main(string[] args) {
             var list = Enumerable.Range(0, 10000000);
             Console.WriteLine($"origin list length = {list.Count()}");
 
@@ -30,14 +27,13 @@ namespace Sample
             Console.WriteLine($"Has Previous Page? = {page.HasPrevious}");
             Console.WriteLine($"Has Next Page?     = {page.HasNext}");
 
-            for (var i = 0; i < page.CurrentPageSize; i++)
-            {
+            for (var i = 0; i < page.CurrentPageSize; i++) {
                 Console.Write($"{page[i].ItemNumber}:{page[i].Value}   ");
-                if (i % 10 == 9)
-                {
+                if (i % 10 == 9) {
                     Console.WriteLine();
                 }
             }
+
             sw.Stop();
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");
             Console.WriteLine("=====================================");
@@ -61,11 +57,9 @@ namespace Sample
             Console.WriteLine($"Has Previous Page? = {page2.HasPrevious}");
             Console.WriteLine($"Has Next Page?     = {page2.HasNext}");
 
-            for (var i = 0; i < page2.CurrentPageSize; i++)
-            {
+            for (var i = 0; i < page2.CurrentPageSize; i++) {
                 Console.Write($"{page2[i].ItemNumber}:{page2[i].Value}   ");
-                if (i % 10 == 9)
-                {
+                if (i % 10 == 9) {
                     Console.WriteLine();
                 }
             }
@@ -83,7 +77,7 @@ namespace Sample
             sw.Restart();
 
             var page101 = list.GetPage(15, 50);
-            var originItem101 = page101.ToOrigonItems();
+            //var originItem101 = page101.ToOrigonItems();
 
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds for paging page");
             Console.WriteLine("=====================================");
@@ -93,14 +87,13 @@ namespace Sample
             Console.WriteLine($"Has Previous Page? = {page101.HasPrevious}");
             Console.WriteLine($"Has Next Page?     = {page101.HasNext}");
 
-            for (var i = 0; i < page101.CurrentPageSize; i++)
-            {
+            for (var i = 0; i < page101.CurrentPageSize; i++) {
                 Console.Write($"{page101[i].ItemNumber}:{page101[i].Value}   ");
-                if (i % 10 == 9)
-                {
+                if (i % 10 == 9) {
                     Console.WriteLine();
                 }
             }
+
             sw.Stop();
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");
             Console.WriteLine("=====================================");
@@ -114,21 +107,20 @@ namespace Sample
             sw.Restart();
 
             var page102 = list.AsQueryable().GetPage(15, 50);
-            var originItems102 = page102.ToOrigonItems();
+            //var originItems102 = page102.ToOrigonItems();
 
             Console.WriteLine($"from member line #{page102.FromMemberNumber()}");
             Console.WriteLine($"  to member line #{page102.ToMemberNumber()}");
             Console.WriteLine($"Has Previous Page? = {page102.HasPrevious}");
             Console.WriteLine($"Has Next Page?     = {page102.HasNext}");
 
-            for (var i = 0; i < page102.CurrentPageSize; i++)
-            {
+            for (var i = 0; i < page102.CurrentPageSize; i++) {
                 Console.Write($"{page102[i].ItemNumber}:{page102[i].Value}   ");
-                if (i % 10 == 9)
-                {
+                if (i % 10 == 9) {
                     Console.WriteLine();
                 }
             }
+
             sw.Stop();
             Console.WriteLine($"Cost {sw.ElapsedMilliseconds} milliseconds");
             Console.WriteLine("=====================================");
@@ -150,11 +142,9 @@ namespace Sample
             Console.WriteLine($"Has Previous Page? = {paginable3.HasPreviousPage}");
             Console.WriteLine($"Has Next Page?     = {paginable3.HasNextPage}");
 
-            for (var i = 0; i < paginable3.ItemCountPerPage; i++)
-            {
+            for (var i = 0; i < paginable3.ItemCountPerPage; i++) {
                 Console.Write($"{paginable3[i].ItemNumber}:{paginable3[i].Item}   ");
-                if (i % 10 == 9)
-                {
+                if (i % 10 == 9) {
                     Console.WriteLine();
                 }
             }
@@ -182,11 +172,9 @@ namespace Sample
             Console.WriteLine($"Has Previous Page? = {paginable4.HasPreviousPage}");
             Console.WriteLine($"Has Next Page?     = {paginable4.HasNextPage}");
 
-            for (var i = 0; i < paginable4.ItemCountPerPage; i++)
-            {
+            for (var i = 0; i < paginable4.ItemCountPerPage; i++) {
                 Console.Write($"{paginable4[i].ItemNumber}:{paginable4[i].Item}   ");
-                if (i % 10 == 9)
-                {
+                if (i % 10 == 9) {
                     Console.WriteLine();
                 }
             }

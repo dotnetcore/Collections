@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCore.Collections.Paginable", "src\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj", "{9340D017-A253-4C89-9851-12A4A24381EC}"
 EndProject
@@ -19,6 +19,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		Publish.bat = Publish.bat
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.EfCore", "sample\Sample.EfCore\Sample.EfCore.csproj", "{B52045FC-278B-4E55-ABC0-C2FBA8AB30AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Ef", "sample\Sample.Ef\Sample.Ef.csproj", "{A31628D5-681D-4DC5-8BEF-CA008F9AB560}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +42,14 @@ Global
 		{328F5B18-8916-4CE5-AF4D-55C333C5B48E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{328F5B18-8916-4CE5-AF4D-55C333C5B48E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{328F5B18-8916-4CE5-AF4D-55C333C5B48E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B52045FC-278B-4E55-ABC0-C2FBA8AB30AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B52045FC-278B-4E55-ABC0-C2FBA8AB30AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B52045FC-278B-4E55-ABC0-C2FBA8AB30AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B52045FC-278B-4E55-ABC0-C2FBA8AB30AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A31628D5-681D-4DC5-8BEF-CA008F9AB560}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A31628D5-681D-4DC5-8BEF-CA008F9AB560}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A31628D5-681D-4DC5-8BEF-CA008F9AB560}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A31628D5-681D-4DC5-8BEF-CA008F9AB560}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,5 +58,10 @@ Global
 		{9340D017-A253-4C89-9851-12A4A24381EC} = {5835FD91-1071-4A30-865A-FEF116868E0E}
 		{76F071B8-841B-479E-BF3D-595DB07CDB51} = {9ECA2B81-D139-4383-8BA8-852C6E5DEA60}
 		{328F5B18-8916-4CE5-AF4D-55C333C5B48E} = {4B773909-B5F7-4379-98A6-D95A8BB779FE}
+		{B52045FC-278B-4E55-ABC0-C2FBA8AB30AB} = {9ECA2B81-D139-4383-8BA8-852C6E5DEA60}
+		{A31628D5-681D-4DC5-8BEF-CA008F9AB560} = {9ECA2B81-D139-4383-8BA8-852C6E5DEA60}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {71513A6C-8231-46C2-ADE8-0288FD4654D8}
 	EndGlobalSection
 EndGlobal
