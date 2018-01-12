@@ -50,7 +50,7 @@ namespace DotNetCore.Collections.Paginable {
                 // k = skip
                 base._memberList = new List<IPageMember<T>>(s);
                 if (array is IQueryable<T> query) {
-                    var realQuery = query.Skip(k).Take(s);
+                    var realQuery = query.Skip(k).Take(s).ToList();
                     var offset = 0;
                     foreach (var item in realQuery) {
                         base._memberList.Add(new PageMember<T>(item, offset++, ref k));

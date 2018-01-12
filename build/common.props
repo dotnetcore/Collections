@@ -13,7 +13,6 @@
 		<PackageIconUrl>https://avatars2.githubusercontent.com/u/19404084</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/dotnetcore/Collections</PackageProjectUrl>
-		<PackageIconUrl />
 		<PackageLicenseUrl>https://github.com/dotnetcore/Collections/blob/master/LICENSE</PackageLicenseUrl>
 		<PackageTags>Collections;Paginable</PackageTags>
 	</PropertyGroup>
