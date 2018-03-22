@@ -3,6 +3,7 @@
 [![NuGet](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.svg)](https://www.nuget.org/packages/DotNetCore.Collections.Paginable/)
 [![Member project of .NET China Foundation](https://img.shields.io/badge/member_project_of-.NET_CHINA-red.svg?style=flat&colorB=9E20C8)](https://github.com/dotnetcore)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/dotnetcore/CAP/master/LICENSE.txt)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections?ref=badge_shield)
 
 Utilities and extensions for Collections.
 
@@ -55,3 +56,7 @@ for (var i = 0; i < page.CurrentPageSize; i++)
 ```
 
 [![Member project of .NET China Foundation](https://github.com/dotnetcore/Home/blob/master/icons/member-project-of-netchina2.png)](https://github.com/dotnetcore)
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections?ref=badge_large)
