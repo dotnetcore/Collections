@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using DotNetCore.Collections.Paginable.Tests.Models;
 using Xunit;
 
@@ -25,7 +26,7 @@ namespace DotNetCore.Collections.Paginable.Tests {
         }
 
         [Fact]
-        public void EmptyQueryTest() {
+        public void EmptyListTest() {
             var page = EmptyListForStudents.GetPage(1, 9);
             Assert.Equal(1, page.TotalPageCount);
             Assert.Equal(0, page.TotalMemberCount);
@@ -34,6 +35,17 @@ namespace DotNetCore.Collections.Paginable.Tests {
             Assert.Equal(0, page.CurrentPageSize); //应该是0
             Assert.False(page.HasNext);
             Assert.False(page.HasPrevious);
+        }
+
+        [Fact]
+        public void EmptyListToOriginTest() {
+            var page = EmptyListForStudents.GetPage(1, 9);
+            var origins = page.ToOrigonItems();
+            Assert.Equal(0, origins.Count());
+
+            var counter = 0;
+            foreach (var item in origins) counter++;
+            Assert.Equal(0, counter);
         }
 
         [Fact]
@@ -49,6 +61,17 @@ namespace DotNetCore.Collections.Paginable.Tests {
         }
 
         [Fact]
+        public void OneItemToOriginTest() {
+            var page = OneItemForStudents.GetPage(1, 9);
+            var origins = page.ToOrigonItems();
+            Assert.Equal(1, origins.Count());
+
+            var counter = 0;
+            foreach (var item in origins) counter++;
+            Assert.Equal(1, counter);
+        }
+
+        [Fact]
         public void OnePageTest() {
             var page = EightItemsForStudents.GetPage(1, 9);
             Assert.Equal(1, page.TotalPageCount);
@@ -58,6 +81,17 @@ namespace DotNetCore.Collections.Paginable.Tests {
             Assert.Equal(8, page.CurrentPageSize);
             Assert.False(page.HasNext);
             Assert.False(page.HasPrevious);
+        }
+        
+        [Fact]
+        public void OnePageoOriginTest() {
+            var page = EightItemsForStudents.GetPage(1, 9);
+            var origins = page.ToOrigonItems();
+            Assert.Equal(8, origins.Count());
+
+            var counter = 0;
+            foreach (var item in origins) counter++;
+            Assert.Equal(8, counter);
         }
 
         [Fact]
@@ -70,6 +104,17 @@ namespace DotNetCore.Collections.Paginable.Tests {
             Assert.Equal(2, page.CurrentPageSize);
             Assert.True(page.HasNext);
             Assert.False(page.HasPrevious);
+        }
+        
+        [Fact]
+        public void SeveralPagesOriginTest() {
+            var page = EightItemsForStudents.GetPage(1, 2);
+            var origins = page.ToOrigonItems();
+            Assert.Equal(2, origins.Count());
+
+            var counter = 0;
+            foreach (var item in origins) counter++;
+            Assert.Equal(2, counter);
         }
     }
 }
