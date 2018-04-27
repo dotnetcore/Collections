@@ -7,12 +7,12 @@ namespace DotNetCore.Collections.Paginable.Tests {
 
         private IList<Student> EmptyListForStudents { get; set; }
         private IList<Student> OneItemForStudents { get; set; }
-        private IList<Student> OnePageForStudents { get; set; }
+        private IList<Student> EightItemsForStudents { get; set; }
 
         public GetPageForEnumerableTest() {
             EmptyListForStudents = new List<Student>();
             OneItemForStudents = new List<Student> {new Student {Id = 1, Name = "Alex"}};
-            OnePageForStudents = new List<Student> {
+            EightItemsForStudents = new List<Student> {
                 new Student {Id = 2, Name = "Zhaomin"},
                 new Student {Id = 3, Name = "Zhaomin"},
                 new Student {Id = 4, Name = "Zhaomin"},
@@ -45,6 +45,30 @@ namespace DotNetCore.Collections.Paginable.Tests {
             Assert.Equal(9, page.PageSize);
             Assert.Equal(1, page.CurrentPageSize); //应该是0
             Assert.False(page.HasNext);
+            Assert.False(page.HasPrevious);
+        }
+
+        [Fact]
+        public void OnePageTest() {
+            var page = EightItemsForStudents.GetPage(1, 9);
+            Assert.Equal(1, page.TotalPageCount);
+            Assert.Equal(8, page.TotalMemberCount);
+            Assert.Equal(1, page.CurrentPageNumber);
+            Assert.Equal(9, page.PageSize);
+            Assert.Equal(8, page.CurrentPageSize);
+            Assert.False(page.HasNext);
+            Assert.False(page.HasPrevious);
+        }
+
+        [Fact]
+        public void SeveralPagesTest() {
+            var page = EightItemsForStudents.GetPage(1, 2);
+            Assert.Equal(4, page.TotalPageCount);
+            Assert.Equal(8, page.TotalMemberCount);
+            Assert.Equal(1, page.CurrentPageNumber);
+            Assert.Equal(2, page.PageSize);
+            Assert.Equal(2, page.CurrentPageSize);
+            Assert.True(page.HasNext);
             Assert.False(page.HasPrevious);
         }
     }

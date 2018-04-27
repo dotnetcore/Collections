@@ -8,12 +8,12 @@ namespace DotNetCore.Collections.Paginable.Tests {
 
         private IQueryable<Student> EmptyQueryForStudents { get; set; }
         private IQueryable<Student> OneItemForStudents { get; set; }
-        private IQueryable<Student> OnePageForStudents { get; set; }
+        private IQueryable<Student> EightItemsForStudents { get; set; }
 
         public GetPageForQueryTest() {
             EmptyQueryForStudents = new List<Student>().AsQueryable();
             OneItemForStudents = new List<Student> {new Student {Id = 1, Name = "Alex"}}.AsQueryable();
-            OnePageForStudents = new List<Student> {
+            EightItemsForStudents = new List<Student> {
                 new Student {Id = 2, Name = "Zhaomin"},
                 new Student {Id = 3, Name = "Zhaomin"},
                 new Student {Id = 4, Name = "Zhaomin"},
@@ -51,7 +51,7 @@ namespace DotNetCore.Collections.Paginable.Tests {
 
         [Fact]
         public void OnePageTest() {
-            var page = OnePageForStudents.GetPage(1, 9);
+            var page = EightItemsForStudents.GetPage(1, 9);
             Assert.Equal(1, page.TotalPageCount);
             Assert.Equal(8, page.TotalMemberCount);
             Assert.Equal(1, page.CurrentPageNumber);
@@ -60,5 +60,18 @@ namespace DotNetCore.Collections.Paginable.Tests {
             Assert.False(page.HasNext);
             Assert.False(page.HasPrevious);
         }
+        
+        [Fact]
+        public void SeveralPagesTest() {
+            var page = EightItemsForStudents.GetPage(1, 2);
+            Assert.Equal(4, page.TotalPageCount);
+            Assert.Equal(8, page.TotalMemberCount);
+            Assert.Equal(1, page.CurrentPageNumber);
+            Assert.Equal(2, page.PageSize);
+            Assert.Equal(2, page.CurrentPageSize);
+            Assert.True(page.HasNext);
+            Assert.False(page.HasPrevious);
+        }
+        
     }
 }

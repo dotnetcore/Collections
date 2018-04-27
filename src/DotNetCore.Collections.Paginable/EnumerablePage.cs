@@ -44,7 +44,7 @@ namespace DotNetCore.Collections.Paginable {
                 : s;
 
             base.HasPrevious = c > 1;
-            base.HasNext = c < t;
+            base.HasNext = c < base.TotalPageCount;
         };
 
         private Func<IEnumerable<T>, Func<int, Func<int, Action>>> InitializeMemberList()
