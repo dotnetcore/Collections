@@ -24,6 +24,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.EfCore", "sample\Sam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Ef", "sample\Sample.Ef\Sample.Ef.csproj", "{A31628D5-681D-4DC5-8BEF-CA008F9AB560}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{26527A0B-471B-4AF2-AFF3-C20CDB9AB6F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCore.Collections.Paginable.Tests", "tests\DotNetCore.Collections.Paginable.Tests\DotNetCore.Collections.Paginable.Tests.csproj", "{AB45AF4E-6D40-4EA7-8F87-47631659779D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +54,10 @@ Global
 		{A31628D5-681D-4DC5-8BEF-CA008F9AB560}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A31628D5-681D-4DC5-8BEF-CA008F9AB560}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A31628D5-681D-4DC5-8BEF-CA008F9AB560}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB45AF4E-6D40-4EA7-8F87-47631659779D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB45AF4E-6D40-4EA7-8F87-47631659779D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB45AF4E-6D40-4EA7-8F87-47631659779D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB45AF4E-6D40-4EA7-8F87-47631659779D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +68,7 @@ Global
 		{328F5B18-8916-4CE5-AF4D-55C333C5B48E} = {4B773909-B5F7-4379-98A6-D95A8BB779FE}
 		{B52045FC-278B-4E55-ABC0-C2FBA8AB30AB} = {9ECA2B81-D139-4383-8BA8-852C6E5DEA60}
 		{A31628D5-681D-4DC5-8BEF-CA008F9AB560} = {9ECA2B81-D139-4383-8BA8-852C6E5DEA60}
+		{AB45AF4E-6D40-4EA7-8F87-47631659779D} = {26527A0B-471B-4AF2-AFF3-C20CDB9AB6F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {71513A6C-8231-46C2-ADE8-0288FD4654D8}

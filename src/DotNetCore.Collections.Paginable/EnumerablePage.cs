@@ -32,12 +32,15 @@ namespace DotNetCore.Collections.Paginable {
             // s = page size
             // t = total member count
             // k = skip
-            base.TotalPageCount = (int) Math.Ceiling((double) t / (double) s);
+            var totalPageCount = (int) Math.Ceiling((double) t / (double) s);
+            base.TotalPageCount = totalPageCount == 0 ? 1 : totalPageCount;
             base.TotalMemberCount = t;
             base.CurrentPageNumber = c;
             base.PageSize = s;
             base.CurrentPageSize = c == TotalPageCount
-                ? t % k
+                ? k == 0
+                    ? t
+                    : t % k
                 : s;
 
             base.HasPrevious = c > 1;
