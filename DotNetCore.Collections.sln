@@ -20,13 +20,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Publish.bat = Publish.bat
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.EfCore", "sample\Sample.EfCore\Sample.EfCore.csproj", "{B52045FC-278B-4E55-ABC0-C2FBA8AB30AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.EfCore", "sample\Sample.EfCore\Sample.EfCore.csproj", "{B52045FC-278B-4E55-ABC0-C2FBA8AB30AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Ef", "sample\Sample.Ef\Sample.Ef.csproj", "{A31628D5-681D-4DC5-8BEF-CA008F9AB560}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Ef", "sample\Sample.Ef\Sample.Ef.csproj", "{A31628D5-681D-4DC5-8BEF-CA008F9AB560}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{26527A0B-471B-4AF2-AFF3-C20CDB9AB6F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCore.Collections.Paginable.Tests", "tests\DotNetCore.Collections.Paginable.Tests\DotNetCore.Collections.Paginable.Tests.csproj", "{AB45AF4E-6D40-4EA7-8F87-47631659779D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCore.Collections.Paginable.Tests", "tests\DotNetCore.Collections.Paginable.Tests\DotNetCore.Collections.Paginable.Tests.csproj", "{AB45AF4E-6D40-4EA7-8F87-47631659779D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{46E7BBBE-78CC-4004-89F1-AF0A75250DF6}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\version.props = build\version.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +75,7 @@ Global
 		{B52045FC-278B-4E55-ABC0-C2FBA8AB30AB} = {9ECA2B81-D139-4383-8BA8-852C6E5DEA60}
 		{A31628D5-681D-4DC5-8BEF-CA008F9AB560} = {9ECA2B81-D139-4383-8BA8-852C6E5DEA60}
 		{AB45AF4E-6D40-4EA7-8F87-47631659779D} = {26527A0B-471B-4AF2-AFF3-C20CDB9AB6F1}
+		{46E7BBBE-78CC-4004-89F1-AF0A75250DF6} = {9719A1AF-9DF7-401A-864D-2D95C65D7D6F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {71513A6C-8231-46C2-ADE8-0288FD4654D8}

@@ -18,7 +18,7 @@ namespace DotNetCore.Collections.Paginable {
         protected PaginableSetBase() { }
 
         protected PaginableSetBase(int pageSize, int realPageCount, int realMemberCount) {
-            if (realMemberCount >= PaginableConstants.MAX_MEMBER_ITEMS_SUPPORT) {
+            if (realMemberCount >= PaginableSettingsManager.Settings.MaxMemberItems) {
                 throw new ArgumentOutOfRangeException(nameof(realMemberCount), "Paginable does not support large size result");
             }
 

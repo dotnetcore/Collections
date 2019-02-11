@@ -37,7 +37,7 @@ namespace DotNetCore.Collections.Paginable {
             base.TotalMemberCount = t;
             base.CurrentPageNumber = c;
             base.PageSize = s;
-            base.CurrentPageSize = c == TotalPageCount
+            base.CurrentPageSize = c == totalPageCount
                 ? k == 0
                     ? t
                     : t % k
