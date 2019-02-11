@@ -10,5 +10,6 @@ namespace DotNetCore.Collections.Paginable {
         int CurrentPageSize { get; }
         bool HasPrevious { get; }
         bool HasNext { get; }
+        PageMetadata GetMetadata();
     }
 }
