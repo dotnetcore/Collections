@@ -34,6 +34,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{46E7BBBE
 		build\version.props = build\version.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCore.Collections.Paginable.ConsoleTests", "tests\DotNetCore.Collections.Paginable.ConsoleTests\DotNetCore.Collections.Paginable.ConsoleTests.csproj", "{24223D17-E4A2-4484-86DF-BEB387883CCC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,10 @@ Global
 		{AB45AF4E-6D40-4EA7-8F87-47631659779D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB45AF4E-6D40-4EA7-8F87-47631659779D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB45AF4E-6D40-4EA7-8F87-47631659779D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24223D17-E4A2-4484-86DF-BEB387883CCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24223D17-E4A2-4484-86DF-BEB387883CCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24223D17-E4A2-4484-86DF-BEB387883CCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24223D17-E4A2-4484-86DF-BEB387883CCC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +82,7 @@ Global
 		{A31628D5-681D-4DC5-8BEF-CA008F9AB560} = {9ECA2B81-D139-4383-8BA8-852C6E5DEA60}
 		{AB45AF4E-6D40-4EA7-8F87-47631659779D} = {26527A0B-471B-4AF2-AFF3-C20CDB9AB6F1}
 		{46E7BBBE-78CC-4004-89F1-AF0A75250DF6} = {9719A1AF-9DF7-401A-864D-2D95C65D7D6F}
+		{24223D17-E4A2-4484-86DF-BEB387883CCC} = {26527A0B-471B-4AF2-AFF3-C20CDB9AB6F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {71513A6C-8231-46C2-ADE8-0288FD4654D8}

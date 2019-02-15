@@ -41,7 +41,9 @@ namespace DotNetCore.Collections.Paginable {
                 ? k == 0
                     ? t
                     : t % k
-                : s;
+                : totalPageCount == 0
+                    ? 0
+                    : s;
 
             base.HasPrevious = c > 1;
             base.HasNext = c < base.TotalPageCount;

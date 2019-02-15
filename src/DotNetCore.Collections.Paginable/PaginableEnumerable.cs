@@ -12,7 +12,7 @@ namespace DotNetCore.Collections.Paginable {
         private PaginableEnumerable() { }
 
         internal PaginableEnumerable(IEnumerable<T> enumerable, int pageSize, int realPageCount, int realMemberCount)
-            : base(pageSize, realMemberCount, realPageCount) {
+            : base(pageSize, realPageCount, realMemberCount) {
             _enumerable = enumerable;
         }
 
