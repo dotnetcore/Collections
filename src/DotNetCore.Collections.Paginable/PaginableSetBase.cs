@@ -73,6 +73,10 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageNumber"></param>
         /// <returns></returns>
         public IPage<T> GetPage(int pageNumber) {
+            if (PageCount == 0) {
+                return new EmptyPage<T>();
+            }
+
             if (pageNumber < 1 || pageNumber > PageCount) {
                 throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than 1 or greater than pages count.");
             }
