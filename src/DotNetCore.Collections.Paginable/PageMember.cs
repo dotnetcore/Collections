@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using DotNetCore.Collections.Paginable.Abstractions;
 using DotNetCore.Collections.Paginable.Internal;
 
 namespace DotNetCore.Collections.Paginable {
@@ -11,7 +12,7 @@ namespace DotNetCore.Collections.Paginable {
         private readonly T _memberValue;
         private readonly int _offset;
         private readonly int _startIndex;
-        private readonly QueryEntryState<T> _state;
+        private readonly IQueryEntryState<T> _state;
 
         internal PageMember(T memberValue, int offset, ref int startIndex) {
             if (offset < 0) {
@@ -24,7 +25,7 @@ namespace DotNetCore.Collections.Paginable {
             _state = null;
         }
 
-        internal PageMember(QueryEntryState<T> state, int offset, ref int startIndex) {
+        internal PageMember(IQueryEntryState<T> state, int offset, ref int startIndex) {
             if (offset < 0) {
                 throw new ArgumentOutOfRangeException(nameof(offset), "offset can not be less than zero.");
             }

@@ -11,7 +11,7 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// </summary>
         /// <returns></returns>
         private static Func<int?, Func<int, int>> GetRealMemberCountFunc()
-            => l => c => l != null && l.HasValue ? l.Value > c ? c : l.Value : c;
+            => l => c => l.IsValid() && l.HasValue ? l.Value > c ? c : l.Value : c;
 
         /// <summary>
         /// Get real page count<br />.
@@ -43,7 +43,7 @@ namespace DotNetCore.Collections.Paginable.Internal {
             var realMemberCount = GetRealMemberCountFunc()(limitedMemberCount)(enumerable.Count());
             var realPageCount = GetRealPageCountFunc()(realMemberCount)(size);
 
-            return limitedMemberCount != null && limitedMemberCount.HasValue
+            return limitedMemberCount.IsValid() && limitedMemberCount.HasValue
                 ? new PaginableEnumerable<T>(enumerable, size, realPageCount, realMemberCount, limitedMemberCount.Value)
                 : new PaginableEnumerable<T>(enumerable, size, realPageCount, realMemberCount);
         }
@@ -69,7 +69,7 @@ namespace DotNetCore.Collections.Paginable.Internal {
             var realMemberCount = GetRealMemberCountFunc()(limitedMemberCount)(queryable.Count());
             var realPageCount = GetRealPageCountFunc()(realMemberCount)(size);
 
-            return limitedMemberCount != null && limitedMemberCount.HasValue
+            return limitedMemberCount.IsValid() && limitedMemberCount.HasValue
                 ? new PaginableQueryable<T>(queryable, size, realPageCount, realMemberCount, limitedMemberCount.Value)
                 : new PaginableQueryable<T>(queryable, size, realPageCount, realMemberCount);
         }

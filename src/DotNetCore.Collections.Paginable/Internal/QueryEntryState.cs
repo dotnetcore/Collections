@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DotNetCore.Collections.Paginable.Abstractions;
 
 namespace DotNetCore.Collections.Paginable.Internal {
     /// <summary>
     /// Query entry state
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class QueryEntryState<T> {
+    internal class QueryEntryState<T> : IQueryEntryState<T> {
         private readonly Lazy<IEnumerable<T>> _mLazyQueryableMembers;
 
         /// <summary>

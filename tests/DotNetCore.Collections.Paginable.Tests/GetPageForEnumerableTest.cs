@@ -55,7 +55,7 @@ namespace DotNetCore.Collections.Paginable.Tests {
             Assert.Equal(1, page.TotalMemberCount);
             Assert.Equal(1, page.CurrentPageNumber);
             Assert.Equal(9, page.PageSize);
-            Assert.Equal(1, page.CurrentPageSize); //应该是0
+            Assert.Equal(1, page.CurrentPageSize);
             Assert.False(page.HasNext);
             Assert.False(page.HasPrevious);
         }
