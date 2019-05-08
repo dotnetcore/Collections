@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCore.Collections.Paginable", "src\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj", "{9340D017-A253-4C89-9851-12A4A24381EC}"
 EndProject
@@ -34,7 +34,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{46E7BBBE
 		build\version.props = build\version.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCore.Collections.Paginable.ConsoleTests", "tests\DotNetCore.Collections.Paginable.ConsoleTests\DotNetCore.Collections.Paginable.ConsoleTests.csproj", "{24223D17-E4A2-4484-86DF-BEB387883CCC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCore.Collections.Paginable.ConsoleTests", "tests\DotNetCore.Collections.Paginable.ConsoleTests\DotNetCore.Collections.Paginable.ConsoleTests.csproj", "{24223D17-E4A2-4484-86DF-BEB387883CCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCore.Collections.Paginable.SqlKata", "src\DotNetCore.Collections.Paginable.SqlKata\DotNetCore.Collections.Paginable.SqlKata.csproj", "{3AE56F11-CBDB-4720-9B42-7BC954EF59B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCore.Collections.Paginable.DbTests", "tests\DotNetCore.Collections.Paginable.DbTests\DotNetCore.Collections.Paginable.DbTests.csproj", "{2D243CBA-A0C4-452D-82AC-C8CD8E2B8DB1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -70,6 +74,14 @@ Global
 		{24223D17-E4A2-4484-86DF-BEB387883CCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24223D17-E4A2-4484-86DF-BEB387883CCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24223D17-E4A2-4484-86DF-BEB387883CCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AE56F11-CBDB-4720-9B42-7BC954EF59B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AE56F11-CBDB-4720-9B42-7BC954EF59B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AE56F11-CBDB-4720-9B42-7BC954EF59B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AE56F11-CBDB-4720-9B42-7BC954EF59B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D243CBA-A0C4-452D-82AC-C8CD8E2B8DB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D243CBA-A0C4-452D-82AC-C8CD8E2B8DB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D243CBA-A0C4-452D-82AC-C8CD8E2B8DB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D243CBA-A0C4-452D-82AC-C8CD8E2B8DB1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -83,6 +95,8 @@ Global
 		{AB45AF4E-6D40-4EA7-8F87-47631659779D} = {26527A0B-471B-4AF2-AFF3-C20CDB9AB6F1}
 		{46E7BBBE-78CC-4004-89F1-AF0A75250DF6} = {9719A1AF-9DF7-401A-864D-2D95C65D7D6F}
 		{24223D17-E4A2-4484-86DF-BEB387883CCC} = {26527A0B-471B-4AF2-AFF3-C20CDB9AB6F1}
+		{3AE56F11-CBDB-4720-9B42-7BC954EF59B1} = {5835FD91-1071-4A30-865A-FEF116868E0E}
+		{2D243CBA-A0C4-452D-82AC-C8CD8E2B8DB1} = {26527A0B-471B-4AF2-AFF3-C20CDB9AB6F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {71513A6C-8231-46C2-ADE8-0288FD4654D8}

@@ -8,6 +8,7 @@ for /R "nuget_pub" %%s in (*) do (
 )
 
 dotnet pack src/DotNetCore.Collections.Paginable -c Release -o ../../nuget_pub
+dotnet pack src/DotNetCore.Collections.Paginable.SqlKata -c Release -o ../../nuget_pub
 
 for /R "nuget_pub" %%s in (*symbols.nupkg) do (
     del %%s
