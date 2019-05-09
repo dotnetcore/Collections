@@ -6,6 +6,6 @@ namespace DotNetCore.Collections.Paginable.DbTests.Models
 {
     public class Int32Sample
     {
-        public int Id { get; set; }
+        public virtual int Id { get; set; }
     }
 }

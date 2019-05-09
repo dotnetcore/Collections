@@ -10,6 +10,7 @@ for /R "nuget_pub" %%s in (*) do (
 dotnet pack src/DotNetCore.Collections.Paginable -c Release -o ../../nuget_pub
 dotnet pack src/DotNetCore.Collections.Paginable.Chloe -c Release -o ../../nuget_pub
 dotnet pack src/DotNetCore.Collections.Paginable.FreeSql -c Release -o ../../nuget_pub
+dotnet pack src/DotNetCore.Collections.Paginable.NHibernate -c Release -o ../../nuget_pub
 dotnet pack src/DotNetCore.Collections.Paginable.SqlKata -c Release -o ../../nuget_pub
 dotnet pack src/DotNetCore.Collections.Paginable.SqlSugar -c Release -o ../../nuget_pub
 
