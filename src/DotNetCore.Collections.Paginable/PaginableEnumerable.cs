@@ -16,8 +16,8 @@ namespace DotNetCore.Collections.Paginable {
             _enumerable = enumerable;
         }
 
-        internal PaginableEnumerable(IEnumerable<T> enumerable, int pageSize, int realPageCount, int realMemberCount, int limitedMemberCount)
-            : base(pageSize, realPageCount, realMemberCount, limitedMemberCount) {
+        internal PaginableEnumerable(IEnumerable<T> enumerable, int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount)
+            : base(pageSize, realPageCount, realMemberCount, limitedMembersCount) {
             _enumerable = enumerable;
         }
 

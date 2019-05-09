@@ -1,30 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Chloe;
 using DotNetCore.Collections.Paginable.Internal;
-using SqlKata;
-using SqlKata.Execution;
 
 namespace DotNetCore.Collections.Paginable
 {
     /// <summary>
-    /// SqlKata page
+    /// Chloe page
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SqlKataPage<T> : PageBase<T>
+    public class ChloePage<T> : PageBase<T>
     {
         /// <summary>
-        /// SqlKata page
+        /// Chloe page
         /// </summary>
         /// <param name="query"></param>
         /// <param name="currentPageNumber"></param>
         /// <param name="pageSize"></param>
         /// <param name="totalMemberCount"></param>
-        public SqlKataPage(Query query, int currentPageNumber, int pageSize, int totalMemberCount) : base()
+        /// <param name="additionalQueryFunc"></param>
+        public ChloePage(IQuery<T> query, int currentPageNumber, int pageSize, int totalMemberCount, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null) : base()
         {
             var skip = (currentPageNumber - 1) * pageSize;
-            var state = new SqlKataQueryState<T>(query, currentPageNumber, pageSize);
+            var state = new ChloeQueryState<T>(query, currentPageNumber, pageSize, additionalQueryFunc);
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
             base._initializeAction = InitializeMemberList()(state)(pageSize)(skip);
         }
@@ -59,15 +57,15 @@ namespace DotNetCore.Collections.Paginable
             base.HasNext = c < base.TotalPageCount;
         };
 
-        private Func<SqlKataQueryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () =>
-        {
-            // s = page size
-            // k = skip
-            base._memberList = new List<IPageMember<T>>(s);
-            for (var i = 0; i < s; i++)
-            {
-                base._memberList.Add(PageMemberFactory.Create<T>(state, i, ref k));
-            }
-        };
+        private Func<ChloeQueryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () =>
+             {
+                 // s = page size
+                 // k = skip
+                 base._memberList = new List<IPageMember<T>>(s);
+                 for (var i = 0; i < s; i++)
+                 {
+                     base._memberList.Add(PageMemberFactory.Create<T>(state, i, ref k));
+                 }
+             };
     }
 }

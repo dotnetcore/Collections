@@ -16,8 +16,8 @@ namespace DotNetCore.Collections.Paginable {
             _queryable = queryable;
         }
 
-        internal PaginableQueryable(IQueryable<T> queryable, int pageSize, int realPageCount, int realMemberCount, int limitedMemberCount)
-            : base(pageSize, realPageCount, realMemberCount, limitedMemberCount) {
+        internal PaginableQueryable(IQueryable<T> queryable, int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount)
+            : base(pageSize, realPageCount, realMemberCount, limitedMembersCount) {
             _queryable = queryable;
         }
 

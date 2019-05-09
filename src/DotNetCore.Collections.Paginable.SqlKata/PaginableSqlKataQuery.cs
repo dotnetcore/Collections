@@ -20,8 +20,8 @@ namespace DotNetCore.Collections.Paginable
             _sqlKataQuery = query;
         }
 
-        internal PaginableSqlKataQuery(Query query, int pageSize, int realPageCount, int realMemberCount,
-            int limitedMemberCount)
+        internal PaginableSqlKataQuery(Query query, int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount)
+            : base(pageSize, realPageCount, realMemberCount, limitedMembersCount)
         {
             _sqlKataQuery = query;
         }

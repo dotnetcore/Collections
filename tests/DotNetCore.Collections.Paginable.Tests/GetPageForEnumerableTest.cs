@@ -1,18 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using DotNetCore.Collections.Paginable.Tests.Models;
+using Shouldly;
 using Xunit;
 
-namespace DotNetCore.Collections.Paginable.Tests {
-    public class GetPageForEnumerableTest {
+namespace DotNetCore.Collections.Paginable.Tests
+{
+    public class GetPageForEnumerableTest
+    {
 
         private IList<Student> EmptyListForStudents { get; set; }
         private IList<Student> OneItemForStudents { get; set; }
         private IList<Student> EightItemsForStudents { get; set; }
 
-        public GetPageForEnumerableTest() {
+        public GetPageForEnumerableTest()
+        {
             EmptyListForStudents = new List<Student>();
-            OneItemForStudents = new List<Student> {new Student {Id = 1, Name = "Alex"}};
+            OneItemForStudents = new List<Student> { new Student { Id = 1, Name = "Alex" } };
             EightItemsForStudents = new List<Student> {
                 new Student {Id = 2, Name = "Zhaomin"},
                 new Student {Id = 3, Name = "Zhaomin"},
@@ -26,95 +30,107 @@ namespace DotNetCore.Collections.Paginable.Tests {
         }
 
         [Fact]
-        public void EmptyListTest() {
+        public void EmptyListTest()
+        {
             var page = EmptyListForStudents.GetPage(1, 9);
-            Assert.Equal(1, page.TotalPageCount);
-            Assert.Equal(0, page.TotalMemberCount);
-            Assert.Equal(1, page.CurrentPageNumber);
-            Assert.Equal(9, page.PageSize);
-            Assert.Equal(0, page.CurrentPageSize); //应该是0
-            Assert.False(page.HasNext);
-            Assert.False(page.HasPrevious);
+            page.TotalPageCount.ShouldBe(1);
+            page.TotalMemberCount.ShouldBe(0);
+            page.CurrentPageNumber.ShouldBe(1);
+            page.PageSize.ShouldBe(9);
+            page.CurrentPageSize.ShouldBe(0);//应该是0
+            page.HasNext.ShouldBeFalse();
+            page.HasPrevious.ShouldBeFalse();
         }
 
         [Fact]
-        public void EmptyListToOriginTest() {
+        public void EmptyListToOriginTest()
+        {
             var page = EmptyListForStudents.GetPage(1, 9);
             var origins = page.ToOrigonItems();
-            Assert.Equal(0, origins.Count());
+            origins.ShouldNotBeNull();
+            origins.ShouldBeEmpty();
 
             var counter = 0;
             foreach (var item in origins) counter++;
-            Assert.Equal(0, counter);
+            counter.ShouldBe(0);
         }
 
         [Fact]
-        public void OneItemTest() {
+        public void OneItemTest()
+        {
             var page = OneItemForStudents.GetPage(1, 9);
-            Assert.Equal(1, page.TotalPageCount);
-            Assert.Equal(1, page.TotalMemberCount);
-            Assert.Equal(1, page.CurrentPageNumber);
-            Assert.Equal(9, page.PageSize);
-            Assert.Equal(1, page.CurrentPageSize);
-            Assert.False(page.HasNext);
-            Assert.False(page.HasPrevious);
+            page.TotalPageCount.ShouldBe(1);
+            page.TotalMemberCount.ShouldBe(1);
+            page.CurrentPageNumber.ShouldBe(1);
+            page.PageSize.ShouldBe(9);
+            page.CurrentPageSize.ShouldBe(1);
+            page.HasNext.ShouldBeFalse();
+            page.HasPrevious.ShouldBeFalse();
         }
 
         [Fact]
-        public void OneItemToOriginTest() {
+        public void OneItemToOriginTest()
+        {
             var page = OneItemForStudents.GetPage(1, 9);
             var origins = page.ToOrigonItems();
-            Assert.Equal(1, origins.Count());
-
+            origins.ShouldNotBeNull();
+            origins.Count().ShouldBe(1);
+            
             var counter = 0;
             foreach (var item in origins) counter++;
-            Assert.Equal(1, counter);
+            counter.ShouldBe(1);
         }
 
         [Fact]
-        public void OnePageTest() {
+        public void OnePageTest()
+        {
             var page = EightItemsForStudents.GetPage(1, 9);
-            Assert.Equal(1, page.TotalPageCount);
-            Assert.Equal(8, page.TotalMemberCount);
-            Assert.Equal(1, page.CurrentPageNumber);
-            Assert.Equal(9, page.PageSize);
-            Assert.Equal(8, page.CurrentPageSize);
-            Assert.False(page.HasNext);
-            Assert.False(page.HasPrevious);
+            page.TotalPageCount.ShouldBe(1);
+            page.TotalMemberCount.ShouldBe(8);
+            page.CurrentPageNumber.ShouldBe(1);
+            page.PageSize.ShouldBe(9);
+            page.CurrentPageSize.ShouldBe(8);
+            page.HasNext.ShouldBeFalse();
+            page.HasPrevious.ShouldBeFalse();
         }
-        
+
         [Fact]
-        public void OnePageoOriginTest() {
+        public void OnePageoOriginTest()
+        {
             var page = EightItemsForStudents.GetPage(1, 9);
             var origins = page.ToOrigonItems();
-            Assert.Equal(8, origins.Count());
+            origins.ShouldNotBeNull();
+            origins.Count().ShouldBe(8);
 
             var counter = 0;
             foreach (var item in origins) counter++;
-            Assert.Equal(8, counter);
+            counter.ShouldBe(8);
         }
 
         [Fact]
-        public void SeveralPagesTest() {
+        public void SeveralPagesTest()
+        {
             var page = EightItemsForStudents.GetPage(1, 2);
-            Assert.Equal(4, page.TotalPageCount);
-            Assert.Equal(8, page.TotalMemberCount);
-            Assert.Equal(1, page.CurrentPageNumber);
-            Assert.Equal(2, page.PageSize);
-            Assert.Equal(2, page.CurrentPageSize);
-            Assert.True(page.HasNext);
-            Assert.False(page.HasPrevious);
+            page.TotalPageCount.ShouldBe(4);
+            page.TotalMemberCount.ShouldBe(8);
+            page.CurrentPageNumber.ShouldBe(1);
+            page.PageSize.ShouldBe(2);
+            page.CurrentPageSize.ShouldBe(2);
+            page.HasNext.ShouldBeTrue();
+            page.HasPrevious.ShouldBeFalse();
         }
-        
+
         [Fact]
-        public void SeveralPagesOriginTest() {
+        public void SeveralPagesOriginTest()
+        {
             var page = EightItemsForStudents.GetPage(1, 2);
             var origins = page.ToOrigonItems();
-            Assert.Equal(2, origins.Count());
+            origins.ShouldNotBeNull();
+            origins.Count().ShouldBe(2);
 
             var counter = 0;
             foreach (var item in origins) counter++;
-            Assert.Equal(2, counter);
+            counter.ShouldBe(2);
         }
     }
 }

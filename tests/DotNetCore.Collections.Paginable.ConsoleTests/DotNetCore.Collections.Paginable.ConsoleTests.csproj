@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Shouldly" Version="4.0.0-beta0001" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj" />
   </ItemGroup>
 
