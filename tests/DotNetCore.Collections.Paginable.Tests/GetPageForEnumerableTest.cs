@@ -75,7 +75,7 @@ namespace DotNetCore.Collections.Paginable.Tests
             var origins = page.ToOrigonItems();
             origins.ShouldNotBeNull();
             origins.Count().ShouldBe(1);
-            
+
             var counter = 0;
             foreach (var item in origins) counter++;
             counter.ShouldBe(1);
