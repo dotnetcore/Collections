@@ -24,7 +24,7 @@ namespace DotNetCore.Collections.Paginable
         public SqlKataPage(Query query, int currentPageNumber, int pageSize, int totalMemberCount) : base()
         {
             var skip = (currentPageNumber - 1) * pageSize;
-            var state = new SqlKataQueryState<T>(query, currentPageNumber, pageSize);
+            var state = new SqlKataQueryState<T>(query.Clone(), currentPageNumber, pageSize);
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
             base._initializeAction = InitializeMemberList()(state)(pageSize)(skip);
         }
