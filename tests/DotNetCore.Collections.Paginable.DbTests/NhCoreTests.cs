@@ -65,6 +65,32 @@ namespace DotNetCore.Collections.Paginable.DbTests
                 page[8].Value.Id.ShouldBe(18);
             }
         }
+
+        [Fact]
+        public void GetPageFromSessionTest()
+        {
+            using (var session = NhHelper.OpenSession())
+            {
+                var page = session.GetPage<Int32Sample>(1, 9);
+                page.TotalPageCount.ShouldBe(24);
+                page.TotalMemberCount.ShouldBe(210);
+                page.CurrentPageNumber.ShouldBe(1);
+                page.PageSize.ShouldBe(9);
+                page.CurrentPageSize.ShouldBe(9);
+                page.HasNext.ShouldBeTrue();
+                page.HasPrevious.ShouldBeFalse();
+
+                page[0].Value.Id.ShouldBe(1);
+                page[1].Value.Id.ShouldBe(2);
+                page[2].Value.Id.ShouldBe(3);
+                page[3].Value.Id.ShouldBe(4);
+                page[4].Value.Id.ShouldBe(5);
+                page[5].Value.Id.ShouldBe(6);
+                page[6].Value.Id.ShouldBe(7);
+                page[7].Value.Id.ShouldBe(8);
+                page[8].Value.Id.ShouldBe(9);
+            }
+        }
     }
 
     public class Int32SampleNhMap : ClassMap<Int32Sample>

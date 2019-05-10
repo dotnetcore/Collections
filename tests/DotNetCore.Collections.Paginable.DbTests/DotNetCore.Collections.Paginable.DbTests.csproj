@@ -6,7 +6,6 @@
   <ItemGroup>
     <PackageReference Include="Chloe.SqlServer" Version="3.8.1" />
     <PackageReference Include="FluentNHibernate" Version="2.1.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="NHibernate" Version="5.2.5" />
@@ -17,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.Chloe\DotNetCore.Collections.Paginable.Chloe.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.EntityFrameworkCore\DotNetCore.Collections.Paginable.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.FreeSql\DotNetCore.Collections.Paginable.FreeSql.csproj" />
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.NHibernate\DotNetCore.Collections.Paginable.NHibernate.csproj" />
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.SqlKata\DotNetCore.Collections.Paginable.SqlKata.csproj" />

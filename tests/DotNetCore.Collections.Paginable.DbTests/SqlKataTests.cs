@@ -1,3 +1,4 @@
+using System.Data;
 using System.Data.SqlClient;
 using DotNetCore.Collections.Paginable.DbTests.Models;
 using Shouldly;
@@ -14,7 +15,7 @@ namespace DotNetCore.Collections.Paginable.DbTests
         [Fact]
         public void GetPageTest()
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (IDbConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
 
@@ -47,7 +48,7 @@ namespace DotNetCore.Collections.Paginable.DbTests
         [Fact]
         public void ToPaginableTest()
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (IDbConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
 
