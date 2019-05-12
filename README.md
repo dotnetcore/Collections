@@ -29,7 +29,7 @@ Install-Package DotNetCore.Collections.Paginable
 ### Write code
 
 ```c#
-var list = GetList();//...
+IEnumerable<ExampleModel> list = GetList();//...
 
 //Get a collection of Page, each page has 50 PageMembers
 var paginableList = list.ToPaginable(50);
@@ -47,7 +47,7 @@ for (var i = 0; i < page.CurrentPageSize; i++)
 Or use a more streamlined code:
 
 ```c#
-IEnumerable<Int32Sample> list = GetList();//...
+IEnumerable<ExampleModel> list = GetList();//...
 
 //Get page 15th, each page has 50 items.
 ar page = list.GetPage(15, 50);
@@ -143,12 +143,38 @@ or call the extension method of DbSet directly:
 
 ```c#
 var ctx = _freeSql.CreateDbContext();
-var source = ctx.Set<Int32Sample>();
+var source = ctx.Set<ExampleModel>();
 
 var page = source.GetPage(1, 9);
 
 var totalPageCount = page.TotalPageCount;
 //...
+```
+
+or
+
+```c#
+using(var ctx = new ExampleDbContext())
+{
+    var page = ctx.ExampleModels.GetPage(1, 9);
+
+    var totalPageCount = page.TotalPageCount;
+    //...
+}
+
+.
+.
+.
+
+class ExampleDbContext: DbContext
+{
+    public DbSet<ExampleModel> ExampleModel {get; set;}
+
+    protected override void OnConfiguring(DbContextOptionsBuilder builder)
+    {
+        builder.UseFreeSql(_freeSqlInstance);
+    }
+}
 ```
 
 #### For SqlSugar
@@ -219,6 +245,8 @@ Install `DotNetCore.Collections.Paginable.EntityFrameworkCore` package first:
 ```
 Install-Package DotNetCore.Collections.Paginable.EntityFrameworkCore
 ```
+
+then:
 
 ```c#
 using(var context = new ExampleDbContext())
