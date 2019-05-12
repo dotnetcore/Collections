@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>DotNetCore.Collections.Paginable.DosORM</AssemblyName>
+    <PackageId>DotNetCore.Collections.Paginable.DosORM</PackageId>
+    <Description>Paginable extension with Dos.ORM for collection.</Description>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <RootNamespace>DotNetCore.Collections.Paginable</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dos.ORM" Version="1.16.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj" />
+  </ItemGroup>
+
+</Project>
