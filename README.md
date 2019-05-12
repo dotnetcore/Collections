@@ -8,14 +8,15 @@ NCC Collections consists of a set of collection-based extensions and tools, such
 
 ## Nuget Packages
 
-| Package Name                                                                                                               | Version                                                                             | Downloads                                                                            |
-| -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| [DotNetCore.Collections.Paginable](https://www.nuget.org/packages/DotNetCore.Collections.Paginable/)                       | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.svg)            | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.svg)            |
-| [DotNetCore.Collections.Paginable.Chloe](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.Chloe/)           | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.Chloe.svg)      | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.Chloe.svg)      |
-| [DotNetCore.Collections.Paginable.FreeSql](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.FreeSql/)       | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.FreeSql.svg)    | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.FreeSql.svg)    |
-| [DotNetCore.Collections.Paginable.NHibernate](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.NHibernate/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.NHibernate.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.NHibernate.svg) |
-| [DotNetCore.Collections.Paginable.SqlKata](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.SqlKata/)       | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.SqlKata.svg)    | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.SqlKata.svg)    |
-| [DotNetCore.Collections.Paginable.SqlSugar](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.SqlSugar/)     | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.SqlSugar.svg)   | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.SqlSugar.svg)   |
+| Package Name                                                                                                                                 | Version                                                                                      | Downloads                                                                                     |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| [DotNetCore.Collections.Paginable](https://www.nuget.org/packages/DotNetCore.Collections.Paginable/)                                         | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.svg)                     | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.svg)                     |
+| [DotNetCore.Collections.Paginable.Chloe](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.Chloe/)                             | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.Chloe.svg)               | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.Chloe.svg)               |
+| [DotNetCore.Collections.Paginable.EntityFrameworkCore](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.EntityFrameworkCore/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.EntityFrameworkCore.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.EntityFrameworkCore.svg) |
+| [DotNetCore.Collections.Paginable.FreeSql](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.FreeSql/)                         | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.FreeSql.svg)             | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.FreeSql.svg)             |
+| [DotNetCore.Collections.Paginable.NHibernate](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.NHibernate/)                   | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.NHibernate.svg)          | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.NHibernate.svg)          |
+| [DotNetCore.Collections.Paginable.SqlKata](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.SqlKata/)                         | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.SqlKata.svg)             | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.SqlKata.svg)             |
+| [DotNetCore.Collections.Paginable.SqlSugar](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.SqlSugar/)                       | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.SqlSugar.svg)            | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.SqlSugar.svg)            |
 
 ## Usage
 
@@ -46,7 +47,7 @@ for (var i = 0; i < page.CurrentPageSize; i++)
 Or use a more streamlined code:
 
 ```c#
-var list = GetList();//...
+IEnumerable<Int32Sample> list = GetList();//...
 
 //Get page 15th, each page has 50 items.
 ar page = list.GetPage(15, 50);
@@ -82,6 +83,14 @@ Just do it.
 
 #### For Chloe ORM
 
+Install `DotNetCore.Collections.Paginable.Chloe` package:
+
+```
+Install-Package DotNetCore.Collections.Paginable.Chloe
+```
+
+then:
+
 ```c#
 //... do some config for Chloe by EntityTypeBuilder<ExampleModel>
 
@@ -108,6 +117,14 @@ using(var db = new MsSqlContext(connectionString))
 
 #### For FreeSql
 
+Install `DotNetCore.Collections.Paginable.FreeSql` package:
+
+```
+Install-Package DotNetCore.Collections.Paginable.FreeSql
+```
+
+then:
+
 ```c#
 var _freeSql = new FreeSql.FreeSqlBuilder()
     .UseConnectionString(DataType.SqlServer, connectionString)
@@ -122,7 +139,27 @@ var totalPageCount = page.TotalPageCount;
 //...
 ```
 
+or call the extension method of DbSet directly:
+
+```c#
+var ctx = _freeSql.CreateDbContext();
+var source = ctx.Set<Int32Sample>();
+
+var page = source.GetPage(1, 9);
+
+var totalPageCount = page.TotalPageCount;
+//...
+```
+
 #### For SqlSugar
+
+Install `DotNetCore.Collections.Paginable.SqlSugar` package:
+
+```
+Install-Package DotNetCore.Collections.Paginable.SqlSugar
+```
+
+then:
 
 ```c#
 var sqlSugar = new SqlSugatClient(new ConnectionConfig{
@@ -140,6 +177,14 @@ var totalPageCount = page.TotalPageCount;
 ```
 
 #### For NHibernate
+
+Install `DotNetCore.Collections.Paginable.NHibernate` package:
+
+```
+Install-Package DotNetCore.Collections.Paginable.NHibernate
+```
+
+then:
 
 ```c#
 //... do some config for NHibernate by FluentNHibernate.ClassMap<ExampleModel>
@@ -167,7 +212,34 @@ using(var context = new ExampleDbContext())
 }
 ```
 
+or call the extension method of DbSet directly:
+
+Install `DotNetCore.Collections.Paginable.EntityFrameworkCore` package first:
+
+```
+Install-Package DotNetCore.Collections.Paginable.EntityFrameworkCore
+```
+
+```c#
+using(var context = new ExampleDbContext())
+{
+    var pagee = context.ExampleModels.GetPage(1, 9);
+
+    var totalPageCount = page.TotalPageCount;
+    //...
+}
+//...
+```
+
 #### For SqlKata with Dapper
+
+Install `DotNetCore.Collections.Paginable.SqlKata` package:
+
+```
+Install-Package DotNetCore.Collections.Paginable.SqlKata
+```
+
+then:
 
 ```c#
 using(var connection = new SqlConnection(connectionString))
@@ -186,8 +258,8 @@ using(var connection = new SqlConnection(connectionString))
 
 ### Examples
 
-+ [DotNetCore.Collections.Paginable with EFCore](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.EfCore/Program.cs)
-+ [DotNetCore.Collections.Paginable with EF6](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Ef/Program.cs)
+- [DotNetCore.Collections.Paginable with EFCore](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.EfCore/Program.cs)
+- [DotNetCore.Collections.Paginable with EF6](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Ef/Program.cs)
 
 ## License
 
