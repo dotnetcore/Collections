@@ -4,10 +4,10 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Chloe.SqlServer" Version="3.8.1" />
+    <PackageReference Include="Chloe.SqlServer" Version="3.9.0" />
     <PackageReference Include="FluentNHibernate" Version="2.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.0" />
     <PackageReference Include="NHibernate" Version="5.2.5" />
     <PackageReference Include="Shouldly" Version="4.0.0-beta0001" />
     <PackageReference Include="xunit" Version="2.4.1" />

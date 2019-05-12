@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Chloe" Version="3.8.1" />
+    <PackageReference Include="Chloe" Version="3.9.0" />
   </ItemGroup>
 
   <ItemGroup>

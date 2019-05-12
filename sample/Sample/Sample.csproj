@@ -7,6 +7,6 @@
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="PaginableCollections" Version="3.2.0" />
+    <PackageReference Include="PaginableCollections" Version="3.3.0" />
   </ItemGroup>
 </Project>
