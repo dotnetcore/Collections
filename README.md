@@ -12,6 +12,7 @@ NCC Collections consists of a set of collection-based extensions and tools, such
 | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | [DotNetCore.Collections.Paginable](https://www.nuget.org/packages/DotNetCore.Collections.Paginable/)                                         | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.svg)                     | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.svg)                     |
 | [DotNetCore.Collections.Paginable.Chloe](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.Chloe/)                             | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.Chloe.svg)               | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.Chloe.svg)               |
+| [DotNetCore.Collections.Paginable.DosOrm](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.DosOrm/)                           | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.DosOrm.svg)              | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.DosOrm.svg)              |
 | [DotNetCore.Collections.Paginable.EntityFrameworkCore](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.EntityFrameworkCore/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.EntityFrameworkCore.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.EntityFrameworkCore.svg) |
 | [DotNetCore.Collections.Paginable.FreeSql](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.FreeSql/)                         | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.FreeSql.svg)             | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.FreeSql.svg)             |
 | [DotNetCore.Collections.Paginable.NHibernate](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.NHibernate/)                   | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.NHibernate.svg)          | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.NHibernate.svg)          |
@@ -112,6 +113,38 @@ using(var db = new MsSqlContext(connectionString))
     {
         var id = page[i].Value.Id;
     }
+}
+```
+
+#### For Dos.ORM
+
+Install `DotNetCore.Collections.Paginable.DosOrm` package:
+
+```
+Install-Package DotNetCore.Collections.Paginable.DosOrm
+```
+
+then:
+
+```c#
+var _session = new DbSession(DatabaseType.SqlServer, connectionString);
+
+var page = _dosOrmSession.From<ExampleModel>().GetPage(1, 9);
+
+var totalPageCount = page.TotalPageCount;
+//...
+
+.
+.
+.
+
+class ExampleModel : Entity
+{
+    public ExampleModel() : base("ExampleModels") { }
+
+    public virtual int Id { get; set; }
+
+    public override Field[] GetPrimaryKeyFields() => new Field[] { new Field("Id"), };
 }
 ```
 
