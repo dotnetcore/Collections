@@ -24,7 +24,7 @@ namespace DotNetCore.Collections.Paginable
             var skip = (currentPageNumber - 1) * pageSize;
             var state = new DosQueryState<T>(query, currentPageNumber, pageSize, additionalQueryFunc);
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
-            base._initializeAction = InitializeMemberList()(state)(pageSize)(skip);
+            base._initializeAction = InitializeMemberList()(state)(CurrentPageSize)(skip);
         }
 
         /// <summary>

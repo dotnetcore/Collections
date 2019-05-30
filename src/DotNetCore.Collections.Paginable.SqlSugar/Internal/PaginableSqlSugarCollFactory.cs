@@ -18,7 +18,7 @@ namespace DotNetCore.Collections.Paginable.Internal
 
         /// <summary>
         /// Get real page count<br />.
-        /// first parameter(m) means real member count, which has been getten from <see cref="GetRealMemberCountFunc"/><br />,
+        /// first parameter(m) means real member count, which has been gotten from <see cref="GetRealMemberCountFunc"/><br />,
         /// second parameter(s) means page size.
         /// </summary>
         /// <returns></returns>

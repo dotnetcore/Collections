@@ -23,7 +23,7 @@ namespace DotNetCore.Collections.Paginable
             var skip = (currentPageNumber - 1) * pageSize;
             var state = new SqlSugarQueryState<T>(query, currentPageNumber, pageSize);
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
-            base._initializeAction = InitializeMemberList()(state)(pageSize)(skip);
+            base._initializeAction = InitializeMemberList()(state)(CurrentPageSize)(skip);
         }
 
         /// <summary>

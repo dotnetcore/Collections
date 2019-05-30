@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using DotNetCore.Collections.Paginable.DbTests.Models;
 using FreeSql;
 using NHibernate.Criterion;
@@ -122,6 +123,21 @@ namespace DotNetCore.Collections.Paginable.DbTests
                 page[7].Value.Id.ShouldBe(8);
                 page[8].Value.Id.ShouldBe(9);
             }
+        }
+
+        [Fact]
+        public void GetPageTopOneTest()
+        {
+            var page = _freeSql.Select<Int32Sample>().Where(x => x.Id < 2).GetPage(1, 9);
+            page.TotalPageCount.ShouldBe(1);
+            page.TotalMemberCount.ShouldBe(1);
+            page.CurrentPageNumber.ShouldBe(1);
+            page.PageSize.ShouldBe(9);
+            page.CurrentPageSize.ShouldBe(1);
+            page.HasNext.ShouldBeFalse();
+            page.HasPrevious.ShouldBeFalse();
+
+            page.ToOrigonItems().Count().ShouldBe(1);
         }
 
     }
