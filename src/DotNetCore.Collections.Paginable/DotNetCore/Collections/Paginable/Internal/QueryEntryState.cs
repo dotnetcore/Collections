@@ -32,6 +32,6 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <summary>
         /// Get all value.
         /// </summary>
-        public IEnumerable<T> AllValue => _mLazyQueryableMembers.Value;
+        public IEnumerable<T> AllValues => _mLazyQueryableMembers.Value;
     }
 }

@@ -6,6 +6,9 @@ using DotNetCore.Collections.Paginable.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace DotNetCore.Collections.Paginable {
+    /// <summary>
+    /// Extensions for solid page
+    /// </summary>
     public static class SolidPageExtensions {
         /// <summary>
         /// Make original enumerable result to EnumerablePage collection.
@@ -50,7 +53,7 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
         public static IPage<T> GetPage<T>(this IEnumerable<T> enumerable, int pageNumber, int pageSize) {
-            if (enumerable == null) {
+            if (enumerable is null) {
                 throw new ArgumentNullException(nameof(enumerable), $"{nameof(enumerable)} can not be null.");
             }
 
@@ -108,7 +111,7 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
         public static IPage<T> GetPage<T>(this IQueryable<T> queryable, int pageNumber, int pageSize) {
-            if (queryable == null) {
+            if (queryable is null) {
                 throw new ArgumentNullException(nameof(queryable), $"{nameof(queryable)} can not be null.");
             }
 
@@ -143,7 +146,7 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
         public static async Task<IPage<T>> GetPageAsync<T>(this Task<IQueryable<T>> queryableTask, int pageNumber, int pageSize) {
-            if (queryableTask == null) {
+            if (queryableTask is null) {
                 throw new ArgumentNullException(nameof(queryableTask), $"{nameof(queryableTask)} can not be null.");
             }
 

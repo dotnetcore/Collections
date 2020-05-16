@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
+// ReSharper disable PossibleMultipleEnumeration
+// ReSharper disable RedundantCast
+
 namespace DotNetCore.Collections.Paginable.Internal {
     internal static class PaginableCollectionFactory {
         /// <summary>

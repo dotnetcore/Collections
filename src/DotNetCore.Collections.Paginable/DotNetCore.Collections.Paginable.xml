@@ -1,0 +1,695 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DotNetCore.Collections.Paginable</name>
+    </assembly>
+    <members>
+        <member name="T:DotNetCore.Collections.Paginable.IPage">
+            <summary>
+            Page interface
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPage.TotalPageCount">
+            <summary>
+            Gets total page count
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPage.TotalMemberCount">
+            <summary>
+            Gets total member count
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPage.CurrentPageNumber">
+            <summary>
+            Gets current page number
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPage.PageSize">
+            <summary>
+            Gets page size
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPage.CurrentPageSize">
+            <summary>
+            Gets current page size, may equal to or less than page size.
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPage.HasPrevious">
+            <summary>
+            Has previous. If this page is the first page, then returns false.
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPage.HasNext">
+            <summary>
+            Has next. If this page is the last page, then returns false.
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.IPage.GetMetadata">
+            <summary>
+            Get metadata of page
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.IPageMember`1">
+            <summary>
+            Page member wrapper interface
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPageMember`1.Value">
+            <summary>
+            Gets value of current member
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPageMember`1.Offset">
+            <summary>
+            Gets offset of current member
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPageMember`1.ItemNumber">
+            <summary>
+            Gets item number of current member
+            </summary>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.IPage`1">
+            <summary>
+            Page interface
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPage`1.Item(System.Int32)">
+            <summary>
+            Gets page member indexer
+            </summary>
+            <param name="index">Index</param>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.IPage`1.ToOriginalItems">
+            <summary>
+            Convert to original items
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.IPaginable">
+            <summary>
+            Paginable interface
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPaginable.PageSize">
+            <summary>
+            Gets page size
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.IPaginable.MemberCount">
+            <summary>
+            Gets member count
+            </summary>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.IPaginable`1">
+            <summary>
+            Paginable interface
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.IPaginable`1.GetPage(System.Int32)">
+            <summary>
+            Get page
+            </summary>
+            <param name="pageNumber">Page number</param>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.Abstractions.IQueryEntryState`1">
+            <summary>
+            Query entry state interface
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.Abstractions.IQueryEntryState`1.AllValues">
+            <summary>
+            Gets all values
+            </summary>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.EmptyPage`1">
+            <summary>
+            Empty page
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.EmptyPage`1.#ctor">
+            <summary>
+            Create a new instance of <see cref="T:DotNetCore.Collections.Paginable.EmptyPage`1"/>
+            </summary>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.EnumerablePage`1">
+            <summary>
+            Enumerable page
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.EnumerablePage`1.#ctor(System.Collections.Generic.IEnumerable{`0},System.Int32,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Enumerable page
+            </summary>
+            <param name="enumerable"></param>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="totalMemberCount"></param>
+            <param name="sourceIsFull"></param>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.EnumerablePage`1.Empty">
+            <summary>
+            Get empty page
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PageExtensions">
+            <summary>
+            Extensions for page
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PageExtensions.IsFirst(DotNetCore.Collections.Paginable.IPage)">
+            <summary>
+            Is current page thr first page?
+            </summary>
+            <param name="page">Page</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PageExtensions.IsLast(DotNetCore.Collections.Paginable.IPage)">
+            <summary>
+            Is current page the last page?
+            </summary>
+            <param name="page">Page</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PageExtensions.FromMemberNumber(DotNetCore.Collections.Paginable.IPage)">
+            <summary>
+            The number of the first item of current page.
+            </summary>
+            <param name="page">Page</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PageExtensions.ToMemberNumber(DotNetCore.Collections.Paginable.IPage)">
+            <summary>
+            The number of the last item of current page.
+            </summary>
+            <param name="page">Page</param>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.SolidPageExtensions">
+            <summary>
+            Extensions for solid page
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(System.Collections.Generic.IEnumerable{``0},System.Nullable{System.Int32})">
+            <summary>
+            Make original enumerable result to EnumerablePage collection.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="enumerable">original enumerable result</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Make original enumerable result to EnumerablePage collection.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="enumerable">original enumerable result</param>
+            <param name="pageSize">page size</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Collections.Generic.IEnumerable{``0},System.Int32)">
+            <summary>
+            Get specific page from original enumerable result
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="enumerable">original enumerable result</param>
+            <param name="pageNumber">page number</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Int32)">
+            <summary>
+            Get specific page from original enumerable result
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="enumerable">original enumerable result</param>
+            <param name="pageNumber">page number</param>
+            <param name="pageSize">page size</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(System.Linq.IQueryable{``0},System.Nullable{System.Int32})">
+            <summary>
+            Make original queryable source to QueryablePage collection.
+            </summary>
+            <typeparam name="T">element type of your queryable source</typeparam>
+            <param name="queryable">original queryable result</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(System.Linq.IQueryable{``0},System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Make original queryable source to QueryablePage collection.
+            </summary>
+            <typeparam name="T">element type of your queryable source</typeparam>
+            <param name="queryable">original queryable result</param>
+            <param name="pageSize">page size</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Linq.IQueryable{``0},System.Int32)">
+            <summary>
+            Get specific page from original queryable source
+            </summary>
+            <typeparam name="T">element type of your queryable source</typeparam>
+            <param name="queryable">original queryable result</param>
+            <param name="pageNumber">page number</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Linq.IQueryable{``0},System.Int32,System.Int32)">
+            <summary>
+            Get specific page from original queryable source
+            </summary>
+            <typeparam name="T">element type of your queryable source</typeparam>
+            <param name="queryable">original queryable result</param>
+            <param name="pageNumber">page number</param>
+            <param name="pageSize">page size</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(System.Threading.Tasks.Task{System.Linq.IQueryable{``0}},System.Int32)">
+            <summary>
+            Get specific page from original queryable source
+            </summary>
+            <typeparam name="T">element type of your queryable source</typeparam>
+            <param name="queryableTask"></param>
+            <param name="pageNumber">page number</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(System.Threading.Tasks.Task{System.Linq.IQueryable{``0}},System.Int32,System.Int32)">
+            <summary>
+            Get specific page from original queryable source
+            </summary>
+            <typeparam name="T">element type of your queryable source</typeparam>
+            <param name="queryableTask"></param>
+            <param name="pageNumber">page number</param>
+            <param name="pageSize">page size</param>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.Internal.LimitedMembersTypes">
+            <summary>
+            Limited members type
+            </summary>
+        </member>
+        <member name="F:DotNetCore.Collections.Paginable.Internal.LimitedMembersTypes.Unlimited">
+            <summary>
+            Unlimited
+            </summary>
+        </member>
+        <member name="F:DotNetCore.Collections.Paginable.Internal.LimitedMembersTypes.Customize">
+            <summary>
+            Customize
+            </summary>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.Internal.PageMemberFactory">
+            <summary>
+            Page member factory
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PageMemberFactory.Create``1(``0,System.Int32,System.Int32@)">
+            <summary>
+            Create a new instance of <see cref="T:DotNetCore.Collections.Paginable.PageMember`1"/>
+            </summary>
+            <param name="memberValue"></param>
+            <param name="offset"></param>
+            <param name="startIndex"></param>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PageMemberFactory.Create``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Int32,System.Int32@)">
+            <summary>
+            Create a new instance of <see cref="T:DotNetCore.Collections.Paginable.PageMember`1"/>
+            </summary>
+            <param name="memberColl"></param>
+            <param name="index"></param>
+            <param name="offset"></param>
+            <param name="startIndex"></param>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PageMemberFactory.Create``1(DotNetCore.Collections.Paginable.Abstractions.IQueryEntryState{``0},System.Int32,System.Int32@)">
+            <summary>
+            Create a new instance of <see cref="T:DotNetCore.Collections.Paginable.PageMember`1"/>
+            </summary>
+            <param name="state"></param>
+            <param name="offset"></param>
+            <param name="startIndex"></param>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCollectionFactory.GetRealMemberCountFunc">
+            <summary>
+            Get real member count<br />.
+            first parameter(l) means limitedMemberCount<br />,
+            second parameter(c) means count.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCollectionFactory.GetRealPageCountFunc">
+            <summary>
+            Get real page count<br />.
+            first parameter(m) means real member count, which has been gotten from <see cref="M:DotNetCore.Collections.Paginable.Internal.PaginableCollectionFactory.GetRealMemberCountFunc"/><br />,
+            second parameter(s) means page size.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCollectionFactory.CreatePageSet``1(System.Collections.Generic.IEnumerable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Make enumerable result to EnumerablePage collection
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="enumerable">orgin enumerable result</param>
+            <param name="pageSize">page size</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCollectionFactory.CreatePageSet``1(System.Linq.IQueryable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Make queryable source to QueryablePage collection
+            </summary>
+            <typeparam name="T">element type of your queryable source</typeparam>
+            <param name="queryable">orgin queryable result</param>
+            <param name="pageSize">page size</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="F:DotNetCore.Collections.Paginable.Internal.PaginableConstants.DEFAULT_PAGE_SIZE">
+            <summary>
+            Default page size
+            </summary>
+        </member>
+        <member name="F:DotNetCore.Collections.Paginable.Internal.PaginableConstants.MAX_MEMBER_ITEMS_SUPPORT">
+            <summary>
+            Max member items support
+            </summary>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.Internal.QueryEntryState`1">
+            <summary>
+            Query entry state
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.QueryEntryState`1.#ctor(System.Linq.IQueryable{`0},System.Int32,System.Int32)">
+            <summary>
+            Query entry state
+            </summary>
+            <param name="queryable">Orgin queryable result</param>
+            <param name="skip">skip number</param>
+            <param name="take">take number</param>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.Internal.QueryEntryState`1.AllValues">
+            <summary>
+            Get all value.
+            </summary>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PageBase`1">
+            <summary>
+            Abstract page base
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="F:DotNetCore.Collections.Paginable.PageBase`1._memberList">
+            <summary>
+            Member list
+            </summary>
+        </member>
+        <member name="F:DotNetCore.Collections.Paginable.PageBase`1._initializeAction">
+            <summary>
+            Initialize action
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PageBase`1.#ctor(System.Boolean)">
+            <summary>
+            Page base
+            </summary>
+            <param name="sourceIsFull"></param>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PageBase`1.GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageBase`1.SourceIsFull">
+            <summary>
+            Offset mode
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageBase`1.TotalPageCount">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageBase`1.TotalMemberCount">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageBase`1.CurrentPageNumber">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageBase`1.PageSize">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageBase`1.CurrentPageSize">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageBase`1.HasPrevious">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageBase`1.HasNext">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageBase`1.Item(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PageBase`1.GetMetadata">
+            <inheritdoc />
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PageBase`1.ToOriginalItems">
+            <inheritdoc />
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PageMember`1">
+            <summary>
+            Page member
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageMember`1.Value">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageMember`1.Offset">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageMember`1.ItemNumber">
+            <inheritdoc />
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PageMetadata">
+            <summary>
+            Page metadata
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PageMetadata.#ctor(DotNetCore.Collections.Paginable.IPage)">
+            <summary>
+            Create a new instance of <see cref="T:DotNetCore.Collections.Paginable.PageMetadata"/>.
+            </summary>
+            <param name="page"></param>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageMetadata.TotalPageCount">
+            <summary>
+            Gets total page count
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageMetadata.RealPageCount">
+            <summary>
+            Gets real page count
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageMetadata.TotalMemberCount">
+            <summary>
+            Gets total member count
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageMetadata.CurrentPageNumber">
+            <summary>
+            Gets current page number
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageMetadata.PageSize">
+            <summary>
+            Gets page size
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageMetadata.CurrentPageSize">
+            <summary>
+            Gets current page size
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageMetadata.HasPrevious">
+            <summary>
+            Has previous. If this page is the first page, then returns false.
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PageMetadata.HasNext">
+            <summary>
+            Has next. If this page is the last page, then returns false.
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PageMetadata.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PaginableEnumerable`1">
+            <summary>
+            EnumerablePage collection
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableEnumerable`1.GetSpecifiedPage(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Get special page
+            </summary>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="realMemberCount"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PaginableQueryable`1">
+            <summary>
+            QueryablePage collection
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableQueryable`1.GetSpecifiedPage(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Get special page
+            </summary>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="realMemberCount"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PaginableSetBase`1">
+            <summary>
+            Abstract PaginableSet base
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="F:DotNetCore.Collections.Paginable.PaginableSetBase`1._lazyPinedPagesCache">
+            <summary>
+            Lazy pined paged cache.
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PaginableSetBase`1._limitedType">
+            <summary>
+            Gets limited type
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableSetBase`1.#ctor">
+            <inheritdoc />
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableSetBase`1.#ctor(System.Int32,System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableSetBase`1.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableSetBase`1.GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PaginableSetBase`1.PageSize">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PaginableSetBase`1.MemberCount">
+            <inheritdoc />
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PaginableSetBase`1.LimitedMemberCount">
+            <summary>
+            Gets limited member count
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PaginableSetBase`1.PageCount">
+            <summary>
+            Gets page count
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableSetBase`1.GetPage(System.Int32)">
+            <summary>
+            Get specific page from current PaginableSet
+            </summary>
+            <param name="pageNumber"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableSetBase`1.GetSpecifiedPage(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Get specified page
+            </summary>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="realMemberCount"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PaginableSettings">
+            <summary>
+            Paginable settings
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PaginableSettings.DefaultPageSize">
+            <summary>
+            Gets or sets default page size
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PaginableSettings.MaxMemberItems">
+            <summary>
+            Gets or sets max member items
+            </summary>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PaginableSettingsManager">
+            <summary>
+            Paginable settings manager
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.PaginableSettingsManager.Settings">
+            <summary>
+            Get paginable settings
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableSettingsManager.UpdateSettings(DotNetCore.Collections.Paginable.PaginableSettings)">
+            <summary>
+            Update paginable settings
+            </summary>
+            <param name="settings"></param>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.QueryablePage`1">
+            <summary>
+            Queryable page
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.QueryablePage`1.#ctor(System.Linq.IQueryable{`0},System.Int32,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Queryable page
+            </summary>
+            <param name="queryable"></param>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="totalMemberCount"></param>
+            <param name="sourceIsFull"></param>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.QueryablePage`1.#ctor(System.Collections.Generic.IEnumerable{`0},System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Queryable page
+            </summary>
+            <param name="enumerable"></param>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="totalMembersCount"></param>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.QueryablePage`1.Empty">
+            <summary>
+            Get empty page
+            </summary>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

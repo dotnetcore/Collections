@@ -1,37 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotNetCore.Collections.Paginable.Internal;
+
+// ReSharper disable RedundantCast
+// ReSharper disable RedundantBaseQualifier
 
 namespace DotNetCore.Collections.Paginable {
     /// <summary>
-    /// Queryable page
+    /// Enumerable page
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class QueryablePage<T> : PageBase<T> {
+    public class EnumerablePage<T> : PageBase<T> {
         /// <summary>
-        /// Queryable page
-        /// </summary>
-        /// <param name="queryable"></param>
-        /// <param name="currentPageNumber"></param>
-        /// <param name="pageSize"></param>
-        /// <param name="totalMemberCount"></param>
-        public QueryablePage(IQueryable<T> queryable, int currentPageNumber, int pageSize, int totalMemberCount) : base() {
-            var skip = (currentPageNumber - 1) * pageSize;
-            var state = new QueryEntryState<T>(queryable, skip, pageSize);
-            InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
-            base._initializeAction = InitializeMemberList()(state)(CurrentPageSize)(skip);
-        }
-
-        /// <summary>
-        /// Queryable page
+        /// Enumerable page
         /// </summary>
         /// <param name="enumerable"></param>
         /// <param name="currentPageNumber"></param>
         /// <param name="pageSize"></param>
-        /// <param name="totalMembersCount"></param>
-        public QueryablePage(IEnumerable<T> enumerable, int currentPageNumber, int pageSize, int totalMembersCount)
-            : this(enumerable.AsQueryable(), currentPageNumber, pageSize, totalMembersCount) { }
+        /// <param name="totalMemberCount"></param>
+        /// <param name="sourceIsFull"></param>
+        public EnumerablePage(IEnumerable<T> enumerable, int currentPageNumber, int pageSize, int totalMemberCount, bool sourceIsFull = true) : base(sourceIsFull) {
+            var skip = (currentPageNumber - 1) * pageSize;
+            InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
+            base._initializeAction = InitializeMemberList()(enumerable)(CurrentPageSize)(skip);
+        }
 
         /// <summary>
         /// Get empty page
@@ -62,13 +54,27 @@ namespace DotNetCore.Collections.Paginable {
             base.HasNext = c < base.TotalPageCount;
         };
 
-        private Func<QueryEntryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () => {
-            // s = page size
-            // k = skip
-            base._memberList = new List<IPageMember<T>>(s);
-            for (var i = 0; i < s; i++) {
-                base._memberList.Add(new PageMember<T>(state, i, ref k));
-            }
-        };
+        private Func<IEnumerable<T>, Func<int, Func<int, Action>>> InitializeMemberList()
+            => array => s => k => () => {
+                // s = current page size
+                // k = skip
+                base._memberList = new List<IPageMember<T>>(s);
+                if (array is IQueryable<T> query) {
+                    var realQuery = query.Skip(k).Take(s).ToList();
+                    var offset = 0;
+                    foreach (var item in realQuery) {
+                        base._memberList.Add(new PageMember<T>(item, offset++, ref k));
+                    }
+                } else if (base.SourceIsFull) {
+                    for (var i = 0; i < s; i++) {
+                        base._memberList.Add(new PageMember<T>(array.ElementAt(k + i), i, ref k));
+                    }
+
+                } else {
+                    for (var i = 0; i < s; i++) {
+                        base._memberList.Add(new PageMember<T>(array.ElementAt(i), i, ref k));
+                    }
+                }
+            };
     }
 }

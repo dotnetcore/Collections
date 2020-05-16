@@ -3,16 +3,16 @@
 // ReSharper disable once CheckNamespace
 namespace DotNetCore.Collections.Paginable {
     /// <summary>
-    /// Page extensions
+    /// Extensions for page
     /// </summary>
     public static class PageExtensions {
         /// <summary>
         /// Is current page thr first page?
         /// </summary>
-        /// <param name="page"></param>
+        /// <param name="page">Page</param>
         /// <returns></returns>
         public static bool IsFirst(this IPage page) {
-            if (page == null) {
+            if (page is null) {
                 throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
             }
 
@@ -22,10 +22,10 @@ namespace DotNetCore.Collections.Paginable {
         /// <summary>
         /// Is current page the last page?
         /// </summary>
-        /// <param name="page"></param>
+        /// <param name="page">Page</param>
         /// <returns></returns>
         public static bool IsLast(this IPage page) {
-            if (page == null) {
+            if (page is null) {
                 throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
             }
 
@@ -35,10 +35,10 @@ namespace DotNetCore.Collections.Paginable {
         /// <summary>
         /// The number of the first item of current page.
         /// </summary>
-        /// <param name="page"></param>
+        /// <param name="page">Page</param>
         /// <returns></returns>
         public static int FromMemberNumber(this IPage page) {
-            if (page == null) {
+            if (page is null) {
                 throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
             }
 
@@ -56,10 +56,10 @@ namespace DotNetCore.Collections.Paginable {
         /// <summary>
         /// The number of the last item of current page.
         /// </summary>
-        /// <param name="page"></param>
+        /// <param name="page">Page</param>
         /// <returns></returns>
         public static int ToMemberNumber(this IPage page) {
-            if (page == null) {
+            if (page is null) {
                 throw new ArgumentNullException(nameof(page), $"{nameof(page)} can not be null.");
             }
 

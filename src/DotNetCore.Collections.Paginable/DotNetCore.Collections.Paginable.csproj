@@ -1,18 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
-  <Import Project="..\..\build\common.props" />
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>DotNetCore.Collections.Paginable</AssemblyName>
-    <PackageId>DotNetCore.Collections.Paginable</PackageId>
-    <Description>Paginable extension for collection.</Description>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
-  </ItemGroup>
+    <Import Project="..\..\build\common.props"/>
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;netstandard2.0;net461;net451</TargetFrameworks>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AssemblyName>DotNetCore.Collections.Paginable</AssemblyName>
+        <PackageId>DotNetCore.Collections.Paginable</PackageId>
+        <Description>Paginable extension for collection.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Linq.Queryable" Version="4.3.0"/>
+    </ItemGroup>
+
 </Project>

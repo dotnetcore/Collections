@@ -9,6 +9,7 @@ namespace DotNetCore.Collections.Paginable {
     public class PaginableEnumerable<T> : PaginableSetBase<T> {
         private readonly IEnumerable<T> _enumerable;
 
+        // ReSharper disable once UnusedMember.Local
         private PaginableEnumerable() { }
 
         internal PaginableEnumerable(IEnumerable<T> enumerable, int pageSize, int realPageCount, int realMemberCount)
@@ -21,7 +22,14 @@ namespace DotNetCore.Collections.Paginable {
             _enumerable = enumerable;
         }
 
-        protected override Lazy<IPage<T>> GetSpecialPage(int currentPageNumber, int pageSize, int realMemberCount) {
+        /// <summary>
+        /// Get special page
+        /// </summary>
+        /// <param name="currentPageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="realMemberCount"></param>
+        /// <returns></returns>
+        protected override Lazy<IPage<T>> GetSpecifiedPage(int currentPageNumber, int pageSize, int realMemberCount) {
             return new Lazy<IPage<T>>(() => new EnumerablePage<T>(_enumerable, currentPageNumber, pageSize, realMemberCount));
         }
     }

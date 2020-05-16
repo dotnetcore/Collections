@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using DotNetCore.Collections.Paginable.Abstractions;
-using DotNetCore.Collections.Paginable.Internal;
 
 namespace DotNetCore.Collections.Paginable {
     /// <summary>
@@ -31,26 +30,20 @@ namespace DotNetCore.Collections.Paginable {
             }
 
             _startIndex = startIndex;
-            _memberValue = default(T);
+            _memberValue = default;
             _offset = offset;
             _state = state;
         }
 
-        /// <summary>
-        /// Value of current member
-        /// </summary>
+        /// <inheritdoc />
         public T Value => _state == null
             ? _memberValue
-            : _state.AllValue.ElementAt(_offset);
+            : _state.AllValues.ElementAt(_offset);
 
-        /// <summary>
-        /// Offset of current member
-        /// </summary>
+        /// <inheritdoc />
         public int Offset => _offset;
 
-        /// <summary>
-        /// Item number of current member
-        /// </summary>
+        /// <inheritdoc />
         public int ItemNumber => _startIndex + _offset + 1;
     }
 }
