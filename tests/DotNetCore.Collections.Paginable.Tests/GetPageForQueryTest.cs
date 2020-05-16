@@ -33,7 +33,7 @@ namespace DotNetCore.Collections.Paginable.Tests {
             page.TotalMemberCount.ShouldBe(0);
             page.CurrentPageNumber.ShouldBe(1);
             page.PageSize.ShouldBe(9);
-            page.CurrentPageSize.ShouldBe(0);//Ó¦¸ÃÊÇ0
+            page.CurrentPageSize.ShouldBe(0);//åº”è¯¥æ˜¯0
             page.HasNext.ShouldBeFalse();
             page.HasPrevious.ShouldBeFalse();
         }
@@ -41,7 +41,7 @@ namespace DotNetCore.Collections.Paginable.Tests {
         [Fact]
         public void EmptyQueryToOriginTest() {
             var page = EmptyQueryForStudents.GetPage(1, 9);
-            var origins = page.ToOrigonItems();
+            var origins = page.ToOriginalItems();
             origins.ShouldNotBeNull();
             origins.ShouldBeEmpty();
 
@@ -65,7 +65,7 @@ namespace DotNetCore.Collections.Paginable.Tests {
         [Fact]
         public void OneItemToOriginTest() {
             var page = OneItemForStudents.GetPage(1, 9);
-            var origins = page.ToOrigonItems();
+            var origins = page.ToOriginalItems();
             origins.ShouldNotBeNull();
             origins.Count().ShouldBe(1);
 
@@ -89,7 +89,7 @@ namespace DotNetCore.Collections.Paginable.Tests {
         [Fact]
         public void OnePageoOriginTest() {
             var page = EightItemsForStudents.GetPage(1, 9);
-            var origins = page.ToOrigonItems();
+            var origins = page.ToOriginalItems();
             origins.ShouldNotBeNull();
             origins.Count().ShouldBe(8);
 
@@ -113,7 +113,7 @@ namespace DotNetCore.Collections.Paginable.Tests {
         [Fact]
         public void SeveralPagesOriginTest() {
             var page = EightItemsForStudents.GetPage(1, 2);
-            var origins = page.ToOrigonItems();
+            var origins = page.ToOriginalItems();
             origins.ShouldNotBeNull();
             origins.Count().ShouldBe(2);
 

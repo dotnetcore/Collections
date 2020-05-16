@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DotNetCore.Collections.Paginable.SqlKata</name>
+    </assembly>
+    <members>
+        <member name="T:DotNetCore.Collections.Paginable.SolidPageExtensions">
+            <summary>
+            Extensions for solid page for sqlkata
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(SqlKata.Query,System.Nullable{System.Int32})">
+            <summary>
+            Make original SqlKata.Query result to SqlKataPage collection.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="query">SqlKata.Query</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(SqlKata.Query,System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Make original SqlKata.Query result to SqlKataPage collection.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="query">SqlKata.Query</param>
+            <param name="pageSize">page size</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(SqlKata.Query,System.Int32)">
+            <summary>
+            Get specific page from original SqlKata.Query source
+            </summary>
+            <typeparam name="T">element type of your SqlKata.Query source</typeparam>
+            <param name="query">original SqlKata.Query source</param>
+            <param name="pageNumber"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(SqlKata.Query,System.Int32,System.Int32)">
+            <summary>
+            Get specific page from original SqlKata.Query source
+            </summary>
+            <typeparam name="T">element type of your SqlKata.Query source</typeparam>
+            <param name="query">original SqlKata.Query source</param>
+            <param name="pageNumber">page number</param>
+            <param name="pageSize">page size</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(SqlKata.Query,System.Int32)">
+            <summary>
+            Get specific page from original SqlKata.Query source
+            </summary>
+            <typeparam name="T">element type of your SqlKata.Query source</typeparam>
+            <param name="query">original SqlKata.Query source</param>
+            <param name="pageNumber"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(SqlKata.Query,System.Int32,System.Int32)">
+            <summary>
+            Get specific page from original SqlKata.Query source
+            </summary>
+            <typeparam name="T">element type of your SqlKata.Query source</typeparam>
+            <param name="query">original SqlKata.Query source</param>
+            <param name="pageNumber">page number</param>
+            <param name="pageSize">page size</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlKataCollFactory.GetRealMemberCountFunc">
+            <summary>
+            Get real member count<br />.
+            first parameter(l) means limitedMemberCount<br />,
+            second parameter(c) means count.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlKataCollFactory.GetRealPageCountFunc">
+            <summary>
+            Get real page count<br />.
+            first parameter(m) means real member count, which has been gotten from <see cref="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlKataCollFactory.GetRealMemberCountFunc"/><br />,
+            second parameter(s) means page size.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlKataCollFactory.CreatePageSet``1(SqlKata.Query,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Make SqlKata.Query source to SqlKataPage collection.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="query">SqlKata.Query</param>
+            <param name="pageSize">page size</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.Internal.SqlKataQueryState`1">
+            <summary>
+            SqlKata query state
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.SqlKataQueryState`1.#ctor(SqlKata.Query,System.Int32,System.Int32)">
+            <summary>
+            SqlKata query state
+            </summary>
+            <param name="query"></param>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.Internal.SqlKataQueryState`1.AllValues">
+            <summary>
+            Get all value.
+            </summary>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PaginableSqlKataQuery`1">
+            <summary>
+            SqlKataPage collection
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableSqlKataQuery`1.GetSpecifiedPage(System.Int32,System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.SqlKataPage`1">
+            <summary>
+            SqlKata page
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SqlKataPage`1.#ctor(SqlKata.Query,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            SqlKata page
+            </summary>
+            <param name="query"></param>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="totalMemberCount"></param>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SqlKataPage`1.Empty">
+            <summary>
+            Get empty page
+            </summary>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

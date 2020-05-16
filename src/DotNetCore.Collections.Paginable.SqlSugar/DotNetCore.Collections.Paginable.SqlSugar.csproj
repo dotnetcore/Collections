@@ -3,18 +3,21 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net461;net451</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <AssemblyName>DotNetCore.Collections.Paginable.SqlSugar</AssemblyName>
     <PackageId>DotNetCore.Collections.Paginable.SqlSugar</PackageId>
     <Description>Paginable extension with SqlSugar for collection.</Description>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <RootNamespace>DotNetCore.Collections.Paginable</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="sqlSugarCore" Version="5.0.0.3" />
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.1' OR '$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="sqlSugarCore" Version="5.0.0.14" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net461' OR '$(TargetFramework)'=='net451'">
+    <PackageReference Include="sqlSugar" Version="5.0.0.14" />
   </ItemGroup>
 
   <ItemGroup>

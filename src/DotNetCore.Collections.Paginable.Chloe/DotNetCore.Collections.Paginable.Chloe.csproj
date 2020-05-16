@@ -1,24 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
+    <Import Project="..\..\build\common.props"/>
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>DotNetCore.Collections.Paginable.Chloe</AssemblyName>
-    <PackageId>DotNetCore.Collections.Paginable.Chloe</PackageId>
-    <Description>Paginable extension with Chloe for collection.</Description>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <RootNamespace>DotNetCore.Collections.Paginable</RootNamespace>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;netstandard2.0;net461;net451</TargetFrameworks>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Chloe" Version="3.9.0" />
-  </ItemGroup>
+    <PropertyGroup>
+        <AssemblyName>DotNetCore.Collections.Paginable.Chloe</AssemblyName>
+        <PackageId>DotNetCore.Collections.Paginable.Chloe</PackageId>
+        <Description>Paginable extension with Chloe for collection.</Description>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Chloe" Version="4.5.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj"/>
+    </ItemGroup>
 
 </Project>

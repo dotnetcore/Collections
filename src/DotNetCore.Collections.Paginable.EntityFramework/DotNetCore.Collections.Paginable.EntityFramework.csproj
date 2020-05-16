@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="..\..\build\common.props"/>
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;net461;net451</TargetFrameworks>
+    </PropertyGroup>    
+
+    <PropertyGroup>
+        <AssemblyName>DotNetCore.Collections.Paginable.EntityFramework</AssemblyName>
+        <PackageId>DotNetCore.Collections.Paginable.EntityFramework</PackageId>
+        <Description>Paginable extension with Microsoft EntityFramework for collection.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="EntityFramework" Version="6.4.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj" />
+    </ItemGroup>
+
+</Project>

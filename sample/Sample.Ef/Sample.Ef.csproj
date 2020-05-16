@@ -2,15 +2,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.3.0-preview5-19254-05" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.EntityFramework\DotNetCore.Collections.Paginable.EntityFramework.csproj" />
   </ItemGroup>
 
 </Project>

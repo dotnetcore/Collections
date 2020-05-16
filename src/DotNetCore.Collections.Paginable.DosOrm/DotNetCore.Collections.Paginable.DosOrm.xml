@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DotNetCore.Collections.Paginable.DosORM</name>
+    </assembly>
+    <members>
+        <member name="T:DotNetCore.Collections.Paginable.DosPage`1">
+            <summary>
+            Dos.ORM page
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.DosPage`1.#ctor(Dos.ORM.FromSection{`0},System.Int32,System.Int32,System.Int32,System.Func{Dos.ORM.FromSection{`0},Dos.ORM.FromSection{`0}})">
+            <summary>
+            Dos.ORM page
+            </summary>
+            <param name="query"></param>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="totalMemberCount"></param>
+            <param name="additionalQueryFunc"></param>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.DosPage`1.Empty">
+            <summary>
+            Get empty page
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.SolidPageExtensions">
+            <summary>
+            Extensions for solid page for DosORM
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(Dos.ORM.FromSection{``0},System.Nullable{System.Int32},System.Func{Dos.ORM.FromSection{``0},Dos.ORM.FromSection{``0}})">
+            <summary>
+            Make original DosQueryable result to DosPage collection.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="query">DosQueryable</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <param name="additionalQueryFunc"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(Dos.ORM.FromSection{``0},System.Int32,System.Nullable{System.Int32},System.Func{Dos.ORM.FromSection{``0},Dos.ORM.FromSection{``0}})">
+            <summary>
+            Make original DosQueryable result to DosPage collection.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="query">DosQueryable</param>
+            <param name="pageSize">page size</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <param name="additionalQueryFunc"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Dos.ORM.FromSection{``0},System.Int32,System.Func{Dos.ORM.FromSection{``0},Dos.ORM.FromSection{``0}})">
+            <summary>
+            Get specific page from original DosQueryable source
+            </summary>
+            <typeparam name="T">element type of your DosQueryable source</typeparam>
+            <param name="query">original DosQueryable source</param>
+            <param name="pageNumber">page number</param>
+            <param name="additionalQueryFunc"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Dos.ORM.FromSection{``0},System.Int32,System.Int32,System.Func{Dos.ORM.FromSection{``0},Dos.ORM.FromSection{``0}})">
+            <summary>
+            Get specific page from original DosQueryable source
+            </summary>
+            <typeparam name="T">element type of your DosQueryable source</typeparam>
+            <param name="query">original DosQueryable source</param>
+            <param name="pageNumber">page number</param>
+            <param name="pageSize">page size</param>
+            <param name="additionalQueryFunc"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.Internal.DosQueryState`1">
+            <summary>
+            Dos.ORM query state
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.DosQueryState`1.#ctor(Dos.ORM.FromSection{`0},System.Int32,System.Int32,System.Func{Dos.ORM.FromSection{`0},Dos.ORM.FromSection{`0}})">
+            <summary>
+            Dos.ORM query state
+            </summary>
+            <param name="query"></param>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="additionalQueryFunc"></param>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.Internal.DosQueryState`1.AllValues">
+            <summary>
+            Get all value.
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableDosCollFactory.GetRealMemberCountFunc">
+            <summary>
+            Get real member count<br />.
+            first parameter(l) means limitedMemberCount<br />,
+            second parameter(c) means count.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableDosCollFactory.GetRealPageCountFunc">
+            <summary>
+            Get real page count<br />.
+            first parameter(m) means real member count, which has been gotten from <see cref="M:DotNetCore.Collections.Paginable.Internal.PaginableDosCollFactory.GetRealMemberCountFunc"/><br />,
+            second parameter(s) means page size.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableDosCollFactory.CreatePageSet``1(Dos.ORM.FromSection{``0},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Func{Dos.ORM.FromSection{``0},Dos.ORM.FromSection{``0}})">
+            <summary>
+            Make Dos.ORM Query`1 source to DosePage collection.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="query"></param>
+            <param name="pageSize"></param>
+            <param name="limitedMemberCount"></param>
+            <param name="additionalQueryFunc"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PaginableDosQuery`1">
+            <summary>
+            DosPage collection
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableDosQuery`1.GetSpecifiedPage(System.Int32,System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

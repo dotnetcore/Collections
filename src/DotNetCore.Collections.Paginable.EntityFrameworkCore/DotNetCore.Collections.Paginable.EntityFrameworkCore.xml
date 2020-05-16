@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DotNetCore.Collections.Paginable.EntityFrameworkCore</name>
+    </assembly>
+    <members>
+        <member name="T:DotNetCore.Collections.Paginable.SolidPageExtensions">
+            <summary>
+            Extensions for solid page for EntityFrameworkCore
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Nullable{System.Int32})">
+            <summary>
+            Make original query result to QueryablePage collection.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="source">DbSet source</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Make original query result to QueryablePage collection.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="source">DbSet source</param>
+            <param name="pageSize">page size</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Int32)">
+            <summary>
+            Get specific page from original EfCore DbSet`1 source
+            </summary>
+            <typeparam name="T">element type of your EfCore DbSet`1 source</typeparam>
+            <param name="source">DbSet source</param>
+            <param name="pageNumber">page number</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Int32,System.Int32)">
+            <summary>
+            Get specific page from original EfCore DbSet`1 source
+            </summary>
+            <typeparam name="T">element type of your EfCore DbSet`1 source</typeparam>
+            <param name="source">DbSet source</param>
+            <param name="pageNumber">page number</param>
+            <param name="pageSize">page size</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32)">
+            <summary>
+            Get specific page from original EfCore DbSet`1 source
+            </summary>
+            <typeparam name="T">element type of your EfCore DbSet`1 source</typeparam>
+            <param name="source">DbSet source</param>
+            <param name="predicate">Predicate</param>
+            <param name="pageNumber">page number</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32)">
+            <summary>
+            Get specific page from original EfCore DbSet`1 source
+            </summary>
+            <typeparam name="T">element type of your EfCore DbSet`1 source</typeparam>
+            <param name="source">DbSet source</param>
+            <param name="predicate">Predicate</param>
+            <param name="pageNumber">page number</param>
+            <param name="pageSize">page size</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DotNetCore.Collections.Paginable.Chloe</name>
+    </assembly>
+    <members>
+        <member name="T:DotNetCore.Collections.Paginable.ChloePage`1">
+            <summary>
+            Chloe page
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.ChloePage`1.#ctor(Chloe.IQuery{`0},System.Int32,System.Int32,System.Int32,System.Func{Chloe.IQuery{`0},Chloe.IQuery{`0}})">
+            <summary>
+            Chloe page
+            </summary>
+            <param name="query"></param>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="totalMemberCount"></param>
+            <param name="additionalQueryFunc"></param>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.ChloePage`1.Empty">
+            <summary>
+            Get empty page
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.SolidPageExtensions">
+            <summary>
+            Extensions for solid page for Chloe
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(Chloe.IQuery{``0},System.Nullable{System.Int32})">
+            <summary>
+            Make original ChloeQueryable result to ChloePage collection.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="query">ChloeQueryable</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(Chloe.IQuery{``0},System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Make original ChloeQueryable result to ChloePage collection.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="query">ChloeQueryable</param>
+            <param name="pageSize">page size</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Chloe.IQuery{``0},System.Int32,System.Func{Chloe.IQuery{``0},Chloe.IQuery{``0}})">
+            <summary>
+            Get specific page from original ChloeQueryable source
+            </summary>
+            <typeparam name="T">element type of your ChloeQueryable source</typeparam>
+            <param name="query">original ChloeQueryable source</param>
+            <param name="pageNumber">page number</param>
+            <param name="additionalQueryFunc"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Chloe.IQuery{``0},System.Int32,System.Int32,System.Func{Chloe.IQuery{``0},Chloe.IQuery{``0}})">
+            <summary>
+            Get specific page from original ChloeQueryable source
+            </summary>
+            <typeparam name="T">element type of your ChloeQueryable source</typeparam>
+            <param name="query">original ChloeQueryable source</param>
+            <param name="pageNumber">page number</param>
+            <param name="pageSize">page size</param>
+            <param name="additionalQueryFunc"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.Internal.ChloeQueryState`1">
+            <summary>
+            Chloe query state
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.ChloeQueryState`1.#ctor(Chloe.IQuery{`0},System.Int32,System.Int32,System.Func{Chloe.IQuery{`0},Chloe.IQuery{`0}})">
+            <summary>
+            Chloe query state
+            </summary>
+            <param name="query"></param>
+            <param name="currentPageNumber"></param>
+            <param name="pageSize"></param>
+            <param name="additionalQueryFunc"></param>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.Internal.ChloeQueryState`1.AllValues">
+            <summary>
+            Get all value.
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableChloeCollFactory.GetRealMemberCountFunc">
+            <summary>
+            Get real member count<br />.
+            first parameter(l) means limitedMemberCount<br />,
+            second parameter(c) means count.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableChloeCollFactory.GetRealPageCountFunc">
+            <summary>
+            Get real page count<br />.
+            first parameter(m) means real member count, which has been gotten from <see cref="M:DotNetCore.Collections.Paginable.Internal.PaginableChloeCollFactory.GetRealMemberCountFunc"/><br />,
+            second parameter(s) means page size.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableChloeCollFactory.CreatePageSet``1(Chloe.IQuery{``0},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Make Chloe.Query`1 source to ChloePage collection.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="query"></param>
+            <param name="pageSize"></param>
+            <param name="limitedMemberCount"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.PaginableChloeQuery`1">
+            <summary>
+            ChloePage collection
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableChloeQuery`1.GetSpecifiedPage(System.Int32,System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>
