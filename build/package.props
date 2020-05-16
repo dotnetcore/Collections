@@ -1,0 +1,12 @@
+<Project>
+    <PropertyGroup Label="Package">
+        <Product>DotNetCore.Collections</Product>
+        <Authors>AlexLEWIS;dotnetcore</Authors>
+        <RepositoryUrl>https://github.com/dotnetcore/Collections</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://github.com/dotnetcore/Collections</PackageProjectUrl>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageTags>Collections;Paginable</PackageTags>
+    </PropertyGroup>
+</Project>

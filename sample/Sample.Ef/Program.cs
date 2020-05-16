@@ -31,7 +31,7 @@ namespace Sample.Ef
                     var actuallyValue = itemOfA.Value; // an instance of type DemoModel.
                 }
 
-                foreach (var itemOfC in c.ToOrigonItems()) // to get a list of DemoModel you have requested
+                foreach (var itemOfC in c.ToOriginalItems()) // to get a list of DemoModel you have requested
                 {
                     //now, itemOfC is an instance of type DemoModel.
                 }
@@ -54,7 +54,7 @@ namespace Sample.Ef
                 var realCountOfItemsInDb = f.TotalMemberCount;
                 var realCountOfPagesYouCanGet = f.TotalPageCount;
 
-                var originResults = f.ToOrigonItems(); // Get all items you have requested.
+                var originResults = f.ToOriginalItems(); // Get all items you have requested.
 
                 foreach (var originItem in originResults)
                 {

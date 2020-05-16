@@ -1,0 +1,14 @@
+<Project>
+	<PropertyGroup>
+		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+		<LangVersion>8.0</LangVersion>
+		<RootNamespace />		
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath=""/>
+		<None Include="..\..\msic\images\icon.png" Pack="true" PackagePath=""/>
+	</ItemGroup>
+</Project>

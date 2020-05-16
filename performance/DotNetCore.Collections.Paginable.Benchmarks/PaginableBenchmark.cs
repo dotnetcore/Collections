@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Attributes.Columns;
 using ABPaginableCollections = PaginableCollections;
 
 namespace DotNetCore.Collections.Paginable.Benchmarks {

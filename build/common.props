@@ -2,19 +2,16 @@
 
 	<Import Project="version.props" />
 
-	<PropertyGroup Label="Build">
-		<TargetFramework>netstandard2.0</TargetFramework>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DocumentationFile>$(AssemblyName).xml</DocumentationFile>
 	</PropertyGroup>
 
-	<PropertyGroup Label="Package">
-    <Product>DotNetCore.Collections</Product>
-		<Authors>AlexLEWIS;dotnetcore</Authors>
-		<RepositoryUrl>https://github.com/dotnetcore/Collections</RepositoryUrl>
-		<PackageIconUrl>https://avatars2.githubusercontent.com/u/19404084</PackageIconUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/dotnetcore/Collections</PackageProjectUrl>
-		<PackageLicenseUrl>https://github.com/dotnetcore/Collections/blob/master/LICENSE</PackageLicenseUrl>
-		<PackageTags>Collections;Paginable</PackageTags>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DocumentationFile>$(AssemblyName).xml</DocumentationFile>
 	</PropertyGroup>
+
+	<Import Project="package.props" />
+
+	<Import Project="misc.props" />
 
 </Project>
