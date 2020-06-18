@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="..\..\build\common.props"/>
+    <Import Project="..\..\build\common.props" />
 
     <PropertyGroup>
         <TargetFrameworks>netstandard2.1;netstandard2.0;net461;net451</TargetFrameworks>
@@ -13,11 +13,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Chloe" Version="4.5.0"/>
+        <PackageReference Include="Chloe" Version="4.6.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj"/>
+        <ProjectReference Include="..\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj" />
     </ItemGroup>
 
 </Project>

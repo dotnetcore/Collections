@@ -13,11 +13,11 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.1' OR '$(TargetFramework)'=='netstandard2.0'">
-    <PackageReference Include="sqlSugarCore" Version="5.0.0.14" />
+    <PackageReference Include="sqlSugarCore" Version="5.0.0.15" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='net461' OR '$(TargetFramework)'=='net451'">
-    <PackageReference Include="sqlSugar" Version="5.0.0.14" />
+    <PackageReference Include="sqlSugar" Version="5.0.0.15" />
   </ItemGroup>
 
   <ItemGroup>

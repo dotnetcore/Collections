@@ -1,0 +1,13 @@
+<Project>
+
+	<Import Project="version.props" />
+
+	<PropertyGroup Label="Build">
+		<TargetFrameworks>netstandard2.1;net461;net451</TargetFrameworks>
+	</PropertyGroup>
+
+	<Import Project="package.props" />
+
+	<Import Project="misc.props" />
+
+</Project>

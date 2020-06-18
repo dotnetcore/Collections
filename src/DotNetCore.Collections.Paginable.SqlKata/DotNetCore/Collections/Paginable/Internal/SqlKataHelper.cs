@@ -2,10 +2,12 @@
 using SqlKata;
 using SqlKata.Execution;
 
-namespace DotNetCore.Collections.Paginable.Internal {
-    internal static class SqlKataHelper {
-        public static int Count(Query query) => query.Clone().Count<int>();
+namespace DotNetCore.Collections.Paginable.Internal
+{
+    internal static class SqlKataHelper
+    {
+        public static int Count(Query query) => query.Clone().Count<int>(null);
 
-        public static Task<int> CountAsync(Query query) => query.Clone().CountAsync<int>();
+        public static Task<int> CountAsync(Query query) => query.Clone().CountAsync<int>(null);
     }
 }
