@@ -13,8 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FreeSql" Version="1.4.0" />
-    <PackageReference Include="FreeSql.DbContext" Version="1.4.0" />
+    <PackageReference Include="FreeSql" Version="1.5.0" />
   </ItemGroup>
 
   <ItemGroup>

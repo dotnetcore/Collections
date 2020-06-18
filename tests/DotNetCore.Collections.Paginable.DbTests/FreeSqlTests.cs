@@ -156,18 +156,18 @@ namespace DotNetCore.Collections.Paginable.DbTests {
 
     }
 
-    public class Int32FreeSqlDbContext : FreeSql.DbContext {
+    public class Int32FreeSqlDbContext : DbContext {
         public DbSet<Int32Sample> Int32Samples { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder builder) {
-            var _freeSql = new FreeSql.FreeSqlBuilder()
+            var freeSql = new FreeSqlBuilder()
                           .UseConnectionString(DataType.SqlServer, FreeSqlTests.ConnectionString)
                           .UseAutoSyncStructure(false)
                           .Build();
 
-            _freeSql.CodeFirst.ConfigEntity<Int32Sample>(t => t.Name("Int32Samples"));
+            freeSql.CodeFirst.ConfigEntity<Int32Sample>(t => t.Name("Int32Samples"));
 
-            builder.UseFreeSql(_freeSql);
+            builder.UseFreeSql(freeSql);
         }
     }
 }

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using FreeSql;
 
 namespace DotNetCore.Collections.Paginable.Internal {
-    internal static class PaginableFreeSqlCollFactory {
+   internal static class PaginableFreeSqlCollFactory {
         /// <summary>
         /// Get real member count<br />.
         /// first parameter(l) means limitedMemberCount<br />,

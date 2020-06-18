@@ -30,49 +30,6 @@
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
         </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(FreeSql.DbSet{``0},System.Nullable{System.Int32},System.Nullable{System.Boolean})">
-            <summary>
-            Make original FreeSql.Select`1 result to FreeSqlPage collection.
-            </summary>
-            <typeparam name="T">element type of your enumerable result</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="limitedMemberCount">limited member count</param>
-            <param name="includeNestedMembers">include nested members</param>
-            <returns></returns>
-        </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(FreeSql.DbSet{``0},System.Int32,System.Nullable{System.Int32},System.Nullable{System.Boolean})">
-            <summary>
-            Make original FreeSql.Select`1 result to FreeSqlPage collection.
-            </summary>
-            <typeparam name="T">element type of your enumerable result</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="pageSize">page size</param>
-            <param name="limitedMemberCount">limited member count</param>
-            <param name="includeNestedMembers">include nested members</param>
-            <returns></returns>
-        </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Nullable{System.Int32},System.Nullable{System.Boolean})">
-            <summary>
-            Make original FreeSql.Select`1 result to FreeSqlPage collection.
-            </summary>
-            <typeparam name="T">element type of your enumerable result</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="predicate">Predicate</param>
-            <param name="limitedMemberCount">limited member count</param>
-            <param name="includeNestedMembers">include nested members</param>
-            <returns></returns>
-        </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Nullable{System.Int32},System.Nullable{System.Boolean})">
-            <summary>
-            Make original FreeSql.Select`1 result to FreeSqlPage collection.
-            </summary>
-            <typeparam name="T">element type of your enumerable result</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="predicate">Predicate</param>
-            <param name="pageSize">page size</param>
-            <param name="limitedMemberCount">limited member count</param>
-            <param name="includeNestedMembers">include nested members</param>
-        </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(FreeSql.ISelect{``0},System.Int32,System.Boolean)">
             <summary>
             Get specific page from original FreeSql.Select`1 source
@@ -94,50 +51,6 @@
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
         </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(FreeSql.DbSet{``0},System.Int32,System.Boolean)">
-            <summary>
-            Get specific page from original FreeSql.Select`1 source
-            </summary>
-            <typeparam name="T">element type of your FreeSql.Select`1 source</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="pageNumber">page number</param>
-            <param name="includeNestedMembers">include nested members</param>
-            <returns></returns>
-        </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(FreeSql.DbSet{``0},System.Int32,System.Int32,System.Boolean)">
-            <summary>
-            Get specific page from original FreeSql.Select`1 source
-            </summary>
-            <typeparam name="T">element type of your FreeSql.Select`1 source</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="pageNumber">page number</param>
-            <param name="pageSize">page size</param>
-            <param name="includeNestedMembers">include nested members</param>
-            <returns></returns>
-        </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Boolean)">
-            <summary>
-            Get specific page from original FreeSql.Select`1 source
-            </summary>
-            <typeparam name="T">element type of your FreeSql.Select`1 source</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="predicate">Predicate</param>
-            <param name="pageNumber">page number</param>
-            <param name="includeNestedMembers">include nested members</param>
-            <returns></returns>
-        </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32,System.Boolean)">
-            <summary>
-            Get specific page from original FreeSql.Select`1 source
-            </summary>
-            <typeparam name="T">element type of your FreeSql.Select`1 source</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="predicate">Predicate</param>
-            <param name="pageNumber">page number</param>
-            <param name="pageSize">page size</param>
-            <param name="includeNestedMembers">include nested members</param>
-            <returns></returns>
-        </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(FreeSql.ISelect{``0},System.Int32,System.Boolean)">
             <summary>
             Get specific page from original FreeSql.Select`1 source
@@ -154,50 +67,6 @@
             </summary>
             <typeparam name="T">element type of your FreeSql.Select`1 source</typeparam>
             <param name="select">original FreeSql.Select`1 source</param>
-            <param name="pageNumber">page number</param>
-            <param name="pageSize">page size</param>
-            <param name="includeNestedMembers">include nested members</param>
-            <returns></returns>
-        </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(FreeSql.DbSet{``0},System.Int32,System.Boolean)">
-            <summary>
-            Get specific page from original FreeSql.Select`1 source
-            </summary>
-            <typeparam name="T">element type of your FreeSql.Select`1 source</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="pageNumber">page number</param>
-            <param name="includeNestedMembers">include nested members</param>
-            <returns></returns>
-        </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(FreeSql.DbSet{``0},System.Int32,System.Int32,System.Boolean)">
-            <summary>
-            Get specific page from original FreeSql.Select`1 source
-            </summary>
-            <typeparam name="T">element type of your FreeSql.Select`1 source</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="pageNumber">page number</param>
-            <param name="pageSize">page size</param>
-            <param name="includeNestedMembers">include nested members</param>
-            <returns></returns>
-        </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Boolean)">
-            <summary>
-            Get specific page from original FreeSql.Select`1 source
-            </summary>
-            <typeparam name="T">element type of your FreeSql.Select`1 source</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="predicate">Predicate</param>
-            <param name="pageNumber">page number</param>
-            <param name="includeNestedMembers">include nested members</param>
-            <returns></returns>
-        </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32,System.Boolean)">
-            <summary>
-            Get specific page from original FreeSql.Select`1 source
-            </summary>
-            <typeparam name="T">element type of your FreeSql.Select`1 source</typeparam>
-            <param name="source">FreeSql DbSet source</param>
-            <param name="predicate">Predicate</param>
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <param name="includeNestedMembers">include nested members</param>

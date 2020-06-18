@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="..\..\build\common.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;netstandard2.0;net461;net451</TargetFrameworks>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AssemblyName>DotNetCore.Collections.Paginable.FreeSql.DbContext</AssemblyName>
+        <PackageId>DotNetCore.Collections.Paginable.FreeSql.DbContext</PackageId>
+        <Description>Paginable extension with NCC FreeSql with DbContext for collection.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FreeSql.DbContext" Version="1.5.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DotNetCore.Collections.Paginable.FreeSql\DotNetCore.Collections.Paginable.FreeSql.csproj" />
+    </ItemGroup>
+
+</Project>
