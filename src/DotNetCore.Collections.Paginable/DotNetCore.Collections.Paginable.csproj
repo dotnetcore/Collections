@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <Import Project="..\..\build\common.props"/>
 
@@ -11,9 +11,5 @@
         <PackageId>DotNetCore.Collections.Paginable</PackageId>
         <Description>Paginable extension for collection.</Description>
     </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="System.Linq.Queryable" Version="4.3.0"/>
-    </ItemGroup>
 
 </Project>
