@@ -3,12 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using DotNetCore.Collections.Paginable.Internal;
 
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Abstract PaginableSet base
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class PaginableSetBase<T> : IPaginable<T> {
+    public abstract class PaginableSetBase<T> : IPaginable<T>
+    {
         /// <summary>
         /// Lazy pined paged cache.
         /// </summary>
@@ -28,8 +30,10 @@ namespace DotNetCore.Collections.Paginable {
         protected PaginableSetBase() { }
 
         /// <inheritdoc />
-        protected PaginableSetBase(int pageSize, int realPageCount, int realMemberCount) {
-            if (realMemberCount >= PaginableSettingsManager.Settings.MaxMemberItems) {
+        protected PaginableSetBase(int pageSize, int realPageCount, int realMemberCount)
+        {
+            if (realMemberCount >= PaginableSettingsManager.Settings.MaxMemberItems)
+            {
                 throw new ArgumentOutOfRangeException(nameof(realMemberCount), "Paginable does not support large size result");
             }
 
@@ -43,7 +47,8 @@ namespace DotNetCore.Collections.Paginable {
         }
 
         /// <inheritdoc />
-        protected PaginableSetBase(int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount) {
+        protected PaginableSetBase(int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount)
+        {
             PageSize = pageSize;
             PageCount = realPageCount;
             _lazyPinedPagesCache = new Dictionary<int, Lazy<IPage<T>>>(realPageCount);
@@ -56,12 +61,16 @@ namespace DotNetCore.Collections.Paginable {
         }
 
         /// <inheritdoc />
-        public IEnumerator<IPage<T>> GetEnumerator() {
-            for (int i = 1; i <= PageCount; i++) {
-                if (HasInitializeSpecialPage(i, out var lazyPage)) {
+        public IEnumerator<IPage<T>> GetEnumerator()
+        {
+            for (int i = 1; i <= PageCount; i++)
+            {
+                if (HasInitializeSpecialPage(i, out var lazyPage))
+                {
                     yield return lazyPage.Value;
                 }
-                else {
+                else
+                {
                     var lazyValue = GetSpecifiedPage(i, PageSize, _realMemberCount);
                     _lazyPinedPagesCache[i] = lazyValue;
                     yield return lazyValue.Value;
@@ -69,7 +78,8 @@ namespace DotNetCore.Collections.Paginable {
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator() {
+        IEnumerator IEnumerable.GetEnumerator()
+        {
             return GetEnumerator();
         }
 
@@ -94,29 +104,26 @@ namespace DotNetCore.Collections.Paginable {
         /// </summary>
         /// <param name="pageNumber"></param>
         /// <returns></returns>
-        public IPage<T> GetPage(int pageNumber) {
-            if (PageCount == 0) {
+        public IPage<T> GetPage(int pageNumber)
+        {
+            if (PageCount == 0)
                 return new EmptyPage<T>();
-            }
 
-            if (pageNumber < 1 || pageNumber > PageCount) {
+            if (pageNumber < 1 || pageNumber > PageCount)
                 throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than 1 or greater than pages count.");
-            }
 
-            if (HasInitializeSpecialPage(pageNumber, out var lazyPage)) {
+            if (HasInitializeSpecialPage(pageNumber, out var lazyPage))
                 return lazyPage.Value;
-            }
 
             var lazyValue = GetSpecifiedPage(pageNumber, PageSize, _realMemberCount);
             _lazyPinedPagesCache[pageNumber] = lazyValue;
             return lazyValue.Value;
         }
 
-        private bool HasInitializeSpecialPage(int pageNumber, out Lazy<IPage<T>> lazyPage) {
-            if (pageNumber < 1 || pageNumber > PageCount) {
+        private bool HasInitializeSpecialPage(int pageNumber, out Lazy<IPage<T>> lazyPage)
+        {
+            if (pageNumber < 1 || pageNumber > PageCount)
                 throw new ArgumentOutOfRangeException(nameof(pageNumber));
-            }
-
             return _lazyPinedPagesCache.TryGetValue(pageNumber, out lazyPage);
         }
 

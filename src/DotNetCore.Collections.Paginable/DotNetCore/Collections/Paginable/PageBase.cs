@@ -3,12 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Abstract page base
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class PageBase<T> : IPage<T> {
+    public abstract class PageBase<T> : IPage<T>
+    {
         /// <summary>
         /// Member list
         /// </summary>
@@ -28,15 +30,16 @@ namespace DotNetCore.Collections.Paginable {
         /// </summary>
         /// <param name="sourceIsFull"></param>
         protected PageBase(bool sourceIsFull) => SourceIsFull = sourceIsFull;
-        
+
         /// <inheritdoc />
-        public IEnumerator<IPageMember<T>> GetEnumerator() {
+        public IEnumerator<IPageMember<T>> GetEnumerator()
+        {
             CheckOrInitializePage();
             return _memberList.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        
+
         /// <summary>
         /// Offset mode
         /// </summary>
@@ -64,24 +67,29 @@ namespace DotNetCore.Collections.Paginable {
         public bool HasNext { get; protected set; }
 
         /// <inheritdoc />
-        public IPageMember<T> this[int index] {
-            get {
+        public IPageMember<T> this[int index]
+        {
+            get
+            {
                 CheckOrInitializePage();
                 return _memberList[index];
             }
         }
 
         /// <inheritdoc />
-        public PageMetadata GetMetadata() => new PageMetadata(this);
+        public PageMetadata GetMetadata() => new(this);
 
         /// <inheritdoc />
-        public IEnumerable<T> ToOriginalItems() {
+        public IEnumerable<T> ToOriginalItems()
+        {
             CheckOrInitializePage();
             return _memberList.Select(x => x.Value);
         }
 
-        private void CheckOrInitializePage() {
-            if (!_mHasInitialized) {
+        private void CheckOrInitializePage()
+        {
+            if (!_mHasInitialized)
+            {
                 _initializeAction?.Invoke();
                 _mHasInitialized = true;
             }

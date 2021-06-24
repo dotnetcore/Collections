@@ -3,8 +3,10 @@ using NHibernate;
 
 // ReSharper disable RedundantCast
 
-namespace DotNetCore.Collections.Paginable.Internal {
-    internal static class PaginableNhCoreCollFactory {
+namespace DotNetCore.Collections.Paginable.Internal
+{
+    internal static class PaginableNhCoreCollFactory
+    {
         /// <summary>
         /// Get real member count<br />.
         /// first parameter(l) means limitedMemberCount<br />,
@@ -31,14 +33,12 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <param name="pageSize"></param>
         /// <param name="limitedMemberCount"></param>
         /// <returns></returns>
-        public static PaginableNhCoreQuery<T> CreatePageSet<T>(IQueryOver<T> queryOver, int? pageSize = null, int? limitedMemberCount = null) {
-            if (queryOver is null) {
+        public static PaginableNhCoreQuery<T> CreatePageSet<T>(IQueryOver<T> queryOver, int? pageSize = null, int? limitedMemberCount = null)
+        {
+            if (queryOver is null)
                 throw new ArgumentNullException(nameof(queryOver));
-            }
 
-            if (pageSize == null) {
-                pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
-            }
+            pageSize ??= PaginableSettingsManager.Settings.DefaultPageSize;
 
             var size = pageSize.Value;
             var realMemberCount = GetRealMemberCountFunc()(limitedMemberCount)(NhQueryOverHelper.Count(queryOver));

@@ -1,10 +1,12 @@
 ﻿using DotNetCore.Collections.Paginable.Internal;
 
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Paginable settings
     /// </summary>
-    public class PaginableSettings {
+    public class PaginableSettings
+    {
         /// <summary>
         /// Gets or sets default page size
         /// </summary>

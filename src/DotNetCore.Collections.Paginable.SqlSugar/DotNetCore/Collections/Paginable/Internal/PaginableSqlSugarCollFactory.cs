@@ -2,8 +2,10 @@
 using System.Diagnostics.CodeAnalysis;
 using SqlSugar;
 
-namespace DotNetCore.Collections.Paginable.Internal {
-    internal static class PaginableSqlSugarCollFactory {
+namespace DotNetCore.Collections.Paginable.Internal
+{
+    internal static class PaginableSqlSugarCollFactory
+    {
         /// <summary>
         /// Get real member count<br />.
         /// first parameter(l) means limitedMemberCount<br />,
@@ -31,14 +33,12 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <param name="pageSize"></param>
         /// <param name="limitedMemberCount"></param>
         /// <returns></returns>
-        public static PaginableSqlSugarQuery<T> CreatePageSet<T>(ISugarQueryable<T> query, int? pageSize = null, int? limitedMemberCount = null) {
-            if (query == null) {
+        public static PaginableSqlSugarQuery<T> CreatePageSet<T>(ISugarQueryable<T> query, int? pageSize = null, int? limitedMemberCount = null)
+        {
+            if (query is null)
                 throw new ArgumentNullException(nameof(query));
-            }
 
-            if (pageSize == null) {
-                pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
-            }
+            pageSize ??= PaginableSettingsManager.Settings.DefaultPageSize;
 
             var size = pageSize.Value;
             var realMemberCount = GetRealMemberCountFunc()(limitedMemberCount)(SqlSugarHelper.Count(query));

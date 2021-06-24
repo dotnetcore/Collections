@@ -1,24 +1,28 @@
 ﻿using System;
 using System.Linq;
 
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// QueryablePage collection
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class PaginableQueryable<T> : PaginableSetBase<T> {
+    public class PaginableQueryable<T> : PaginableSetBase<T>
+    {
         private readonly IQueryable<T> _queryable;
 
         // ReSharper disable once UnusedMember.Local
         private PaginableQueryable() { }
 
         internal PaginableQueryable(IQueryable<T> queryable, int pageSize, int realPageCount, int realMemberCount)
-            : base(pageSize, realPageCount, realMemberCount) {
+            : base(pageSize, realPageCount, realMemberCount)
+        {
             _queryable = queryable;
         }
 
         internal PaginableQueryable(IQueryable<T> queryable, int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount)
-            : base(pageSize, realPageCount, realMemberCount, limitedMembersCount) {
+            : base(pageSize, realPageCount, realMemberCount, limitedMembersCount)
+        {
             _queryable = queryable;
         }
 
@@ -29,8 +33,9 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageSize"></param>
         /// <param name="realMemberCount"></param>
         /// <returns></returns>
-        protected override Lazy<IPage<T>> GetSpecifiedPage(int currentPageNumber, int pageSize, int realMemberCount) {
-            return new Lazy<IPage<T>>(() => new EnumerablePage<T>(_queryable, currentPageNumber, pageSize, realMemberCount));
+        protected override Lazy<IPage<T>> GetSpecifiedPage(int currentPageNumber, int pageSize, int realMemberCount)
+        {
+            return new(() => new EnumerablePage<T>(_queryable, currentPageNumber, pageSize, realMemberCount));
         }
     }
 }

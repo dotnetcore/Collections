@@ -2,8 +2,10 @@
 using System.Diagnostics.CodeAnalysis;
 using Dos.ORM;
 
-namespace DotNetCore.Collections.Paginable.Internal {
-    internal static class PaginableDosCollFactory {
+namespace DotNetCore.Collections.Paginable.Internal
+{
+    internal static class PaginableDosCollFactory
+    {
         /// <summary>
         /// Get real member count<br />.
         /// first parameter(l) means limitedMemberCount<br />,
@@ -33,14 +35,12 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <param name="additionalQueryFunc"></param>
         /// <returns></returns>
         public static PaginableDosQuery<T> CreatePageSet<T>(FromSection<T> query, int? pageSize = null, int? limitedMemberCount = null,
-            Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null) where T : Entity {
-            if (query == null) {
+            Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null) where T : Entity
+        {
+            if (query is null)
                 throw new ArgumentNullException(nameof(query));
-            }
 
-            if (pageSize == null) {
-                pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
-            }
+            pageSize ??= PaginableSettingsManager.Settings.DefaultPageSize;
 
             var size = pageSize.Value;
             var realMemberCount = GetRealMemberCountFunc()(limitedMemberCount)(DosHelper.Count(query));

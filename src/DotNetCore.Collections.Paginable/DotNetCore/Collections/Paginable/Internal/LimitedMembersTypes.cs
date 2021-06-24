@@ -1,8 +1,10 @@
-﻿namespace DotNetCore.Collections.Paginable.Internal {
+﻿namespace DotNetCore.Collections.Paginable.Internal
+{
     /// <summary>
     /// Limited members type
     /// </summary>
-    public enum LimitedMembersTypes {
+    public enum LimitedMembersTypes
+    {
         /// <summary>
         /// Unlimited
         /// </summary>

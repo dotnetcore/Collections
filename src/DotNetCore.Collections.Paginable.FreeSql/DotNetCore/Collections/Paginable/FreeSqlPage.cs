@@ -6,12 +6,14 @@ using FreeSql;
 // ReSharper disable RedundantBaseQualifier
 // ReSharper disable RedundantCast
 
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// FreeSql page
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class FreeSqlPage<T> : PageBase<T> where T : class {
+    public class FreeSqlPage<T> : PageBase<T> where T : class
+    {
         /// <summary>
         /// FreeSql page
         /// </summary>
@@ -21,7 +23,8 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="totalMemberCount"></param>
         /// <param name="includeNestedMembers"></param>
         // ReSharper disable once RedundantBaseConstructorCall
-        public FreeSqlPage(ISelect<T> select, int currentPageNumber, int pageSize, int totalMemberCount, bool includeNestedMembers) : base(false) {
+        public FreeSqlPage(ISelect<T> select, int currentPageNumber, int pageSize, int totalMemberCount, bool includeNestedMembers) : base(false)
+        {
             var skip = (currentPageNumber - 1) * pageSize;
             var state = new FreeSqlQueryState<T>(select, currentPageNumber, pageSize, includeNestedMembers);
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
@@ -32,9 +35,10 @@ namespace DotNetCore.Collections.Paginable {
         /// Get empty page
         /// </summary>
         /// <returns></returns>
-        public static EmptyPage<T> Empty() => new EmptyPage<T>();
+        public static EmptyPage<T> Empty() => new();
 
-        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () => {
+        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () =>
+        {
             // c = current page number
             // s = page size
             // t = total member count
@@ -57,11 +61,13 @@ namespace DotNetCore.Collections.Paginable {
             base.HasNext = c < base.TotalPageCount;
         };
 
-        private Func<FreeSqlQueryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () => {
+        private Func<FreeSqlQueryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () =>
+        {
             // s = page size
             // k = skip
             base._memberList = new List<IPageMember<T>>(s);
-            for (var i = 0; i < s; i++) {
+            for (var i = 0; i < s; i++)
+            {
                 base._memberList.Add(PageMemberFactory.Create<T>(state, i, ref k));
             }
         };

@@ -3,11 +3,13 @@ using Dos.ORM;
 using DotNetCore.Collections.Paginable.Internal;
 
 // ReSharper disable once CheckNamespace
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Extensions for solid page for DosORM
     /// </summary>
-    public static class SolidPageExtensions {
+    public static class SolidPageExtensions
+    {
         /// <summary>
         /// Make original DosQueryable result to DosPage collection.
         /// </summary>
@@ -54,18 +56,16 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="additionalQueryFunc"></param>
         /// <returns></returns>
         public static IPage<T> GetPage<T>(this FromSection<T> query, int pageNumber, int pageSize, Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null)
-            where T : Entity {
-            if (query is null) {
+            where T : Entity
+        {
+            if (query is null)
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
-            }
 
-            if (pageNumber < 0) {
+            if (pageNumber < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            }
 
-            if (pageSize < 0) {
+            if (pageSize < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            }
 
             return new DosPage<T>(query, pageNumber, pageSize, DosHelper.Count(query), additionalQueryFunc: additionalQueryFunc);
         }

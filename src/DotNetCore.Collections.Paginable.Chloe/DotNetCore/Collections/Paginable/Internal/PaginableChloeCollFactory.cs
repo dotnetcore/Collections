@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using Chloe;
 
-namespace DotNetCore.Collections.Paginable.Internal {
-    internal static class PaginableChloeCollFactory {
+namespace DotNetCore.Collections.Paginable.Internal
+{
+    internal static class PaginableChloeCollFactory
+    {
         /// <summary>
         /// Get real member count<br />.
         /// first parameter(l) means limitedMemberCount<br />,
@@ -31,14 +33,12 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <param name="pageSize"></param>
         /// <param name="limitedMemberCount"></param>
         /// <returns></returns>
-        public static PaginableChloeQuery<T> CreatePageSet<T>(IQuery<T> query, int? pageSize = null, int? limitedMemberCount = null) {
-            if (query == null) {
+        public static PaginableChloeQuery<T> CreatePageSet<T>(IQuery<T> query, int? pageSize = null, int? limitedMemberCount = null)
+        {
+            if (query is null)
                 throw new ArgumentNullException(nameof(query));
-            }
 
-            if (pageSize == null) {
-                pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
-            }
+            pageSize ??= PaginableSettingsManager.Settings.DefaultPageSize;
 
             var size = pageSize.Value;
             var realMemberCount = GetRealMemberCountFunc()(limitedMemberCount)(ChloeHelper.Count(query));

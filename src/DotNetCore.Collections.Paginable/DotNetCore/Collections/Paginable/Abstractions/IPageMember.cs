@@ -1,11 +1,13 @@
 ﻿// ReSharper disable once CheckNamespace
 
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Page member wrapper interface
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IPageMember<out T> {
+    public interface IPageMember<out T>
+    {
         /// <summary>
         /// Gets value of current member
         /// </summary>

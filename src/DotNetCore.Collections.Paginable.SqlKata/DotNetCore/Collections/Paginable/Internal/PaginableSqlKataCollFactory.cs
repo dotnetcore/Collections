@@ -2,8 +2,10 @@
 using System.Diagnostics.CodeAnalysis;
 using SqlKata;
 
-namespace DotNetCore.Collections.Paginable.Internal {
-    internal static class PaginableSqlKataCollFactory {
+namespace DotNetCore.Collections.Paginable.Internal
+{
+    internal static class PaginableSqlKataCollFactory
+    {
         /// <summary>
         /// Get real member count<br />.
         /// first parameter(l) means limitedMemberCount<br />,
@@ -31,14 +33,12 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
-        public static PaginableSqlKataQuery<T> CreatePageSet<T>(Query query, int? pageSize = null, int? limitedMemberCount = null) {
-            if (query is null) {
+        public static PaginableSqlKataQuery<T> CreatePageSet<T>(Query query, int? pageSize = null, int? limitedMemberCount = null)
+        {
+            if (query is null)
                 throw new ArgumentNullException(nameof(query));
-            }
 
-            if (pageSize is null) {
-                pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
-            }
+            pageSize ??= PaginableSettingsManager.Settings.DefaultPageSize;
 
             var size = pageSize.Value;
             var realMemberCount = GetRealMemberCountFunc()(limitedMemberCount)(SqlKataHelper.Count(query));

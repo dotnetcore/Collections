@@ -5,11 +5,13 @@ using DotNetCore.Collections.Paginable.Internal;
 using FreeSql;
 
 // ReSharper disable once CheckNamespace
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Extensions for solid page for FreeSql
     /// </summary>
-    public static class SolidPageExtensions {
+    public static class SolidPageExtensions
+    {
         /// <summary>
         /// Make original FreeSql.Select`1 result to FreeSqlPage collection.
         /// </summary>
@@ -54,18 +56,16 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageSize">page size</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
-        public static IPage<T> GetPage<T>(this ISelect<T> select, int pageNumber, int pageSize, bool includeNestedMembers = false) where T : class {
-            if (select == null) {
+        public static IPage<T> GetPage<T>(this ISelect<T> select, int pageNumber, int pageSize, bool includeNestedMembers = false) where T : class
+        {
+            if (select is null)
                 throw new ArgumentNullException(nameof(select), $"{nameof(select)} can not be null.");
-            }
 
-            if (pageNumber < 0) {
+            if (pageNumber < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            }
 
-            if (pageSize < 0) {
+            if (pageSize < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            }
 
             return new FreeSqlPage<T>(select, pageNumber, pageSize, FreeSqlHelper.Count(select).AsInt32(), includeNestedMembers);
         }
@@ -90,19 +90,17 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageSize">page size</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
-        public static async Task<IPage<T>> GetPageAsync<T>(this ISelect<T> select, int pageNumber, int pageSize, bool includeNestedMembers = false) where T : class {
-            if (select == null) {
+        public static async Task<IPage<T>> GetPageAsync<T>(this ISelect<T> select, int pageNumber, int pageSize, bool includeNestedMembers = false) where T : class
+        {
+            if (select is null)
                 throw new ArgumentNullException(nameof(select), $"{nameof(select)} can not be null.");
-            }
-
-            if (pageNumber < 0) {
+            
+            if (pageNumber < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            }
-
-            if (pageSize < 0) {
+            
+            if (pageSize < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            }
-
+            
             return new FreeSqlPage<T>(select, pageNumber, pageSize, (await FreeSqlHelper.CountAsync(select)).AsInt32(), includeNestedMembers);
         }
     }

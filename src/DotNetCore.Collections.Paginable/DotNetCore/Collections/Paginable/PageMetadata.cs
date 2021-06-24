@@ -1,13 +1,16 @@
-﻿namespace DotNetCore.Collections.Paginable {
+﻿namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Page metadata
     /// </summary>
-    public class PageMetadata {
+    public class PageMetadata
+    {
         /// <summary>
         /// Create a new instance of <see cref="PageMetadata"/>.
         /// </summary>
         /// <param name="page"></param>
-        public PageMetadata(IPage page) {
+        public PageMetadata(IPage page)
+        {
             TotalPageCount = page.TotalPageCount;
             RealPageCount = page.TotalMemberCount == 0 ? 0 : page.TotalPageCount;
             TotalMemberCount = page.TotalMemberCount;
@@ -61,7 +64,8 @@
         public bool HasNext { get; }
 
         /// <inheritdoc />
-        public override string ToString() {
+        public override string ToString()
+        {
             return $@"
 =====SUMMARY=====
 TotalPageCount = {TotalPageCount}

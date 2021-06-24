@@ -1,10 +1,12 @@
 ﻿using System;
 
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Paginable settings manager
     /// </summary>
-    public static class PaginableSettingsManager {
+    public static class PaginableSettingsManager
+    {
         // ReSharper disable once InconsistentNaming
         private static PaginableSettings _settingsCache { get; set; }
 

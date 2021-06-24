@@ -4,11 +4,13 @@ using DotNetCore.Collections.Paginable.Internal;
 using SqlSugar;
 
 // ReSharper disable once CheckNamespace
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Extensions for solid page for SqlSugar
     /// </summary>
-    public static class SolidPageExtensions {
+    public static class SolidPageExtensions
+    {
         /// <summary>
         /// Make original SqlSugarQueryable result to SqlSugarPage collection.
         /// </summary>
@@ -48,18 +50,16 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
-        public static IPage<T> GetPage<T>(this ISugarQueryable<T> query, int pageNumber, int pageSize) {
-            if (query is null) {
+        public static IPage<T> GetPage<T>(this ISugarQueryable<T> query, int pageNumber, int pageSize)
+        {
+            if (query is null)
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
-            }
 
-            if (pageNumber < 0) {
+            if (pageNumber < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            }
 
-            if (pageSize < 0) {
+            if (pageSize < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            }
 
             return new SqlSugarPage<T>(query, pageNumber, pageSize, SqlSugarHelper.Count(query));
         }
@@ -83,18 +83,16 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
-        public static async Task<IPage<T>> GetPageAsync<T>(this ISugarQueryable<T> query, int pageNumber, int pageSize) {
-            if (query == null) {
+        public static async Task<IPage<T>> GetPageAsync<T>(this ISugarQueryable<T> query, int pageNumber, int pageSize)
+        {
+            if (query is null)
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
-            }
 
-            if (pageNumber < 0) {
+            if (pageNumber < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            }
 
-            if (pageSize < 0) {
+            if (pageSize < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            }
 
             return new SqlSugarPage<T>(query, pageNumber, pageSize, (await SqlSugarHelper.CountAsync(query)));
         }

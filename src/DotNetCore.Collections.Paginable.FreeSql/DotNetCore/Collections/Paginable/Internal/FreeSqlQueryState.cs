@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using DotNetCore.Collections.Paginable.Abstractions;
 using FreeSql;
 
-namespace DotNetCore.Collections.Paginable.Internal {
+namespace DotNetCore.Collections.Paginable.Internal
+{
     /// <summary>
     /// FreeSql query state
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class FreeSqlQueryState<T> : IQueryEntryState<T> where T : class {
+    public class FreeSqlQueryState<T> : IQueryEntryState<T> where T : class
+    {
         private readonly Lazy<IEnumerable<T>> _mLazyFreeSqlQueryMembers;
 
         /// <summary>
@@ -18,18 +20,16 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <param name="currentPageNumber"></param>
         /// <param name="pageSize"></param>
         /// <param name="includeNestedMembers"></param>
-        public FreeSqlQueryState(ISelect<T> select, int currentPageNumber, int pageSize, bool includeNestedMembers) {
-            if (select is null) {
+        public FreeSqlQueryState(ISelect<T> select, int currentPageNumber, int pageSize, bool includeNestedMembers)
+        {
+            if (select is null)
                 throw new ArgumentNullException(nameof(select));
-            }
 
-            if (currentPageNumber < 0) {
+            if (currentPageNumber < 0)
                 throw new ArgumentOutOfRangeException(nameof(currentPageNumber), $"{nameof(currentPageNumber)} can not be less than zero");
-            }
 
-            if (pageSize < 0) {
+            if (pageSize < 0)
                 throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than zero");
-            }
 
             _mLazyFreeSqlQueryMembers = new Lazy<IEnumerable<T>>(() => select.Page(currentPageNumber, pageSize).ToList(includeNestedMembers));
         }

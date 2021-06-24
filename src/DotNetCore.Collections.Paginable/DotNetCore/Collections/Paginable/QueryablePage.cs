@@ -5,12 +5,14 @@ using DotNetCore.Collections.Paginable.Internal;
 
 // ReSharper disable RedundantBaseQualifier
 
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Queryable page
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class QueryablePage<T> : PageBase<T> {
+    public class QueryablePage<T> : PageBase<T>
+    {
         /// <summary>
         /// Queryable page
         /// </summary>
@@ -19,7 +21,8 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageSize"></param>
         /// <param name="totalMemberCount"></param>
         /// <param name="sourceIsFull"></param>
-        public QueryablePage(IQueryable<T> queryable, int currentPageNumber, int pageSize, int totalMemberCount, bool sourceIsFull = true) : base(sourceIsFull) {
+        public QueryablePage(IQueryable<T> queryable, int currentPageNumber, int pageSize, int totalMemberCount, bool sourceIsFull = true) : base(sourceIsFull)
+        {
             var skip = (currentPageNumber - 1) * pageSize;
             var state = new QueryEntryState<T>(queryable, skip, pageSize);
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
@@ -40,9 +43,10 @@ namespace DotNetCore.Collections.Paginable {
         /// Get empty page
         /// </summary>
         /// <returns></returns>
-        public static EmptyPage<T> Empty() => new EmptyPage<T>();
+        public static EmptyPage<T> Empty() => new();
 
-        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () => {
+        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () =>
+        {
             // c = current page number
             // s = page size
             // t = total member count
@@ -65,11 +69,13 @@ namespace DotNetCore.Collections.Paginable {
             base.HasNext = c < base.TotalPageCount;
         };
 
-        private Func<QueryEntryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () => {
+        private Func<QueryEntryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () =>
+        {
             // s = page size
             // k = skip
             base._memberList = new List<IPageMember<T>>(s);
-            for (var i = 0; i < s; i++) {
+            for (var i = 0; i < s; i++)
+            {
                 base._memberList.Add(new PageMember<T>(state, i, ref k));
             }
         };

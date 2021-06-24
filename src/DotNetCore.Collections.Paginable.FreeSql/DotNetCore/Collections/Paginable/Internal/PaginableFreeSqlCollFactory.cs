@@ -3,8 +3,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using FreeSql;
 
-namespace DotNetCore.Collections.Paginable.Internal {
-   internal static class PaginableFreeSqlCollFactory {
+namespace DotNetCore.Collections.Paginable.Internal
+{
+    internal static class PaginableFreeSqlCollFactory
+    {
         /// <summary>
         /// Get real member count<br />.
         /// first parameter(l) means limitedMemberCount<br />,
@@ -34,18 +36,13 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <param name="includeNestedMembers"></param>
         /// <returns></returns>
         public static PaginableFreeSqlQuery<T> CreatePageSet<T>(ISelect<T> select, int? pageSize = null, int? limitedMemberCount = null, bool? includeNestedMembers = null)
-            where T : class {
-            if (select == null) {
+            where T : class
+        {
+            if (select is null)
                 throw new ArgumentNullException(nameof(select));
-            }
 
-            if (pageSize == null) {
-                pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
-            }
-
-            if (includeNestedMembers == null) {
-                includeNestedMembers = false;
-            }
+            pageSize ??= PaginableSettingsManager.Settings.DefaultPageSize;
+            includeNestedMembers ??= false;
 
             var size = pageSize.Value;
             var realMemberCount = GetRealMemberCountFunc()(limitedMemberCount)(FreeSqlHelper.Count(select).AsInt32());

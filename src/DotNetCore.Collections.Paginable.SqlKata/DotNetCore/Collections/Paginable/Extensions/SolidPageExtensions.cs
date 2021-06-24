@@ -4,11 +4,13 @@ using DotNetCore.Collections.Paginable.Internal;
 using SqlKata;
 
 // ReSharper disable once CheckNamespace
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Extensions for solid page for sqlkata
     /// </summary>
-    public static class SolidPageExtensions {
+    public static class SolidPageExtensions
+    {
         /// <summary>
         /// Make original SqlKata.Query result to SqlKataPage collection.
         /// </summary>
@@ -48,18 +50,16 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
-        public static IPage<T> GetPage<T>(this Query query, int pageNumber, int pageSize) {
-            if (query is null) {
+        public static IPage<T> GetPage<T>(this Query query, int pageNumber, int pageSize)
+        {
+            if (query is null)
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
-            }
 
-            if (pageNumber < 0) {
+            if (pageNumber < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            }
 
-            if (pageSize < 0) {
+            if (pageSize < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            }
 
             return new SqlKataPage<T>(query, pageNumber, pageSize, SqlKataHelper.Count(query));
         }
@@ -82,18 +82,16 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
-        public static async Task<IPage<T>> GetPageAsync<T>(this Query query, int pageNumber, int pageSize) {
-            if (query == null) {
+        public static async Task<IPage<T>> GetPageAsync<T>(this Query query, int pageNumber, int pageSize)
+        {
+            if (query is null)
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
-            }
 
-            if (pageNumber < 0) {
+            if (pageNumber < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            }
 
-            if (pageSize < 0) {
+            if (pageSize < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            }
 
             return new SqlKataPage<T>(query, pageNumber, pageSize, await SqlKataHelper.CountAsync(query));
         }

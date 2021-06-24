@@ -4,11 +4,13 @@ using DotNetCore.Collections.Paginable.Internal;
 using NHibernate;
 
 // ReSharper disable once CheckNamespace
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Extensions for solid page for NHibernate
     /// </summary>
-    public static class SolidPageExtensions {
+    public static class SolidPageExtensions
+    {
         /// <summary>
         /// Make original NHibernate.QueryOver`1 result to NHibernatePage collection.
         /// </summary>
@@ -69,18 +71,16 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
-        public static IPage<T> GetPage<T>(this IQueryOver<T> queryOver, int pageNumber, int pageSize) {
-            if (queryOver == null) {
+        public static IPage<T> GetPage<T>(this IQueryOver<T> queryOver, int pageNumber, int pageSize)
+        {
+            if (queryOver is null)
                 throw new ArgumentNullException(nameof(queryOver), $"{nameof(queryOver)} can not be null.");
-            }
 
-            if (pageNumber < 0) {
+            if (pageNumber < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            }
 
-            if (pageSize < 0) {
+            if (pageSize < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            }
 
             return new NhCorePage<T>(queryOver, pageNumber, pageSize, NhQueryOverHelper.Count(queryOver));
         }
@@ -124,18 +124,16 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
-        public static async Task<IPage<T>> GetPageAsync<T>(this IQueryOver<T> queryOver, int pageNumber, int pageSize) {
-            if (queryOver == null) {
+        public static async Task<IPage<T>> GetPageAsync<T>(this IQueryOver<T> queryOver, int pageNumber, int pageSize)
+        {
+            if (queryOver is null)
                 throw new ArgumentNullException(nameof(queryOver), $"{nameof(queryOver)} can not be null.");
-            }
 
-            if (pageNumber < 0) {
+            if (pageNumber < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            }
 
-            if (pageSize < 0) {
+            if (pageSize < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            }
 
             return new NhCorePage<T>(queryOver, pageNumber, pageSize, await NhQueryOverHelper.CountAsync(queryOver));
         }

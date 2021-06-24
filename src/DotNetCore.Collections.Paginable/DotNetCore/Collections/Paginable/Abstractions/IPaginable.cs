@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 
 // ReSharper disable once CheckNamespace
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Paginable interface
     /// </summary>
-    public interface IPaginable : IEnumerable {
+    public interface IPaginable : IEnumerable
+    {
         /// <summary>
         /// Gets page size
         /// </summary>

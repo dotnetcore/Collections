@@ -1,11 +1,13 @@
 ﻿using System;
 using Dos.ORM;
 
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// DosPage collection
     /// </summary>
-    public class PaginableDosQuery<T> : PaginableSetBase<T> where T : Entity {
+    public class PaginableDosQuery<T> : PaginableSetBase<T> where T : Entity
+    {
         private readonly FromSection<T> _dosOrmQuery;
 
         private readonly Func<FromSection<T>, FromSection<T>> _additionalQueryFunc;
@@ -14,22 +16,24 @@ namespace DotNetCore.Collections.Paginable {
         private PaginableDosQuery() { }
 
         internal PaginableDosQuery(FromSection<T> select, int pageSize, int realPageCount, int realMemberCount, Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null)
-            : base(pageSize, realPageCount, realMemberCount) {
+            : base(pageSize, realPageCount, realMemberCount)
+        {
             _dosOrmQuery = select;
             _additionalQueryFunc = additionalQueryFunc;
         }
 
         internal PaginableDosQuery(FromSection<T> select, int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount,
             Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null)
-            : base(pageSize, realPageCount, realMemberCount, limitedMembersCount) {
+            : base(pageSize, realPageCount, realMemberCount, limitedMembersCount)
+        {
             _dosOrmQuery = select;
             _additionalQueryFunc = additionalQueryFunc;
         }
 
         /// <inheritdoc />
-        protected override Lazy<IPage<T>> GetSpecifiedPage(int currentPageNumber, int pageSize, int realMemberCount) {
-            return new Lazy<IPage<T>>(() =>
-                new DosPage<T>(_dosOrmQuery, currentPageNumber, pageSize, realMemberCount, _additionalQueryFunc));
+        protected override Lazy<IPage<T>> GetSpecifiedPage(int currentPageNumber, int pageSize, int realMemberCount)
+        {
+            return new(() => new DosPage<T>(_dosOrmQuery, currentPageNumber, pageSize, realMemberCount, _additionalQueryFunc));
         }
     }
 }

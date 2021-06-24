@@ -6,12 +6,14 @@ using NHibernate;
 // ReSharper disable RedundantCast
 // ReSharper disable RedundantBaseQualifier
 
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// NHibernate page
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class NhCorePage<T> : PageBase<T> {
+    public class NhCorePage<T> : PageBase<T>
+    {
         /// <summary>
         /// NHibernate page
         /// </summary>
@@ -20,7 +22,8 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageSize"></param>
         /// <param name="totalMemberCount"></param>
         // ReSharper disable once RedundantBaseConstructorCall
-        public NhCorePage(IQueryOver<T> queryOver, int currentPageNumber, int pageSize, int totalMemberCount) : base(false) {
+        public NhCorePage(IQueryOver<T> queryOver, int currentPageNumber, int pageSize, int totalMemberCount) : base(false)
+        {
             var skip = (currentPageNumber - 1) * pageSize;
             var state = new NhCoreQueryState<T>(queryOver, skip, pageSize);
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
@@ -31,9 +34,10 @@ namespace DotNetCore.Collections.Paginable {
         /// Get empty page
         /// </summary>
         /// <returns></returns>
-        public static EmptyPage<T> Empty() => new EmptyPage<T>();
+        public static EmptyPage<T> Empty() => new();
 
-        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () => {
+        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () =>
+        {
             // c = current page number
             // s = page size
             // t = total member count
@@ -56,11 +60,13 @@ namespace DotNetCore.Collections.Paginable {
             base.HasNext = c < base.TotalPageCount;
         };
 
-        private Func<NhCoreQueryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () => {
+        private Func<NhCoreQueryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () =>
+        {
             // s = page size
             // k = skip
             base._memberList = new List<IPageMember<T>>(s);
-            for (var i = 0; i < s; i++) {
+            for (var i = 0; i < s; i++)
+            {
                 base._memberList.Add(PageMemberFactory.Create<T>(state, i, ref k));
             }
         };

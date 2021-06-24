@@ -5,8 +5,10 @@ using System.Linq;
 // ReSharper disable PossibleMultipleEnumeration
 // ReSharper disable RedundantCast
 
-namespace DotNetCore.Collections.Paginable.Internal {
-    internal static class PaginableCollectionFactory {
+namespace DotNetCore.Collections.Paginable.Internal
+{
+    internal static class PaginableCollectionFactory
+    {
         /// <summary>
         /// Get real member count<br />.
         /// first parameter(l) means limitedMemberCount<br />,
@@ -33,14 +35,12 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
-        public static PaginableEnumerable<T> CreatePageSet<T>(IEnumerable<T> enumerable, int? pageSize = null, int? limitedMemberCount = null) {
-            if (enumerable == null) {
+        public static PaginableEnumerable<T> CreatePageSet<T>(IEnumerable<T> enumerable, int? pageSize = null, int? limitedMemberCount = null)
+        {
+            if (enumerable is null)
                 throw new ArgumentNullException(nameof(enumerable));
-            }
 
-            if (pageSize == null) {
-                pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
-            }
+            pageSize ??= PaginableSettingsManager.Settings.DefaultPageSize;
 
             var size = pageSize.Value;
             var realMemberCount = GetRealMemberCountFunc()(limitedMemberCount)(enumerable.Count());
@@ -59,14 +59,12 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
-        public static PaginableQueryable<T> CreatePageSet<T>(IQueryable<T> queryable, int? pageSize = null, int? limitedMemberCount = null) {
-            if (queryable == null) {
+        public static PaginableQueryable<T> CreatePageSet<T>(IQueryable<T> queryable, int? pageSize = null, int? limitedMemberCount = null)
+        {
+            if (queryable is null)
                 throw new ArgumentNullException(nameof(queryable));
-            }
 
-            if (pageSize == null) {
-                pageSize = PaginableSettingsManager.Settings.DefaultPageSize;
-            }
+            pageSize ??= PaginableSettingsManager.Settings.DefaultPageSize;
 
             var size = pageSize.Value;
             var realMemberCount = GetRealMemberCountFunc()(limitedMemberCount)(queryable.Count());

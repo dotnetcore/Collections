@@ -4,11 +4,13 @@ using Chloe;
 using DotNetCore.Collections.Paginable.Internal;
 
 // ReSharper disable once CheckNamespace
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Extensions for solid page for Chloe
     /// </summary>
-    public static class SolidPageExtensions {
+    public static class SolidPageExtensions
+    {
         /// <summary>
         /// Make original ChloeQueryable result to ChloePage collection.
         /// </summary>
@@ -17,7 +19,7 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
         public static PaginableChloeQuery<T> ToPaginable<T>(this IQuery<T> query, int? limitedMemberCount = null)
-            => PaginableChloeCollFactory.CreatePageSet<T>(query, limitedMemberCount: limitedMemberCount);
+            => PaginableChloeCollFactory.CreatePageSet(query, limitedMemberCount: limitedMemberCount);
 
         /// <summary>
         /// Make original ChloeQueryable result to ChloePage collection.
@@ -28,7 +30,7 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
         public static PaginableChloeQuery<T> ToPaginable<T>(this IQuery<T> query, int pageSize, int? limitedMemberCount = null)
-            => PaginableChloeCollFactory.CreatePageSet<T>(query, pageSize, limitedMemberCount);
+            => PaginableChloeCollFactory.CreatePageSet(query, pageSize, limitedMemberCount);
 
         /// <summary>
         /// Get specific page from original ChloeQueryable source
@@ -39,7 +41,7 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="additionalQueryFunc"></param>
         /// <returns></returns>
         public static IPage<T> GetPage<T>(this IQuery<T> query, int pageNumber, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null)
-            => GetPage<T>(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, additionalQueryFunc);
+            => GetPage(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, additionalQueryFunc);
 
         /// <summary>
         /// Get specific page from original ChloeQueryable source
@@ -50,18 +52,16 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="pageSize">page size</param>
         /// <param name="additionalQueryFunc"></param>
         /// <returns></returns>
-        public static IPage<T> GetPage<T>(this IQuery<T> query, int pageNumber, int pageSize, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null) {
-            if (query is null) {
+        public static IPage<T> GetPage<T>(this IQuery<T> query, int pageNumber, int pageSize, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null)
+        {
+            if (query is null)
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
-            }
 
-            if (pageNumber < 0) {
+            if (pageNumber < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            }
 
-            if (pageSize < 0) {
+            if (pageSize < 0)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            }
 
             return new ChloePage<T>(query, pageNumber, pageSize, ChloeHelper.Count(query), additionalQueryFunc);
         }

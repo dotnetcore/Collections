@@ -6,12 +6,14 @@ using DotNetCore.Collections.Paginable.Internal;
 // ReSharper disable RedundantBaseQualifier
 // ReSharper disable RedundantCast
 
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Chloe page
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ChloePage<T> : PageBase<T> {
+    public class ChloePage<T> : PageBase<T>
+    {
         /// <summary>
         /// Chloe page
         /// </summary>
@@ -21,7 +23,8 @@ namespace DotNetCore.Collections.Paginable {
         /// <param name="totalMemberCount"></param>
         /// <param name="additionalQueryFunc"></param>
         // ReSharper disable once RedundantBaseConstructorCall
-        public ChloePage(IQuery<T> query, int currentPageNumber, int pageSize, int totalMemberCount, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null) : base(false) {
+        public ChloePage(IQuery<T> query, int currentPageNumber, int pageSize, int totalMemberCount, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null) : base(false)
+        {
             var skip = (currentPageNumber - 1) * pageSize;
             var state = new ChloeQueryState<T>(query, currentPageNumber, pageSize, additionalQueryFunc);
             InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
@@ -32,9 +35,10 @@ namespace DotNetCore.Collections.Paginable {
         /// Get empty page
         /// </summary>
         /// <returns></returns>
-        public static EmptyPage<T> Empty() => new EmptyPage<T>();
+        public static EmptyPage<T> Empty() => new();
 
-        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () => {
+        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () =>
+        {
             // c = current page number
             // s = page size
             // t = total member count
@@ -57,11 +61,13 @@ namespace DotNetCore.Collections.Paginable {
             base.HasNext = c < base.TotalPageCount;
         };
 
-        private Func<ChloeQueryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () => {
+        private Func<ChloeQueryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () =>
+        {
             // s = page size
             // k = skip
             base._memberList = new List<IPageMember<T>>(s);
-            for (var i = 0; i < s; i++) {
+            for (var i = 0; i < s; i++)
+            {
                 base._memberList.Add(PageMemberFactory.Create<T>(state, i, ref k));
             }
         };

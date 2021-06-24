@@ -1,5 +1,9 @@
-﻿namespace DotNetCore.Collections.Paginable.Internal {
-    internal static class PaginableConstants {
+﻿// ReSharper disable InconsistentNaming
+
+namespace DotNetCore.Collections.Paginable.Internal
+{
+    internal static class PaginableConstants
+    {
         /// <summary>
         /// Default page size
         /// </summary>

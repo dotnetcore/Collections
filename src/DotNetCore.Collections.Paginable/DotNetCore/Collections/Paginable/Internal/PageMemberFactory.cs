@@ -2,11 +2,13 @@
 using System.Linq;
 using DotNetCore.Collections.Paginable.Abstractions;
 
-namespace DotNetCore.Collections.Paginable.Internal {
+namespace DotNetCore.Collections.Paginable.Internal
+{
     /// <summary>
     /// Page member factory
     /// </summary>
-    public static class PageMemberFactory {
+    public static class PageMemberFactory
+    {
         /// <summary>
         /// Create a new instance of <see cref="PageMember{T}"/>
         /// </summary>
@@ -16,7 +18,7 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public static PageMember<T> Create<T>(T memberValue, int offset, ref int startIndex)
-            => new PageMember<T>(memberValue, offset, ref startIndex);
+            => new(memberValue, offset, ref startIndex);
 
         /// <summary>
         /// Create a new instance of <see cref="PageMember{T}"/>
@@ -28,7 +30,7 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public static PageMember<T> Create<T>(IEnumerable<T> memberColl, int index, int offset, ref int startIndex)
-            => new PageMember<T>(memberColl.ElementAt(index), offset, ref startIndex);
+            => new(memberColl.ElementAt(index), offset, ref startIndex);
 
         /// <summary>
         /// Create a new instance of <see cref="PageMember{T}"/>
@@ -39,6 +41,6 @@ namespace DotNetCore.Collections.Paginable.Internal {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public static PageMember<T> Create<T>(IQueryEntryState<T> state, int offset, ref int startIndex)
-            => new PageMember<T>(state, offset, ref startIndex);
+            => new(state, offset, ref startIndex);
     }
 }

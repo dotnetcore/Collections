@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Page interface
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IPage<out T> : IEnumerable<IPageMember<T>>, IPage {
+    public interface IPage<out T> : IEnumerable<IPageMember<T>>, IPage
+    {
         /// <summary>
         /// Gets page member indexer
         /// </summary>
