@@ -3,7 +3,7 @@
   <Import Project="..\..\build\common.props"/>
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;net461;net451</TargetFrameworks>
+    <TargetFrameworks>net5.0;netstandard2.1;net461;net451</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dos.ORM" Version="1.17.0" />
+    <PackageReference Include="Dos.ORM" Version="1.18.0" />
   </ItemGroup>
 
   <ItemGroup>

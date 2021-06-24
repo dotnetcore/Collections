@@ -3,7 +3,7 @@
 		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
 		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
 		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-		<LangVersion>8.0</LangVersion>
+		<LangVersion>latest</LangVersion>
 		<RootNamespace />		
 	</PropertyGroup>
 	

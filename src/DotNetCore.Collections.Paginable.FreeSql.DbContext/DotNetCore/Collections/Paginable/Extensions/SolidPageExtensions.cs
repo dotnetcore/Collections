@@ -4,11 +4,13 @@ using System.Threading.Tasks;
 using FreeSql;
 
 // ReSharper disable once CheckNamespace
-namespace DotNetCore.Collections.Paginable {
+namespace DotNetCore.Collections.Paginable
+{
     /// <summary>
     /// Extensions for solid page for FreeSql
     /// </summary>
-    public static class SolidPageExtensions {
+    public static class SolidPageExtensions
+    {
         /// <summary>
         /// Make original FreeSql.Select`1 result to FreeSqlPage collection.
         /// </summary>
@@ -57,7 +59,7 @@ namespace DotNetCore.Collections.Paginable {
         public static PaginableFreeSqlQuery<T> ToPaginable<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageSize, int? limitedMemberCount = null,
             bool? includeNestedMembers = null) where T : class
             => source.Where(predicate).ToPaginable(pageSize, limitedMemberCount, includeNestedMembers);
-        
+
         /// <summary>
         /// Get specific page from original FreeSql.Select`1 source
         /// </summary>
@@ -106,7 +108,7 @@ namespace DotNetCore.Collections.Paginable {
         public static IPage<T> GetPage<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageNumber, int pageSize, bool includeNestedMembers = false)
             where T : class
             => source.Where(predicate).GetPage(pageNumber, pageSize, includeNestedMembers);
-        
+
         /// <summary>
         /// Get specific page from original FreeSql.Select`1 source
         /// </summary>

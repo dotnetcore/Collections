@@ -1,24 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
+    <Import Project="..\..\build\common.props"/>
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;net461;net451</TargetFrameworks>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>net5.0;netstandard2.1;net461;net451</TargetFrameworks>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <AssemblyName>DotNetCore.Collections.Paginable.SqlKata</AssemblyName>
-    <PackageId>DotNetCore.Collections.Paginable.SqlKata</PackageId>
-    <Description>Paginable extension with SqlKata for collection.</Description>
-  </PropertyGroup>
+    <PropertyGroup>
+        <AssemblyName>DotNetCore.Collections.Paginable.SqlKata</AssemblyName>
+        <PackageId>DotNetCore.Collections.Paginable.SqlKata</PackageId>
+        <Description>Paginable extension with SqlKata for collection.</Description>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="SqlKata" Version="2.2.0" />
-    <PackageReference Include="SqlKata.Execution" Version="2.2.0" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)'=='net451'">
+        <PackageReference Include="SqlKata" Version="2.2.0"/>
+        <PackageReference Include="SqlKata.Execution" Version="2.2.0"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)'!='net451'">
+        <PackageReference Include="SqlKata" Version="2.3.7"/>
+        <PackageReference Include="SqlKata.Execution" Version="2.3.7"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj"/>
+    </ItemGroup>
 
 </Project>
