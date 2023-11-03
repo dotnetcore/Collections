@@ -324,6 +324,6 @@ using(var connection = new SqlConnection(connectionString))
 
 ## License
 
-Member project of [.NET Core Community](https://github.com/dotnetcore), MIT
+Member project of [The NCC](https://github.com/dotnetcore), MIT
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections?ref=badge_large)
