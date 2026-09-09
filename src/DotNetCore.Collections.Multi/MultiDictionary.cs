@@ -1,17 +1,603 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace DotNetCore.Collections.Multi
 {
-    // ReSharper disable InconsistentNaming
-    public class MultiDictionary<K, V>
+    /// <summary>
+    /// Represents a multimap: a dictionary that allows multiple values to be associated with a
+    /// single key. Adding, looking up and removing a single (key, value) pair runs in O(1).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Key equality is determined by the <see cref="IEqualityComparer{TKey}"/> supplied at
+    /// construction (default: <see cref="EqualityComparer{TKey}.Default"/>). Keys are never
+    /// keyed by their hash code alone, so hash collisions between distinct keys can not
+    /// corrupt the map. <c>null</c> keys are rejected with <see cref="ArgumentNullException"/>
+    /// (standard <see cref="Dictionary{TKey,TValue}"/> behaviour); <c>null</c> values are
+    /// allowed.
+    /// </para>
+    /// <para>
+    /// The inner per-key collection is created by a configurable factory: by default a
+    /// <see cref="List{TValue}"/> that allows duplicate values, or a <see cref="HashSet{TValue}"/>
+    /// when <c>allowDuplicateValues</c> is <c>false</c>. An inner collection is dropped
+    /// automatically once it becomes empty, so the map never holds value-less keys.
+    /// </para>
+    /// <para>
+    /// This class is not thread-safe. Wrap it with external synchronization for concurrent use.
+    /// </para>
+    /// </remarks>
+    public class MultiDictionary<TKey, TValue> :
+        IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>,
+        IEnumerable<KeyValuePair<TKey, TValue>>
     {
-        private readonly List<int> _hashcodeList;
+        private static readonly IReadOnlyCollection<TValue> EmptyValues = new TValue[0];
 
-        public MultiDictionary()
+        private readonly Dictionary<TKey, ICollection<TValue>> _dict;
+        private readonly IEqualityComparer<TKey> _comparer;
+        private readonly Func<ICollection<TValue>> _innerFactory;
+
+        /// <summary>
+        /// Initializes an empty <see cref="MultiDictionary{TKey,TValue}"/> that allows duplicate
+        /// values per key (inner <see cref="List{TValue}"/>).
+        /// </summary>
+        public MultiDictionary() : this((IEqualityComparer<TKey>?)null, (Func<ICollection<TValue>>?)null)
         {
-            _hashcodeList = new List<int>();
+        }
+
+        /// <summary>
+        /// Initializes an empty <see cref="MultiDictionary{TKey,TValue}"/> with the specified
+        /// key comparer, allowing duplicate values per key.
+        /// </summary>
+        public MultiDictionary(IEqualityComparer<TKey>? comparer) : this(comparer, (Func<ICollection<TValue>>?)null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes an empty <see cref="MultiDictionary{TKey,TValue}"/>. When
+        /// <paramref name="allowDuplicateValues"/> is <c>false</c>, duplicate values under the
+        /// same key are silently ignored (inner <see cref="HashSet{TValue}"/>).
+        /// </summary>
+        public MultiDictionary(bool allowDuplicateValues) : this((IEqualityComparer<TKey>?)null, allowDuplicateValues)
+        {
+        }
+
+        /// <summary>
+        /// Initializes an empty <see cref="MultiDictionary{TKey,TValue}"/> with the specified key
+        /// comparer. When <paramref name="allowDuplicateValues"/> is <c>false</c>, duplicate
+        /// values under the same key are silently ignored (inner <see cref="HashSet{TValue}"/>).
+        /// </summary>
+        public MultiDictionary(IEqualityComparer<TKey>? comparer, bool allowDuplicateValues)
+            : this(comparer, allowDuplicateValues
+                ? (Func<ICollection<TValue>>)(() => new List<TValue>())
+                : (Func<ICollection<TValue>>)(() => new HashSet<TValue>()))
+        {
+        }
+
+        /// <summary>
+        /// Initializes an empty <see cref="MultiDictionary{TKey,TValue}"/> with the specified key
+        /// comparer and inner collection factory.
+        /// </summary>
+        public MultiDictionary(IEqualityComparer<TKey>? comparer, Func<ICollection<TValue>>? innerFactory)
+        {
+            _comparer = comparer ?? EqualityComparer<TKey>.Default;
+            _innerFactory = innerFactory ?? (() => new List<TValue>());
+            _dict = new Dictionary<TKey, ICollection<TValue>>(_comparer);
+        }
+
+        /// <summary>
+        /// Gets the comparer used to determine key equality.
+        /// </summary>
+        public IEqualityComparer<TKey> Comparer => _comparer;
+
+        /// <summary>
+        /// Gets the number of keys in the map.
+        /// </summary>
+        public int Count => _dict.Count;
+
+        /// <summary>
+        /// Gets the number of keys in the map (alias of <see cref="Count"/>).
+        /// </summary>
+        public int KeyCount => _dict.Count;
+
+        /// <summary>
+        /// Gets the total number of values across all keys.
+        /// </summary>
+        public int TotalValueCount
+        {
+            get
+            {
+                var total = 0;
+                foreach (var collection in _dict.Values)
+                {
+                    total += collection.Count;
+                }
+
+                return total;
+            }
+        }
+
+        /// <summary>
+        /// Gets the keys of the map.
+        /// </summary>
+        public IEnumerable<TKey> Keys => _dict.Keys;
+
+        /// <summary>
+        /// Gets all values of the map, flattened across keys.
+        /// </summary>
+        public IEnumerable<TValue> Values
+        {
+            get
+            {
+                foreach (var collection in _dict.Values)
+                {
+                    foreach (var value in collection)
+                    {
+                        yield return value;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the values associated with the key. Returns an empty collection (never
+        /// <c>null</c>) when the key is absent. The returned collection is a live view of the
+        /// values stored for the key.
+        /// </summary>
+        public IReadOnlyCollection<TValue> this[TKey key] =>
+            _dict.TryGetValue(key, out var collection) ? AsReadOnlyView(collection) : EmptyValues;
+
+        /// <summary>
+        /// Adds a (key, value) pair. When duplicate values are disallowed and the value already
+        /// exists under the key, the call is silently ignored.
+        /// </summary>
+        public void Add(TKey key, TValue value)
+        {
+            if (!_dict.TryGetValue(key, out var collection))
+            {
+                collection = _innerFactory();
+                _dict.Add(key, collection);
+            }
+
+            var before = collection.Count;
+            collection.Add(value);
+            if (before == 0 && collection.Count == 0)
+            {
+                // The (deduplicating) factory rejected the value into a fresh, still-empty
+                // collection: drop the key to preserve the "no empty inner collections" invariant.
+                _dict.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Adds each value of the specified collection under the key.
+        /// </summary>
+        public void AddRange(TKey key, IEnumerable<TValue> values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            foreach (var value in values)
+            {
+                Add(key, value);
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the map contains the key.
+        /// </summary>
+        public bool ContainsKey(TKey key)
+        {
+            return _dict.ContainsKey(key);
+        }
+
+        /// <summary>
+        /// Determines whether the specified value exists under the key.
+        /// </summary>
+        public bool Contains(TKey key, TValue value)
+        {
+            return _dict.TryGetValue(key, out var collection) && collection.Contains(value);
+        }
+
+        /// <summary>
+        /// Determines whether the specified value exists under any key.
+        /// </summary>
+        public bool ContainsValue(TValue value)
+        {
+            foreach (var collection in _dict.Values)
+            {
+                if (collection.Contains(value))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Removes the key together with all of its values. Returns <c>true</c> when the key was
+        /// present.
+        /// </summary>
+        public bool Remove(TKey key)
+        {
+            return _dict.Remove(key);
+        }
+
+        /// <summary>
+        /// Removes a single occurrence of the value under the key. Returns <c>true</c> when a
+        /// value was removed. The key is dropped automatically once its last value is removed.
+        /// </summary>
+        public bool Remove(TKey key, TValue value)
+        {
+            if (!_dict.TryGetValue(key, out var collection))
+            {
+                return false;
+            }
+
+            if (!collection.Remove(value))
+            {
+                return false;
+            }
+
+            if (collection.Count == 0)
+            {
+                _dict.Remove(key);
+            }
+
+            return true;
+        }
+
+        // ------------------------------------------------------------------
+        // Per-key value set operations
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Adds each distinct value of the specified collection under the key when not already
+        /// present (set-union semantics on the key's values). Creates the key when absent. With
+        /// a duplicating inner collection, existing duplicate values keep their multiplicities.
+        /// </summary>
+        public void UnionWith(TKey key, IEnumerable<TValue> values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            var seen = new HashSet<TValue>();
+            foreach (var value in values)
+            {
+                if (seen.Add(value) && !Contains(key, value))
+                {
+                    Add(key, value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Keeps under the key only the values that also appear in the specified collection
+        /// (set-intersection semantics on the key's values). The key is dropped when no values
+        /// remain; a missing key is a no-op.
+        /// </summary>
+        public void IntersectionWith(TKey key, IEnumerable<TValue> values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            if (!_dict.TryGetValue(key, out var collection))
+            {
+                return;
+            }
+
+            var keep = new HashSet<TValue>(values);
+            var snapshot = new List<TValue>(collection);
+            foreach (var value in snapshot)
+            {
+                if (!keep.Contains(value))
+                {
+                    collection.Remove(value);
+                }
+            }
+
+            if (collection.Count == 0)
+            {
+                _dict.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Removes every occurrence of each value of the specified collection from the key
+        /// (set-difference semantics). The key is dropped when no values remain; a missing key
+        /// is a no-op.
+        /// </summary>
+        public void ExceptWith(TKey key, IEnumerable<TValue> values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            if (!_dict.TryGetValue(key, out var collection))
+            {
+                return;
+            }
+
+            var removals = new HashSet<TValue>(values);
+            var snapshot = new List<TValue>(collection);
+            foreach (var value in snapshot)
+            {
+                if (removals.Contains(value))
+                {
+                    while (collection.Remove(value))
+                    {
+                    }
+                }
+            }
+
+            if (collection.Count == 0)
+            {
+                _dict.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Removes all keys and values.
+        /// </summary>
+        public void Clear()
+        {
+            _dict.Clear();
+        }
+
+        /// <summary>
+        /// Gets the values associated with the key. When the key is absent, returns
+        /// <c>false</c> and <paramref name="value"/> is <c>null</c> (check the return value
+        /// before use).
+        /// </summary>
+        public bool TryGetValue(TKey key, out IReadOnlyCollection<TValue> value)
+        {
+            if (_dict.TryGetValue(key, out var collection))
+            {
+                value = AsReadOnlyView(collection);
+                return true;
+            }
+
+            value = null!;
+            return false;
+        }
+
+        /// <summary>
+        /// Returns a read-only <see cref="ILookup{TKey,TValue}"/> view of the map
+        /// (a missing key yields an empty grouping).
+        /// </summary>
+        public ILookup<TKey, TValue> AsLookup()
+        {
+            return new LookupView(this);
+        }
+
+        /// <summary>
+        /// Creates a shallow copy: value references are shared, key-value associations are
+        /// independent.
+        /// </summary>
+        public MultiDictionary<TKey, TValue> Clone()
+        {
+            var clone = new MultiDictionary<TKey, TValue>(_comparer, _innerFactory);
+            foreach (var pair in _dict)
+            {
+                var collection = clone._innerFactory();
+                foreach (var value in pair.Value)
+                {
+                    collection.Add(value);
+                }
+
+                clone._dict.Add(pair.Key, collection);
+            }
+
+            return clone;
+        }
+
+        /// <summary>
+        /// Exports the map as a snapshot dictionary from key to its value collection. The
+        /// outer dictionary is independent of the map; the inner collections are shared
+        /// (live views of the values stored for each key).
+        /// </summary>
+        public IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>> ToDictionary()
+        {
+            var dictionary = new Dictionary<TKey, IReadOnlyCollection<TValue>>(_comparer);
+            foreach (var pair in _dict)
+            {
+                dictionary.Add(pair.Key, AsReadOnlyView(pair.Value));
+            }
+
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Returns a live read-only view of the map: lookups and enumeration reflect subsequent
+        /// changes to the owning map. Mutating members are not exposed.
+        /// </summary>
+        public IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>> AsReadOnly()
+        {
+            return new ReadOnlyDictionaryView(this);
+        }
+
+        /// <summary>
+        /// Returns the contents in expanded per-key form, comma separated,
+        /// e.g. <c>k1:[v1,v2],k2:[v3]</c>.
+        /// </summary>
+        public override string ToString()
+        {
+            return string.Join(",", _dict.Select(pair =>
+                $"{pair.Key}:[{string.Join(",", pair.Value)}]"));
+        }
+
+        /// <summary>
+        /// Enumerates the map as flat (key, value) pairs — one entry per value.
+        /// </summary>
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+        {
+            foreach (var pair in _dict)
+            {
+                foreach (var value in pair.Value)
+                {
+                    yield return new KeyValuePair<TKey, TValue>(pair.Key, value);
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        IEnumerator<KeyValuePair<TKey, IReadOnlyCollection<TValue>>>
+            IEnumerable<KeyValuePair<TKey, IReadOnlyCollection<TValue>>>.GetEnumerator()
+        {
+            foreach (var pair in _dict)
+            {
+                yield return new KeyValuePair<TKey, IReadOnlyCollection<TValue>>(pair.Key, AsReadOnlyView(pair.Value));
+            }
+        }
+
+        IEnumerable<IReadOnlyCollection<TValue>> IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>.Values
+        {
+            get
+            {
+                foreach (var collection in _dict.Values)
+                {
+                    yield return AsReadOnlyView(collection);
+                }
+            }
+        }
+
+        private IReadOnlyCollection<TValue> AsReadOnlyView(ICollection<TValue> collection)
+        {
+            // List<T> / HashSet<T> (the built-in factories) and any well-behaved custom factory
+            // implement IReadOnlyCollection<T>; the cast is a contract, not a conversion.
+            return (IReadOnlyCollection<TValue>)collection;
+        }
+
+        private sealed class ReadOnlyDictionaryView :
+            IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>
+        {
+            private readonly MultiDictionary<TKey, TValue> _owner;
+
+            public ReadOnlyDictionaryView(MultiDictionary<TKey, TValue> owner)
+            {
+                _owner = owner;
+            }
+
+            public int Count => _owner.Count;
+
+            public IEnumerable<TKey> Keys => _owner.Keys;
+
+            public IEnumerable<IReadOnlyCollection<TValue>> Values =>
+                _owner._dict.Values.Select(AsView);
+
+            public IReadOnlyCollection<TValue> this[TKey key] => _owner[key];
+
+            public bool ContainsKey(TKey key)
+            {
+                return _owner.ContainsKey(key);
+            }
+
+            public bool TryGetValue(TKey key, out IReadOnlyCollection<TValue> value)
+            {
+                if (_owner.ContainsKey(key))
+                {
+                    value = _owner[key];
+                    return true;
+                }
+
+                value = null!;
+                return false;
+            }
+
+            public IEnumerator<KeyValuePair<TKey, IReadOnlyCollection<TValue>>> GetEnumerator()
+            {
+                foreach (var pair in _owner._dict)
+                {
+                    yield return new KeyValuePair<TKey, IReadOnlyCollection<TValue>>(
+                        pair.Key, AsView(pair.Value));
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            private static IReadOnlyCollection<TValue> AsView(ICollection<TValue> collection)
+            {
+                return (IReadOnlyCollection<TValue>)collection;
+            }
+        }
+
+        private sealed class LookupView : ILookup<TKey, TValue>
+        {
+            private readonly MultiDictionary<TKey, TValue> _owner;
+
+            public LookupView(MultiDictionary<TKey, TValue> owner)
+            {
+                _owner = owner;
+            }
+
+            public int Count => _owner.Count;
+
+            public bool Contains(TKey key) => _owner.ContainsKey(key);
+
+            public IEnumerable<TValue> this[TKey key]
+            {
+                get
+                {
+                    if (_owner._dict.TryGetValue(key, out var collection))
+                    {
+                        return new GroupingView(key, collection);
+                    }
+
+                    return new TValue[0];
+                }
+            }
+
+            public IEnumerator<IGrouping<TKey, TValue>> GetEnumerator()
+            {
+                foreach (var pair in _owner._dict)
+                {
+                    yield return new GroupingView(pair.Key, pair.Value);
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+        }
+
+        private sealed class GroupingView : IGrouping<TKey, TValue>
+        {
+            private readonly IEnumerable<TValue> _values;
+
+            public GroupingView(TKey key, IEnumerable<TValue> values)
+            {
+                Key = key;
+                _values = values;
+            }
+
+            public TKey Key { get; }
+
+            public IEnumerator<TValue> GetEnumerator()
+            {
+                return _values.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
         }
     }
 }
