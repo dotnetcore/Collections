@@ -4,13 +4,14 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/dotnetcore/CAP/master/LICENSE.txt)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections?ref=badge_shield)
 
-NCC Collections consists of a set of collection-based extensions and tools, such as paging extensions.
+NCC Collections consists of a set of collection-based extensions and tools, such as paging extensions and multiset/multimap collections.
 
 ## Nuget Packages
 
 | Package Name                                                                                                                                 | Version                                                                                      | Downloads                                                                                     |
 | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | [DotNetCore.Collections.Paginable](https://www.nuget.org/packages/DotNetCore.Collections.Paginable/)                                         | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.svg)                     | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.svg)                     |
+| [DotNetCore.Collections.Multi](https://www.nuget.org/packages/DotNetCore.Collections.Multi/)                                                 | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Multi.svg)                         | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Multi.svg)                         |
 | [DotNetCore.Collections.Paginable.Chloe](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.Chloe/)                             | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.Chloe.svg)               | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.Chloe.svg)               |
 | [DotNetCore.Collections.Paginable.DosOrm](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.DosOrm/)                           | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.DosOrm.svg)              | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.DosOrm.svg)              |
 | [DotNetCore.Collections.Paginable.EntityFrameworkCore](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.EntityFrameworkCore/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.EntityFrameworkCore.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.EntityFrameworkCore.svg) |
@@ -321,6 +322,43 @@ using(var connection = new SqlConnection(connectionString))
 
 - [DotNetCore.Collections.Paginable with EFCore](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.EfCore/Program.cs)
 - [DotNetCore.Collections.Paginable with EF6](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Ef/Program.cs)
+
+## MultiSet &amp; MultiDictionary
+
+`DotNetCore.Collections.Multi` provides two collection types that are independent of the paging extensions and ship in their own package:
+
+- **`MultiList<T>`** — a multiset (bag): an unordered collection that allows duplicates and tracks the number of occurrences of each element. Supports multiset set operations (`UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, subset &amp; superset judgments, `Overlaps` / `IsDisjointFrom`), copy-expanded enumeration, `CountOf` / `TotalCount` / `DistinctCount`, and injectable `IEqualityComparer<T>`.
+- **`MultiDictionary<TKey, TValue>`** — a multimap: a dictionary that associates multiple values with a single key. Implements `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>`, provides `AsLookup()` (an `ILookup` view), per-key value set operations, and a configurable inner-collection factory (`allowDuplicateValues` or a custom factory).
+
+Both target `netstandard2.0`, `netstandard2.1` and `net6.0`. Element/key equality always goes through `IEqualityComparer` (never hash codes alone), `null` elements are supported in `MultiList<T>`, and neither type is thread-safe.
+
+### Install the package
+
+```
+Install-Package DotNetCore.Collections.Multi
+```
+
+### Write code
+
+```c#
+// MultiList<T>: a bag counting occurrences
+var bag = new MultiList<string> { "apple", "apple", "banana" };
+bag.CountOf("apple");      // 2
+bag.TotalCount;            // 3
+bag.UnionWith(new[] { "apple", "cherry" });
+bag.IsSupersetOf(new[] { "banana" }); // true
+
+// MultiDictionary<K, V>: one key, many values
+var map = new MultiDictionary<string, int>();
+map.Add("orders", 1001);
+map.Add("orders", 1002);
+foreach (var order in map["orders"]) { /* 1001, 1002 */ }
+var lookup = map.AsLookup();          // LINQ-friendly ILookup view
+```
+
+### Examples
+
+- [Sample.Multi](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Multi/Program.cs)
 
 ## License
 

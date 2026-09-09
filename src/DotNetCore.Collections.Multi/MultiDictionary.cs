@@ -3,6 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+// CS8714: TKey is deliberately unconstrained (null key *values* are rejected at
+// runtime, but the type parameter itself must stay nullable-friendly, e.g.
+// TKey = string?); the "notnull" key constraint of the annotated
+// Dictionary<TKey, TValue> (net5.0+ reference assemblies) is a false positive here.
+#pragma warning disable CS8714
+
 namespace DotNetCore.Collections.Multi
 {
     /// <summary>

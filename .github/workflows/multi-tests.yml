@@ -1,0 +1,39 @@
+name: Multi.Tests
+
+on:
+  push:
+    branches: [ dev, master ]
+    paths:
+      - 'src/DotNetCore.Collections.Multi/**'
+      - 'tests/DotNetCore.Collections.Multi.Tests/**'
+      - '.github/workflows/multi-tests.yml'
+  pull_request:
+    paths:
+      - 'src/DotNetCore.Collections.Multi/**'
+      - 'tests/DotNetCore.Collections.Multi.Tests/**'
+
+jobs:
+  test:
+    runs-on: windows-latest
+    env:
+      DOTNET_ROLL_FORWARD: LatestMajor
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # SourceLink needs full history for deterministic build
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build (netstandard2.0 / netstandard2.1 / net6.0)
+        run: dotnet build src/DotNetCore.Collections.Multi/DotNetCore.Collections.Multi.csproj -c Release
+
+      - name: Pack
+        run: dotnet pack src/DotNetCore.Collections.Multi/DotNetCore.Collections.Multi.csproj -c Release --no-build
+
+      - name: Test
+        run: dotnet test tests/DotNetCore.Collections.Multi.Tests/DotNetCore.Collections.Multi.Tests.csproj -c Release

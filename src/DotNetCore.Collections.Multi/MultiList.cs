@@ -2,6 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 
+// CS8714: T is deliberately unconstrained because null elements are supported
+// (tracked in a dedicated bucket); the "notnull" key constraint of the annotated
+// Dictionary<TKey, TValue> (net5.0+ reference assemblies) is a false positive here.
+#pragma warning disable CS8714
+
 namespace DotNetCore.Collections.Multi
 {
     /// <summary>

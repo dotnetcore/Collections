@@ -1,10 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>8.0</LangVersion>
-    <Nullable>enable</Nullable>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+    <Import Project="..\..\build\common.props"/>
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
+        <LangVersion>8.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <!-- Microsoft.SourceLink.GitHub (build-time only, PrivateAssets) transitively pulls
+             System.IO.Hashing, whose netcoreapp2.0 targets warn when building net6.0.
+             Suppressed per upstream guidance; does not affect the produced package. -->
+        <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AssemblyName>DotNetCore.Collections.Multi</AssemblyName>
+        <PackageId>DotNetCore.Collections.Multi</PackageId>
+        <PackageVersion>6.0.0.0</PackageVersion>
+        <PackageTags>Collections;MultiSet;MultiDictionary;Bag;Multimap</PackageTags>
+        <Description>MultiSet (bag) and MultiDictionary (multimap) collections for .NET.</Description>
+    </PropertyGroup>
 
 </Project>
