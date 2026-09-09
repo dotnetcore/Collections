@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using FreeSql;
 
 namespace DotNetCore.Collections.Paginable.Internal
@@ -7,6 +8,7 @@ namespace DotNetCore.Collections.Paginable.Internal
     {
         public static long Count<T>(ISelect<T> select) where T : class => select.Count();
 
-        public static Task<long> CountAsync<T>(ISelect<T> select) where T : class => select.CountAsync();
+        public static Task<long> CountAsync<T>(ISelect<T> select, CancellationToken cancellationToken) where T : class
+            => select.CountAsync(cancellationToken);
     }
 }

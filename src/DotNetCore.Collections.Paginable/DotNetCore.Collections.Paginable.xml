@@ -161,6 +161,76 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:DotNetCore.Collections.Paginable.PaginableKeyset">
+            <summary>
+            Public query builder for keyset (seek) pagination, shared by the core library and
+            provider integrations (e.g. EF Core async keyset).
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableKeyset.BuildKeysetQuery``2(System.Linq.IQueryable{``0},System.Linq.Expressions.Expression{System.Func{``0,``1}},``1,System.Int32,System.Boolean)">
+            <summary>
+            Composes a keyset continuation query: filter by the ordering key, order, and
+            take <c>pageSize + 1</c> members (the extra member only signals <c>HasNext</c>
+            and must be trimmed by the caller).
+            </summary>
+            <typeparam name="T">element type</typeparam>
+            <typeparam name="TKey">ordering key type; must support the &gt; / &lt; operators
+            (int, long, DateTime, decimal, DateTimeOffset, ...) so that the comparison can
+            be expressed as an expression tree and translated by LINQ providers</typeparam>
+            <param name="source">source queryable</param>
+            <param name="keySelector">ordering key selector (must be stable and unique-ish:
+            a monotonic id or (created, id) composite is typical)</param>
+            <param name="lastKey">keyset anchor: the ordering key of the last member of the
+            previous page</param>
+            <param name="pageSize">requested page size</param>
+            <param name="descending">ordering direction</param>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.KeysetPageExtensions">
+            <summary>
+            Keyset (seek) pagination extensions.
+            <para>
+            Offset-based pagination degrades linearly with page number (<c>OFFSET 100000</c>
+            forces the provider to scan and discard 100000 rows). Keyset pagination avoids
+            both the <c>OFFSET</c> scan and the <c>COUNT(*)</c> round trip: each request is a
+            single <c>WHERE key &gt; @last ORDER BY key LIMIT @size</c> query. Use it for
+            infinite-scroll / cursor APIs; use <see cref="T:DotNetCore.Collections.Paginable.SolidPageExtensions"/> when you need
+            total page counts.
+            </para>
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.KeysetPageExtensions.GetFirstPageByKeyset``2(System.Linq.IQueryable{``0},System.Linq.Expressions.Expression{System.Func{``0,``1}},System.Int32,System.Boolean)">
+            <summary>
+            Gets the first keyset page from a queryable source (no keyset anchor applied).
+            </summary>
+            <typeparam name="T">element type</typeparam>
+            <typeparam name="TKey">ordering key type; must support the &gt; / &lt; operators</typeparam>
+            <param name="source">source queryable</param>
+            <param name="keySelector">ordering key selector</param>
+            <param name="pageSize">page size</param>
+            <param name="descending">ordering direction</param>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.KeysetPageExtensions.GetPageByKeyset``2(System.Linq.IQueryable{``0},System.Linq.Expressions.Expression{System.Func{``0,``1}},``1,System.Int32,System.Boolean)">
+            <summary>
+            Gets the keyset page that follows <paramref name="lastKey"/> from a queryable source.
+            </summary>
+            <typeparam name="T">element type</typeparam>
+            <typeparam name="TKey">ordering key type; must support the &gt; / &lt; operators</typeparam>
+            <param name="source">source queryable</param>
+            <param name="keySelector">ordering key selector</param>
+            <param name="lastKey">ordering key of the last member of the previous page</param>
+            <param name="pageSize">page size</param>
+            <param name="descending">ordering direction</param>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.KeysetPageExtensions.GetFirstPageByKeyset``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},System.Int32,System.Boolean)">
+            <summary>
+            Gets the first keyset page from an in-memory source (no keyset anchor applied).
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.KeysetPageExtensions.GetPageByKeyset``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},``1,System.Int32,System.Boolean)">
+            <summary>
+            Gets the keyset page that follows <paramref name="lastKey"/> from an in-memory source.
+            </summary>
+        </member>
         <member name="T:DotNetCore.Collections.Paginable.PageExtensions">
             <summary>
             Extensions for page
@@ -466,6 +536,60 @@
             <summary>
             Get all value.
             </summary>
+        </member>
+        <member name="T:DotNetCore.Collections.Paginable.KeysetPage`1">
+            <summary>
+            Result of a keyset (seek) pagination request.
+            <para>
+            Unlike offset-based <see cref="T:DotNetCore.Collections.Paginable.IPage`1"/>, a keyset page does NOT carry total
+            member/page counts - that is the whole point: no <c>COUNT(*)</c> round trip and
+            no <c>OFFSET</c> scan, so deep pages stay as cheap as shallow ones. The caller
+            chains requests by feeding <see cref="P:DotNetCore.Collections.Paginable.KeysetPage`1.LastMember"/> (of the ordering key) into
+            the next <c>GetPageByKeyset</c> call.
+            </para>
+            </summary>
+            <typeparam name="T">element type</typeparam>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.KeysetPage`1.Members">
+            <summary>
+            Members of the current page (at most <c>pageSize</c> items).
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.KeysetPage`1.PageSize">
+            <summary>
+            Requested page size.
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.KeysetPage`1.CurrentPageSize">
+            <summary>
+            Actual member count of this page (<c>0</c> - <c>pageSize</c>).
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.KeysetPage`1.HasNext">
+            <summary>
+            Whether more members exist AFTER this page in the ordering direction.
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.KeysetPage`1.IsFirstPage">
+            <summary>
+            Whether this is the first page of the keyset traversal (no lower/upper bound
+            was applied, i.e. no "last key" was given).
+            </summary>
+        </member>
+        <member name="P:DotNetCore.Collections.Paginable.KeysetPage`1.LastMember">
+            <summary>
+            Gets the last member of this page; feed it back as the keyset anchor of the
+            next request. Returns <c>default</c> when the page is empty.
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.KeysetPage`1.#ctor(System.Collections.Generic.IReadOnlyList{`0},System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Create a keyset page result.
+            </summary>
+            <param name="members">materialized members of this page</param>
+            <param name="pageSize">requested page size</param>
+            <param name="hasNext">whether more members exist after this page</param>
+            <param name="isFirstPage">whether no keyset anchor was applied</param>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.PageBase`1">
             <summary>

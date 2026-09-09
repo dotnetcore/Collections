@@ -4,6 +4,41 @@
         <name>DotNetCore.Collections.Paginable.EntityFrameworkCore</name>
     </assembly>
     <members>
+        <member name="T:DotNetCore.Collections.Paginable.KeysetPageAsyncExtensions">
+            <summary>
+            Async keyset (seek) pagination for EF Core, executed end-to-end as provider-native
+            async database calls (<c>ToListAsync(cancellationToken)</c>).
+            <para>
+            Each request is a single <c>WHERE key &gt; @last ORDER BY key LIMIT @size</c> query:
+            no OFFSET scan, no COUNT(*) round trip - deep pages cost the same as shallow ones.
+            </para>
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.KeysetPageAsyncExtensions.GetFirstPageByKeysetAsync``2(System.Linq.IQueryable{``0},System.Linq.Expressions.Expression{System.Func{``0,``1}},System.Int32,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Gets the first keyset page asynchronously (no keyset anchor applied).
+            </summary>
+            <typeparam name="T">element type</typeparam>
+            <typeparam name="TKey">ordering key type; must support the &gt; / &lt; operators</typeparam>
+            <param name="source">source queryable</param>
+            <param name="keySelector">ordering key selector</param>
+            <param name="pageSize">page size</param>
+            <param name="descending">ordering direction</param>
+            <param name="cancellationToken">cancellation token</param>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.KeysetPageAsyncExtensions.GetPageByKeysetAsync``2(System.Linq.IQueryable{``0},System.Linq.Expressions.Expression{System.Func{``0,``1}},``1,System.Int32,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Gets the keyset page that follows <paramref name="lastKey"/> asynchronously.
+            </summary>
+            <typeparam name="T">element type</typeparam>
+            <typeparam name="TKey">ordering key type; must support the &gt; / &lt; operators</typeparam>
+            <param name="source">source queryable</param>
+            <param name="keySelector">ordering key selector</param>
+            <param name="lastKey">ordering key of the last member of the previous page</param>
+            <param name="pageSize">page size</param>
+            <param name="descending">ordering direction</param>
+            <param name="cancellationToken">cancellation token</param>
+        </member>
         <member name="T:DotNetCore.Collections.Paginable.SolidPageExtensions">
             <summary>
             Extensions for solid page for EntityFrameworkCore

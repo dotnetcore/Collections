@@ -54,7 +54,7 @@ namespace DotNetCore.Collections.Paginable.Internal
             var size = pageSize.Value;
             if (size < 1)
                 throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
-            var realMemberCount = PaginableCalc.GetRealMemberCount(limitedMemberCount, await SqlSugarHelper.CountAsync(query));
+            var realMemberCount = PaginableCalc.GetRealMemberCount(limitedMemberCount, await SqlSugarHelper.CountAsync(query, cancellationToken));
             var realPageCount = PaginableCalc.GetRealPageCount(realMemberCount, size);
 
             return limitedMemberCount.IsValid() && limitedMemberCount.HasValue

@@ -101,7 +101,7 @@ namespace DotNetCore.Collections.Paginable
             if (pageSize < 1)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
 
-            var totalMemberCount = await SqlSugarHelper.CountAsync(query);
+            var totalMemberCount = await SqlSugarHelper.CountAsync(query, cancellationToken);
 
             var skip = (pageNumber - 1) * pageSize;
             if (totalMemberCount > 0 && skip >= totalMemberCount)

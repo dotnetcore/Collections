@@ -108,7 +108,7 @@ namespace DotNetCore.Collections.Paginable
             if (pageSize < 1)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
 
-            var totalMemberCount = (await FreeSqlHelper.CountAsync(select)).AsInt32();
+            var totalMemberCount = (await FreeSqlHelper.CountAsync(select, cancellationToken)).AsInt32();
 
             var skip = (pageNumber - 1) * pageSize;
             if (totalMemberCount > 0 && skip >= totalMemberCount)
