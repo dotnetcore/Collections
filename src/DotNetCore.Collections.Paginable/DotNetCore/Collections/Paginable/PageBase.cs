@@ -23,7 +23,8 @@ namespace DotNetCore.Collections.Paginable
         // ReSharper disable once InconsistentNaming
         protected Action _initializeAction;
 
-        private bool _mHasInitialized;
+        private volatile bool _mHasInitialized;
+        private readonly object _mInitializeLock = new();
 
         /// <summary>
         /// Page base
@@ -116,8 +117,17 @@ namespace DotNetCore.Collections.Paginable
 
         private void CheckOrInitializePage()
         {
-            if (!_mHasInitialized)
+            // Thread-safe lazy initialization: a shared page instance may be enumerated
+            // concurrently (pages are cached in PaginableSetBase), so the initialize action
+            // must run exactly once and complete before any other thread reads _memberList.
+            if (_mHasInitialized)
+                return;
+
+            lock (_mInitializeLock)
             {
+                if (_mHasInitialized)
+                    return;
+
                 _initializeAction?.Invoke();
                 _mHasInitialized = true;
             }

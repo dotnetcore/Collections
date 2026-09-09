@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using DotNetCore.Collections.Paginable.Internal;
 
@@ -12,9 +13,9 @@ namespace DotNetCore.Collections.Paginable
     public abstract class PaginableSetBase<T> : IPaginable<T>
     {
         /// <summary>
-        /// Lazy pined paged cache.
+        /// Lazy pined paged cache. Concurrent: parallel paging must not corrupt the cache.
         /// </summary>
-        protected readonly Dictionary<int, Lazy<IPage<T>>> _lazyPinedPagesCache;
+        protected readonly ConcurrentDictionary<int, Lazy<IPage<T>>> _lazyPinedPagesCache;
 
         /// <summary>
         /// Gets limited type
@@ -39,7 +40,7 @@ namespace DotNetCore.Collections.Paginable
 
             PageSize = pageSize;
             PageCount = realPageCount;
-            _lazyPinedPagesCache = new Dictionary<int, Lazy<IPage<T>>>(realPageCount);
+            _lazyPinedPagesCache = new ConcurrentDictionary<int, Lazy<IPage<T>>>(Environment.ProcessorCount, realPageCount);
 
             _realMemberCount = realMemberCount;
             _limitedMemberCount = 0;
@@ -51,7 +52,7 @@ namespace DotNetCore.Collections.Paginable
         {
             PageSize = pageSize;
             PageCount = realPageCount;
-            _lazyPinedPagesCache = new Dictionary<int, Lazy<IPage<T>>>(realPageCount);
+            _lazyPinedPagesCache = new ConcurrentDictionary<int, Lazy<IPage<T>>>(Environment.ProcessorCount, realPageCount);
 
             _realMemberCount = limitedMembersCount <= realMemberCount
                 ? limitedMembersCount
@@ -71,11 +72,11 @@ namespace DotNetCore.Collections.Paginable
                 }
                 else
                 {
-                    var lazyValue = GetSpecifiedPage(i, PageSize, _realMemberCount);
-                    _lazyPinedPagesCache[i] = lazyValue;
+                    // GetOrAdd guarantees a single Lazy instance per page number across
+                    // concurrent enumerators; Lazy itself serializes first-time materialization.
+                    var lazyValue = _lazyPinedPagesCache.GetOrAdd(i, _ => GetSpecifiedPage(i, PageSize, _realMemberCount));
                     yield return lazyValue.Value;
-                }
-            }
+                }            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -115,8 +116,7 @@ namespace DotNetCore.Collections.Paginable
             if (HasInitializeSpecialPage(pageNumber, out var lazyPage))
                 return lazyPage.Value;
 
-            var lazyValue = GetSpecifiedPage(pageNumber, PageSize, _realMemberCount);
-            _lazyPinedPagesCache[pageNumber] = lazyValue;
+            var lazyValue = _lazyPinedPagesCache.GetOrAdd(pageNumber, _ => GetSpecifiedPage(pageNumber, PageSize, _realMemberCount));
             return lazyValue.Value;
         }
 

@@ -212,7 +212,12 @@ namespace DotNetCore.Collections.Paginable
             if (pageSize < 1)
                 throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
 
-            return new QueryablePage<T>(queryable, pageNumber, pageSize, queryable.Count());
+            var totalMemberCount = queryable.Count();
+            var skip = (pageNumber - 1) * pageSize;
+            if (totalMemberCount > 0 && skip >= totalMemberCount)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be greater than pages count");
+
+            return new QueryablePage<T>(queryable, pageNumber, pageSize, totalMemberCount);
         }
 
         /// <summary>

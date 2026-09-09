@@ -1,0 +1,83 @@
+name: Paginable.Tests
+
+on:
+  push:
+    branches: [ dev, master ]
+    paths:
+      - 'src/DotNetCore.Collections.Paginable*/**'
+      - 'tests/DotNetCore.Collections.Paginable.*/**'
+      - 'performance/DotNetCore.Collections.Paginable.Benchmarks/**'
+      - 'build/common.props'
+      - '.github/workflows/paginable-tests.yml'
+  pull_request:
+    paths:
+      - 'src/DotNetCore.Collections.Paginable*/**'
+      - 'tests/DotNetCore.Collections.Paginable.*/**'
+      - '.github/workflows/paginable-tests.yml'
+
+env:
+  DOTNET_ROLL_FORWARD: LatestMajor
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: windows-latest # full TFM matrix includes net451/net461 targets
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # SourceLink needs full history for deterministic build
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build core library (11 TFMs)
+        run: dotnet build src/DotNetCore.Collections.Paginable/DotNetCore.Collections.Paginable.csproj -c Release
+
+      - name: Pack (verify package generation incl. snupkg)
+        run: dotnet pack src/DotNetCore.Collections.Paginable/DotNetCore.Collections.Paginable.csproj -c Release --no-build
+
+      - name: Run unit tests
+        run: dotnet test tests/DotNetCore.Collections.Paginable.Tests/DotNetCore.Collections.Paginable.Tests.csproj -c Release
+
+  db-tests:
+    name: Db tests (SQL Server container)
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: Paginable#2026_Test
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Paginable#2026_Test' -Q 'SELECT 1' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 30s
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Bootstrap test database
+        run: |
+          docker exec -i $(docker ps --filter "ancestor=mcr.microsoft.com/mssql/server:2022-latest" -q) \
+            /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Paginable#2026_Test' \
+            -i /dev/stdin < tests/DotNetCore.Collections.Paginable.DbTests/Scripts/Bootstrap-CiDatabase.sql
+
+      - name: Restore
+        run: dotnet restore tests/DotNetCore.Collections.Paginable.DbTests/DotNetCore.Collections.Paginable.DbTests.csproj
+
+      - name: Run Db tests
+        env:
+          PAGINABLE_DBTESTS_CONNECTION_STRING: Server=localhost,1433;Database=PaginableDbTests;User Id=sa;Password=Paginable#2026_Test;TrustServerCertificate=True
+        run: dotnet test tests/DotNetCore.Collections.Paginable.DbTests/DotNetCore.Collections.Paginable.DbTests.csproj -c Release --no-restore

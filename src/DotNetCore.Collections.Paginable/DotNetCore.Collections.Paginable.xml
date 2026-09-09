@@ -657,7 +657,7 @@
         </member>
         <member name="F:DotNetCore.Collections.Paginable.PaginableSetBase`1._lazyPinedPagesCache">
             <summary>
-            Lazy pined paged cache.
+            Lazy pined paged cache. Concurrent: parallel paging must not corrupt the cache.
             </summary>
         </member>
         <member name="P:DotNetCore.Collections.Paginable.PaginableSetBase`1._limitedType">
