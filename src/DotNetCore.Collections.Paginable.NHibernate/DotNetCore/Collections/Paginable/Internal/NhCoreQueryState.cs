@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DotNetCore.Collections.Paginable.Abstractions;
 using NHibernate;
 
@@ -11,7 +12,7 @@ namespace DotNetCore.Collections.Paginable.Internal
     /// <typeparam name="T"></typeparam>
     public class NhCoreQueryState<T> : IQueryEntryState<T>
     {
-        private readonly Lazy<IFutureEnumerable<T>> _mLazyChloeQueryMembers;
+        private readonly Lazy<IList<T>> _mLazyNhQueryMembers;
 
         /// <summary>
         /// NHibernate query state
@@ -27,15 +28,19 @@ namespace DotNetCore.Collections.Paginable.Internal
             if (skip < 0)
                 throw new ArgumentOutOfRangeException(nameof(skip), $"{nameof(skip)} can not be less than zero");
 
-            if (pageSize < 0)
-                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than zero");
+            if (pageSize < 1)
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
-            _mLazyChloeQueryMembers = new Lazy<IFutureEnumerable<T>>(() => queryOver.Skip(skip).Take(pageSize).Future());
+            // Materialize the future result into an IList once, so that later
+            // ElementAt(offset) accesses are O(1) instead of re-enumerating
+            // the IFutureEnumerable every time (O(s^2) per page).
+            _mLazyNhQueryMembers = new Lazy<IList<T>>(() =>
+                queryOver.Skip(skip).Take(pageSize).Future().GetEnumerable().ToList());
         }
 
         /// <summary>
         /// Get all value.
         /// </summary>
-        public IEnumerable<T> AllValues => _mLazyChloeQueryMembers.Value.GetEnumerable();
+        public IEnumerable<T> AllValues => _mLazyNhQueryMembers.Value;
     }
 }

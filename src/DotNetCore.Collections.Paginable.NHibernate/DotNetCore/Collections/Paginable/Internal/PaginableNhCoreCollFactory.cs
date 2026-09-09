@@ -8,24 +8,6 @@ namespace DotNetCore.Collections.Paginable.Internal
     internal static class PaginableNhCoreCollFactory
     {
         /// <summary>
-        /// Get real member count<br />.
-        /// first parameter(l) means limitedMemberCount<br />,
-        /// second parameter(c) means count.
-        /// </summary>
-        /// <returns></returns>
-        private static Func<int?, Func<int, int>> GetRealMemberCountFunc()
-            => l => c => l.IsValid() && l.HasValue ? l.Value > c ? c : l.Value : c;
-
-        /// <summary>
-        /// Get real page count<br />.
-        /// first parameter(m) means real member count, which has been gotten from <see cref="GetRealMemberCountFunc"/><br />,
-        /// second parameter(s) means page size.
-        /// </summary>
-        /// <returns></returns>
-        private static Func<int, Func<int, int>> GetRealPageCountFunc()
-            => m => s => (int) Math.Ceiling((double) m / (double) s);
-
-        /// <summary>
         /// Make NHibernate QueryOver`1 source to NHibernatePage collection.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -41,8 +23,10 @@ namespace DotNetCore.Collections.Paginable.Internal
             pageSize ??= PaginableSettingsManager.Settings.DefaultPageSize;
 
             var size = pageSize.Value;
-            var realMemberCount = GetRealMemberCountFunc()(limitedMemberCount)(NhQueryOverHelper.Count(queryOver));
-            var realPageCount = GetRealPageCountFunc()(realMemberCount)(size);
+            if (size < 1)
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
+            var realMemberCount = PaginableCalc.GetRealMemberCount(limitedMemberCount, NhQueryOverHelper.Count(queryOver));
+            var realPageCount = PaginableCalc.GetRealPageCount(realMemberCount, size);
 
             return limitedMemberCount.IsValid() && limitedMemberCount.HasValue
                 ? new PaginableNhCoreQuery<T>(queryOver, size, realPageCount, realMemberCount, limitedMemberCount.Value)

@@ -24,7 +24,7 @@ namespace DotNetCore.Collections.Paginable
         public EnumerablePage(IEnumerable<T> enumerable, int currentPageNumber, int pageSize, int totalMemberCount, bool sourceIsFull = true) : base(sourceIsFull)
         {
             var skip = (currentPageNumber - 1) * pageSize;
-            InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
+            InitializeMetaInfo(currentPageNumber, pageSize, totalMemberCount, skip);
             base._initializeAction = InitializeMemberList()(enumerable)(CurrentPageSize)(skip);
         }
 
@@ -33,30 +33,6 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <returns></returns>
         public static EmptyPage<T> Empty() => new();
-
-        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () =>
-        {
-            // c = current page number
-            // s = page size
-            // t = total member count
-            // k = skip
-            var totalPageCount = (int) Math.Ceiling((double) t / (double) s);
-            totalPageCount = totalPageCount < 0 ? 0 : totalPageCount;
-            base.TotalPageCount = totalPageCount == 0 ? 1 : totalPageCount;
-            base.TotalMemberCount = t;
-            base.CurrentPageNumber = c;
-            base.PageSize = s;
-            base.CurrentPageSize = c == totalPageCount
-                ? k == 0
-                    ? t
-                    : t % k
-                : totalPageCount == 0
-                    ? 0
-                    : s;
-
-            base.HasPrevious = c > 1;
-            base.HasNext = c < base.TotalPageCount;
-        };
 
         private Func<IEnumerable<T>, Func<int, Func<int, Action>>> InitializeMemberList()
             => array => s => k => () =>
@@ -75,16 +51,23 @@ namespace DotNetCore.Collections.Paginable
                 }
                 else if (base.SourceIsFull)
                 {
-                    for (var i = 0; i < s; i++)
+                    // Materialize the current page with a single Skip/Take enumeration.
+                    // ElementAt(k + i) per member re-enumerates from the start for non-IList
+                    // sources, costing O(pageSize * skip) per page (grows with page number).
+                    var realMembers = array.Skip(k).Take(s).ToList();
+                    var offset = 0;
+                    foreach (var item in realMembers)
                     {
-                        base._memberList.Add(new PageMember<T>(array.ElementAt(k + i), i, ref k));
+                        base._memberList.Add(new PageMember<T>(item, offset++, ref k));
                     }
                 }
                 else
                 {
-                    for (var i = 0; i < s; i++)
+                    var realMembers = array.Take(s).ToList();
+                    var offset = 0;
+                    foreach (var item in realMembers)
                     {
-                        base._memberList.Add(new PageMember<T>(array.ElementAt(i), i, ref k));
+                        base._memberList.Add(new PageMember<T>(item, offset++, ref k));
                     }
                 }
             };

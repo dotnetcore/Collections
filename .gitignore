@@ -290,3 +290,12 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 BenchmarkDotNet.Artifacts/
+
+# WorkBuddy 工作区元数据（含日志/记忆，禁止提交）
+.workbuddy/
+
+# 评估/分析类产出报告（不纳入版本控制）
+reports/
+
+# 本地 .git 备份目录（沙箱 git 操作安全网，禁止提交）
+.git-backup*/

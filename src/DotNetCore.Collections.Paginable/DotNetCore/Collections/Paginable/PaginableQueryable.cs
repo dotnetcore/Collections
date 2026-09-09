@@ -14,13 +14,23 @@ namespace DotNetCore.Collections.Paginable
         // ReSharper disable once UnusedMember.Local
         private PaginableQueryable() { }
 
-        internal PaginableQueryable(IQueryable<T> queryable, int pageSize, int realPageCount, int realMemberCount)
+        /// <summary>
+        /// Paginable queryable collection.
+        /// Public for async provider integrations (e.g. EF Core <c>ToPaginableAsync</c>)
+        /// which compute the real counts via provider-native async APIs.
+        /// </summary>
+        public PaginableQueryable(IQueryable<T> queryable, int pageSize, int realPageCount, int realMemberCount)
             : base(pageSize, realPageCount, realMemberCount)
         {
             _queryable = queryable;
         }
 
-        internal PaginableQueryable(IQueryable<T> queryable, int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount)
+        /// <summary>
+        /// Paginable queryable collection with limited members.
+        /// Public for async provider integrations (e.g. EF Core <c>ToPaginableAsync</c>)
+        /// which compute the real counts via provider-native async APIs.
+        /// </summary>
+        public PaginableQueryable(IQueryable<T> queryable, int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount)
             : base(pageSize, realPageCount, realMemberCount, limitedMembersCount)
         {
             _queryable = queryable;

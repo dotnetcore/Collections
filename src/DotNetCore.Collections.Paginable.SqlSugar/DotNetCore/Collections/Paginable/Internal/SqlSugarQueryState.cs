@@ -24,11 +24,11 @@ namespace DotNetCore.Collections.Paginable.Internal
             if (query is null)
                 throw new ArgumentNullException(nameof(query));
 
-            if (currentPageNumber < 0)
-                throw new ArgumentOutOfRangeException(nameof(currentPageNumber), $"{nameof(currentPageNumber)} can not be less than zero");
+            if (currentPageNumber < 1)
+                throw new ArgumentOutOfRangeException(nameof(currentPageNumber), $"{nameof(currentPageNumber)} can not be less than one");
 
-            if (pageSize < 0)
-                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than zero");
+            if (pageSize < 1)
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             _mLazySqlSugarQueryMembers = new Lazy<IEnumerable<T>>(() => query.ToPageList(currentPageNumber, pageSize));
         }

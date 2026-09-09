@@ -76,11 +76,11 @@ namespace DotNetCore.Collections.Paginable
             if (queryOver is null)
                 throw new ArgumentNullException(nameof(queryOver), $"{nameof(queryOver)} can not be null.");
 
-            if (pageNumber < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
+            if (pageNumber < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
 
-            if (pageSize < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
+            if (pageSize < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
 
             return new NhCorePage<T>(queryOver, pageNumber, pageSize, NhQueryOverHelper.Count(queryOver));
         }
@@ -129,11 +129,11 @@ namespace DotNetCore.Collections.Paginable
             if (queryOver is null)
                 throw new ArgumentNullException(nameof(queryOver), $"{nameof(queryOver)} can not be null.");
 
-            if (pageNumber < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
+            if (pageNumber < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
 
-            if (pageSize < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
+            if (pageSize < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
 
             return new NhCorePage<T>(queryOver, pageNumber, pageSize, await NhQueryOverHelper.CountAsync(queryOver));
         }

@@ -3,25 +3,23 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;netstandard2.1;net461;net451</TargetFrameworks>
+    <TargetFrameworks>net451;net461;net47;net48;netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
     <AssemblyName>DotNetCore.Collections.Paginable.SqlSugar</AssemblyName>
     <PackageId>DotNetCore.Collections.Paginable.SqlSugar</PackageId>
+    <PackageVersion>6.0.0.0</PackageVersion>
     <Description>Paginable extension with SqlSugar for collection.</Description>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='net5.0'">
-    <PackageReference Include="sqlSugarCore" Version="5.0.3" />
+  <!-- .NET Framework 使用 sqlSugar（纯 nfx 程序集）；其余目标使用 sqlSugarCore（netstandard2.1） -->
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
+    <PackageReference Include="sqlSugar" Version="5.1.3" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.1'">
-    <PackageReference Include="sqlSugarCore" Version="5.0.3" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='net461' OR '$(TargetFramework)'=='net451'">
-    <PackageReference Include="sqlSugar" Version="5.0.3" />
+  <ItemGroup Condition="!$(TargetFramework.StartsWith('net4'))">
+    <PackageReference Include="sqlSugarCore" Version="5.1.3" />
   </ItemGroup>
 
   <ItemGroup>

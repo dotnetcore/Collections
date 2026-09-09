@@ -86,6 +86,34 @@ namespace DotNetCore.Collections.Paginable
             return _memberList.Select(x => x.Value);
         }
 
+        /// <summary>
+        /// Initialize page meta info.
+        /// </summary>
+        /// <param name="currentPageNumber">current page number</param>
+        /// <param name="pageSize">page size</param>
+        /// <param name="totalMemberCount">total member count</param>
+        /// <param name="skip">skip count</param>
+        protected void InitializeMetaInfo(int currentPageNumber, int pageSize, int totalMemberCount, int skip)
+        {
+            var totalPageCount = (int) Math.Ceiling((double) totalMemberCount / (double) pageSize);
+            totalPageCount = totalPageCount < 0 ? 0 : totalPageCount;
+            TotalPageCount = totalPageCount == 0 ? 1 : totalPageCount;
+            TotalMemberCount = totalMemberCount;
+            CurrentPageNumber = currentPageNumber;
+            PageSize = pageSize;
+            // Items on the last page = total - skip, clamped into [0, pageSize].
+            // (The previous t % skip formula yielded 0 whenever the total was evenly
+            // divisible by the page size, wrongly emptying the last page.)
+            CurrentPageSize = totalPageCount == 0
+                ? 0
+                : currentPageNumber == totalPageCount
+                    ? Math.Min(Math.Max(totalMemberCount - skip, 0), pageSize)
+                    : pageSize;
+
+            HasPrevious = currentPageNumber > 1;
+            HasNext = currentPageNumber < TotalPageCount;
+        }
+
         private void CheckOrInitializePage()
         {
             if (!_mHasInitialized)

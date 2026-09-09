@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using DotNetCore.Collections.Paginable.Internal;
 using FreeSql;
@@ -61,47 +62,75 @@ namespace DotNetCore.Collections.Paginable
             if (select is null)
                 throw new ArgumentNullException(nameof(select), $"{nameof(select)} can not be null.");
 
-            if (pageNumber < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
+            if (pageNumber < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
 
-            if (pageSize < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
+            if (pageSize < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
 
             return new FreeSqlPage<T>(select, pageNumber, pageSize, FreeSqlHelper.Count(select).AsInt32(), includeNestedMembers);
         }
 
         /// <summary>
-        /// Get specific page from original FreeSql.Select`1 source
+        /// Get specific page from original FreeSql.Select`1 source with true end-to-end async:
+        /// both the total member count (<c>CountAsync</c>) and the current page members
+        /// (<c>ToListAsync</c>) are executed as provider-native async database calls.
         /// </summary>
         /// <typeparam name="T">element type of your FreeSql.Select`1 source</typeparam>
         /// <param name="select">original FreeSql.Select`1 source</param>
         /// <param name="pageNumber">page number</param>
         /// <param name="includeNestedMembers">include nested members</param>
+        /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static Task<IPage<T>> GetPageAsync<T>(this ISelect<T> select, int pageNumber, bool includeNestedMembers = false) where T : class
-            => GetPageAsync(select, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, includeNestedMembers);
+        public static Task<IPage<T>> GetPageAsync<T>(this ISelect<T> select, int pageNumber, bool includeNestedMembers = false, CancellationToken cancellationToken = default) where T : class
+            => GetPageAsync(select, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, includeNestedMembers, cancellationToken);
 
         /// <summary>
-        /// Get specific page from original FreeSql.Select`1 source
+        /// Get specific page from original FreeSql.Select`1 source with true end-to-end async:
+        /// both the total member count (<c>CountAsync</c>) and the current page members
+        /// (<c>ToListAsync</c>) are executed as provider-native async database calls.
         /// </summary>
         /// <typeparam name="T">element type of your FreeSql.Select`1 source</typeparam>
         /// <param name="select">original FreeSql.Select`1 source</param>
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <param name="includeNestedMembers">include nested members</param>
+        /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static async Task<IPage<T>> GetPageAsync<T>(this ISelect<T> select, int pageNumber, int pageSize, bool includeNestedMembers = false) where T : class
+        public static async Task<IPage<T>> GetPageAsync<T>(this ISelect<T> select, int pageNumber, int pageSize, bool includeNestedMembers = false, CancellationToken cancellationToken = default) where T : class
         {
             if (select is null)
                 throw new ArgumentNullException(nameof(select), $"{nameof(select)} can not be null.");
-            
-            if (pageNumber < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            
-            if (pageSize < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            
-            return new FreeSqlPage<T>(select, pageNumber, pageSize, (await FreeSqlHelper.CountAsync(select)).AsInt32(), includeNestedMembers);
+
+            if (pageNumber < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
+
+            if (pageSize < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+
+            var totalMemberCount = (await FreeSqlHelper.CountAsync(select)).AsInt32();
+
+            var skip = (pageNumber - 1) * pageSize;
+            if (totalMemberCount > 0 && skip >= totalMemberCount)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be greater than pages count");
+
+            var members = await select.Page(pageNumber, pageSize).ToListAsync(includeNestedMembers, cancellationToken);
+
+            return new EnumerablePage<T>(members, pageNumber, pageSize, totalMemberCount, sourceIsFull: false);
         }
+
+        /// <summary>
+        /// Make original FreeSql.Select`1 result to FreeSqlPage collection asynchronously,
+        /// with the total member count obtained via provider-native <c>CountAsync</c>.
+        /// </summary>
+        /// <typeparam name="T">element type of your enumerable result</typeparam>
+        /// <param name="select">FreeSql.Select`1</param>
+        /// <param name="pageSize">page size</param>
+        /// <param name="limitedMemberCount">limited member count</param>
+        /// <param name="includeNestedMembers">include nested members</param>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns></returns>
+        public static Task<PaginableFreeSqlQuery<T>> ToPaginableAsync<T>(this ISelect<T> select, int? pageSize = null, int? limitedMemberCount = null, bool? includeNestedMembers = null, CancellationToken cancellationToken = default) where T : class
+            => PaginableFreeSqlCollFactory.CreatePageSetAsync(select, pageSize, limitedMemberCount, includeNestedMembers, cancellationToken);
     }
 }

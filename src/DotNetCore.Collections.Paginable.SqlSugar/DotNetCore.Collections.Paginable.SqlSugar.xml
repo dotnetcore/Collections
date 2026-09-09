@@ -47,39 +47,41 @@
             <param name="pageSize">page size</param>
             <returns></returns>
         </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(SqlSugar.ISugarQueryable{``0},System.Int32)">
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(SqlSugar.ISugarQueryable{``0},System.Int32,System.Threading.CancellationToken)">
             <summary>
-            Get specific page from original SqlSugarQueryable source
+            Get specific page from original SqlSugarQueryable source with true end-to-end async:
+            both the total member count (<c>CountAsync</c>) and the current page members
+            (<c>ToPageListAsync</c>) are executed as provider-native async database calls.
             </summary>
             <typeparam name="T">element type of your SqlSugarQueryable source</typeparam>
             <param name="query">original SqlSugarQueryable source</param>
             <param name="pageNumber">page number</param>
+            <param name="cancellationToken">cancellation token</param>
             <returns></returns>
         </member>
-        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(SqlSugar.ISugarQueryable{``0},System.Int32,System.Int32)">
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(SqlSugar.ISugarQueryable{``0},System.Int32,System.Int32,System.Threading.CancellationToken)">
             <summary>
-            Get specific page from original SqlSugarQueryable source
+            Get specific page from original SqlSugarQueryable source with true end-to-end async:
+            both the total member count (<c>CountAsync</c>) and the current page members
+            (<c>ToPageListAsync</c>) are executed as provider-native async database calls.
             </summary>
             <typeparam name="T">element type of your SqlSugarQueryable source</typeparam>
             <param name="query">original SqlSugarQueryable source</param>
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
+            <param name="cancellationToken">cancellation token</param>
             <returns></returns>
         </member>
-        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlSugarCollFactory.GetRealMemberCountFunc">
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginableAsync``1(SqlSugar.ISugarQueryable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Threading.CancellationToken)">
             <summary>
-            Get real member count<br />.
-            first parameter(l) means limitedMemberCount<br />,
-            second parameter(c) means count.
+            Make original SqlSugarQueryable result to SqlSugarPage collection asynchronously,
+            with the total member count obtained via provider-native <c>CountAsync</c>.
             </summary>
-            <returns></returns>
-        </member>
-        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlSugarCollFactory.GetRealPageCountFunc">
-            <summary>
-            Get real page count<br />.
-            first parameter(m) means real member count, which has been gotten from <see cref="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlSugarCollFactory.GetRealMemberCountFunc"/><br />,
-            second parameter(s) means page size.
-            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="query">SqlSugarQueryable</param>
+            <param name="pageSize">page size</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <param name="cancellationToken">cancellation token</param>
             <returns></returns>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlSugarCollFactory.CreatePageSet``1(SqlSugar.ISugarQueryable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32})">
@@ -90,6 +92,18 @@
             <param name="query"></param>
             <param name="pageSize"></param>
             <param name="limitedMemberCount"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlSugarCollFactory.CreatePageSetAsync``1(SqlSugar.ISugarQueryable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Make SqlSugarQueryable source to SqlSugarPage collection asynchronously,
+            with the total member count obtained via provider-native <c>CountAsync</c>.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="query"></param>
+            <param name="pageSize"></param>
+            <param name="limitedMemberCount"></param>
+            <param name="cancellationToken"></param>
             <returns></returns>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.Internal.SqlSugarQueryState`1">

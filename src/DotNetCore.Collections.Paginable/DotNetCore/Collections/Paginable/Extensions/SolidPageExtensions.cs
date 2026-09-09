@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DotNetCore.Collections.Paginable.Internal;
 
@@ -61,15 +62,99 @@ namespace DotNetCore.Collections.Paginable
         {
             if (enumerable is null)
                 throw new ArgumentNullException(nameof(enumerable), $"{nameof(enumerable)} can not be null.");
-            
-            if (pageNumber < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
-            
-            if (pageSize < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
-            
-            return new EnumerablePage<T>(enumerable, pageNumber, pageSize, enumerable.Count());
+
+            if (pageNumber < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
+
+            if (pageSize < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+
+            var skip = (pageNumber - 1) * pageSize;
+
+            // ICollection sources expose an O(1) Count; extract the page with Skip/Take.
+            if (enumerable is ICollection<T> collection)
+            {
+                var totalMemberCount = collection.Count;
+                if (totalMemberCount > 0 && skip >= totalMemberCount)
+                    throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be greater than pages count");
+
+                var pageItems = enumerable.Skip(skip).Take(pageSize).ToList();
+                return new EnumerablePage<T>(pageItems, pageNumber, pageSize, totalMemberCount, sourceIsFull: false);
+            }
+
+            // Non-ICollection (lazy) sources: extract the current page and the total member
+            // count in a single enumeration, instead of one full Count() pass plus a second
+            // page-extraction pass.
+            var items = new List<T>(pageSize);
+            var index = 0;
+            foreach (var item in enumerable)
+            {
+                if (index >= skip && items.Count < pageSize)
+                {
+                    items.Add(item);
+                }
+                index++;
+            }
+
+            if (index > 0 && skip >= index)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be greater than pages count");
+
+            return new EnumerablePage<T>(items, pageNumber, pageSize, index, sourceIsFull: false);
         }
+
+        /// <summary>
+        /// Make original enumerable result to EnumerablePage collection (async shape).
+        /// Since <see cref="IEnumerable{T}"/> has no native async API, this completes synchronously;
+        /// use provider-specific async extensions (e.g. EF Core) for true end-to-end async.
+        /// </summary>
+        /// <typeparam name="T">element type of your enumerable result</typeparam>
+        /// <param name="enumerable">original enumerable result</param>
+        /// <param name="limitedMemberCount">limited member count</param>
+        /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+        /// <returns></returns>
+        public static Task<PaginableEnumerable<T>> ToPaginableAsync<T>(this IEnumerable<T> enumerable, int? limitedMemberCount = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(ToPaginable(enumerable, limitedMemberCount));
+
+        /// <summary>
+        /// Make original enumerable result to EnumerablePage collection (async shape).
+        /// Since <see cref="IEnumerable{T}"/> has no native async API, this completes synchronously;
+        /// use provider-specific async extensions (e.g. EF Core) for true end-to-end async.
+        /// </summary>
+        /// <typeparam name="T">element type of your enumerable result</typeparam>
+        /// <param name="enumerable">original enumerable result</param>
+        /// <param name="pageSize">page size</param>
+        /// <param name="limitedMemberCount">limited member count</param>
+        /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+        /// <returns></returns>
+        public static Task<PaginableEnumerable<T>> ToPaginableAsync<T>(this IEnumerable<T> enumerable, int pageSize, int? limitedMemberCount = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(ToPaginable(enumerable, pageSize, limitedMemberCount));
+
+        /// <summary>
+        /// Get specific page from original enumerable result (async shape).
+        /// Since <see cref="IEnumerable{T}"/> has no native async API, this completes synchronously;
+        /// use provider-specific async extensions (e.g. EF Core) for true end-to-end async.
+        /// </summary>
+        /// <typeparam name="T">element type of your enumerable result</typeparam>
+        /// <param name="enumerable">original enumerable result</param>
+        /// <param name="pageNumber">page number</param>
+        /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+        /// <returns></returns>
+        public static Task<IPage<T>> GetPageAsync<T>(this IEnumerable<T> enumerable, int pageNumber, CancellationToken cancellationToken = default)
+            => Task.FromResult(GetPage(enumerable, pageNumber));
+
+        /// <summary>
+        /// Get specific page from original enumerable result (async shape).
+        /// Since <see cref="IEnumerable{T}"/> has no native async API, this completes synchronously;
+        /// use provider-specific async extensions (e.g. EF Core) for true end-to-end async.
+        /// </summary>
+        /// <typeparam name="T">element type of your enumerable result</typeparam>
+        /// <param name="enumerable">original enumerable result</param>
+        /// <param name="pageNumber">page number</param>
+        /// <param name="pageSize">page size</param>
+        /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+        /// <returns></returns>
+        public static Task<IPage<T>> GetPageAsync<T>(this IEnumerable<T> enumerable, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+            => Task.FromResult(GetPage(enumerable, pageNumber, pageSize));
 
         /// <summary>
         /// Make original queryable source to QueryablePage collection.
@@ -121,11 +206,11 @@ namespace DotNetCore.Collections.Paginable
             if (queryable is null)
                 throw new ArgumentNullException(nameof(queryable), $"{nameof(queryable)} can not be null.");
 
-            if (pageNumber < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
+            if (pageNumber < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
 
-            if (pageSize < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
+            if (pageSize < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
 
             return new QueryablePage<T>(queryable, pageNumber, pageSize, queryable.Count());
         }
@@ -155,11 +240,11 @@ namespace DotNetCore.Collections.Paginable
             if (queryableTask is null)
                 throw new ArgumentNullException(nameof(queryableTask), $"{nameof(queryableTask)} can not be null.");
 
-            if (pageNumber < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
+            if (pageNumber < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
 
-            if (pageSize < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
+            if (pageSize < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
 
             var queryable = await queryableTask;
 

@@ -3,17 +3,31 @@
   <Import Project="..\..\build\common.props"/>
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;netstandard2.1</TargetFrameworks>
+    <!-- EF Core 6+ 起仅支持 .NET（net6/7→6.x、7.x 资产，net8/9→9.x，net10→10.x）；netstandard2.1 随 EF Core 5 EOL 一并移除 -->
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
     <AssemblyName>DotNetCore.Collections.Paginable.EntityFrameworkCore</AssemblyName>
     <PackageId>DotNetCore.Collections.Paginable.EntityFrameworkCore</PackageId>
+    <PackageVersion>6.0.0.0</PackageVersion>
     <Description>Paginable extension with Microsoft EntityFrameworkCore for collection.</Description>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.7" />
+  <ItemGroup Condition="'$(TargetFramework)'=='net6.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.36" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net7.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.20" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net8.0' OR '$(TargetFramework)'=='net9.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.20" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net10.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
   </ItemGroup>
 
   <ItemGroup>

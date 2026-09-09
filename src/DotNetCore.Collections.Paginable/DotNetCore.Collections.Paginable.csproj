@@ -3,12 +3,13 @@
     <Import Project="..\..\build\common.props"/>
 
     <PropertyGroup>
-        <TargetFrameworks>net5.0;netstandard2.1;net461;net451</TargetFrameworks>
+        <TargetFrameworks>net451;net461;net47;net48;netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     </PropertyGroup>
 
     <PropertyGroup>
         <AssemblyName>DotNetCore.Collections.Paginable</AssemblyName>
         <PackageId>DotNetCore.Collections.Paginable</PackageId>
+        <PackageVersion>6.0.0.0</PackageVersion>
         <Description>Paginable extension for collection.</Description>
     </PropertyGroup>
 

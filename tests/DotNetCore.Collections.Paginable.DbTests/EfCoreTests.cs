@@ -8,7 +8,7 @@ namespace DotNetCore.Collections.Paginable.DbTests
 {
     public class EfCoreTests
     {
-        internal static readonly string ConnectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=D:\Development\Collections\tests\DotNetCore.Collections.Paginable.DbTests\DataSource\Samples.mdf;Integrated Security=True";
+        internal static readonly string ConnectionString = TestDbSettings.ConnectionString;
 
         [Fact]
         public void GetPageTest()

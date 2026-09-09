@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using DotNetCore.Collections.Paginable.Internal;
 using SqlSugar;
@@ -55,46 +56,73 @@ namespace DotNetCore.Collections.Paginable
             if (query is null)
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
 
-            if (pageNumber < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
+            if (pageNumber < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
 
-            if (pageSize < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
+            if (pageSize < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
 
             return new SqlSugarPage<T>(query, pageNumber, pageSize, SqlSugarHelper.Count(query));
         }
 
 
         /// <summary>
-        /// Get specific page from original SqlSugarQueryable source
+        /// Get specific page from original SqlSugarQueryable source with true end-to-end async:
+        /// both the total member count (<c>CountAsync</c>) and the current page members
+        /// (<c>ToPageListAsync</c>) are executed as provider-native async database calls.
         /// </summary>
         /// <typeparam name="T">element type of your SqlSugarQueryable source</typeparam>
         /// <param name="query">original SqlSugarQueryable source</param>
         /// <param name="pageNumber">page number</param>
+        /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static Task<IPage<T>> GetPageAsync<T>(this ISugarQueryable<T> query, int pageNumber)
+        public static Task<IPage<T>> GetPageAsync<T>(this ISugarQueryable<T> query, int pageNumber, CancellationToken cancellationToken = default)
             => GetPageAsync(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize);
 
         /// <summary>
-        /// Get specific page from original SqlSugarQueryable source
+        /// Get specific page from original SqlSugarQueryable source with true end-to-end async:
+        /// both the total member count (<c>CountAsync</c>) and the current page members
+        /// (<c>ToPageListAsync</c>) are executed as provider-native async database calls.
         /// </summary>
         /// <typeparam name="T">element type of your SqlSugarQueryable source</typeparam>
         /// <param name="query">original SqlSugarQueryable source</param>
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
+        /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static async Task<IPage<T>> GetPageAsync<T>(this ISugarQueryable<T> query, int pageNumber, int pageSize)
+        public static async Task<IPage<T>> GetPageAsync<T>(this ISugarQueryable<T> query, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             if (query is null)
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
 
-            if (pageNumber < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than zero");
+            if (pageNumber < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
 
-            if (pageSize < 0)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than zero");
+            if (pageSize < 1)
+                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
 
-            return new SqlSugarPage<T>(query, pageNumber, pageSize, (await SqlSugarHelper.CountAsync(query)));
+            var totalMemberCount = await SqlSugarHelper.CountAsync(query);
+
+            var skip = (pageNumber - 1) * pageSize;
+            if (totalMemberCount > 0 && skip >= totalMemberCount)
+                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be greater than pages count");
+
+            var members = await query.ToPageListAsync(pageNumber, pageSize);
+
+            return new EnumerablePage<T>(members, pageNumber, pageSize, totalMemberCount, sourceIsFull: false);
         }
+
+        /// <summary>
+        /// Make original SqlSugarQueryable result to SqlSugarPage collection asynchronously,
+        /// with the total member count obtained via provider-native <c>CountAsync</c>.
+        /// </summary>
+        /// <typeparam name="T">element type of your enumerable result</typeparam>
+        /// <param name="query">SqlSugarQueryable</param>
+        /// <param name="pageSize">page size</param>
+        /// <param name="limitedMemberCount">limited member count</param>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns></returns>
+        public static Task<PaginableSqlSugarQuery<T>> ToPaginableAsync<T>(this ISugarQueryable<T> query, int? pageSize = null, int? limitedMemberCount = null, CancellationToken cancellationToken = default)
+            => PaginableSqlSugarCollFactory.CreatePageSetAsync(query, pageSize, limitedMemberCount);
     }
 }

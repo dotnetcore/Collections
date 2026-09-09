@@ -1,0 +1,725 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.5.1": {
+      "FreeSql.DbContext": {
+        "type": "Direct",
+        "requested": "[3.5.311, )",
+        "resolved": "3.5.311",
+        "contentHash": "7XDHHX+/cp+GyfivHCQOindb6qHRobZusOfFY6fKnxdODJVSxypyrv9K9cQXlompPgSWxyHV0Z5S6yHTG1E83Q==",
+        "dependencies": {
+          "FreeSql": "3.5.311"
+        }
+      },
+      "Microsoft.NETFramework.ReferenceAssemblies": {
+        "type": "Direct",
+        "requested": "[1.0.3, )",
+        "resolved": "1.0.3",
+        "contentHash": "vUc9Npcs14QsyOD01tnv/m8sQUnGTGOw1BCmKcv77LBJY7OxhJ+zJF7UD/sCL3lYNFuqmQEVlkfS4Quif6FyYg==",
+        "dependencies": {
+          "Microsoft.NETFramework.ReferenceAssemblies.net451": "1.0.3"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[10.0.401, )",
+        "resolved": "10.0.401",
+        "contentHash": "LGmlwgP1Cx37JEWzyjS0o1/+xs/s/e3E2TBSuogI5ePA/9L0pfIfeYX0k5in7Bfcw8Nn2y2sG9jXxydTjiR2Fg=="
+      },
+      "FreeSql": {
+        "type": "Transitive",
+        "resolved": "3.5.311",
+        "contentHash": "jC8dehy9GQXH1b/g5VTpTbYkO15SzDwGY3/452dIJhDsKAmHHdVglSWTunOzR9VbkUiJTDMyA4MOFp9d0NOEeA=="
+      },
+      "Microsoft.NETFramework.ReferenceAssemblies.net451": {
+        "type": "Transitive",
+        "resolved": "1.0.3",
+        "contentHash": "vVPinxdLrwoX81ApbNIHDBI6qymQEy8eSOxDNBgKJtc2+cifnF0oT1U2d3EFx+V5O68yaqna2myZJNsgKCpVkA=="
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project"
+      },
+      "dotnetcore.collections.paginable.freesql": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections.Paginable": "[6.0.0, )",
+          "FreeSql": "[3.5.311, )"
+        }
+      }
+    },
+    ".NETFramework,Version=v4.6.1": {
+      "FreeSql.DbContext": {
+        "type": "Direct",
+        "requested": "[3.5.311, )",
+        "resolved": "3.5.311",
+        "contentHash": "7XDHHX+/cp+GyfivHCQOindb6qHRobZusOfFY6fKnxdODJVSxypyrv9K9cQXlompPgSWxyHV0Z5S6yHTG1E83Q==",
+        "dependencies": {
+          "FreeSql": "3.5.311"
+        }
+      },
+      "Microsoft.NETFramework.ReferenceAssemblies": {
+        "type": "Direct",
+        "requested": "[1.0.3, )",
+        "resolved": "1.0.3",
+        "contentHash": "vUc9Npcs14QsyOD01tnv/m8sQUnGTGOw1BCmKcv77LBJY7OxhJ+zJF7UD/sCL3lYNFuqmQEVlkfS4Quif6FyYg==",
+        "dependencies": {
+          "Microsoft.NETFramework.ReferenceAssemblies.net461": "1.0.3"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[10.0.401, )",
+        "resolved": "10.0.401",
+        "contentHash": "LGmlwgP1Cx37JEWzyjS0o1/+xs/s/e3E2TBSuogI5ePA/9L0pfIfeYX0k5in7Bfcw8Nn2y2sG9jXxydTjiR2Fg=="
+      },
+      "FreeSql": {
+        "type": "Transitive",
+        "resolved": "3.5.311",
+        "contentHash": "jC8dehy9GQXH1b/g5VTpTbYkO15SzDwGY3/452dIJhDsKAmHHdVglSWTunOzR9VbkUiJTDMyA4MOFp9d0NOEeA=="
+      },
+      "Microsoft.NETFramework.ReferenceAssemblies.net461": {
+        "type": "Transitive",
+        "resolved": "1.0.3",
+        "contentHash": "AmOJZwCqnOCNp6PPcf9joyogScWLtwy0M1WkqfEQ0M9nYwyDD7EX9ZjscKS5iYnyvteX7kzSKFCKt9I9dXA6mA=="
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project"
+      },
+      "dotnetcore.collections.paginable.freesql": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections.Paginable": "[6.0.0, )",
+          "FreeSql": "[3.5.311, )"
+        }
+      }
+    },
+    ".NETFramework,Version=v4.7": {
+      "FreeSql.DbContext": {
+        "type": "Direct",
+        "requested": "[3.5.311, )",
+        "resolved": "3.5.311",
+        "contentHash": "7XDHHX+/cp+GyfivHCQOindb6qHRobZusOfFY6fKnxdODJVSxypyrv9K9cQXlompPgSWxyHV0Z5S6yHTG1E83Q==",
+        "dependencies": {
+          "FreeSql": "3.5.311"
+        }
+      },
+      "Microsoft.NETFramework.ReferenceAssemblies": {
+        "type": "Direct",
+        "requested": "[1.0.3, )",
+        "resolved": "1.0.3",
+        "contentHash": "vUc9Npcs14QsyOD01tnv/m8sQUnGTGOw1BCmKcv77LBJY7OxhJ+zJF7UD/sCL3lYNFuqmQEVlkfS4Quif6FyYg==",
+        "dependencies": {
+          "Microsoft.NETFramework.ReferenceAssemblies.net47": "1.0.3"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[10.0.401, )",
+        "resolved": "10.0.401",
+        "contentHash": "LGmlwgP1Cx37JEWzyjS0o1/+xs/s/e3E2TBSuogI5ePA/9L0pfIfeYX0k5in7Bfcw8Nn2y2sG9jXxydTjiR2Fg=="
+      },
+      "FreeSql": {
+        "type": "Transitive",
+        "resolved": "3.5.311",
+        "contentHash": "jC8dehy9GQXH1b/g5VTpTbYkO15SzDwGY3/452dIJhDsKAmHHdVglSWTunOzR9VbkUiJTDMyA4MOFp9d0NOEeA=="
+      },
+      "Microsoft.NETFramework.ReferenceAssemblies.net47": {
+        "type": "Transitive",
+        "resolved": "1.0.3",
+        "contentHash": "s2ik8oLVJHVcQPVNHq+X5UfpQP6RsvoixtWzuW2qZvYjRickfC70OXpCmEUgTxjWumS4qZfZ3ZGR1yH7ATc4Wg=="
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project"
+      },
+      "dotnetcore.collections.paginable.freesql": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections.Paginable": "[6.0.0, )",
+          "FreeSql": "[3.5.311, )"
+        }
+      }
+    },
+    ".NETFramework,Version=v4.8": {
+      "FreeSql.DbContext": {
+        "type": "Direct",
+        "requested": "[3.5.311, )",
+        "resolved": "3.5.311",
+        "contentHash": "7XDHHX+/cp+GyfivHCQOindb6qHRobZusOfFY6fKnxdODJVSxypyrv9K9cQXlompPgSWxyHV0Z5S6yHTG1E83Q==",
+        "dependencies": {
+          "FreeSql": "3.5.311"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[10.0.401, )",
+        "resolved": "10.0.401",
+        "contentHash": "LGmlwgP1Cx37JEWzyjS0o1/+xs/s/e3E2TBSuogI5ePA/9L0pfIfeYX0k5in7Bfcw8Nn2y2sG9jXxydTjiR2Fg==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "10.0.401",
+          "Microsoft.SourceLink.Common": "10.0.401",
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "FreeSql": {
+        "type": "Transitive",
+        "resolved": "3.5.311",
+        "contentHash": "jC8dehy9GQXH1b/g5VTpTbYkO15SzDwGY3/452dIJhDsKAmHHdVglSWTunOzR9VbkUiJTDMyA4MOFp9d0NOEeA=="
+      },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "ZYctNuT10V9IYyCFydy63DXx0ggZQuynuzQOdLvW62dPgzjIz7f0ISEP75RGiq1jFQh8p6TmGSqxeQZQ87LCig==",
+        "dependencies": {
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "u3rLxIwi/9MqDFaWGE/QQgLR1NBEzLOW2lv5+9OrZPDBYIAmFdYSWCWrR1ufpXWOqFn+x02TgKropl/oDuHmgA=="
+      },
+      "System.Buffers": {
+        "type": "Transitive",
+        "resolved": "4.6.1",
+        "contentHash": "N8GXpmiLMtljq7gwvyS+1QvKT/W2J8sNAvx+HVg4NGmsG/H+2k/y9QI23auLJRterrzCiDH+IWAw4V/GPwsMlw=="
+      },
+      "System.IO.Hashing": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg==",
+        "dependencies": {
+          "System.Buffers": "4.6.1",
+          "System.Memory": "4.6.3"
+        }
+      },
+      "System.Memory": {
+        "type": "Transitive",
+        "resolved": "4.6.3",
+        "contentHash": "qdcDOgnFZY40+Q9876JUHnlHu7bosOHX8XISRoH94fwk6hgaeQGSgfZd8srWRZNt5bV9ZW2TljcegDNxsf+96A==",
+        "dependencies": {
+          "System.Buffers": "4.6.1",
+          "System.Numerics.Vectors": "4.6.1",
+          "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+        }
+      },
+      "System.Numerics.Vectors": {
+        "type": "Transitive",
+        "resolved": "4.6.1",
+        "contentHash": "sQxefTnhagrhoq2ReR0D/6K0zJcr9Hrd6kikeXsA1I8kOCboTavcUC4r7TSfpKFeE163uMuxZcyfO1mGO3EN8Q=="
+      },
+      "System.Runtime.CompilerServices.Unsafe": {
+        "type": "Transitive",
+        "resolved": "6.1.2",
+        "contentHash": "2hBr6zdbIBTDE3EhK7NSVNdX58uTK6iHW/P/Axmm9sl1xoGSLqDvMtpecn226TNwHByFokYwJmt/aQQNlO5CRw=="
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project"
+      },
+      "dotnetcore.collections.paginable.freesql": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections.Paginable": "[6.0.0, )",
+          "FreeSql": "[3.5.311, )"
+        }
+      }
+    },
+    ".NETStandard,Version=v2.0": {
+      "FreeSql.DbContext": {
+        "type": "Direct",
+        "requested": "[3.5.311, )",
+        "resolved": "3.5.311",
+        "contentHash": "7XDHHX+/cp+GyfivHCQOindb6qHRobZusOfFY6fKnxdODJVSxypyrv9K9cQXlompPgSWxyHV0Z5S6yHTG1E83Q==",
+        "dependencies": {
+          "FreeSql": "3.5.311"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[10.0.401, )",
+        "resolved": "10.0.401",
+        "contentHash": "LGmlwgP1Cx37JEWzyjS0o1/+xs/s/e3E2TBSuogI5ePA/9L0pfIfeYX0k5in7Bfcw8Nn2y2sG9jXxydTjiR2Fg==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "10.0.401",
+          "Microsoft.SourceLink.Common": "10.0.401",
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "NETStandard.Library": {
+        "type": "Direct",
+        "requested": "[2.0.3, )",
+        "resolved": "2.0.3",
+        "contentHash": "st47PosZSHrjECdjeIzZQbzivYBJFv6P2nv4cj2ypdI204DO+vZ7l5raGMiX4eXMJ53RfOIg+/s4DHVZ54Nu2A==",
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0"
+        }
+      },
+      "FreeSql": {
+        "type": "Transitive",
+        "resolved": "3.5.311",
+        "contentHash": "jC8dehy9GQXH1b/g5VTpTbYkO15SzDwGY3/452dIJhDsKAmHHdVglSWTunOzR9VbkUiJTDMyA4MOFp9d0NOEeA=="
+      },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "ZYctNuT10V9IYyCFydy63DXx0ggZQuynuzQOdLvW62dPgzjIz7f0ISEP75RGiq1jFQh8p6TmGSqxeQZQ87LCig==",
+        "dependencies": {
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "Microsoft.NETCore.Platforms": {
+        "type": "Transitive",
+        "resolved": "1.1.0",
+        "contentHash": "kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A=="
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "u3rLxIwi/9MqDFaWGE/QQgLR1NBEzLOW2lv5+9OrZPDBYIAmFdYSWCWrR1ufpXWOqFn+x02TgKropl/oDuHmgA=="
+      },
+      "System.Buffers": {
+        "type": "Transitive",
+        "resolved": "4.6.1",
+        "contentHash": "N8GXpmiLMtljq7gwvyS+1QvKT/W2J8sNAvx+HVg4NGmsG/H+2k/y9QI23auLJRterrzCiDH+IWAw4V/GPwsMlw=="
+      },
+      "System.IO.Hashing": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg==",
+        "dependencies": {
+          "System.Buffers": "4.6.1",
+          "System.Memory": "4.6.3"
+        }
+      },
+      "System.Memory": {
+        "type": "Transitive",
+        "resolved": "4.6.3",
+        "contentHash": "qdcDOgnFZY40+Q9876JUHnlHu7bosOHX8XISRoH94fwk6hgaeQGSgfZd8srWRZNt5bV9ZW2TljcegDNxsf+96A==",
+        "dependencies": {
+          "System.Buffers": "4.6.1",
+          "System.Numerics.Vectors": "4.6.1",
+          "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+        }
+      },
+      "System.Numerics.Vectors": {
+        "type": "Transitive",
+        "resolved": "4.6.1",
+        "contentHash": "sQxefTnhagrhoq2ReR0D/6K0zJcr9Hrd6kikeXsA1I8kOCboTavcUC4r7TSfpKFeE163uMuxZcyfO1mGO3EN8Q=="
+      },
+      "System.Runtime.CompilerServices.Unsafe": {
+        "type": "Transitive",
+        "resolved": "6.1.2",
+        "contentHash": "2hBr6zdbIBTDE3EhK7NSVNdX58uTK6iHW/P/Axmm9sl1xoGSLqDvMtpecn226TNwHByFokYwJmt/aQQNlO5CRw=="
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project"
+      },
+      "dotnetcore.collections.paginable.freesql": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections.Paginable": "[6.0.0, )",
+          "FreeSql": "[3.5.311, )"
+        }
+      }
+    },
+    ".NETStandard,Version=v2.1": {
+      "FreeSql.DbContext": {
+        "type": "Direct",
+        "requested": "[3.5.311, )",
+        "resolved": "3.5.311",
+        "contentHash": "7XDHHX+/cp+GyfivHCQOindb6qHRobZusOfFY6fKnxdODJVSxypyrv9K9cQXlompPgSWxyHV0Z5S6yHTG1E83Q==",
+        "dependencies": {
+          "FreeSql": "3.5.311"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[10.0.401, )",
+        "resolved": "10.0.401",
+        "contentHash": "LGmlwgP1Cx37JEWzyjS0o1/+xs/s/e3E2TBSuogI5ePA/9L0pfIfeYX0k5in7Bfcw8Nn2y2sG9jXxydTjiR2Fg==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "10.0.401",
+          "Microsoft.SourceLink.Common": "10.0.401",
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "FreeSql": {
+        "type": "Transitive",
+        "resolved": "3.5.311",
+        "contentHash": "jC8dehy9GQXH1b/g5VTpTbYkO15SzDwGY3/452dIJhDsKAmHHdVglSWTunOzR9VbkUiJTDMyA4MOFp9d0NOEeA=="
+      },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "ZYctNuT10V9IYyCFydy63DXx0ggZQuynuzQOdLvW62dPgzjIz7f0ISEP75RGiq1jFQh8p6TmGSqxeQZQ87LCig==",
+        "dependencies": {
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "u3rLxIwi/9MqDFaWGE/QQgLR1NBEzLOW2lv5+9OrZPDBYIAmFdYSWCWrR1ufpXWOqFn+x02TgKropl/oDuHmgA=="
+      },
+      "System.IO.Hashing": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project"
+      },
+      "dotnetcore.collections.paginable.freesql": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections.Paginable": "[6.0.0, )",
+          "FreeSql": "[3.5.311, )"
+        }
+      }
+    },
+    "net10.0": {
+      "FreeSql.DbContext": {
+        "type": "Direct",
+        "requested": "[3.5.311, )",
+        "resolved": "3.5.311",
+        "contentHash": "7XDHHX+/cp+GyfivHCQOindb6qHRobZusOfFY6fKnxdODJVSxypyrv9K9cQXlompPgSWxyHV0Z5S6yHTG1E83Q==",
+        "dependencies": {
+          "FreeSql": "3.5.311",
+          "Microsoft.Extensions.DependencyInjection": "10.0.0"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[10.0.401, )",
+        "resolved": "10.0.401",
+        "contentHash": "LGmlwgP1Cx37JEWzyjS0o1/+xs/s/e3E2TBSuogI5ePA/9L0pfIfeYX0k5in7Bfcw8Nn2y2sG9jXxydTjiR2Fg==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "10.0.401",
+          "Microsoft.SourceLink.Common": "10.0.401",
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "FreeSql": {
+        "type": "Transitive",
+        "resolved": "3.5.311",
+        "contentHash": "jC8dehy9GQXH1b/g5VTpTbYkO15SzDwGY3/452dIJhDsKAmHHdVglSWTunOzR9VbkUiJTDMyA4MOFp9d0NOEeA=="
+      },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "ZYctNuT10V9IYyCFydy63DXx0ggZQuynuzQOdLvW62dPgzjIz7f0ISEP75RGiq1jFQh8p6TmGSqxeQZQ87LCig==",
+        "dependencies": {
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection": {
+        "type": "Transitive",
+        "resolved": "10.0.0",
+        "contentHash": "f0RBabswJq+gRu5a+hWIobrLWiUYPKMhCD9WO3sYBAdSy3FFH14LMvLVFZc2kPSCimBLxSuitUhsd6tb0TAY6A==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "10.0.0",
+        "contentHash": "L3AdmZ1WOK4XXT5YFPEwyt0ep6l8lGIPs7F5OOBZc77Zqeo01Of7XXICy47628sdVl0v/owxYJTe86DTgFwKCA=="
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "u3rLxIwi/9MqDFaWGE/QQgLR1NBEzLOW2lv5+9OrZPDBYIAmFdYSWCWrR1ufpXWOqFn+x02TgKropl/oDuHmgA=="
+      },
+      "System.IO.Hashing": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project"
+      },
+      "dotnetcore.collections.paginable.freesql": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections.Paginable": "[6.0.0, )",
+          "FreeSql": "[3.5.311, )"
+        }
+      }
+    },
+    "net6.0": {
+      "FreeSql.DbContext": {
+        "type": "Direct",
+        "requested": "[3.5.311, )",
+        "resolved": "3.5.311",
+        "contentHash": "7XDHHX+/cp+GyfivHCQOindb6qHRobZusOfFY6fKnxdODJVSxypyrv9K9cQXlompPgSWxyHV0Z5S6yHTG1E83Q==",
+        "dependencies": {
+          "FreeSql": "3.5.311",
+          "Microsoft.Extensions.DependencyInjection": "6.0.0"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[10.0.401, )",
+        "resolved": "10.0.401",
+        "contentHash": "LGmlwgP1Cx37JEWzyjS0o1/+xs/s/e3E2TBSuogI5ePA/9L0pfIfeYX0k5in7Bfcw8Nn2y2sG9jXxydTjiR2Fg==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "10.0.401",
+          "Microsoft.SourceLink.Common": "10.0.401",
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "FreeSql": {
+        "type": "Transitive",
+        "resolved": "3.5.311",
+        "contentHash": "jC8dehy9GQXH1b/g5VTpTbYkO15SzDwGY3/452dIJhDsKAmHHdVglSWTunOzR9VbkUiJTDMyA4MOFp9d0NOEeA=="
+      },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "ZYctNuT10V9IYyCFydy63DXx0ggZQuynuzQOdLvW62dPgzjIz7f0ISEP75RGiq1jFQh8p6TmGSqxeQZQ87LCig==",
+        "dependencies": {
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection": {
+        "type": "Transitive",
+        "resolved": "6.0.0",
+        "contentHash": "k6PWQMuoBDGGHOQTtyois2u4AwyVcIwL2LaSLlTZQm2CYcJ1pxbt6jfAnpWmzENA/wfrYRI/X9DTLoUkE4AsLw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "6.0.0",
+        "contentHash": "xlzi2IYREJH3/m6+lUrQlujzX8wDitm4QGnUu6kUXTQAWPuZY8i+ticFJbzfqaetLA6KR/rO6Ew/HuYD+bxifg=="
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "u3rLxIwi/9MqDFaWGE/QQgLR1NBEzLOW2lv5+9OrZPDBYIAmFdYSWCWrR1ufpXWOqFn+x02TgKropl/oDuHmgA=="
+      },
+      "System.IO.Hashing": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project"
+      },
+      "dotnetcore.collections.paginable.freesql": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections.Paginable": "[6.0.0, )",
+          "FreeSql": "[3.5.311, )"
+        }
+      }
+    },
+    "net7.0": {
+      "FreeSql.DbContext": {
+        "type": "Direct",
+        "requested": "[3.5.311, )",
+        "resolved": "3.5.311",
+        "contentHash": "7XDHHX+/cp+GyfivHCQOindb6qHRobZusOfFY6fKnxdODJVSxypyrv9K9cQXlompPgSWxyHV0Z5S6yHTG1E83Q==",
+        "dependencies": {
+          "FreeSql": "3.5.311",
+          "Microsoft.Extensions.DependencyInjection": "7.0.0"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[10.0.401, )",
+        "resolved": "10.0.401",
+        "contentHash": "LGmlwgP1Cx37JEWzyjS0o1/+xs/s/e3E2TBSuogI5ePA/9L0pfIfeYX0k5in7Bfcw8Nn2y2sG9jXxydTjiR2Fg==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "10.0.401",
+          "Microsoft.SourceLink.Common": "10.0.401",
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "FreeSql": {
+        "type": "Transitive",
+        "resolved": "3.5.311",
+        "contentHash": "jC8dehy9GQXH1b/g5VTpTbYkO15SzDwGY3/452dIJhDsKAmHHdVglSWTunOzR9VbkUiJTDMyA4MOFp9d0NOEeA=="
+      },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "ZYctNuT10V9IYyCFydy63DXx0ggZQuynuzQOdLvW62dPgzjIz7f0ISEP75RGiq1jFQh8p6TmGSqxeQZQ87LCig==",
+        "dependencies": {
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "elNeOmkeX3eDVG6pYVeV82p29hr+UKDaBhrZyWvWLw/EVZSYEkZlQdkp0V39k/Xehs2Qa0mvoCvkVj3eQxNQ1Q==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "h3j/QfmFN4S0w4C2A6X7arXij/M/OVw3uQHSOFxnND4DyAzO1F9eMX7Eti7lU/OkSthEE0WzRsfT/Dmx86jzCw=="
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "u3rLxIwi/9MqDFaWGE/QQgLR1NBEzLOW2lv5+9OrZPDBYIAmFdYSWCWrR1ufpXWOqFn+x02TgKropl/oDuHmgA=="
+      },
+      "System.IO.Hashing": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project"
+      },
+      "dotnetcore.collections.paginable.freesql": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections.Paginable": "[6.0.0, )",
+          "FreeSql": "[3.5.311, )"
+        }
+      }
+    },
+    "net8.0": {
+      "FreeSql.DbContext": {
+        "type": "Direct",
+        "requested": "[3.5.311, )",
+        "resolved": "3.5.311",
+        "contentHash": "7XDHHX+/cp+GyfivHCQOindb6qHRobZusOfFY6fKnxdODJVSxypyrv9K9cQXlompPgSWxyHV0Z5S6yHTG1E83Q==",
+        "dependencies": {
+          "FreeSql": "3.5.311",
+          "Microsoft.Extensions.DependencyInjection": "8.0.0"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[10.0.401, )",
+        "resolved": "10.0.401",
+        "contentHash": "LGmlwgP1Cx37JEWzyjS0o1/+xs/s/e3E2TBSuogI5ePA/9L0pfIfeYX0k5in7Bfcw8Nn2y2sG9jXxydTjiR2Fg==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "10.0.401",
+          "Microsoft.SourceLink.Common": "10.0.401",
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "FreeSql": {
+        "type": "Transitive",
+        "resolved": "3.5.311",
+        "contentHash": "jC8dehy9GQXH1b/g5VTpTbYkO15SzDwGY3/452dIJhDsKAmHHdVglSWTunOzR9VbkUiJTDMyA4MOFp9d0NOEeA=="
+      },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "ZYctNuT10V9IYyCFydy63DXx0ggZQuynuzQOdLvW62dPgzjIz7f0ISEP75RGiq1jFQh8p6TmGSqxeQZQ87LCig==",
+        "dependencies": {
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "V8S3bsm50ig6JSyrbcJJ8bW2b9QLGouz+G1miK3UTaOWmMtFwNNNzUf4AleyDWUmTrWMLNnFSLEQtxmxgNQnNQ==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "cjWrLkJXK0rs4zofsK4bSdg+jhDLTaxrkXu4gS6Y7MAlCvRyNNgwY/lJi5RDlQOnSZweHqoyvgvbdvQsRIW+hg=="
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "u3rLxIwi/9MqDFaWGE/QQgLR1NBEzLOW2lv5+9OrZPDBYIAmFdYSWCWrR1ufpXWOqFn+x02TgKropl/oDuHmgA=="
+      },
+      "System.IO.Hashing": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project"
+      },
+      "dotnetcore.collections.paginable.freesql": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections.Paginable": "[6.0.0, )",
+          "FreeSql": "[3.5.311, )"
+        }
+      }
+    },
+    "net9.0": {
+      "FreeSql.DbContext": {
+        "type": "Direct",
+        "requested": "[3.5.311, )",
+        "resolved": "3.5.311",
+        "contentHash": "7XDHHX+/cp+GyfivHCQOindb6qHRobZusOfFY6fKnxdODJVSxypyrv9K9cQXlompPgSWxyHV0Z5S6yHTG1E83Q==",
+        "dependencies": {
+          "FreeSql": "3.5.311",
+          "Microsoft.Extensions.DependencyInjection": "9.0.0"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[10.0.401, )",
+        "resolved": "10.0.401",
+        "contentHash": "LGmlwgP1Cx37JEWzyjS0o1/+xs/s/e3E2TBSuogI5ePA/9L0pfIfeYX0k5in7Bfcw8Nn2y2sG9jXxydTjiR2Fg==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "10.0.401",
+          "Microsoft.SourceLink.Common": "10.0.401",
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "FreeSql": {
+        "type": "Transitive",
+        "resolved": "3.5.311",
+        "contentHash": "jC8dehy9GQXH1b/g5VTpTbYkO15SzDwGY3/452dIJhDsKAmHHdVglSWTunOzR9VbkUiJTDMyA4MOFp9d0NOEeA=="
+      },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "ZYctNuT10V9IYyCFydy63DXx0ggZQuynuzQOdLvW62dPgzjIz7f0ISEP75RGiq1jFQh8p6TmGSqxeQZQ87LCig==",
+        "dependencies": {
+          "System.IO.Hashing": "10.0.12"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection": {
+        "type": "Transitive",
+        "resolved": "9.0.0",
+        "contentHash": "MCPrg7v3QgNMr0vX4vzRXvkNGgLg8vKWX0nKCWUxu2uPyMsaRgiRc1tHBnbTcfJMhMKj2slE/j2M9oGkd25DNw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "9.0.0",
+        "contentHash": "+6f2qv2a3dLwd5w6JanPIPs47CxRbnk+ZocMJUhv9NxP88VlOcJYZs9jY+MYSjxvady08bUZn6qgiNh7DadGgg=="
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "10.0.401",
+        "contentHash": "u3rLxIwi/9MqDFaWGE/QQgLR1NBEzLOW2lv5+9OrZPDBYIAmFdYSWCWrR1ufpXWOqFn+x02TgKropl/oDuHmgA=="
+      },
+      "System.IO.Hashing": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project"
+      },
+      "dotnetcore.collections.paginable.freesql": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections.Paginable": "[6.0.0, )",
+          "FreeSql": "[3.5.311, )"
+        }
+      }
+    }
+  }
+}

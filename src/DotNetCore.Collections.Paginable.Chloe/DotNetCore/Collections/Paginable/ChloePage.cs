@@ -27,7 +27,7 @@ namespace DotNetCore.Collections.Paginable
         {
             var skip = (currentPageNumber - 1) * pageSize;
             var state = new ChloeQueryState<T>(query, currentPageNumber, pageSize, additionalQueryFunc);
-            InitializeMetaInfo()(currentPageNumber)(pageSize)(totalMemberCount)(skip)();
+            InitializeMetaInfo(currentPageNumber, pageSize, totalMemberCount, skip);
             base._initializeAction = InitializeMemberList()(state)(CurrentPageSize)(skip);
         }
 
@@ -36,30 +36,6 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <returns></returns>
         public static EmptyPage<T> Empty() => new();
-
-        private Func<int, Func<int, Func<int, Func<int, Action>>>> InitializeMetaInfo() => c => s => t => k => () =>
-        {
-            // c = current page number
-            // s = page size
-            // t = total member count
-            // k = skip
-            var totalPageCount = (int) Math.Ceiling((double) t / (double) s);
-            totalPageCount = totalPageCount < 0 ? 0 : totalPageCount;
-            base.TotalPageCount = totalPageCount == 0 ? 1 : totalPageCount;
-            base.TotalMemberCount = t;
-            base.CurrentPageNumber = c;
-            base.PageSize = s;
-            base.CurrentPageSize = c == totalPageCount
-                ? k == 0
-                    ? t
-                    : t % k
-                : totalPageCount == 0
-                    ? 0
-                    : s;
-
-            base.HasPrevious = c > 1;
-            base.HasNext = c < base.TotalPageCount;
-        };
 
         private Func<ChloeQueryState<T>, Func<int, Func<int, Action>>> InitializeMemberList() => state => s => k => () =>
         {

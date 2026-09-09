@@ -10,7 +10,7 @@ namespace DotNetCore.Collections.Paginable.DbTests
 {
     public class DosORMTests
     {
-        private readonly string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=D:\Development\Collections\tests\DotNetCore.Collections.Paginable.DbTests\DataSource\Samples.mdf;Integrated Security=True";
+        private readonly string connectionString = TestDbSettings.ConnectionString;
 
         private readonly DbSession _dosOrmSession;
 

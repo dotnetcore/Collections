@@ -5,10 +5,15 @@ namespace DotNetCore.Collections.Paginable
     /// <summary>
     /// Paginable settings manager
     /// </summary>
+    /// <remarks>
+    /// The settings snapshot should be configured once at application startup.
+    /// <see cref="UpdateSettings"/> swaps an immutable-by-convention snapshot atomically
+    /// (volatile write); readers always observe a fully valid configuration.
+    /// </remarks>
     public static class PaginableSettingsManager
     {
-        // ReSharper disable once InconsistentNaming
-        private static PaginableSettings _settingsCache { get; set; }
+        // volatile: guarantee that after UpdateSettings completes, all threads observe the latest snapshot
+        private static volatile PaginableSettings _settingsCache;
 
         static PaginableSettingsManager()
             => _settingsCache = new PaginableSettings();
@@ -20,7 +25,7 @@ namespace DotNetCore.Collections.Paginable
             => _settingsCache;
 
         /// <summary>
-        /// Update paginable settings
+        /// Update paginable settings with a new, fully validated settings snapshot.
         /// </summary>
         /// <param name="settings"></param>
         public static void UpdateSettings(PaginableSettings settings)

@@ -3,17 +3,19 @@
   <Import Project="..\..\build\common.props"/>
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;netstandard2.1;net461</TargetFrameworks>
+    <!-- NHibernate 5.7 资产：net4.6.1+ / netstandard2.0/2.1 / net6.0+（net451 不再受支持） -->
+    <TargetFrameworks>net461;net47;net48;netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
     <AssemblyName>DotNetCore.Collections.Paginable.NHibernate</AssemblyName>
     <PackageId>DotNetCore.Collections.Paginable.NHibernate</PackageId>
+    <PackageVersion>6.0.0.0</PackageVersion>
     <Description>Paginable extension with NHibernate for collection.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NHibernate" Version="5.3.8" />
+    <PackageReference Include="NHibernate" Version="5.7.0" />
   </ItemGroup>
 
   <ItemGroup>

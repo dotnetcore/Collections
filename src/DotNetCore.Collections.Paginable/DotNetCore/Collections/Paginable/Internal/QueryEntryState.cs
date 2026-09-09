@@ -27,7 +27,10 @@ namespace DotNetCore.Collections.Paginable.Internal
             if (take < 0)
                 throw new ArgumentOutOfRangeException(nameof(take), $"{nameof(take)} can not be less than zero");
 
-            _mLazyQueryableMembers = new Lazy<IEnumerable<T>>(() => queryable.Skip(skip).Take(take).AsEnumerable());
+            // Materialize the current page once: AllValues is accessed via ElementAt(offset)
+            // for every member; an unmaterialized IQueryable wrapper would re-execute the
+            // query on each access (one DB round-trip per element).
+            _mLazyQueryableMembers = new Lazy<IEnumerable<T>>(() => queryable.Skip(skip).Take(take).ToList());
         }
 
         /// <summary>

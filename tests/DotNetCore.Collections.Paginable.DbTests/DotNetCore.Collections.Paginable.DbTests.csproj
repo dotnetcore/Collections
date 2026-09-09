@@ -1,19 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Chloe.SqlServer" Version="4.15.0" />
-    <PackageReference Include="FluentNHibernate" Version="3.1.0" />
-    <PackageReference Include="FreeSql.Provider.SqlServer" Version="2.5.200" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.7" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
-    <PackageReference Include="NHibernate" Version="5.3.8" />
-    <PackageReference Include="Shouldly" Version="4.0.3" />
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
-    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+    <PackageReference Include="Chloe.SqlServer" Version="5.56.0" />
+    <PackageReference Include="FluentNHibernate" Version="3.5.0" />
+    <PackageReference Include="FreeSql.Provider.SqlServer" Version="3.5.311" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.20" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NHibernate" Version="5.7.0" />
+    <PackageReference Include="Shouldly" Version="4.2.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.Chloe\DotNetCore.Collections.Paginable.Chloe.csproj" />
@@ -24,16 +23,5 @@
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.NHibernate\DotNetCore.Collections.Paginable.NHibernate.csproj" />
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.SqlKata\DotNetCore.Collections.Paginable.SqlKata.csproj" />
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.SqlSugar\DotNetCore.Collections.Paginable.SqlSugar.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System">
-      <HintPath>System</HintPath>
-    </Reference>
-    <Reference Include="System.Data">
-      <HintPath>System.Data</HintPath>
-    </Reference>
-    <Reference Include="System.Xml">
-      <HintPath>System.Xml</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>

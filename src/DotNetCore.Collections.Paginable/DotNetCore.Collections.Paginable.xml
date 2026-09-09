@@ -237,6 +237,56 @@
             <param name="pageSize">page size</param>
             <returns></returns>
         </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginableAsync``1(System.Collections.Generic.IEnumerable{``0},System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Make original enumerable result to EnumerablePage collection (async shape).
+            Since <see cref="T:System.Collections.Generic.IEnumerable`1"/> has no native async API, this completes synchronously;
+            use provider-specific async extensions (e.g. EF Core) for true end-to-end async.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="enumerable">original enumerable result</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginableAsync``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Make original enumerable result to EnumerablePage collection (async shape).
+            Since <see cref="T:System.Collections.Generic.IEnumerable`1"/> has no native async API, this completes synchronously;
+            use provider-specific async extensions (e.g. EF Core) for true end-to-end async.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="enumerable">original enumerable result</param>
+            <param name="pageSize">page size</param>
+            <param name="limitedMemberCount">limited member count</param>
+            <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Get specific page from original enumerable result (async shape).
+            Since <see cref="T:System.Collections.Generic.IEnumerable`1"/> has no native async API, this completes synchronously;
+            use provider-specific async extensions (e.g. EF Core) for true end-to-end async.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="enumerable">original enumerable result</param>
+            <param name="pageNumber">page number</param>
+            <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Get specific page from original enumerable result (async shape).
+            Since <see cref="T:System.Collections.Generic.IEnumerable`1"/> has no native async API, this completes synchronously;
+            use provider-specific async extensions (e.g. EF Core) for true end-to-end async.
+            </summary>
+            <typeparam name="T">element type of your enumerable result</typeparam>
+            <param name="enumerable">original enumerable result</param>
+            <param name="pageNumber">page number</param>
+            <param name="pageSize">page size</param>
+            <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+            <returns></returns>
+        </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(System.Linq.IQueryable{``0},System.Nullable{System.Int32})">
             <summary>
             Make original queryable source to QueryablePage collection.
@@ -345,20 +395,27 @@
             <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
-        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCollectionFactory.GetRealMemberCountFunc">
+        <member name="T:DotNetCore.Collections.Paginable.Internal.PaginableCalc">
             <summary>
-            Get real member count<br />.
-            first parameter(l) means limitedMemberCount<br />,
-            second parameter(c) means count.
+            Paginable calculation utilities.
+            Single source of truth for member-count limiting and page-count calculations,
+            shared by the core factory and all ORM integration coll-factories.
             </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCalc.GetRealMemberCount(System.Nullable{System.Int32},System.Int32)">
+            <summary>
+            Get real member count: apply the limited member count (if any) onto the real count.
+            </summary>
+            <param name="limitedMemberCount">limited member count (null or invalid means unlimited)</param>
+            <param name="count">real member count from the data source</param>
             <returns></returns>
         </member>
-        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCollectionFactory.GetRealPageCountFunc">
+        <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCalc.GetRealPageCount(System.Int32,System.Int32)">
             <summary>
-            Get real page count<br />.
-            first parameter(m) means real member count, which has been gotten from <see cref="M:DotNetCore.Collections.Paginable.Internal.PaginableCollectionFactory.GetRealMemberCountFunc"/><br />,
-            second parameter(s) means page size.
+            Get real page count from real member count and page size.
             </summary>
+            <param name="realMemberCount">real member count, which may have been limited by <see cref="M:DotNetCore.Collections.Paginable.Internal.PaginableCalc.GetRealMemberCount(System.Nullable{System.Int32},System.Int32)"/></param>
+            <param name="pageSize">page size</param>
             <returns></returns>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCollectionFactory.CreatePageSet``1(System.Collections.Generic.IEnumerable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32})">
@@ -470,6 +527,15 @@
         <member name="M:DotNetCore.Collections.Paginable.PageBase`1.ToOriginalItems">
             <inheritdoc />
         </member>
+        <member name="M:DotNetCore.Collections.Paginable.PageBase`1.InitializeMetaInfo(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Initialize page meta info.
+            </summary>
+            <param name="currentPageNumber">current page number</param>
+            <param name="pageSize">page size</param>
+            <param name="totalMemberCount">total member count</param>
+            <param name="skip">skip count</param>
+        </member>
         <member name="T:DotNetCore.Collections.Paginable.PageMember`1">
             <summary>
             Page member
@@ -560,6 +626,20 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableQueryable`1.#ctor(System.Linq.IQueryable{`0},System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Paginable queryable collection.
+            Public for async provider integrations (e.g. EF Core <c>ToPaginableAsync</c>)
+            which compute the real counts via provider-native async APIs.
+            </summary>
+        </member>
+        <member name="M:DotNetCore.Collections.Paginable.PaginableQueryable`1.#ctor(System.Linq.IQueryable{`0},System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Paginable queryable collection with limited members.
+            Public for async provider integrations (e.g. EF Core <c>ToPaginableAsync</c>)
+            which compute the real counts via provider-native async APIs.
+            </summary>
+        </member>
         <member name="M:DotNetCore.Collections.Paginable.PaginableQueryable`1.GetSpecifiedPage(System.Int32,System.Int32,System.Int32)">
             <summary>
             Get special page
@@ -633,21 +713,31 @@
             <summary>
             Paginable settings
             </summary>
+            <remarks>
+            Values are validated on assignment, so any <see cref="T:DotNetCore.Collections.Paginable.PaginableSettings"/> instance
+            obtained from this library is always in a valid state (immutable-by-convention:
+            configure the snapshot once at startup, then treat it as read-only).
+            </remarks>
         </member>
         <member name="P:DotNetCore.Collections.Paginable.PaginableSettings.DefaultPageSize">
             <summary>
-            Gets or sets default page size
+            Gets or sets default page size (must be greater than or equal to one)
             </summary>
         </member>
         <member name="P:DotNetCore.Collections.Paginable.PaginableSettings.MaxMemberItems">
             <summary>
-            Gets or sets max member items
+            Gets or sets max member items (must be greater than or equal to one)
             </summary>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.PaginableSettingsManager">
             <summary>
             Paginable settings manager
             </summary>
+            <remarks>
+            The settings snapshot should be configured once at application startup.
+            <see cref="M:DotNetCore.Collections.Paginable.PaginableSettingsManager.UpdateSettings(DotNetCore.Collections.Paginable.PaginableSettings)"/> swaps an immutable-by-convention snapshot atomically
+            (volatile write); readers always observe a fully valid configuration.
+            </remarks>
         </member>
         <member name="P:DotNetCore.Collections.Paginable.PaginableSettingsManager.Settings">
             <summary>
@@ -656,7 +746,7 @@
         </member>
         <member name="M:DotNetCore.Collections.Paginable.PaginableSettingsManager.UpdateSettings(DotNetCore.Collections.Paginable.PaginableSettings)">
             <summary>
-            Update paginable settings
+            Update paginable settings with a new, fully validated settings snapshot.
             </summary>
             <param name="settings"></param>
         </member>

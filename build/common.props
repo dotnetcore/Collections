@@ -14,4 +14,25 @@
 
 	<Import Project="misc.props" />
 
+	<!-- R6：确定性构建 + SourceLink + 符号包 + 依赖锁定（各包独立 PackageVersion 可在 csproj 内以 <PackageVersion> 覆盖） -->
+	<PropertyGroup>
+		<Deterministic>true</Deterministic>
+		<RepositoryUrl>https://github.com/dotnetcore/Collections.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath=""/>
+		<None Include="..\..\msic\images\icon.png" Pack="true" PackagePath=""/>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" PrivateAssets="All" />
+	</ItemGroup>
+
 </Project>
