@@ -9,14 +9,18 @@ namespace Sample.Multi
     {
         private static void Main()
         {
-            MultiListDemo();
+            MultiListBasics();
             Console.WriteLine();
-            MultiDictionaryDemo();
+            MultiListAdvanced();
+            Console.WriteLine();
+            MultiDictionaryBasics();
+            Console.WriteLine();
+            MultiDictionaryAdvanced();
         }
 
-        private static void MultiListDemo()
+        private static void MultiListBasics()
         {
-            Console.WriteLine("=== MultiList<T> (multiset / bag) ===");
+            Console.WriteLine("=== MultiList<T> (multiset / bag): basics ===");
 
             var bag = new MultiList<string>();
             bag.AddRange(new[] { "apple", "apple", "banana" });
@@ -51,6 +55,30 @@ namespace Sample.Multi
             Console.WriteLine($"ToDictionary      = {string.Join(";", counts.Select(p => p.Key + ":" + p.Value))}");
         }
 
+        private static void MultiListAdvanced()
+        {
+            Console.WriteLine("=== MultiList<T> (multiset / bag): advanced ===");
+
+            var bag = new MultiList<string> { "a", "a", "b", "c", "c", "c" };
+
+            // Distinct items vs. (item, count) entries.
+            Console.WriteLine($"DistinctItems     = {string.Join(", ", bag.DistinctItems())}");
+            Console.WriteLine($"EntrySet          = {string.Join("; ", bag.EntrySet().Select(e => e.Item + "x" + e.Count))}");
+
+            // Subset / superset / disjointness with multiplicities.
+            Console.WriteLine($"IsSupersetOf [a,b]         = {bag.IsSupersetOf(new[] { "a", "b" })}");
+            Console.WriteLine($"IsProperSupersetOf [a,a,b] = {bag.IsProperSupersetOf(new[] { "a", "a", "b" })}");
+            Console.WriteLine($"IsDisjointFrom [z]         = {bag.IsDisjointFrom(new[] { "z" })}");
+
+            // Remove every copy at once, then clone for an independent snapshot.
+            bag.RemoveAllCopies("c");
+            Console.WriteLine($"RemoveAllCopies(c) = {bag} (TotalCount = {bag.TotalCount})");
+
+            var snapshot = bag.Clone();
+            bag.Clear();
+            Console.WriteLine($"after Clear: bag = <empty>, snapshot = {snapshot} (independent)");
+        }
+
         private static string SymmetricDiff(MultiList<int> a, MultiList<int> b)
         {
             var result = a.Clone();
@@ -58,9 +86,9 @@ namespace Sample.Multi
             return result.ToString();
         }
 
-        private static void MultiDictionaryDemo()
+        private static void MultiDictionaryBasics()
         {
-            Console.WriteLine("=== MultiDictionary<TKey,TValue> (multimap) ===");
+            Console.WriteLine("=== MultiDictionary<TKey,TValue> (multimap): basics ===");
 
             var map = new MultiDictionary<string, int>();
             map.Add("orders", 1001);
@@ -96,6 +124,37 @@ namespace Sample.Multi
             // Flat (key, value) enumeration.
             Console.WriteLine("flat pairs        = " + string.Join("; ",
                 map.Select((KeyValuePair<string, int> p) => p.Key + "->" + p.Value)));
+        }
+
+        private static void MultiDictionaryAdvanced()
+        {
+            Console.WriteLine("=== MultiDictionary<TKey,TValue> (multimap): advanced ===");
+
+            var map = new MultiDictionary<string, int>();
+            map.Add("a", 1);
+            map.Add("a", 2);
+            map.Add("b", 3);
+
+            // Value lookups.
+            Console.WriteLine($"Contains(a, 2)    = {map.Contains("a", 2)}");
+            Console.WriteLine($"ContainsValue(3)  = {map.ContainsValue(3)}");
+
+            // TryGetValue with a live read-only view.
+            map.TryGetValue("a", out var view);
+            map.Add("a", 9);
+            Console.WriteLine($"TryGetValue(a) is a live view: Count = {view.Count} after adding 9");
+
+            // ToString and AsReadOnly.
+            Console.WriteLine($"ToString          = {map}");
+            var readOnly = map.AsReadOnly();
+            map.Remove("b");
+            Console.WriteLine($"AsReadOnly after Remove(b): Count = {readOnly.Count} (live)");
+
+            // Clone independence.
+            var clone = map.Clone();
+            clone.Add("clone-only", 42);
+            Console.WriteLine($"clone keys        = {string.Join(", ", clone.Keys.OrderBy(k => k))}");
+            Console.WriteLine($"original keys     = {string.Join(", ", map.Keys.OrderBy(k => k))}");
         }
     }
 }
