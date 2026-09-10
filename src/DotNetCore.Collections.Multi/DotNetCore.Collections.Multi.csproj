@@ -19,8 +19,14 @@
     <PropertyGroup>
         <AssemblyName>DotNetCore.Collections.Multi</AssemblyName>
         <PackageId>DotNetCore.Collections.Multi</PackageId>
-        <PackageTags>Collections;MultiSet;MultiDictionary;Bag;Multimap</PackageTags>
-        <Description>MultiSet (bag) and MultiDictionary (multimap) collections for .NET.</Description>
+        <!-- The three "multi" types multiply different things and are orthogonal:
+             MultiList<T> multiplies elements (1 element -> N copies),
+             MultiDictionary<TKey,TValue> multiplies values per key (1 key -> N values) and
+             MultiKeyDictionary<TKey,TValue> multiplies key components (N components -> 1 value,
+             a trie). TwoKeyDictionary<K1,K2,V> is the strongly typed arity-2 facade over the trie.
+             Do not introduce ambiguous names such as "MultiMultiDictionary". -->
+        <PackageTags>Collections;MultiSet;MultiDictionary;MultiKeyDictionary;TwoKeyDictionary;Bag;Multimap;CompositeKey</PackageTags>
+        <Description>Multiset (bag), multimap and composite-key dictionary collections for .NET.</Description>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFramework)'=='net451'">

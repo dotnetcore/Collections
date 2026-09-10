@@ -9,6 +9,8 @@ namespace Sample.Multi
     {
         private static void Main()
         {
+            TaxonomyAtAGlance();
+            Console.WriteLine();
             MultiListBasics();
             Console.WriteLine();
             MultiListAdvanced();
@@ -16,6 +18,21 @@ namespace Sample.Multi
             MultiDictionaryBasics();
             Console.WriteLine();
             MultiDictionaryAdvanced();
+            Console.WriteLine();
+            MultiKeyDictionaryDemo();
+            Console.WriteLine();
+            TwoKeyDictionaryDemo();
+        }
+
+        // The three core types multiply three different things; the fourth is the arity-2
+        // facade over the trie. Keeping the distinction visible is the point of this demo.
+        private static void TaxonomyAtAGlance()
+        {
+            Console.WriteLine("=== The \"multi\" types: what each one multiplies ===");
+            Console.WriteLine("MultiList<T>                    : 1 element        -> N copies   (multiset / bag)");
+            Console.WriteLine("MultiDictionary<TKey,TValue>    : 1 key            -> N values   (multimap)");
+            Console.WriteLine("MultiKeyDictionary<TKey,TValue> : N key components -> 1 value    (composite key / trie)");
+            Console.WriteLine("TwoKeyDictionary<K1,K2,V>       : 2 key components -> 1 value    (arity-2 facade over the trie)");
         }
 
         private static void MultiListBasics()
@@ -155,6 +172,64 @@ namespace Sample.Multi
             clone.Add("clone-only", 42);
             Console.WriteLine($"clone keys        = {string.Join(", ", clone.Keys.OrderBy(k => k))}");
             Console.WriteLine($"original keys     = {string.Join(", ", map.Keys.OrderBy(k => k))}");
+        }
+
+        private static void MultiKeyDictionaryDemo()
+        {
+            Console.WriteLine("=== MultiKeyDictionary<TKey,TValue> (composite key / trie) ===");
+
+            var tree = new MultiKeyDictionary<string, int>();
+            tree.Add(new[] { "eu", "de", "berlin" }, 1);
+            tree.Add(new[] { "eu", "de", "munich" }, 2);
+            tree.Add(new[] { "eu", "fr", "paris" }, 3);
+
+            Console.WriteLine($"Count                   = {tree.Count}   (whole entries, not nodes)");
+            Console.WriteLine($"NodeCount               = {tree.NodeCount}");
+            Console.WriteLine($"[eu,de,berlin]          = {tree[new[] { "eu", "de", "berlin" }]}");
+
+            // Prefix projection: what a plain Dictionary<TKey[], TValue> lookup can not do.
+            Console.WriteLine($"CountOfPrefix([eu])     = {tree.CountOfPrefix(new[] { "eu" })}");
+            Console.WriteLine($"CountOfPrefix([eu,de])  = {tree.CountOfPrefix(new[] { "eu", "de" })}");
+            Console.WriteLine("GetByPrefix([eu]) full  = " + string.Join("; ",
+                tree.GetByPrefix(new[] { "eu" }).Select(e => string.Join("/", e.Key) + "=" + e.Value)));
+            Console.WriteLine("GetByPrefix([eu]) rel.  = " + string.Join("; ",
+                tree.GetByPrefix(new[] { "eu" }, relative: true).Select(e => string.Join("/", e.Key) + "=" + e.Value)));
+            Console.WriteLine($"GetBranches([eu])       = {string.Join(", ", tree.GetBranches(new[] { "eu" }))}");
+
+            // A whole subtree goes away in one call.
+            var removed = tree.RemovePrefix(new[] { "eu", "de" });
+            Console.WriteLine($"RemovePrefix([eu,de])   = {removed} entries removed -> Count = {tree.Count}");
+            Console.WriteLine($"remaining keys          = {string.Join("; ", tree.Keys.Select(k => string.Join("/", k)))}");
+        }
+
+        private static void TwoKeyDictionaryDemo()
+        {
+            Console.WriteLine("=== TwoKeyDictionary<K1,K2,V> (two differently typed components) ===");
+
+            var rates = new TwoKeyDictionary<int, string, decimal>();
+            rates[1, "USD"] = 1.00m;
+            rates[1, "EUR"] = 0.92m;
+            rates[2, "USD"] = 1.05m;
+
+            Console.WriteLine($"Count                   = {rates.Count}");
+            Console.WriteLine($"[1, USD]                = {rates[1, "USD"]}");
+
+            // The first axis is a trie prefix, so this is a subtree projection.
+            Console.WriteLine($"CountOfFirstKey(1)      = {rates.CountOfFirstKey(1)}");
+            Console.WriteLine("GetByFirstKey(1)        = " + string.Join("; ",
+                rates.GetByFirstKey(1).Select(e => e.Key2 + "=" + e.Value)));
+
+            // The second axis is not a prefix of the trie key, so it is an O(n) full scan.
+            Console.WriteLine($"CountOfSecondKey(USD)   = {rates.CountOfSecondKey("USD")}");
+            Console.WriteLine("GetBySecondKey(USD)     = " + string.Join("; ",
+                rates.GetBySecondKey("USD").Select(e => e.Key1 + "=" + e.Value)));
+
+            // A per-axis comparer decides matching, not storage: the component keeps the
+            // casing it was first stored with, while lookups fold case.
+            var ci = new TwoKeyDictionary<string, string, int>(
+                StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase);
+            ci["EU", "DE"] = 1;
+            Console.WriteLine($"ci[eu, de]              = {ci["eu", "de"]}   (stored as {string.Join("/", ci.Keys1)}/{string.Join("/", ci.Keys2)})");
         }
     }
 }

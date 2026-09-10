@@ -35,6 +35,15 @@ namespace DotNetCore.Collections.Multi
     /// strategy (<see cref="Dictionary{TKey,TValue}"/> rejects null keys).
     /// </para>
     /// <para>
+    /// This class is one of the three orthogonal "multi" types of this package:
+    /// <see cref="MultiList{T}"/> multiplies <em>elements</em> (1 element &#8594; N copies),
+    /// <see cref="MultiDictionary{TKey,TValue}"/> multiplies <em>values</em> per key
+    /// (1 key &#8594; N values) and <see cref="MultiKeyDictionary{TKey,TValue}"/> multiplies
+    /// <em>key components</em> (N components &#8594; 1 value, this type). For the two-component
+    /// case, <see cref="TwoKeyDictionary{K1,K2,V}"/> is the strongly typed facade over this type
+    /// that additionally allows the two components to have different types.
+    /// </para>
+    /// <para>
     /// This class is not thread-safe. Wrap it with external synchronization for concurrent use.
     /// </para>
     /// </remarks>

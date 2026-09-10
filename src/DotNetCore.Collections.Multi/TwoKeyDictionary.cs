@@ -33,6 +33,14 @@ namespace DotNetCore.Collections.Multi
     /// <see cref="EqualityComparer{T}.Default"/>). <c>null</c> components are supported.
     /// </para>
     /// <para>
+    /// Within the package taxonomy this type multiplies <em>key components</em> — two of them
+    /// (2 components &#8594; 1 value) — and is the fixed-arity, strongly typed front end of
+    /// <see cref="MultiKeyDictionary{TKey,TValue}"/>. It is distinct from
+    /// <see cref="MultiDictionary{TKey,TValue}"/>, which multiplies the <em>values</em> of one
+    /// key (1 key &#8594; N values), and from <see cref="MultiList{T}"/>, which multiplies
+    /// <em>elements</em> (1 element &#8594; N copies).
+    /// </para>
+    /// <para>
     /// This class is not thread-safe. Wrap it with external synchronization for concurrent use.
     /// </para>
     /// </remarks>

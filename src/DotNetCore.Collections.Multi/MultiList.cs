@@ -22,6 +22,14 @@ namespace DotNetCore.Collections.Multi
     /// <see cref="object.Equals(object)"/>) elements can not corrupt the multiset.
     /// </para>
     /// <para>
+    /// This class is one of the three orthogonal "multi" types of this package:
+    /// <see cref="MultiList{T}"/> multiplies <em>elements</em> (1 element &#8594; N copies, this
+    /// type), <see cref="MultiDictionary{TKey,TValue}"/> multiplies <em>values</em> per key
+    /// (1 key &#8594; N values) and <see cref="MultiKeyDictionary{TKey,TValue}"/> multiplies
+    /// <em>key components</em> (N components &#8594; 1 value). Pick the type by asking what is
+    /// allowed to repeat, never by name similarity.
+    /// </para>
+    /// <para>
     /// This class is not thread-safe. Wrap it with external synchronization for concurrent use.
     /// </para>
     /// </remarks>

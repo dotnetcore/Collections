@@ -399,14 +399,28 @@ using(var connection = new SqlConnection(connectionString))
 - [DotNetCore.Collections.Paginable with EFCore](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.EfCore/Program.cs)
 - [DotNetCore.Collections.Paginable with EF6](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Ef/Program.cs)
 
-## MultiSet &amp; MultiDictionary
+## MultiSet, MultiDictionary &amp; MultiKeyDictionary
 
-`DotNetCore.Collections.Multi` provides two collection types that are independent of the paging extensions and ship in their own package:
+`DotNetCore.Collections.Multi` is independent of the paging extensions and ships in its own package. Every type it exposes shares the `Multi` prefix, but the three core types multiply **three different things** and are orthogonal to each other.
 
-- **`MultiList<T>`** — a multiset (bag): an unordered collection that allows duplicates and tracks the number of occurrences of each element. Supports multiset set operations (`UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, subset &amp; superset judgments, `Overlaps` / `IsDisjointFrom`), copy-expanded enumeration, `CountOf` / `TotalCount` / `DistinctCount`, and injectable `IEqualityComparer<T>`.
-- **`MultiDictionary<TKey, TValue>`** — a multimap: a dictionary that associates multiple values with a single key. Implements `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>`, provides `AsLookup()` (an `ILookup` view), per-key value set operations, and a configurable inner-collection factory (`allowDuplicateValues` or a custom factory).
+### The three "multi" types at a glance
 
-Both target `netstandard2.0`, `netstandard2.1` and `net6.0`. Element/key equality always goes through `IEqualityComparer` (never hash codes alone), `null` elements are supported in `MultiList<T>`, and neither type is thread-safe.
+| Type | What repeats | Shape | Lookup | Reach for it when |
+| --- | --- | --- | --- | --- |
+| **`MultiList<T>`** | elements | 1 element &#8594; N copies | `CountOf(element)` | You need multiset (bag) semantics: duplicates matter and must be counted. Supports `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, subset &amp; superset judgments, `Overlaps` / `IsDisjointFrom`, copy-expanded enumeration and injectable `IEqualityComparer<T>`. |
+| **`MultiDictionary<TKey, TValue>`** | values | 1 key &#8594; N values | `this[key]` | One key genuinely owns several values — a multimap. Implements `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>`, offers `AsLookup()` (an `ILookup` view), per-key value set operations and a configurable inner-collection factory (`allowDuplicateValues` or a custom factory). |
+| **`MultiKeyDictionary<TKey, TValue>`** | key components | N components &#8594; 1 value | `this[TKey[]]`, `GetByPrefix` | The key is **composite** and you want to query it by a *partial* prefix — a trie over `(region, country, city)` style keys of any arity. |
+| **`TwoKeyDictionary<K1, K2, V>`** | key components | 2 components &#8594; 1 value | `this[k1, k2]` | Exactly the above with exactly two components **of different types**, with a typed indexer instead of a `TKey[]`. |
+
+Read the name as "what is multiplied": `MultiList` multiplies elements, `MultiDictionary` multiplies values, `MultiKeyDictionary` multiplies keys. Pick by asking *what is allowed to repeat*, never by name similarity:
+
+- elements repeat &#8594; `MultiList<T>`;
+- values repeat under one key &#8594; `MultiDictionary<TKey, TValue>`;
+- key components combine, and exactly one value is stored per complete key &#8594; `MultiKeyDictionary<TKey, TValue>` (or `TwoKeyDictionary<K1, K2, V>` for two differently typed components).
+
+In particular, do **not** expect `MultiDictionary<A, B>` to answer "everything for `B`": it maps *one* key to *many* values, not many keys to one value. Looking a composite key up by one of its components is the trie's job — `MultiKeyDictionary<TKey,TValue>.GetByPrefix` (any arity) or `TwoKeyDictionary<K1,K2,V>.GetByFirstKey` / `GetBySecondKey` (arity 2).
+
+All four types ship in `DotNetCore.Collections.Multi` and target the same frameworks as the package (see the matrix above). Equality always goes through `IEqualityComparer` (never hash codes alone), so hash collisions between distinct elements/keys can not corrupt a collection. `null` handling follows the shape of each type: `MultiList<T>` supports `null` elements, `MultiDictionary<TKey, TValue>` rejects `null` keys but allows `null` values, and both trie types support `null` key components. None of the types is thread-safe.
 
 ### Install the package
 
@@ -430,6 +444,27 @@ map.Add("orders", 1001);
 map.Add("orders", 1002);
 foreach (var order in map["orders"]) { /* 1001, 1002 */ }
 var lookup = map.AsLookup();          // LINQ-friendly ILookup view
+
+// MultiKeyDictionary<K, V>: many key components, one value (a trie)
+var tree = new MultiKeyDictionary<string, int>();
+tree.Add(new[] { "eu", "de", "berlin" }, 1);
+tree.Add(new[] { "eu", "de", "munich" }, 2);
+tree.Add(new[] { "eu", "fr", "paris" }, 3);
+
+tree[new[] { "eu", "de", "berlin" }];             // 1        (exact key lookup)
+tree.CountOfPrefix(new[] { "eu", "de" });         // 2        (prefix projection)
+foreach (var e in tree.GetByPrefix(new[] { "eu" }, relative: true))
+{
+    // e.Key is the *suffix*: ["de","berlin"], ["de","munich"], ["fr","paris"]
+}
+tree.RemovePrefix(new[] { "eu", "de" });          // drops the whole subtree at once
+
+// TwoKeyDictionary<K1, K2, V>: the same idea for two differently typed components
+var rates = new TwoKeyDictionary<int, string, decimal>();
+rates[1, "USD"] = 1.00m;
+rates[1, "EUR"] = 0.92m;
+rates.CountOfFirstKey(1);             // 2
+rates.GetBySecondKey("USD");          // (1, 1.00m) — O(n) scan, see the XML docs
 ```
 
 ### Examples
