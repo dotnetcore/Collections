@@ -39,4 +39,12 @@
         <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The test suite asserts the red-black invariants of OrderedMultiList and the
+             height bound that stands in for its O(log n) guarantee (F6-01: invariants, not
+             timings). Both live on internal members, so the test assembly has to see them.
+             This widens nothing for consumers: the members stay internal. -->
+        <InternalsVisibleTo Include="DotNetCore.Collections.Multi.Tests" />
+    </ItemGroup>
+
 </Project>

@@ -4,6 +4,52 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [6.2.0] - Unreleased
+
+Unreleased. The date is filled in when the release is tagged; entries land here as the work
+completes.
+
+### Added
+
+- `OrderedMultiList<T>` - an ordered multiset (sorted bag), the ordered counterpart of
+  `MultiList<T>` and the equivalent of PowerCollections' `OrderedBag<T>`. It shares
+  `MultiList<T>`'s copy-counting semantics - one distinct element with N copies, duplicates
+  consecutive and expanded on enumeration, the same `UnionWith` / `IntersectionWith` /
+  `ExceptWith` / `SymmetricExceptWith` and subset / superset judgments - and adds an order:
+  enumeration is ascending, and lookup, insertion and removal are O(log n) **worst case**.
+  Elements are compared with an injectable `IComparer<T>`, deliberately not an
+  `IEqualityComparer<T>`: an equality comparer supplies hash codes but no ordering, whereas a
+  red-black tree has to know which of two elements comes first, and it is the comparison
+  result `0` that decides two elements are the same element (the stored element is the first
+  one added). `null` is supported - under `Comparer<T>.Default` it sorts first, while a custom
+  comparer decides for itself where `null` belongs and may reject it.
+- `OrderedMultiList<T>` ordered access: `GetFirst()` / `GetLast()` (each O(log n), throwing
+  `InvalidOperationException` on an empty multiset), `Reverse()` for descending enumeration,
+  and `GetRange(from, to)` plus a `GetRange(from, to, inclusiveFrom, inclusiveTo)` overload for
+  range queries. Subtrees outside the bounds are skipped, so a query costs O(log n + k) for k
+  copies reported rather than a full traversal. As with `MultiList<T>`, the type implements
+  `ICollection<T>` and `IReadOnlyCollection<T>` (copy-expanded `Count`), and its set operations
+  treat their argument as a **multiset**, so multiplicities count.
+- F6-01's O(log n) claim is proved rather than timed. The storage engine is a self-implemented
+  left-leaning red-black tree, and the test suite asserts the red-black invariants - black
+  root, no red node with a red child, equal black height, plus the left-leaning rule - together
+  with the height bound `height <= 2 * log2(n + 1)`. It re-checks them after every single
+  removal of a 300-key drain, and across 5,000 randomized operations compared with a
+  `SortedDictionary` model; 10,000 sequentially ascending inserts stay under 30 levels where an
+  unbalanced tree would be 10,000 deep. Timing baselines are deliberately avoided - they are
+  noise on CI.
+- Two deliberate omissions and one carry-over, so that neither is mistaken for an oversight.
+  `OrderedMultiList<T>` does **not** override `Equals` / `GetHashCode`: the package's rule is
+  that `MultiList<T>` is the only type carrying structural equality, and adding equality later
+  is a non-breaking change while removing it would not be. It has no `ToDictionary()` either,
+  because its `IComparer<T>` orders elements but supplies no hash codes for a dictionary to use,
+  so `EntrySet()` is the export path. And `Add(item, times)` / `Remove(item, times)` keep
+  `MultiList<T>`'s legacy "a non-positive `times` is coerced to one copy" behaviour verbatim,
+  which means M6-05 (`times <= 0` throws) has to cover this type as well when it lands.
+- `DotNetCore.Collections.Multi` now declares `InternalsVisibleTo` for its test assembly. The
+  red-black invariants live on internal members and asserting them is how F6-01 justifies its
+  complexity, so the suite has to reach them. Nothing becomes public: the members stay internal.
+
 ## [6.1.0] - 2026-09-10
 
 Release covering both shipped modules (`Paginable` and `Multi`); every package ships version

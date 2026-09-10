@@ -458,6 +458,7 @@ using(var connection = new SqlConnection(connectionString))
 | Type | What repeats | Shape | Lookup | Reach for it when |
 | --- | --- | --- | --- | --- |
 | **`MultiList<T>`** | elements | 1 element &#8594; N copies | `CountOf(element)` | You need multiset (bag) semantics: duplicates matter and must be counted. Supports `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, subset &amp; superset judgments, `Overlaps` / `IsDisjointFrom`, multiset structural equality (`Equals` / `GetHashCode`, via `IEquatable<MultiList<T>>`), copy-expanded enumeration and injectable `IEqualityComparer<T>`. |
+| **`OrderedMultiList<T>`** | elements, in order | 1 element &#8594; N copies, sorted | `CountOf(element)` | The same bag semantics as `MultiList<T>`, plus an order. Backed by a red-black tree instead of a hash table, so adding, looking up and removing cost O(log n) **worst case** while enumeration is ascending. Adds `GetFirst()` / `GetLast()`, `Reverse()`, and `GetRange(from, to)` for range queries. Takes an `IComparer<T>` rather than an `IEqualityComparer<T>`, because ordering needs a comparison, and that comparison is also what decides which elements are the same element. |
 | **`MultiDictionary<TKey, TValue>`** | values | 1 key &#8594; N values | `this[key]` | One key genuinely owns several values — a multimap. Implements `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>`, offers `AsLookup()` (an `ILookup` view), the per-key value set operations `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, the batch pair `AddRange` / `RemoveRange`, per-key counting via `ValueCount(key)` (alongside `TotalValueCount`), and a configurable inner-collection factory (`allowDuplicateValues` or a custom factory). |
 | **`MultiKeyDictionary<TKey, TValue>`** | key components | N components &#8594; 1 value | `this[TKey[]]`, `GetByPrefix` | The key is **composite** and you want to query it by a *partial* prefix — a trie over `(region, country, city)` style keys of any arity. |
 | **`TwoKeyDictionary<K1, K2, V>`** | key components | 2 components &#8594; 1 value | `this[k1, k2]` | Exactly the above with exactly two components **of different types**, with a typed indexer instead of a `TKey[]`. |
@@ -465,16 +466,19 @@ using(var connection = new SqlConnection(connectionString))
 Read the name as "what is multiplied": `MultiList` multiplies elements, `MultiDictionary` multiplies values, `MultiKeyDictionary` multiplies keys. Pick by asking *what is allowed to repeat*, never by name similarity:
 
 - elements repeat &#8594; `MultiList<T>`;
+- elements repeat, in sorted order &#8594; `OrderedMultiList<T>`;
 - values repeat under one key &#8594; `MultiDictionary<TKey, TValue>`;
 - key components combine, and exactly one value is stored per complete key &#8594; `MultiKeyDictionary<TKey, TValue>` (or `TwoKeyDictionary<K1, K2, V>` for two differently typed components).
 
 In particular, do **not** expect `MultiDictionary<A, B>` to answer "everything for `B`": it maps *one* key to *many* values, not many keys to one value. Looking a composite key up by one of its components is the trie's job — `MultiKeyDictionary<TKey,TValue>.GetByPrefix` (any arity) or `TwoKeyDictionary<K1,K2,V>.GetByFirstKey` / `GetBySecondKey` (arity 2).
 
+`MultiList<T>` and `OrderedMultiList<T>` are the same multiset with two different storage engines, and the difference shows up in exactly one place: the comparer. `MultiList<T>` takes an `IEqualityComparer<T>` and promises nothing about enumeration order; `OrderedMultiList<T>` takes an `IComparer<T>` and is defined by it, because a red-black tree has to know which of two elements comes first and uses "the comparison returns 0" as its notion of "the same element". Two elements that compare equal therefore share one node and one copy count, and the element that is stored is the one added first. Ordering says nothing about `null` by itself: `Comparer<T>.Default` sorts `null` below every reference, so under the default comparer a `null` element is simply the smallest one, while a custom comparer may put it last or reject it outright.
+
 One multiplicity convention is worth knowing before mixing the two dictionary-shaped types: the per-key operations of `MultiDictionary<TKey, TValue>` all treat their argument as a **set** (a repeated value in the argument does not count twice, matching `ISet<T>`), whereas `MultiList<T>` treats its argument as a **multiset** (multiplicities count, and `SymmetricExceptWith` keeps the absolute difference of the copy counts).
 
 That set convention also fixes what the batch delete means: `RemoveRange(key, values)` removes **one occurrence per distinct argument value**, exactly like calling `Remove(key, value)` once per distinct value — so a value stored N times keeps N-1 copies. Use `ExceptWith(key, values)` when *every* occurrence must go. The batch form is named `RemoveRange` rather than being an overload `Remove(key, IEnumerable<V>)` on purpose: with the overload, the documented `map.Remove(key, null)` (removing a stored `null` value) would become ambiguous at compile time, because `null` converts to both `TValue` and `IEnumerable<TValue>`.
 
-All four types ship in `DotNetCore.Collections.Multi` and target the same frameworks as the package (see the matrix above). Equality always goes through `IEqualityComparer` (never hash codes alone), so hash collisions between distinct elements/keys can not corrupt a collection. `null` handling follows the shape of each type: `MultiList<T>` supports `null` elements, `MultiDictionary<TKey, TValue>` rejects `null` keys but allows `null` values, and both trie types support `null` key components. None of the types is thread-safe.
+All five types ship in `DotNetCore.Collections.Multi` and target the same frameworks as the package (see the matrix above). Equality always goes through a comparer, never through hash codes alone, so hash collisions between distinct elements/keys can not corrupt a collection: the hash-shaped types match with `IEqualityComparer<T>`, while `OrderedMultiList<T>` matches with its `IComparer<T>`, where "compares equal" *is* "is the same element". `null` handling follows the shape of each type: `MultiList<T>` and `OrderedMultiList<T>` support `null` elements (`null` sorts first under the default comparer), `MultiDictionary<TKey, TValue>` rejects `null` keys but allows `null` values, and both trie types support `null` key components. None of the types is thread-safe.
 
 ### Install the package
 
@@ -492,6 +496,15 @@ bag.TotalCount;            // 3
 bag.UnionWith(new[] { "apple", "cherry" });
 bag.IsSupersetOf(new[] { "banana" }); // true
 bag.Equals(new MultiList<string> { "banana", "apple", "apple" }); // true (bag equality, any order)
+
+// OrderedMultiList<T>: the same bag, kept sorted (red-black tree, O(log n) worst case)
+var shelf = new OrderedMultiList<string> { "mug", "bean", "bean" };
+foreach (var item in shelf) { /* "bean", "bean", "mug" */ }
+shelf.GetFirst();                      // "bean"
+shelf.GetLast();                       // "mug"
+shelf.GetRange("a", "n");              // "bean", "bean" (both bounds included)
+shelf.Reverse();                       // "mug", "bean", "bean"
+shelf.EntrySet();                      // sorted (element, copies) pairs
 
 // MultiDictionary<K, V>: one key, many values
 var map = new MultiDictionary<string, int>();
