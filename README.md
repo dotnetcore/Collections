@@ -457,7 +457,7 @@ using(var connection = new SqlConnection(connectionString))
 
 | Type | What repeats | Shape | Lookup | Reach for it when |
 | --- | --- | --- | --- | --- |
-| **`MultiList<T>`** | elements | 1 element &#8594; N copies | `CountOf(element)` | You need multiset (bag) semantics: duplicates matter and must be counted. Supports `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, subset &amp; superset judgments, `Overlaps` / `IsDisjointFrom`, copy-expanded enumeration and injectable `IEqualityComparer<T>`. |
+| **`MultiList<T>`** | elements | 1 element &#8594; N copies | `CountOf(element)` | You need multiset (bag) semantics: duplicates matter and must be counted. Supports `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, subset &amp; superset judgments, `Overlaps` / `IsDisjointFrom`, multiset structural equality (`Equals` / `GetHashCode`, via `IEquatable<MultiList<T>>`), copy-expanded enumeration and injectable `IEqualityComparer<T>`. |
 | **`MultiDictionary<TKey, TValue>`** | values | 1 key &#8594; N values | `this[key]` | One key genuinely owns several values — a multimap. Implements `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>`, offers `AsLookup()` (an `ILookup` view), the per-key value set operations `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, and a configurable inner-collection factory (`allowDuplicateValues` or a custom factory). |
 | **`MultiKeyDictionary<TKey, TValue>`** | key components | N components &#8594; 1 value | `this[TKey[]]`, `GetByPrefix` | The key is **composite** and you want to query it by a *partial* prefix — a trie over `(region, country, city)` style keys of any arity. |
 | **`TwoKeyDictionary<K1, K2, V>`** | key components | 2 components &#8594; 1 value | `this[k1, k2]` | Exactly the above with exactly two components **of different types**, with a typed indexer instead of a `TKey[]`. |
@@ -489,6 +489,7 @@ bag.CountOf("apple");      // 2
 bag.TotalCount;            // 3
 bag.UnionWith(new[] { "apple", "cherry" });
 bag.IsSupersetOf(new[] { "banana" }); // true
+bag.Equals(new MultiList<string> { "banana", "apple", "apple" }); // true (bag equality, any order)
 
 // MultiDictionary<K, V>: one key, many values
 var map = new MultiDictionary<string, int>();

@@ -22,6 +22,14 @@ completes, so the same section also carries the 6.1 `Multi` changes.
   fragment larger than the page it claims to be are all rejected at construction time. A fragment
   shorter than the metadata expects is tolerated and `CurrentPageSize` keeps reporting the
   metadata value. Closes [#8](https://github.com/dotnetcore/Collections/issues/8).
+- `MultiList<T>` now implements `IEquatable<MultiList<T>>`: multiset **structural equality**,
+  where two multisets are equal when both hold the same distinct elements with the same number
+  of copies in any order, plus a `GetHashCode` that agrees with it (structurally equal
+  multisets collapse into a single `HashSet<MultiList<T>>` entry). Element matching goes
+  through the comparer of each side, exactly like the existing subset and superset judgments,
+  and copy counts take part, so this is bag equality rather than set equality. `Equals(object)`
+  is overridden to match; `==` / `!=` are deliberately left as reference comparisons, and no
+  other `Multi` type gains equality.
 
 ## [6.0.0] - 2026-09-10
 

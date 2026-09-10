@@ -30,10 +30,15 @@ namespace DotNetCore.Collections.Multi
     /// allowed to repeat, never by name similarity.
     /// </para>
     /// <para>
+    /// Structural equality follows multiset semantics: two multisets are equal when every
+    /// distinct element is present in both with the same number of copies, regardless of
+    /// enumeration order. See <see cref="Equals(MultiList{T})"/>.
+    /// </para>
+    /// <para>
     /// This class is not thread-safe. Wrap it with external synchronization for concurrent use.
     /// </para>
     /// </remarks>
-    public class MultiList<T> : IEnumerable<T>, ICollection<T>, IReadOnlyCollection<T>
+    public class MultiList<T> : IEnumerable<T>, ICollection<T>, IReadOnlyCollection<T>, IEquatable<MultiList<T>>
     {
         private readonly Dictionary<T, int> _counts;
         private readonly IEqualityComparer<T> _comparer;
@@ -760,6 +765,111 @@ namespace DotNetCore.Collections.Multi
         public bool IsDisjointFrom(IEnumerable<T> other)
         {
             return !Overlaps(other);
+        }
+
+        /// <summary>
+        /// Determines whether this multiset is structurally equal to another: both must hold the
+        /// same distinct elements, each with the same number of copies. Enumeration order is
+        /// irrelevant, so <c>a, a, b</c> equals <c>b, a, a</c>, while <c>a, a, b</c> does not
+        /// equal <c>a, b</c>.
+        /// </summary>
+        /// <param name="other">the multiset to compare with, or <c>null</c>.</param>
+        /// <returns><c>true</c> when both multisets hold the same elements with the same copy counts.</returns>
+        /// <remarks>
+        /// <para>
+        /// Copy counts take part in the comparison: this is <b>multiset (bag) equality</b>, not set
+        /// equality. <see cref="IsSubsetOf(IEnumerable{T})"/> answers the laxer question that
+        /// ignores the extra copies of one side.
+        /// </para>
+        /// <para>
+        /// Each side has to confirm the other, and each confirms it with <em>its own</em> comparer -
+        /// the same rule the subset and superset judgments follow. When both multisets share a
+        /// comparer (the usual case) that is simply the classic multiset comparison. When the
+        /// comparers differ, both must agree; asking only the receiver's comparer would make
+        /// <c>a.Equals(b)</c> and <c>b.Equals(a)</c> disagree, and <see cref="object.Equals(object)"/>
+        /// has to stay symmetric.
+        /// </para>
+        /// <para>
+        /// A <c>null</c> element compares like any other element, through the comparer as usual.
+        /// The comparer is expected to be consistent with itself, exactly as everywhere else in
+        /// this type.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var a = new MultiList&lt;string&gt; { "x", "x", "y" };
+        /// var b = new MultiList&lt;string&gt; { "y", "x", "x" };
+        /// var c = new MultiList&lt;string&gt; { "x", "y" };
+        ///
+        /// a.Equals(b);   // true  - same elements, same copy counts
+        /// a.Equals(c);   // false - "x" has two copies in a, one in c
+        /// </code>
+        /// </example>
+        public bool Equals(MultiList<T>? other)
+        {
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (other is null)
+            {
+                return false;
+            }
+
+            // Both directions are needed for symmetry when the two multisets use different
+            // comparers; with equal comparers the first check already implies the second.
+            return IsSubsetOfBag(other) && IsSupersetOfBag(other);
+        }
+
+        /// <summary>
+        /// Determines whether this multiset is structurally equal to another object; see
+        /// <see cref="Equals(MultiList{T})"/>. The result is <c>false</c> for anything that is not
+        /// a <see cref="MultiList{T}"/> with a compatible element type.
+        /// </summary>
+        /// <param name="obj">the object to compare with.</param>
+        /// <returns><c>true</c> when <paramref name="obj"/> is a structurally equal multiset.</returns>
+        /// <example>
+        /// <code>
+        /// bool same = bag.Equals((object) otherBag);
+        /// </code>
+        /// </example>
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as MultiList<T>);
+        }
+
+        /// <summary>
+        /// Returns a hash code consistent with <see cref="Equals(MultiList{T})"/>: it depends only
+        /// on which elements the multiset holds and how many copies of each, never on enumeration
+        /// order. Two structurally equal multisets therefore always share a hash code.
+        /// </summary>
+        /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// int hash = bag.GetHashCode();
+        /// </code>
+        /// </example>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hash = 17;
+                hash = (hash * 31) + TotalCount;
+                hash = (hash * 31) + DistinctCount;
+
+                // XOR keeps the per-element part independent of enumeration order, which is what
+                // equal multisets with different insertion orders need. The copy count goes into
+                // each element's contribution, so { x, x } and { x } do not collide.
+                var elementsHash = 0;
+                foreach (var entry in EntrySet())
+                {
+                    var elementHash = entry.Item == null ? 0 : _comparer.GetHashCode(entry.Item!);
+                    elementsHash ^= (elementHash * 397) ^ entry.Count;
+                }
+
+                return (hash * 31) + elementsHash;
+            }
         }
 
         private bool IsSubsetOfBag(MultiList<T> otherBag)
