@@ -65,10 +65,10 @@ jobs:
           New-Item -ItemType Directory -Force -Path nuget_pub | Out-Null
 
           foreach ($p in $projects) {
-            # -m:1 is required: DocumentationFile is a single project-root file, so
-            # parallel per-TFM builds race on it (CS0016). Serialising the inner
-            # builds keeps packing deterministic.
-            dotnet pack "src/DotNetCore.Collections.$p" -c Release -m:1 -o nuget_pub
+            # DocumentationFile is isolated per TFM by build/common.props, so the
+            # per-TFM inner builds no longer race on a single project-root file
+            # (no CS0016) and no -m:1 serialisation is needed.
+            dotnet pack "src/DotNetCore.Collections.$p" -c Release -o nuget_pub
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
 

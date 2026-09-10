@@ -32,25 +32,24 @@ if not defined key (
     goto :failed
 )
 
-rem -m:1 is REQUIRED: DocumentationFile is a single file in the project directory, so
-rem parallel per-TFM builds race on it and fail with CS0016 ("file is being used by another
-rem process"). Serialising the inner builds keeps packing deterministic.
-rem Long-term fix: move DocumentationFile under the per-TFM output directory.
+rem DocumentationFile is isolated per target framework by build/common.props
+rem (bin/<Configuration>/<tfm>/<AssemblyName>.xml), so the per-TFM inner builds no
+rem longer race on a single project-root file. No -m:1 serialisation is needed.
 
 rem ::Multi
-dotnet pack src/DotNetCore.Collections.Multi -c Release -m:1 -o nuget_pub || goto :failed
+dotnet pack src/DotNetCore.Collections.Multi -c Release -o nuget_pub || goto :failed
 
 rem ::Paginable
-dotnet pack src/DotNetCore.Collections.Paginable -c Release -m:1 -o nuget_pub || goto :failed
-dotnet pack src/DotNetCore.Collections.Paginable.Chloe -c Release -m:1 -o nuget_pub || goto :failed
-dotnet pack src/DotNetCore.Collections.Paginable.DosOrm -c Release -m:1 -o nuget_pub || goto :failed
-dotnet pack src/DotNetCore.Collections.Paginable.EntityFramework -c Release -m:1 -o nuget_pub || goto :failed
-dotnet pack src/DotNetCore.Collections.Paginable.EntityFrameworkCore -c Release -m:1 -o nuget_pub || goto :failed
-dotnet pack src/DotNetCore.Collections.Paginable.FreeSql -c Release -m:1 -o nuget_pub || goto :failed
-dotnet pack src/DotNetCore.Collections.Paginable.FreeSql.DbContext -c Release -m:1 -o nuget_pub || goto :failed
-dotnet pack src/DotNetCore.Collections.Paginable.NHibernate -c Release -m:1 -o nuget_pub || goto :failed
-dotnet pack src/DotNetCore.Collections.Paginable.SqlKata -c Release -m:1 -o nuget_pub || goto :failed
-dotnet pack src/DotNetCore.Collections.Paginable.SqlSugar -c Release -m:1 -o nuget_pub || goto :failed
+dotnet pack src/DotNetCore.Collections.Paginable -c Release -o nuget_pub || goto :failed
+dotnet pack src/DotNetCore.Collections.Paginable.Chloe -c Release -o nuget_pub || goto :failed
+dotnet pack src/DotNetCore.Collections.Paginable.DosOrm -c Release -o nuget_pub || goto :failed
+dotnet pack src/DotNetCore.Collections.Paginable.EntityFramework -c Release -o nuget_pub || goto :failed
+dotnet pack src/DotNetCore.Collections.Paginable.EntityFrameworkCore -c Release -o nuget_pub || goto :failed
+dotnet pack src/DotNetCore.Collections.Paginable.FreeSql -c Release -o nuget_pub || goto :failed
+dotnet pack src/DotNetCore.Collections.Paginable.FreeSql.DbContext -c Release -o nuget_pub || goto :failed
+dotnet pack src/DotNetCore.Collections.Paginable.NHibernate -c Release -o nuget_pub || goto :failed
+dotnet pack src/DotNetCore.Collections.Paginable.SqlKata -c Release -o nuget_pub || goto :failed
+dotnet pack src/DotNetCore.Collections.Paginable.SqlSugar -c Release -o nuget_pub || goto :failed
 
 echo.
 echo.

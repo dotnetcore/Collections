@@ -2,12 +2,21 @@
 
 	<Import Project="version.props" />
 
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-		<DocumentationFile>$(AssemblyName).xml</DocumentationFile>
-	</PropertyGroup>
+	<!-- DocumentationFile xmlns: NOT $(OutputPath). This file is imported at the
+	     very top of the project, long before the SDK targets have computed
+	     $(OutputPath), so $(OutputPath) is still empty here and the value would
+	     silently collapse to the bare $(AssemblyName).xml in the project root.
+	     (That is exactly the old, broken behaviour.)
 
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-		<DocumentationFile>$(AssemblyName).xml</DocumentationFile>
+	     The XML doc must live under the per-TFM output directory: pointing it at
+	     a single project-root file makes every target framework of a
+	     multi-targeting build write the *same* file, so parallel inner builds
+	     race and fail at random with CS0016 ("file is being used by another
+	     process"). $(BaseOutputPath) and $(Configuration) ARE available at import
+	     time, and $(TargetFramework) is set by the outer cross-targeting build
+	     when it launches each inner build, so the path below is unique per TFM. -->
+	<PropertyGroup>
+		<DocumentationFile>$(BaseOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 	</PropertyGroup>
 
 	<Import Project="package.props" />
