@@ -15,10 +15,26 @@ env:
   DOTNET_NOLOGO: 1
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
+# Publishing uses NuGet trusted publishing (OIDC) instead of a stored API key, so
+# this workflow requires an exactly matching policy on nuget.org. The external
+# setup, which lives outside the repository and cannot be inferred from here, is:
+#   Repository owner : dotnetcore        (https://github.com/dotnetcore/Collections)
+#   Repository       : Collections
+#   Workflow file    : release.yml       (file name only, no .github/workflows/ prefix)
+#   Environment      : leave empty unless an `environment:` is added to this job
+#   Secret           : NUGET_USERNAME = the nuget.org profile name, not the e-mail
+# The policy owner must own all 11 DotNetCore.Collections.* packages.
+
 jobs:
   publish-nuget:
     name: Pack and publish to nuget.org
     runs-on: windows-latest
+    # id-token: write lets GitHub mint the OIDC token that NuGet trusted publishing
+    # exchanges for a short-lived API key. contents: read must be restated because
+    # job-level permissions replace the workflow-level block.
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,13 +72,22 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
 
+      # Must run right before the push: the temporary key lives for ~1 hour, and each
+      # OIDC token can only be exchanged for a single key.
+      - name: NuGet login (OIDC -> temporary API key)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          # nuget.org profile name, not the email address.
+          user: ${{ secrets.NUGET_USERNAME }}
+
       - name: Push packages to nuget.org
         shell: pwsh
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
-            Write-Error 'NUGET_API_KEY secret is not configured.'
+            Write-Error 'The NuGet login step did not return a temporary API key.'
             exit 1
           }
 
