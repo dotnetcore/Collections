@@ -302,3 +302,8 @@ reports/
 
 # 本地 NuGet 发布产物（Publish.bat / PublishToMyget.bat 输出目录，禁止提交）
 nuget_pub/
+
+# XML 文档构建产物：DocumentationFile 现按 TFM 隔离在 bin/<Configuration>/<tfm>/ 下
+# （已被上面的 [Bb]in/ 规则覆盖）。历史遗留的项目根同名 .xml 曾因多 TFM 并行编译
+# 争抢写入而随机触发 CS0016，现已被移除并在此显式防回归。
+/src/*/*.xml
