@@ -446,6 +446,42 @@ namespace DotNetCore.Collections.Multi.Tests
         }
 
         [Fact]
+        public void Remove_LongKeyAfterShortSibling_DoesNotOrphanTheSibling()
+        {
+            // Regression: pruning must keep climbing past a node that is still needed.
+            // Adding "x" first creates the value-bearing node "a" -> "x"; adding the longer
+            // key "a" -> "x" -> "y" extends it. Removing the longer key must detach only "y"
+            // and leave the sibling entry reachable — an early `break` in the prune loop
+            // would detach the still-needed "x" node and destroy the shorter key.
+            var map = new MultiKeyDictionary<string, int>();
+            map.Add(new[] { "a", "x" }, 1);
+            map.Add(new[] { "a", "x", "y" }, 2);
+
+            map.Remove(new[] { "a", "x", "y" }).ShouldBeTrue();
+
+            map.Count.ShouldBe(1);
+            map.ContainsKey(new[] { "a", "x" }).ShouldBeTrue();
+            map[new[] { "a", "x" }].ShouldBe(1);
+            map.NodeCount.ShouldBe(3); // root + a + x
+        }
+
+        [Fact]
+        public void RemovePrefix_DeepBranchAfterShallowSibling_KeepsSibling()
+        {
+            var map = new MultiKeyDictionary<string, int>();
+            map.Add(new[] { "a" }, 0);
+            map.Add(new[] { "a", "b", "c" }, 1);
+            map.Add(new[] { "a", "b", "d", "e" }, 2);
+
+            map.RemovePrefix(new[] { "a", "b", "d" }).ShouldBe(1);
+
+            map.Count.ShouldBe(2);
+            map.ContainsKey(new[] { "a" }).ShouldBeTrue();
+            map.ContainsKey(new[] { "a", "b", "c" }).ShouldBeTrue();
+            map.ContainsKey(new[] { "a", "b", "d", "e" }).ShouldBeFalse();
+        }
+
+        [Fact]
         public void RemovePrefix_CascadesWholeSubtree()
         {
             var map = new MultiKeyDictionary<string, int>();

@@ -691,6 +691,11 @@ namespace DotNetCore.Collections.Multi
 
             for (var i = key.Length; i > 0; i--)
             {
+                // Stop at the first node along the path that is still needed: it either holds
+                // a value or still has children. Nodes above it are ancestors of a live node,
+                // so they must stay too. The walk is strictly bottom-up along a single chain,
+                // which is why stopping (rather than skipping) is sufficient and why every
+                // node below the stop point is guaranteed to be empty.
                 if (stack[i].HasValue || stack[i].Children.Count > 0 || stack[i].NullChild != null)
                 {
                     break;
