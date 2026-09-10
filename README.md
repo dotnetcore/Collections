@@ -468,9 +468,17 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 
 ## Releasing
 
-Versions are driven by `build/version.props`; every package is produced with `dotnet pack` and
-published by `Publish.bat` (nuget.org) or `PublishToMyget.bat` (MyGet). Both scripts cover all
-11 packages, `DotNetCore.Collections.Multi` included.
+Versions are driven by `build/version.props`, which is the single source of truth for every
+package — bump the version there and all 11 packages follow.
+
+Publishing to nuget.org is automated by the GitHub Actions `Release` workflow
+(`.github/workflows/release.yml`): pushing a tag such as `6.0.0` (or `v6.0.0`) packs all 11
+projects and pushes every `.nupkg` / `.snupkg` with the key stored in the `NUGET_API_KEY`
+repository secret.
+
+For a local fallback, run `scripts\Publish.bat`, which packs the same 11 projects and pushes
+them with a key taken from the `NUGET_API_KEY` environment variable (or from an interactive
+prompt).
 
 ## License
 

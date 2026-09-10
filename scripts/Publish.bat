@@ -1,10 +1,17 @@
 @echo off
 setlocal
 
-rem Publishes every DotNetCore.Collections package (Multi + Paginable family) to nuget.org.
-rem Usage: Publish.bat
-rem        set NUGET_API_KEY=<key> && Publish.bat      (non-interactive / CI)
+rem Local fallback for publishing every DotNetCore.Collections package
+rem (Multi + Paginable family) to nuget.org.
+rem The primary publishing path is the GitHub Actions "Release" workflow, which
+rem runs on tag pushes and reads the key from the NUGET_API_KEY repository secret.
+rem
+rem Usage (run from anywhere):
+rem        scripts\Publish.bat
+rem        set NUGET_API_KEY=<key> && scripts\Publish.bat      (non-interactive)
 rem Requires: .NET SDK 8.0 or later on PATH.
+
+pushd "%~dp0.." || goto :failed
 
 if not exist nuget_pub (
     md nuget_pub
@@ -63,11 +70,13 @@ for /R "nuget_pub" %%s in (*.snupkg) do (
 
 echo.
 echo All packages published.
+popd
 endlocal
 exit /b 0
 
 :failed
 echo.
 echo Publish FAILED - see the errors above.
+popd
 endlocal
 exit /b 1
