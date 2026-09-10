@@ -30,6 +30,18 @@ completes, so the same section also carries the 6.1 `Multi` changes.
   and copy counts take part, so this is bag equality rather than set equality. `Equals(object)`
   is overridden to match; `==` / `!=` are deliberately left as reference comparisons, and no
   other `Multi` type gains equality.
+- `MultiDictionary<TKey, TValue>` can now delete several values under a key in one call, and
+  report how many it holds: `RemoveRange(key, values)` removes **one occurrence per distinct
+  argument value** — the batch form of `Remove(key, value)`, so a value stored N times keeps
+  N-1 copies (`ExceptWith(key, values)` stays the way to drop every occurrence) — and
+  `ValueCount(key)` returns the number of values stored under a key, or `0` for a missing key
+  instead of throwing. Both follow the conventions the type already had: the argument is a
+  **set**, `null` elements are ordinary values, matching goes through the inner collection's own
+  comparer, and the key is recycled as soon as its last value is removed. The batch form is a
+  separate name rather than an overload `Remove(key, IEnumerable<TValue>)` because that overload
+  is a source-breaking change: `map.Remove(key, null)` would become ambiguous (CS0121), since
+  `null` converts to both `TValue` and `IEnumerable<TValue>`; `RemoveRange` also mirrors the
+  existing `AddRange(key, values)`.
 
 ## [6.0.0] - 2026-09-10
 

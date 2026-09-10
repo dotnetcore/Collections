@@ -133,6 +133,27 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Gets the number of values stored under the key, or <c>0</c> when the key is absent
+        /// (matching the indexer, which yields an empty collection rather than throwing).
+        /// </summary>
+        /// <remarks>
+        /// Runs in O(1): the count is read straight off the inner collection. Use
+        /// <see cref="ContainsKey(TKey)"/> when the absent-key case must be told apart from a key
+        /// that is present with zero values — the latter can not occur, because an inner
+        /// collection is dropped as soon as it empties.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// int n = map.ValueCount("orders"); // 2
+        /// int missing = map.ValueCount("nope"); // 0
+        /// </code>
+        /// </example>
+        public int ValueCount(TKey key)
+        {
+            return _dict.TryGetValue(key, out var collection) ? collection.Count : 0;
+        }
+
+        /// <summary>
         /// Gets the keys of the map.
         /// </summary>
         public IEnumerable<TKey> Keys => _dict.Keys;
@@ -296,6 +317,85 @@ namespace DotNetCore.Collections.Multi
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Removes one occurrence of each distinct value of the specified collection from the key.
+        /// Returns <c>true</c> when at least one value was removed. The key is dropped
+        /// automatically once its last value is removed; a missing key is a no-op that returns
+        /// <c>false</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is the batch form of <see cref="Remove(TKey, TValue)"/> and behaves exactly like
+        /// calling it once per <em>distinct</em> element of <paramref name="values"/>: with a
+        /// duplicating inner collection (<c>allowDuplicateValues: true</c>), a value stored N times
+        /// still has N-1 copies left, because one occurrence is removed per distinct argument
+        /// value. Use <see cref="ExceptWith(TKey, IEnumerable{TValue})"/> when every occurrence
+        /// must go.
+        /// </para>
+        /// <para>
+        /// The argument is a <em>set</em> of values, exactly as in
+        /// <see cref="UnionWith(TKey, IEnumerable{TValue})"/>,
+        /// <see cref="IntersectionWith(TKey, IEnumerable{TValue})"/>,
+        /// <see cref="ExceptWith(TKey, IEnumerable{TValue})"/> and
+        /// <see cref="SymmetricExceptWith(TKey, IEnumerable{TValue})"/>: a repeated value in it
+        /// does not count twice, and a <c>null</c> element is an ordinary value. An empty
+        /// collection (or one holding only values the key does not store) is a no-op that leaves
+        /// the key in place.
+        /// </para>
+        /// <para>
+        /// This is deliberately named <c>RemoveRange</c> rather than being an overload
+        /// <c>Remove(TKey, IEnumerable{TValue})</c>, mirroring <see cref="AddRange(TKey, IEnumerable{TValue})"/>.
+        /// The overload would be a source-breaking change: <c>map.Remove(key, null)</c> — the
+        /// documented way of removing a stored <c>null</c> value — would become ambiguous
+        /// (CS0121) because <c>null</c> converts to both <c>TValue</c> and
+        /// <c>IEnumerable&lt;TValue&gt;</c> whenever <c>TValue</c> is a reference type.
+        /// </para>
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="values"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// map.AddRange("orders", new[] { 1001, 1002, 1003 });
+        ///
+        /// bool removed = map.RemoveRange("orders", new[] { 1002, 1003 });
+        /// // orders -> [1001]; removed == true
+        ///
+        /// bool noOp = map.RemoveRange("orders", new[] { 9999 });
+        /// // nothing stored matches; noOp == false, orders -> [1001]
+        /// </code>
+        /// </example>
+        public bool RemoveRange(TKey key, IEnumerable<TValue> values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            if (!_dict.TryGetValue(key, out var collection))
+            {
+                return false;
+            }
+
+            // Materialized on purpose: the argument can be a live view over this very map's
+            // values, and the loop below mutates the map.
+            var removals = DistinctValuesOf(values);
+
+            var removedAny = false;
+            foreach (var value in removals)
+            {
+                if (collection.Remove(value))
+                {
+                    removedAny = true;
+                }
+            }
+
+            if (collection.Count == 0)
+            {
+                _dict.Remove(key);
+            }
+
+            return removedAny;
         }
 
         // ------------------------------------------------------------------

@@ -458,7 +458,7 @@ using(var connection = new SqlConnection(connectionString))
 | Type | What repeats | Shape | Lookup | Reach for it when |
 | --- | --- | --- | --- | --- |
 | **`MultiList<T>`** | elements | 1 element &#8594; N copies | `CountOf(element)` | You need multiset (bag) semantics: duplicates matter and must be counted. Supports `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, subset &amp; superset judgments, `Overlaps` / `IsDisjointFrom`, multiset structural equality (`Equals` / `GetHashCode`, via `IEquatable<MultiList<T>>`), copy-expanded enumeration and injectable `IEqualityComparer<T>`. |
-| **`MultiDictionary<TKey, TValue>`** | values | 1 key &#8594; N values | `this[key]` | One key genuinely owns several values — a multimap. Implements `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>`, offers `AsLookup()` (an `ILookup` view), the per-key value set operations `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, and a configurable inner-collection factory (`allowDuplicateValues` or a custom factory). |
+| **`MultiDictionary<TKey, TValue>`** | values | 1 key &#8594; N values | `this[key]` | One key genuinely owns several values — a multimap. Implements `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>`, offers `AsLookup()` (an `ILookup` view), the per-key value set operations `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, the batch pair `AddRange` / `RemoveRange`, per-key counting via `ValueCount(key)` (alongside `TotalValueCount`), and a configurable inner-collection factory (`allowDuplicateValues` or a custom factory). |
 | **`MultiKeyDictionary<TKey, TValue>`** | key components | N components &#8594; 1 value | `this[TKey[]]`, `GetByPrefix` | The key is **composite** and you want to query it by a *partial* prefix — a trie over `(region, country, city)` style keys of any arity. |
 | **`TwoKeyDictionary<K1, K2, V>`** | key components | 2 components &#8594; 1 value | `this[k1, k2]` | Exactly the above with exactly two components **of different types**, with a typed indexer instead of a `TKey[]`. |
 
@@ -471,6 +471,8 @@ Read the name as "what is multiplied": `MultiList` multiplies elements, `MultiDi
 In particular, do **not** expect `MultiDictionary<A, B>` to answer "everything for `B`": it maps *one* key to *many* values, not many keys to one value. Looking a composite key up by one of its components is the trie's job — `MultiKeyDictionary<TKey,TValue>.GetByPrefix` (any arity) or `TwoKeyDictionary<K1,K2,V>.GetByFirstKey` / `GetBySecondKey` (arity 2).
 
 One multiplicity convention is worth knowing before mixing the two dictionary-shaped types: the per-key operations of `MultiDictionary<TKey, TValue>` all treat their argument as a **set** (a repeated value in the argument does not count twice, matching `ISet<T>`), whereas `MultiList<T>` treats its argument as a **multiset** (multiplicities count, and `SymmetricExceptWith` keeps the absolute difference of the copy counts).
+
+That set convention also fixes what the batch delete means: `RemoveRange(key, values)` removes **one occurrence per distinct argument value**, exactly like calling `Remove(key, value)` once per distinct value — so a value stored N times keeps N-1 copies. Use `ExceptWith(key, values)` when *every* occurrence must go. The batch form is named `RemoveRange` rather than being an overload `Remove(key, IEnumerable<V>)` on purpose: with the overload, the documented `map.Remove(key, null)` (removing a stored `null` value) would become ambiguous at compile time, because `null` converts to both `TValue` and `IEnumerable<TValue>`.
 
 All four types ship in `DotNetCore.Collections.Multi` and target the same frameworks as the package (see the matrix above). Equality always goes through `IEqualityComparer` (never hash codes alone), so hash collisions between distinct elements/keys can not corrupt a collection. `null` handling follows the shape of each type: `MultiList<T>` supports `null` elements, `MultiDictionary<TKey, TValue>` rejects `null` keys but allows `null` values, and both trie types support `null` key components. None of the types is thread-safe.
 
@@ -497,6 +499,9 @@ map.Add("orders", 1001);
 map.Add("orders", 1002);
 foreach (var order in map["orders"]) { /* 1001, 1002 */ }
 var lookup = map.AsLookup();          // LINQ-friendly ILookup view
+map.ValueCount("orders");             // 2 (0 for a missing key, never throws)
+map.AddRange("orders", new[] { 1003, 1004 });
+map.RemoveRange("orders", new[] { 1002, 1003 }); // batch delete, set semantics
 
 // MultiKeyDictionary<K, V>: many key components, one value (a trie)
 var tree = new MultiKeyDictionary<string, int>();
