@@ -411,6 +411,77 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Toggles the specified values under the key: every distinct value of
+        /// <paramref name="values"/> either cancels one stored occurrence — when the key already
+        /// holds it — or is added when it does not. The key is created when the argument is
+        /// non-empty, and dropped once no values remain; a missing key with an empty argument is
+        /// a no-op.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The argument is a <em>set</em> of values, exactly as in
+        /// <see cref="UnionWith(TKey, IEnumerable{TValue})"/>,
+        /// <see cref="IntersectionWith(TKey, IEnumerable{TValue})"/> and
+        /// <see cref="ExceptWith(TKey, IEnumerable{TValue})"/>: a repeated value in it does not
+        /// count twice. With a deduplicating inner collection (<c>allowDuplicateValues: false</c>)
+        /// this is precisely the symmetric difference of <see cref="ISet{T}"/>. With a
+        /// duplicating inner collection a value stored N times survives with N-1 copies, because
+        /// one occurrence is cancelled per distinct argument value.
+        /// </para>
+        /// <para>
+        /// This deliberately differs from
+        /// <see cref="MultiList{T}.SymmetricExceptWith(IEnumerable{T})"/>, which treats its
+        /// argument as a <em>multiset</em> and keeps the absolute count difference of the two
+        /// sides. Every per-key operation of this class treats its argument as a set, and keeping
+        /// that convention coherent within one type was judged more important than mirroring
+        /// <see cref="MultiList{T}"/>'s multiplicity handling.
+        /// </para>
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="values"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// map.Add("orders", 1001);
+        /// map.Add("orders", 1001);
+        /// map.Add("orders", 1002);
+        ///
+        /// map.SymmetricExceptWith("orders", new[] { 1001, 1003 });
+        /// // 1001 is stored       -> one of its two copies is cancelled
+        /// // 1002 is not listed   -> untouched
+        /// // 1003 is not stored   -> added
+        /// // result: orders -> [1001, 1002, 1003]
+        /// </code>
+        /// </example>
+        public void SymmetricExceptWith(TKey key, IEnumerable<TValue> values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            // Materialized on purpose: the argument can be a live view over this very map's
+            // values, and the loop below mutates the map.
+            var toggles = DistinctValuesOf(values);
+
+            _dict.TryGetValue(key, out var collection);
+
+            foreach (var value in toggles)
+            {
+                if (collection == null || !collection.Remove(value))
+                {
+                    // Toggled on: either the key is absent or the value was not stored. Going
+                    // through the public Add keeps the "no empty inner collection" invariant in
+                    // a single place.
+                    Add(key, value);
+                }
+            }
+
+            if (collection != null && collection.Count == 0)
+            {
+                _dict.Remove(key);
+            }
+        }
+
+        /// <summary>
         /// Removes all keys and values.
         /// </summary>
         /// <example>
@@ -591,6 +662,37 @@ namespace DotNetCore.Collections.Multi
             // List<T> / HashSet<T> (the built-in factories) and any well-behaved custom factory
             // implement IReadOnlyCollection<T>; the cast is a contract, not a conversion.
             return (IReadOnlyCollection<TValue>)collection;
+        }
+
+        /// <summary>
+        /// Returns the distinct values of a sequence, tolerating <c>null</c>. A <c>null</c> is an
+        /// ordinary value here but can not be a key of the <see cref="HashSet{T}"/> used for the
+        /// remaining values, so it is tracked by a flag — the same strategy
+        /// <see cref="MultiList{T}"/> uses for its null bucket.
+        /// </summary>
+        private static List<TValue> DistinctValuesOf(IEnumerable<TValue> values)
+        {
+            var result = new List<TValue>();
+            var seen = new HashSet<TValue>();
+            var hasNull = false;
+
+            foreach (var value in values)
+            {
+                if (value == null)
+                {
+                    if (!hasNull)
+                    {
+                        hasNull = true;
+                        result.Add(value);
+                    }
+                }
+                else if (seen.Add(value))
+                {
+                    result.Add(value);
+                }
+            }
+
+            return result;
         }
 
         private sealed class ReadOnlyDictionaryView :

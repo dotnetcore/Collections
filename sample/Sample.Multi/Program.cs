@@ -127,6 +127,14 @@ namespace Sample.Multi
             map.ExceptWith("orders", new[] { 1001, 1003 });
             Console.WriteLine($"ExceptWith(orders)= {string.Join(", ", map["orders"])}");
 
+            // Symmetric difference: every distinct value of the argument toggles -- it cancels
+            // one stored copy, or is added when none is stored. The argument is a set, exactly
+            // as in UnionWith / IntersectionWith / ExceptWith above.
+            var diff = new MultiDictionary<string, int>();
+            diff.AddRange("a", new[] { 1, 1, 2 });
+            diff.SymmetricExceptWith("a", new[] { 1, 2, 2, 3 });
+            Console.WriteLine($"SymmetricExceptWith= {string.Join(", ", diff["a"])}  ([1,1,2] toggled by {{1,2,3}})");
+
             // Duplicate values per key can be disallowed at construction.
             var setMap = new MultiDictionary<string, int>(allowDuplicateValues: false);
             setMap.Add("tags", 1);
