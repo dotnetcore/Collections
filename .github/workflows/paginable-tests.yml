@@ -16,7 +16,6 @@ on:
       - '.github/workflows/paginable-tests.yml'
 
 env:
-  DOTNET_ROLL_FORWARD: LatestMajor
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
 
