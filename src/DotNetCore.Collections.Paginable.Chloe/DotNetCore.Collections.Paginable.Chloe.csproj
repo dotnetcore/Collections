@@ -3,7 +3,7 @@
     <Import Project="..\..\build\common.props" />
 
     <PropertyGroup>
-        <!-- Chloe 5.x 资产：net4.6+ / netstandard2.0 / net6.0+（net451 不再受支持） -->
+        <!-- Chloe 5.x ships net4.6+ / netstandard2.0 / net6.0+ assets (net451 is no longer supported). -->
         <TargetFrameworks>net461;net47;net48;netstandard2.0;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     </PropertyGroup>
 

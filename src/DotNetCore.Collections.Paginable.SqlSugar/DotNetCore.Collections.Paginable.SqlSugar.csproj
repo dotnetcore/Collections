@@ -12,7 +12,8 @@
     <Description>Paginable extension with SqlSugar for collection.</Description>
   </PropertyGroup>
 
-  <!-- .NET Framework 使用 sqlSugar（纯 nfx 程序集）；其余目标使用 sqlSugarCore（netstandard2.1） -->
+  <!-- .NET Framework consumes the plain sqlSugar (nfx assemblies); every other target
+       consumes sqlSugarCore (netstandard2.1). -->
   <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
     <PackageReference Include="sqlSugar" Version="5.1.3" />
   </ItemGroup>

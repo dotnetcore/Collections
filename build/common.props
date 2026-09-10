@@ -14,7 +14,9 @@
 
 	<Import Project="misc.props" />
 
-	<!-- R6：确定性构建 + SourceLink + 符号包 + 依赖锁定（各包独立 PackageVersion 可在 csproj 内以 <PackageVersion> 覆盖） -->
+	<!-- Deterministic build + SourceLink + symbol packages + locked dependencies.
+	     Package versions come from version.props and must NOT be overridden
+	     per project: the csproj is evaluated after this import and would win. -->
 	<PropertyGroup>
 		<Deterministic>true</Deterministic>
 		<RepositoryUrl>https://github.com/dotnetcore/Collections.git</RepositoryUrl>

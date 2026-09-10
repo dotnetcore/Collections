@@ -12,7 +12,8 @@
         <Description>Paginable extension with SqlKata for collection.</Description>
     </PropertyGroup>
 
-    <!-- SqlKata 4.x 资产为 net8.0；net461+ 回落 3.x（netstandard2.0）；net451 最高支持 netstandard1.2，需 2.x -->
+    <!-- SqlKata 4.x targets net8.0; net461+ falls back to 3.x (netstandard2.0); net451
+         supports at most netstandard1.2, which requires the 2.x line. -->
     <ItemGroup Condition="'$(TargetFramework)'=='net8.0' OR '$(TargetFramework)'=='net9.0' OR '$(TargetFramework)'=='net10.0'">
         <PackageReference Include="SqlKata" Version="4.0.1"/>
         <PackageReference Include="SqlKata.Execution" Version="4.0.1"/>

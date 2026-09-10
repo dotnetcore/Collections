@@ -3,7 +3,7 @@
     <Import Project="..\..\build\common.props"/>
 
     <PropertyGroup>
-        <!-- EF6 6.5.x 资产：net4.0+ / netstandard2.1（后者供 .NET 5+ 消费） -->
+        <!-- EF6 6.5.x ships net4.0+ / netstandard2.1 assets (the latter serves .NET 5+ consumers). -->
         <TargetFrameworks>net451;net461;net47;net48;netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     </PropertyGroup>
 

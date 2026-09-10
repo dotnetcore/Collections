@@ -3,7 +3,7 @@
   <Import Project="..\..\build\common.props"/>
 
   <PropertyGroup>
-    <!-- Dos.ORM 8.x 仅提供 netstandard2.1 资产，.NET Framework 目标不再受支持 -->
+    <!-- Dos.ORM 8.x only ships netstandard2.1 assets, so the .NET Framework targets are gone. -->
     <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
   </PropertyGroup>
 
