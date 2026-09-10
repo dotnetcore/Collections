@@ -9,7 +9,6 @@
     <PropertyGroup>
         <AssemblyName>DotNetCore.Collections.Paginable</AssemblyName>
         <PackageId>DotNetCore.Collections.Paginable</PackageId>
-        <PackageVersion>6.0.0.0</PackageVersion>
         <Description>Paginable extension for collection.</Description>
     </PropertyGroup>
 

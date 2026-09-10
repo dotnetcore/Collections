@@ -10,7 +10,6 @@
   <PropertyGroup>
     <AssemblyName>DotNetCore.Collections.Paginable.EntityFrameworkCore</AssemblyName>
     <PackageId>DotNetCore.Collections.Paginable.EntityFrameworkCore</PackageId>
-    <PackageVersion>6.0.0.0</PackageVersion>
     <Description>Paginable extension with Microsoft EntityFrameworkCore for collection.</Description>
   </PropertyGroup>
 

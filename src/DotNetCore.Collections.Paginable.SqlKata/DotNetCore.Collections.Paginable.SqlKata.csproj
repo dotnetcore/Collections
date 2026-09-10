@@ -9,7 +9,6 @@
     <PropertyGroup>
         <AssemblyName>DotNetCore.Collections.Paginable.SqlKata</AssemblyName>
         <PackageId>DotNetCore.Collections.Paginable.SqlKata</PackageId>
-        <PackageVersion>6.0.0.0</PackageVersion>
         <Description>Paginable extension with SqlKata for collection.</Description>
     </PropertyGroup>
 

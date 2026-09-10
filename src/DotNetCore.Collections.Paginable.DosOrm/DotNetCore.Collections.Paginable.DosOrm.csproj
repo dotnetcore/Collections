@@ -10,7 +10,6 @@
   <PropertyGroup>
     <AssemblyName>DotNetCore.Collections.Paginable.DosORM</AssemblyName>
     <PackageId>DotNetCore.Collections.Paginable.DosORM</PackageId>
-    <PackageVersion>6.0.0.0</PackageVersion>
     <Description>Paginable extension with Dos.ORM for collection.</Description>
   </PropertyGroup>
 

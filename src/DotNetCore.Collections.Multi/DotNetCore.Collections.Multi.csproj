@@ -16,7 +16,6 @@
     <PropertyGroup>
         <AssemblyName>DotNetCore.Collections.Multi</AssemblyName>
         <PackageId>DotNetCore.Collections.Multi</PackageId>
-        <PackageVersion>6.0.0.0</PackageVersion>
         <PackageTags>Collections;MultiSet;MultiDictionary;Bag;Multimap</PackageTags>
         <Description>MultiSet (bag) and MultiDictionary (multimap) collections for .NET.</Description>
     </PropertyGroup>

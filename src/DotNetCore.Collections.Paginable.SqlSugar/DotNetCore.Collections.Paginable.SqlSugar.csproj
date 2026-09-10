@@ -9,7 +9,6 @@
   <PropertyGroup>
     <AssemblyName>DotNetCore.Collections.Paginable.SqlSugar</AssemblyName>
     <PackageId>DotNetCore.Collections.Paginable.SqlSugar</PackageId>
-    <PackageVersion>6.0.0.0</PackageVersion>
     <Description>Paginable extension with SqlSugar for collection.</Description>
   </PropertyGroup>
 

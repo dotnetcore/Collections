@@ -35,7 +35,9 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Build core library (11 TFMs)
-        run: dotnet build src/DotNetCore.Collections.Paginable/DotNetCore.Collections.Paginable.csproj -c Release
+        # -m:1: DocumentationFile is a single project-root file, so parallel per-TFM
+        # builds race on it (CS0016). Serialising the inner builds keeps CI deterministic.
+        run: dotnet build src/DotNetCore.Collections.Paginable/DotNetCore.Collections.Paginable.csproj -c Release -m:1
 
       - name: Pack (verify package generation incl. snupkg)
         run: dotnet pack src/DotNetCore.Collections.Paginable/DotNetCore.Collections.Paginable.csproj -c Release --no-build

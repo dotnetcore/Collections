@@ -299,3 +299,6 @@ reports/
 
 # 本地 .git 备份目录（沙箱 git 操作安全网，禁止提交）
 .git-backup*/
+
+# 本地 NuGet 发布产物（Publish.bat / PublishToMyget.bat 输出目录，禁止提交）
+nuget_pub/

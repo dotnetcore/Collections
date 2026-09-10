@@ -9,7 +9,6 @@
     <PropertyGroup>
         <AssemblyName>DotNetCore.Collections.Paginable.FreeSql.DbContext</AssemblyName>
         <PackageId>DotNetCore.Collections.Paginable.FreeSql.DbContext</PackageId>
-        <PackageVersion>6.0.0.0</PackageVersion>
         <Description>Paginable extension with NCC FreeSql with DbContext for collection.</Description>
     </PropertyGroup>
 

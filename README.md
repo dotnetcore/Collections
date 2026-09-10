@@ -6,6 +6,37 @@
 
 NCC Collections consists of a set of collection-based extensions and tools, such as paging extensions and multiset/multimap collections.
 
+## What's new in 6.0
+
+6.0 is a modernization release covering both shipped modules (`Paginable` and `Multi`).
+
+| Area | 5.x | 6.0 |
+| --- | --- | --- |
+| Target frameworks (core) | `net451`; `net461`; `netstandard2.1`; `net5.0` | `net451`; `net461`; `net47`; `net48`; `netstandard2.0`; `netstandard2.1`; `net6.0` – `net10.0` (11 TFMs) |
+| Pagination algorithms | offset only | offset **and** keyset / seek (`GetPageByKeyset`) |
+| Async | 3 ORMs, synchronous SQL under the hood | true end-to-end async (`CountAsync` + `ToListAsync`) for EF Core / FreeSql / SqlSugar, with `CancellationToken` passthrough |
+| Enumeration performance | `ElementAt` → O(skip²) on non-indexed sources | single `Skip`/`Take` materialization; lazy one-shot materialization in NHibernate |
+| Correctness | `CurrentPageSize` wrong on exact-multiple last page; `MaxMemberItems` off-by-one; no argument validation | all fixed; `pageNumber >= 1` / `pageSize >= 1` enforced across core and every ORM integration |
+| `Multi` module | `netstandard2.0` only, minimal API surface | `netstandard2.0` / `netstandard2.1` / `net6.0`; rewritten `MultiList<T>` plus a complete `MultiDictionary<TKey, TValue>` |
+| Packaging | plain packages | deterministic build, SourceLink, `.snupkg` symbol packages, `packages.lock.json` |
+| Quality gates | none | 2 GitHub Actions workflows; 76 Paginable + 233 Multi unit tests, plus SQL Server integration tests |
+
+### Supported target frameworks
+
+| Package | Target frameworks |
+| --- | --- |
+| `DotNetCore.Collections.Paginable` | `net451`, `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
+| `DotNetCore.Collections.Paginable.Chloe` | `net461`, `net47`, `net48`, `netstandard2.0`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
+| `DotNetCore.Collections.Paginable.DosORM` | `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
+| `DotNetCore.Collections.Paginable.EntityFramework` | `net451`, `net461`, `net47`, `net48`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
+| `DotNetCore.Collections.Paginable.EntityFrameworkCore` | `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
+| `DotNetCore.Collections.Paginable.FreeSql` | `net451`, `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
+| `DotNetCore.Collections.Paginable.FreeSql.DbContext` | `net451`, `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
+| `DotNetCore.Collections.Paginable.NHibernate` | `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
+| `DotNetCore.Collections.Paginable.SqlKata` | `net451`, `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
+| `DotNetCore.Collections.Paginable.SqlSugar` | `net451`, `net461`, `net47`, `net48`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
+| `DotNetCore.Collections.Multi` | `netstandard2.0`, `netstandard2.1`, `net6.0` |
+
 ## Nuget Packages
 
 | Package Name                                                                                                                                 | Version                                                                                      | Downloads                                                                                     |
@@ -52,7 +83,7 @@ Or use a more streamlined code:
 IEnumerable<ExampleModel> list = GetList();//...
 
 //Get page 15th, each page has 50 items.
-ar page = list.GetPage(15, 50);
+var page = list.GetPage(15, 50);
 
 for (var i = 0; i < page.CurrentPageSize; i++)
 {
@@ -222,9 +253,9 @@ Install-Package DotNetCore.Collections.Paginable.SqlSugar
 then:
 
 ```c#
-var sqlSugar = new SqlSugatClient(new ConnectionConfig{
+var sqlSugar = new SqlSugarClient(new ConnectionConfig{
     ConnectionString = connectionString,
-    DbType = DbTypee.SqlServer,
+    DbType = DbType.SqlServer,
     IsAutoCloseConnection = true
 });
 
@@ -285,12 +316,68 @@ then:
 ```c#
 using(var context = new ExampleDbContext())
 {
-    var pagee = context.ExampleModels.GetPage(1, 9);
+    var page = context.ExampleModels.GetPage(1, 9);
 
     var totalPageCount = page.TotalPageCount;
     //...
 }
 //...
+```
+
+### Keyset (seek) pagination
+
+Offset pagination degrades on deep pages because the database still scans the skipped rows.
+Keyset (a.k.a. seek / cursor) pagination replaces `OFFSET n` with a `WHERE key > @lastKey`
+predicate, so every page costs the same and the `COUNT(*)` round trip is avoided. It is the
+recommended mode for infinite-scroll and cursor-style APIs.
+
+```c#
+IQueryable<ExampleModel> queryable = GetQueryable();//...
+
+// First page: no anchor key yet.
+var first = queryable.GetFirstPageByKeyset(x => x.Id, pageSize: 50);
+
+// Subsequent pages: pass the ordering key of the last row of the previous page.
+var lastId = first.LastMember.Id;
+var next = queryable.GetPageByKeyset(x => x.Id, lastId, pageSize: 50);
+
+foreach (var item in next.Members) { /* ... */ }
+
+var hasMore = next.HasNext; // resolved without COUNT(*)
+```
+
+`GetFirstPageByKeyset` / `GetPageByKeyset` also have `IEnumerable<T>` overloads for in-memory
+sources, and an optional `descending` switch for reverse ordering. Use keyset pagination when you
+do **not** need `TotalPageCount` / `TotalMemberCount`; use the offset APIs above when you do.
+
+### Asynchronous paging
+
+The core library exposes `ToPaginableAsync` / `GetPageAsync` for in-memory and `IQueryable<T>`
+sources, and the EF Core, FreeSql and SqlSugar integrations provide true end-to-end async
+(`CountAsync` + `ToListAsync`, no synchronous database calls) with `CancellationToken` support.
+
+```c#
+using(var context = new ExampleDbContext())
+{
+    var page = await context.ExampleModels
+        .GetPageAsync(pageNumber: 1, pageSize: 50, cancellationToken: ct);
+
+    var totalMemberCount = page.TotalMemberCount;
+}
+```
+
+### Configuration
+
+`PaginableSettingsManager` holds a process-wide settings snapshot. Values are validated on
+assignment, so any instance handed out by the library is always in a valid state — configure it
+once at startup and treat it as read-only afterwards.
+
+```c#
+PaginableSettingsManager.Settings = new PaginableSettings
+{
+    DefaultPageSize = 50,          // must be >= 1
+    MaxMemberItems = 10_000_000    // must be >= 1
+};
 ```
 
 #### For SqlKata with Dapper
@@ -359,6 +446,31 @@ var lookup = map.AsLookup();          // LINQ-friendly ILookup view
 ### Examples
 
 - [Sample.Multi](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Multi/Program.cs)
+
+## Building and testing
+
+```bash
+dotnet build DotNetCore.Collections.sln -c Release
+
+dotnet test tests/DotNetCore.Collections.Paginable.Tests -c Release
+dotnet test tests/DotNetCore.Collections.Multi.Tests      -c Release
+```
+
+The unit tests run offline. The integration tests in `tests/DotNetCore.Collections.Paginable.DbTests`
+need a SQL Server instance and read their connection string from the
+`PAGINABLE_DBTESTS_CONNECTION_STRING` environment variable; on CI they run against a SQL Server 2022
+service container.
+
+Two GitHub Actions workflows gate the `dev` and `master` branches:
+
+- `paginable-tests.yml` — builds all 11 TFMs, verifies packing (including `.snupkg`), then runs the unit tests and the SQL Server integration tests.
+- `multi-tests.yml` — builds, packs and tests `DotNetCore.Collections.Multi`.
+
+## Releasing
+
+Versions are driven by `build/version.props`; every package is produced with `dotnet pack` and
+published by `Publish.bat` (nuget.org) or `PublishToMyget.bat` (MyGet). Both scripts cover all
+11 packages, `DotNetCore.Collections.Multi` included.
 
 ## License
 

@@ -5,5 +5,11 @@
 		<VersionPatch>0</VersionPatch>
 		<VersionQuality>0</VersionQuality>
 		<VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionPatch).$(VersionQuality)</VersionPrefix>
+
+		<!-- Single source of truth for the whole repo: every package ships the same version,
+		     bump here only. Do NOT set <Version> or <PackageVersion> in individual .csproj
+		     files - they are evaluated after this import and would silently win. -->
+		<Version>$(VersionPrefix)</Version>
+		<PackageVersion>$(VersionPrefix)</PackageVersion>
 	</PropertyGroup>
 </Project>

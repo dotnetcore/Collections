@@ -10,7 +10,6 @@
   <PropertyGroup>
     <AssemblyName>DotNetCore.Collections.Paginable.NHibernate</AssemblyName>
     <PackageId>DotNetCore.Collections.Paginable.NHibernate</PackageId>
-    <PackageVersion>6.0.0.0</PackageVersion>
     <Description>Paginable extension with NHibernate for collection.</Description>
   </PropertyGroup>
 
