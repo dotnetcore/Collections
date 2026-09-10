@@ -6,20 +6,9 @@
 
 NCC Collections consists of a set of collection-based extensions and tools, such as paging extensions and multiset/multimap collections.
 
-## What's new in 6.0
-
-6.0 is a modernization release covering both shipped modules (`Paginable` and `Multi`).
-
-| Area | 5.x | 6.0 |
-| --- | --- | --- |
-| Target frameworks (core) | `net451`; `net461`; `netstandard2.1`; `net5.0` | `net451`; `net461`; `net47`; `net48`; `netstandard2.0`; `netstandard2.1`; `net6.0` – `net10.0` (11 TFMs) |
-| Pagination algorithms | offset only | offset **and** keyset / seek (`GetPageByKeyset`) |
-| Async | 3 ORMs, synchronous SQL under the hood | true end-to-end async (`CountAsync` + `ToListAsync`) for EF Core / FreeSql / SqlSugar, with `CancellationToken` passthrough |
-| Enumeration performance | `ElementAt` → O(skip²) on non-indexed sources | single `Skip`/`Take` materialization; lazy one-shot materialization in NHibernate |
-| Correctness | `CurrentPageSize` wrong on exact-multiple last page; `MaxMemberItems` off-by-one; no argument validation | all fixed; `pageNumber >= 1` / `pageSize >= 1` enforced across core and every ORM integration |
-| `Multi` module | `netstandard2.0` only, minimal API surface | `netstandard2.0` / `netstandard2.1` / `net6.0`; rewritten `MultiList<T>` plus a complete `MultiDictionary<TKey, TValue>` |
-| Packaging | plain packages | deterministic build, SourceLink, `.snupkg` symbol packages, `packages.lock.json` |
-| Quality gates | none | 2 GitHub Actions workflows; 76 Paginable + 233 Multi unit tests, plus SQL Server integration tests |
+See [CHANGELOG.md](CHANGELOG.md) for what is new in each release, including the
+6.0 modernization notes (keyset pagination, end-to-end async, expanded target
+frameworks and the rewritten `Multi` module).
 
 ### Supported target frameworks
 
@@ -35,7 +24,7 @@ NCC Collections consists of a set of collection-based extensions and tools, such
 | `DotNetCore.Collections.Paginable.NHibernate` | `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
 | `DotNetCore.Collections.Paginable.SqlKata` | `net451`, `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
 | `DotNetCore.Collections.Paginable.SqlSugar` | `net451`, `net461`, `net47`, `net48`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
-| `DotNetCore.Collections.Multi` | `netstandard2.0`, `netstandard2.1`, `net6.0` |
+| `DotNetCore.Collections.Multi` | `net451`, `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
 
 ## Nuget Packages
 
