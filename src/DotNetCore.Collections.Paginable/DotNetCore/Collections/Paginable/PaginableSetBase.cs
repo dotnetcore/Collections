@@ -62,6 +62,14 @@ namespace DotNetCore.Collections.Paginable
         }
 
         /// <inheritdoc />
+        /// <example>
+        /// <code>
+        /// foreach (var member in page)
+        /// {
+        ///     var value = member.Value;
+        /// }
+        /// </code>
+        /// </example>
         public IEnumerator<IPage<T>> GetEnumerator()
         {
             for (int i = 1; i <= PageCount; i++)
@@ -105,6 +113,12 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <param name="pageNumber"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageNumber"/> is out of its allowed range.</exception>
+        /// <example>
+        /// <code>
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public IPage<T> GetPage(int pageNumber)
         {
             if (PageCount == 0)

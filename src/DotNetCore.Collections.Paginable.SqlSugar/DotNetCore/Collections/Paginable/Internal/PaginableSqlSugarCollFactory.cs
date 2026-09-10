@@ -16,6 +16,8 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="pageSize"></param>
         /// <param name="limitedMemberCount"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         public static PaginableSqlSugarQuery<T> CreatePageSet<T>(ISugarQueryable<T> query, int? pageSize = null, int? limitedMemberCount = null)
         {
             if (query is null)
@@ -44,6 +46,8 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="limitedMemberCount"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         public static async Task<PaginableSqlSugarQuery<T>> CreatePageSetAsync<T>(ISugarQueryable<T> query, int? pageSize = null, int? limitedMemberCount = null, CancellationToken cancellationToken = default)
         {
             if (query is null)

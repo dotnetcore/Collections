@@ -9,7 +9,7 @@ namespace DotNetCore.Collections.Paginable.Internal
     /// Dos.ORM query state
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class DosQueryState<T> : IQueryEntryState<T> where T : Entity
+    internal class DosQueryState<T> : IQueryEntryState<T> where T : Entity
     {
         private readonly Lazy<IEnumerable<T>> _mLazyDosQueryMembers;
 

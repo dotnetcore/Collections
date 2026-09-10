@@ -10,7 +10,7 @@ namespace DotNetCore.Collections.Paginable.Internal
     /// NHibernate query state
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class NhCoreQueryState<T> : IQueryEntryState<T>
+    internal class NhCoreQueryState<T> : IQueryEntryState<T>
     {
         private readonly Lazy<IList<T>> _mLazyNhQueryMembers;
 

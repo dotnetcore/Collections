@@ -17,6 +17,12 @@
             <param name="query">NHibernate.QueryOver`1</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(NHibernate.IQueryOver{``0},System.Int32,System.Nullable{System.Int32})">
             <summary>
@@ -27,6 +33,12 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(NHibernate.ISession,System.Nullable{System.Int32})">
             <summary>
@@ -36,6 +48,12 @@
             <param name="session">NHibernate session</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(NHibernate.ISession,System.Int32,System.Nullable{System.Int32})">
             <summary>
@@ -46,6 +64,12 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(NHibernate.IQueryOver{``0},System.Int32)">
             <summary>
@@ -55,6 +79,12 @@
             <param name="queryOver">original NHibernate.QueryOver`1 source</param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = query.GetPage(15);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(NHibernate.IQueryOver{``0},System.Int32,System.Int32)">
             <summary>
@@ -65,6 +95,12 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="queryOver"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(NHibernate.ISession,System.Int32)">
             <summary>
@@ -74,6 +110,12 @@
             <param name="session">NHibernate session</param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = query.GetPage(15);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(NHibernate.ISession,System.Int32,System.Int32)">
             <summary>
@@ -84,6 +126,12 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = query.GetPage(15, 50);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(NHibernate.IQueryOver{``0},System.Int32)">
             <summary>
@@ -93,6 +141,12 @@
             <param name="queryOver">original NHibernate.QueryOver`1 source</param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await query.GetPageAsync(15, 50, cancellationToken);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(NHibernate.IQueryOver{``0},System.Int32,System.Int32)">
             <summary>
@@ -103,6 +157,13 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="queryOver"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var page = query.GetPage(15, 50);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(NHibernate.ISession,System.Int32)">
             <summary>
@@ -112,6 +173,12 @@
             <param name="session">NHibernate session</param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await query.GetPageAsync(15, 50, cancellationToken);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(NHibernate.ISession,System.Int32,System.Int32)">
             <summary>
@@ -122,6 +189,12 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = query.GetPage(15, 50);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.Internal.NhCoreQueryState`1">
             <summary>
@@ -151,6 +224,8 @@
             <param name="pageSize"></param>
             <param name="limitedMemberCount"></param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="queryOver"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.NhCorePage`1">
             <summary>
@@ -172,6 +247,11 @@
             Get empty page
             </summary>
             <returns></returns>
+            <example>
+            <code>
+            var page = EmptyPage&lt;ExampleModel&gt;.Empty();
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.PaginableNhCoreQuery`1">
             <summary>

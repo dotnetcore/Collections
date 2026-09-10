@@ -28,6 +28,16 @@ namespace DotNetCore.Collections.Paginable
         /// Update paginable settings with a new, fully validated settings snapshot.
         /// </summary>
         /// <param name="settings"></param>
+        /// <exception cref="ArgumentNullException"><paramref name="settings"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// PaginableSettingsManager.UpdateSettings(new PaginableSettings
+        /// {
+        ///     DefaultPageSize = 50,
+        ///     MaxMemberItems = 10_000_000
+        /// });
+        /// </code>
+        /// </example>
         public static void UpdateSettings(PaginableSettings settings)
             => _settingsCache = settings ?? throw new ArgumentNullException(nameof(settings));
     }

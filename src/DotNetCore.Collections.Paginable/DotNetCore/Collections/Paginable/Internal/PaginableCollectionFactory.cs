@@ -17,6 +17,8 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="enumerable"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         public static PaginableEnumerable<T> CreatePageSet<T>(IEnumerable<T> enumerable, int? pageSize = null, int? limitedMemberCount = null)
         {
             if (enumerable is null)
@@ -43,6 +45,8 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="queryable"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         public static PaginableQueryable<T> CreatePageSet<T>(IQueryable<T> queryable, int? pageSize = null, int? limitedMemberCount = null)
         {
             if (queryable is null)

@@ -9,7 +9,7 @@ namespace DotNetCore.Collections.Paginable.Internal
     /// Chloe query state
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ChloeQueryState<T> : IQueryEntryState<T>
+    internal class ChloeQueryState<T> : IQueryEntryState<T>
     {
         private readonly Lazy<IEnumerable<T>> _mLazyChloeQueryMembers;
 

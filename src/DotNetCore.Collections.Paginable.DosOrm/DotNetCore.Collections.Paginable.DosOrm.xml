@@ -25,6 +25,11 @@
             Get empty page
             </summary>
             <returns></returns>
+            <example>
+            <code>
+            var page = EmptyPage&lt;ExampleModel&gt;.Empty();
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.SolidPageExtensions">
             <summary>
@@ -40,6 +45,12 @@
             <param name="limitedMemberCount">limited member count</param>
             <param name="additionalQueryFunc"></param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(Dos.ORM.FromSection{``0},System.Int32,System.Nullable{System.Int32},System.Func{Dos.ORM.FromSection{``0},Dos.ORM.FromSection{``0}})">
             <summary>
@@ -51,6 +62,12 @@
             <param name="limitedMemberCount">limited member count</param>
             <param name="additionalQueryFunc"></param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Dos.ORM.FromSection{``0},System.Int32,System.Func{Dos.ORM.FromSection{``0},Dos.ORM.FromSection{``0}})">
             <summary>
@@ -61,6 +78,12 @@
             <param name="pageNumber">page number</param>
             <param name="additionalQueryFunc"></param>
             <returns></returns>
+            <example>
+            <code>
+            var page = query.GetPage(15);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Dos.ORM.FromSection{``0},System.Int32,System.Int32,System.Func{Dos.ORM.FromSection{``0},Dos.ORM.FromSection{``0}})">
             <summary>
@@ -72,6 +95,12 @@
             <param name="pageSize">page size</param>
             <param name="additionalQueryFunc"></param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.Internal.DosQueryState`1">
             <summary>
@@ -103,6 +132,8 @@
             <param name="limitedMemberCount"></param>
             <param name="additionalQueryFunc"></param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.PaginableDosQuery`1">
             <summary>

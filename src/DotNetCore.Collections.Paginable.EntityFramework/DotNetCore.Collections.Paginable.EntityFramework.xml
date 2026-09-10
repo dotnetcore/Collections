@@ -17,6 +17,12 @@
             <param name="source">DbSet source</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = context.ExampleModels.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(System.Data.Entity.DbSet{``0},System.Int32,System.Nullable{System.Int32})">
             <summary>
@@ -27,6 +33,12 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = context.ExampleModels.ToPaginable(50);
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Data.Entity.DbSet{``0},System.Int32)">
             <summary>
@@ -36,6 +48,11 @@
             <param name="source">DbSet source</param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Data.Entity.DbSet{``0},System.Int32,System.Int32)">
             <summary>
@@ -46,6 +63,11 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(15, 50);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Data.Entity.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32)">
             <summary>
@@ -56,6 +78,11 @@
             <param name="predicate">Predicate</param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Data.Entity.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32)">
             <summary>
@@ -67,6 +94,11 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15, 50);
+            </code>
+            </example>
         </member>
     </members>
 </doc>

@@ -15,6 +15,8 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="pageSize"></param>
         /// <param name="limitedMemberCount"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="queryOver"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         public static PaginableNhCoreQuery<T> CreatePageSet<T>(IQueryOver<T> queryOver, int? pageSize = null, int? limitedMemberCount = null)
         {
             if (queryOver is null)

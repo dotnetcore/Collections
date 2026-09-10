@@ -33,6 +33,14 @@ namespace DotNetCore.Collections.Paginable
         protected PageBase(bool sourceIsFull) => SourceIsFull = sourceIsFull;
 
         /// <inheritdoc />
+        /// <example>
+        /// <code>
+        /// foreach (var member in page)
+        /// {
+        ///     var value = member.Value;
+        /// }
+        /// </code>
+        /// </example>
         public IEnumerator<IPageMember<T>> GetEnumerator()
         {
             CheckOrInitializePage();
@@ -78,9 +86,19 @@ namespace DotNetCore.Collections.Paginable
         }
 
         /// <inheritdoc />
+        /// <example>
+        /// <code>
+        /// PageMetadata metadata = page.GetMetadata();
+        /// </code>
+        /// </example>
         public PageMetadata GetMetadata() => new(this);
 
         /// <inheritdoc />
+        /// <example>
+        /// <code>
+        /// IEnumerable&lt;T&gt; items = page.ToOriginalItems();
+        /// </code>
+        /// </example>
         public IEnumerable<T> ToOriginalItems()
         {
             CheckOrInitializePage();

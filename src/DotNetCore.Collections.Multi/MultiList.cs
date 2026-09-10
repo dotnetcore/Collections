@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -118,6 +118,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Adds a single copy of the element.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bag.Add("apple");
+        /// </code>
+        /// </example>
         public void Add(T item)
         {
             Add(item, 1);
@@ -127,6 +132,12 @@ namespace DotNetCore.Collections.Multi
         /// Adds the specified number of copies of the element. A non-positive
         /// <paramref name="times"/> is coerced to one copy (legacy behaviour).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bag.Add("apple", 3);
+        /// // bag.CountOf("apple") == 3
+        /// </code>
+        /// </example>
         public void Add(T item, int times)
         {
             if (times <= 0)
@@ -147,6 +158,12 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Adds one copy of each element of the specified collection.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="items"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// bag.AddRange(new[] { "a", "a", "b" });
+        /// </code>
+        /// </example>
         public void AddRange(IEnumerable<T> items)
         {
             if (items == null)
@@ -163,6 +180,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Determines whether the multiset contains at least one copy of the element.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool has = bag.Contains("apple");
+        /// </code>
+        /// </example>
         public bool Contains(T item)
         {
             return item == null ? _nullCount > 0 : _counts.ContainsKey(item);
@@ -172,6 +194,12 @@ namespace DotNetCore.Collections.Multi
         /// Determines whether the multiset contains at least one copy of every element of the
         /// specified collection.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="items"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// bool has = bag.ContainsAll(new[] { "a", "b" });
+        /// </code>
+        /// </example>
         public bool ContainsAll(IEnumerable<T> items)
         {
             if (items == null)
@@ -193,6 +221,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Gets the number of copies of the element (zero when absent).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// int copies = bag.CountOf("apple");
+        /// </code>
+        /// </example>
         public int CountOf(T item)
         {
             if (item == null)
@@ -207,6 +240,12 @@ namespace DotNetCore.Collections.Multi
         /// Removes a single copy of the element and returns the number of copies remaining
         /// afterwards. Returns zero when the element is absent (no copy was removed).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// int removed = bag.Remove("apple");
+        /// // removes a single copy
+        /// </code>
+        /// </example>
         public int Remove(T item)
         {
             return Remove(item, 1);
@@ -218,6 +257,12 @@ namespace DotNetCore.Collections.Multi
         /// copy (legacy behaviour). Returns zero when the element is absent. The element is
         /// dropped from the multiset once its copy count reaches zero.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bag.Remove("apple", 2);
+        /// // removes at most 2 copies
+        /// </code>
+        /// </example>
         public int Remove(T item, int times)
         {
             if (times <= 0)
@@ -254,6 +299,11 @@ namespace DotNetCore.Collections.Multi
         /// Removes every copy of the element. Returns <c>true</c> when at least one copy was
         /// removed, <c>false</c> when the element was absent.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool any = bag.RemoveAllCopies("apple");
+        /// </code>
+        /// </example>
         public bool RemoveAllCopies(T item)
         {
             var current = CountOf(item);
@@ -278,6 +328,12 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Removes all elements and copies.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bag.Clear();
+        /// // bag.TotalCount == 0
+        /// </code>
+        /// </example>
         public void Clear()
         {
             _counts.Clear();
@@ -288,6 +344,12 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Returns a list containing every copy of every element (duplicates expanded).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// List&lt;string&gt; copy = bag.ToList();
+        /// // duplicate copies preserved
+        /// </code>
+        /// </example>
         public List<T> ToList()
         {
             var list = new List<T>(TotalCount);
@@ -302,6 +364,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Returns an array containing every copy of every element (duplicates expanded).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// string[] copy = bag.ToArray();
+        /// </code>
+        /// </example>
         public T[] ToArray()
         {
             var array = new T[TotalCount];
@@ -317,6 +384,14 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Enumerates the distinct elements only, ignoring copy counts.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// foreach (var item in bag.DistinctItems())
+        /// {
+        ///     // each element once
+        /// }
+        /// </code>
+        /// </example>
         public IEnumerable<T> DistinctItems()
         {
             if (_nullCount > 0)
@@ -349,6 +424,12 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Creates a shallow copy: element references are shared, copy counts are independent.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// MultiList&lt;string&gt; copy = bag.Clone();
+        /// // deep copy: independent counts
+        /// </code>
+        /// </example>
         public MultiList<T> Clone()
         {
             return new MultiList<T>(this, _comparer);
@@ -360,6 +441,12 @@ namespace DotNetCore.Collections.Multi
         /// <see cref="InvalidOperationException"/> when the multiset contains a <c>null</c>
         /// element, which can not be represented as a dictionary key.
         /// </summary>
+        /// <exception cref="InvalidOperationException">The operation is not valid for the current state of the collection.</exception>
+        /// <example>
+        /// <code>
+        /// IReadOnlyDictionary&lt;string, int&gt; counts = bag.ToDictionary();
+        /// </code>
+        /// </example>
         public IReadOnlyDictionary<T, int> ToDictionary()
         {
             if (_nullCount > 0)
@@ -376,6 +463,11 @@ namespace DotNetCore.Collections.Multi
         /// <see cref="IReadOnlyCollection{T}.Count"/> reflect subsequent changes to the owning
         /// multiset. Mutating members are not exposed.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// IReadOnlyCollection&lt;string&gt; view = bag.AsReadOnly();
+        /// </code>
+        /// </example>
         public IReadOnlyCollection<T> AsReadOnly()
         {
             return new ReadOnlyView(this);
@@ -384,6 +476,13 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Copies every copy of every element (duplicates expanded) to the target array.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="array"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is out of its allowed range.</exception>
+        /// <example>
+        /// <code>
+        /// bag.CopyTo(array, 0);
+        /// </code>
+        /// </example>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
@@ -457,6 +556,12 @@ namespace DotNetCore.Collections.Multi
         /// collections. Occurrences in <paramref name="other"/> are counted element-wise (a
         /// <see cref="MultiList{T}"/> argument contributes its full multiplicities).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bag.UnionWith(new[] { "a", "c" });
+        /// // adds one copy of each missing element
+        /// </code>
+        /// </example>
         public void UnionWith(IEnumerable<T> other)
         {
             var otherBag = Snapshot(other);
@@ -476,6 +581,12 @@ namespace DotNetCore.Collections.Multi
         /// multiset semantics: each element keeps the <b>minimum</b> of its copy counts in both
         /// collections. Elements absent from <paramref name="other"/> are dropped.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bag.IntersectionWith(new[] { "a" });
+        /// // keeps min(copies(here), copies(other))
+        /// </code>
+        /// </example>
         public void IntersectionWith(IEnumerable<T> other)
         {
             var otherBag = Snapshot(other);
@@ -494,6 +605,12 @@ namespace DotNetCore.Collections.Multi
         /// multiset semantics: each element loses up to the number of copies present in
         /// <paramref name="other"/> (never below zero).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bag.ExceptWith(new[] { "a" });
+        /// // removes every copy of the elements
+        /// </code>
+        /// </example>
         public void ExceptWith(IEnumerable<T> other)
         {
             var otherBag = Snapshot(other);
@@ -512,6 +629,11 @@ namespace DotNetCore.Collections.Multi
         /// each element ends up with the <b>absolute difference</b> of its copy counts in both
         /// collections.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bag.SymmetricExceptWith(new[] { "a", "d" });
+        /// </code>
+        /// </example>
         public void SymmetricExceptWith(IEnumerable<T> other)
         {
             var otherBag = Snapshot(other);
@@ -537,6 +659,11 @@ namespace DotNetCore.Collections.Multi
         /// multiset semantics: the copy count of every element in this multiset must be less
         /// than or equal to its copy count in <paramref name="other"/>.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool ok = bag.IsSubsetOf(other);
+        /// </code>
+        /// </example>
         public bool IsSubsetOf(IEnumerable<T> other)
         {
             return IsSubsetOfBag(Snapshot(other));
@@ -546,6 +673,11 @@ namespace DotNetCore.Collections.Multi
         /// Determines whether the multiset is a superset of the specified collection, using
         /// multiset semantics.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool ok = bag.IsSupersetOf(other);
+        /// </code>
+        /// </example>
         public bool IsSupersetOf(IEnumerable<T> other)
         {
             return IsSupersetOfBag(Snapshot(other));
@@ -555,6 +687,11 @@ namespace DotNetCore.Collections.Multi
         /// Determines whether the multiset is a proper subset of the specified collection
         /// (a subset that is not equal as a multiset).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool ok = bag.IsProperSubsetOf(other);
+        /// </code>
+        /// </example>
         public bool IsProperSubsetOf(IEnumerable<T> other)
         {
             var otherBag = Snapshot(other);
@@ -565,6 +702,11 @@ namespace DotNetCore.Collections.Multi
         /// Determines whether the multiset is a proper superset of the specified collection
         /// (a superset that is not equal as a multiset).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool ok = bag.IsProperSupersetOf(other);
+        /// </code>
+        /// </example>
         public bool IsProperSupersetOf(IEnumerable<T> other)
         {
             var otherBag = Snapshot(other);
@@ -575,6 +717,12 @@ namespace DotNetCore.Collections.Multi
         /// Determines whether the multiset and the specified collection share at least one
         /// element.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="other"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// bool ok = bag.Overlaps(other);
+        /// </code>
+        /// </example>
         public bool Overlaps(IEnumerable<T> other)
         {
             if (other == null)
@@ -596,6 +744,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Determines whether the multiset and the specified collection share no elements.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool ok = bag.IsDisjointFrom(other);
+        /// </code>
+        /// </example>
         public bool IsDisjointFrom(IEnumerable<T> other)
         {
             return !Overlaps(other);
@@ -630,6 +783,14 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Enumerates every copy of every element (duplicates expanded).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// foreach (var item in bag)
+        /// {
+        ///     // copies expanded
+        /// }
+        /// </code>
+        /// </example>
         public IEnumerator<T> GetEnumerator()
         {
             for (var i = 0; i < _nullCount; i++)
@@ -687,6 +848,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Returns the expanded form (every copy, duplicates included), comma separated.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// string text = bag.ToString();
+        /// </code>
+        /// </example>
         public override string ToString()
         {
             return string.Join(",", this);

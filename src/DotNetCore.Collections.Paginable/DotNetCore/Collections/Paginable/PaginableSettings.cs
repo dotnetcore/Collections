@@ -11,6 +11,15 @@ namespace DotNetCore.Collections.Paginable
     /// obtained from this library is always in a valid state (immutable-by-convention:
     /// configure the snapshot once at startup, then treat it as read-only).
     /// </remarks>
+    /// <example>
+    /// <code>
+    /// PaginableSettingsManager.UpdateSettings(new PaginableSettings
+    /// {
+    ///     DefaultPageSize = 50,
+    ///     MaxMemberItems = 10_000_000
+    /// });
+    /// </code>
+    /// </example>
     public class PaginableSettings
     {
         private int _defaultPageSize = PaginableConstants.DEFAULT_PAGE_SIZE;
@@ -19,6 +28,7 @@ namespace DotNetCore.Collections.Paginable
         /// <summary>
         /// Gets or sets default page size (must be greater than or equal to one)
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The assigned value is less than one.</exception>
         public int DefaultPageSize
         {
             get => _defaultPageSize;
@@ -30,6 +40,7 @@ namespace DotNetCore.Collections.Paginable
         /// <summary>
         /// Gets or sets max member items (must be greater than or equal to one)
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The assigned value is less than one.</exception>
         public long MaxMemberItems
         {
             get => _maxMemberItems;

@@ -21,6 +21,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = freeSql.Select&lt;ExampleModel&gt;().ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableFreeSqlQuery<T> ToPaginable<T>(this ISelect<T> select, int? limitedMemberCount = null, bool? includeNestedMembers = null) where T : class
             => PaginableFreeSqlCollFactory.CreatePageSet(select, limitedMemberCount: limitedMemberCount, includeNestedMembers: includeNestedMembers);
 
@@ -33,6 +39,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable(50);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableFreeSqlQuery<T> ToPaginable<T>(this ISelect<T> select, int pageSize, int? limitedMemberCount = null, bool? includeNestedMembers = null)
             where T : class
             => PaginableFreeSqlCollFactory.CreatePageSet(select, pageSize, limitedMemberCount, includeNestedMembers);
@@ -45,6 +57,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = query.GetPage(15);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this ISelect<T> select, int pageNumber, bool includeNestedMembers = false) where T : class
             => GetPage(select, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, includeNestedMembers);
 
@@ -57,6 +75,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="select"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = freeSql.Select&lt;ExampleModel&gt;().GetPage(15, 50);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this ISelect<T> select, int pageNumber, int pageSize, bool includeNestedMembers = false) where T : class
         {
             if (select is null)
@@ -82,6 +106,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="includeNestedMembers">include nested members</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await query.GetPageAsync(15, 50, cancellationToken);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this ISelect<T> select, int pageNumber, bool includeNestedMembers = false, CancellationToken cancellationToken = default) where T : class
             => GetPageAsync(select, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, includeNestedMembers, cancellationToken);
 
@@ -97,6 +127,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="includeNestedMembers">include nested members</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="select"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = await freeSql.Select&lt;ExampleModel&gt;().GetPageAsync(15, 50, cancellationToken);
+        /// </code>
+        /// </example>
         public static async Task<IPage<T>> GetPageAsync<T>(this ISelect<T> select, int pageNumber, int pageSize, bool includeNestedMembers = false, CancellationToken cancellationToken = default) where T : class
         {
             if (select is null)
@@ -130,6 +166,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="includeNestedMembers">include nested members</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = await freeSql.Select&lt;ExampleModel&gt;().ToPaginableAsync(50, cancellationToken: cancellationToken);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static Task<PaginableFreeSqlQuery<T>> ToPaginableAsync<T>(this ISelect<T> select, int? pageSize = null, int? limitedMemberCount = null, bool? includeNestedMembers = null, CancellationToken cancellationToken = default) where T : class
             => PaginableFreeSqlCollFactory.CreatePageSetAsync(select, pageSize, limitedMemberCount, includeNestedMembers, cancellationToken);
     }

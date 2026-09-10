@@ -160,6 +160,11 @@
             Get empty page
             </summary>
             <returns></returns>
+            <example>
+            <code>
+            var page = EmptyPage&lt;ExampleModel&gt;.Empty();
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.PaginableKeyset">
             <summary>
@@ -184,6 +189,14 @@
             previous page</param>
             <param name="pageSize">requested page size</param>
             <param name="descending">ordering direction</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var ordered = PaginableKeyset.BuildKeysetQuery(source, x =&gt; x.Id, lastId, pageSize: 50);
+            var page = ordered.ToList();
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.KeysetPageExtensions">
             <summary>
@@ -208,6 +221,14 @@
             <param name="keySelector">ordering key selector</param>
             <param name="pageSize">page size</param>
             <param name="descending">ordering direction</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var first = query.GetFirstPageByKeyset(x =&gt; x.Id, pageSize: 50);
+            var lastId = first.LastMember.Id;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.KeysetPageExtensions.GetPageByKeyset``2(System.Linq.IQueryable{``0},System.Linq.Expressions.Expression{System.Func{``0,``1}},``1,System.Int32,System.Boolean)">
             <summary>
@@ -220,16 +241,40 @@
             <param name="lastKey">ordering key of the last member of the previous page</param>
             <param name="pageSize">page size</param>
             <param name="descending">ordering direction</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var next = query.GetPageByKeyset(x =&gt; x.Id, lastId, pageSize: 50);
+            var hasMore = next.HasNext;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.KeysetPageExtensions.GetFirstPageByKeyset``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},System.Int32,System.Boolean)">
             <summary>
             Gets the first keyset page from an in-memory source (no keyset anchor applied).
             </summary>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var first = list.GetFirstPageByKeyset(x =&gt; x.Id, pageSize: 50);
+            var lastId = first.LastMember.Id;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.KeysetPageExtensions.GetPageByKeyset``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},``1,System.Int32,System.Boolean)">
             <summary>
             Gets the keyset page that follows <paramref name="lastKey"/> from an in-memory source.
             </summary>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var next = list.GetPageByKeyset(x =&gt; x.Id, lastId, pageSize: 50);
+            var hasMore = next.HasNext;
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.PageExtensions">
             <summary>
@@ -242,6 +287,15 @@
             </summary>
             <param name="page">Page</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="page"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            if (page.IsFirst())
+            {
+                // first page of the source
+            }
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.PageExtensions.IsLast(DotNetCore.Collections.Paginable.IPage)">
             <summary>
@@ -249,6 +303,15 @@
             </summary>
             <param name="page">Page</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="page"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            if (page.IsLast())
+            {
+                // last page of the source
+            }
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.PageExtensions.FromMemberNumber(DotNetCore.Collections.Paginable.IPage)">
             <summary>
@@ -256,6 +319,13 @@
             </summary>
             <param name="page">Page</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="page"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            int first = page.FromMemberNumber();
+            // equals (CurrentPageNumber - 1) * PageSize + 1
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.PageExtensions.ToMemberNumber(DotNetCore.Collections.Paginable.IPage)">
             <summary>
@@ -263,6 +333,13 @@
             </summary>
             <param name="page">Page</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="page"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            int last = page.ToMemberNumber();
+            // equals FromMemberNumber() + CurrentPageSize - 1
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.SolidPageExtensions">
             <summary>
@@ -277,6 +354,12 @@
             <param name="enumerable">original enumerable result</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = list.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Nullable{System.Int32})">
             <summary>
@@ -287,6 +370,12 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = list.ToPaginable(50);
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Collections.Generic.IEnumerable{``0},System.Int32)">
             <summary>
@@ -296,6 +385,15 @@
             <param name="enumerable">original enumerable result</param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = list.GetPage(15, 50);
+            foreach (var member in page)
+            {
+                var value = member.Value;
+            }
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Int32)">
             <summary>
@@ -306,6 +404,16 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="enumerable"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var page = list.GetPage(15, 50);
+            foreach (var member in page)
+            {
+                var value = member.Value;
+            }
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginableAsync``1(System.Collections.Generic.IEnumerable{``0},System.Nullable{System.Int32},System.Threading.CancellationToken)">
             <summary>
@@ -318,6 +426,12 @@
             <param name="limitedMemberCount">limited member count</param>
             <param name="cancellationToken">unused; kept for API-shape symmetry</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = await list.ToPaginableAsync(cancellationToken: cancellationToken);
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginableAsync``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Nullable{System.Int32},System.Threading.CancellationToken)">
             <summary>
@@ -331,6 +445,12 @@
             <param name="limitedMemberCount">limited member count</param>
             <param name="cancellationToken">unused; kept for API-shape symmetry</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = await list.ToPaginableAsync(50, cancellationToken: cancellationToken);
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Threading.CancellationToken)">
             <summary>
@@ -343,6 +463,15 @@
             <param name="pageNumber">page number</param>
             <param name="cancellationToken">unused; kept for API-shape symmetry</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await list.GetPageAsync(15, 50, cancellationToken);
+            foreach (var member in page)
+            {
+                var value = member.Value;
+            }
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Int32,System.Threading.CancellationToken)">
             <summary>
@@ -356,6 +485,15 @@
             <param name="pageSize">page size</param>
             <param name="cancellationToken">unused; kept for API-shape symmetry</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await list.GetPageAsync(15, 50, cancellationToken);
+            foreach (var member in page)
+            {
+                var value = member.Value;
+            }
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(System.Linq.IQueryable{``0},System.Nullable{System.Int32})">
             <summary>
@@ -365,6 +503,12 @@
             <param name="queryable">original queryable result</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(System.Linq.IQueryable{``0},System.Int32,System.Nullable{System.Int32})">
             <summary>
@@ -375,6 +519,12 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable(50);
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Linq.IQueryable{``0},System.Int32)">
             <summary>
@@ -384,6 +534,12 @@
             <param name="queryable">original queryable result</param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = query.GetPage(15, 50);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(System.Linq.IQueryable{``0},System.Int32,System.Int32)">
             <summary>
@@ -394,6 +550,13 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="queryable"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var page = query.GetPage(15, 50);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(System.Threading.Tasks.Task{System.Linq.IQueryable{``0}},System.Int32)">
             <summary>
@@ -403,6 +566,12 @@
             <param name="queryableTask"></param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await GetQueryableAsync().GetPageAsync(15, 50);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(System.Threading.Tasks.Task{System.Linq.IQueryable{``0}},System.Int32,System.Int32)">
             <summary>
@@ -413,6 +582,13 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="queryableTask"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var page = await GetQueryableAsync().GetPageAsync(15, 50);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.Internal.LimitedMembersTypes">
             <summary>
@@ -443,6 +619,11 @@
             <param name="startIndex"></param>
             <typeparam name="T"></typeparam>
             <returns></returns>
+            <example>
+            <code>
+            var member = PageMemberFactory.Create(state, offset, ref startIndex);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.Internal.PageMemberFactory.Create``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Int32,System.Int32@)">
             <summary>
@@ -454,6 +635,11 @@
             <param name="startIndex"></param>
             <typeparam name="T"></typeparam>
             <returns></returns>
+            <example>
+            <code>
+            var member = PageMemberFactory.Create(state, offset, ref startIndex);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.Internal.PageMemberFactory.Create``1(DotNetCore.Collections.Paginable.Abstractions.IQueryEntryState{``0},System.Int32,System.Int32@)">
             <summary>
@@ -464,6 +650,11 @@
             <param name="startIndex"></param>
             <typeparam name="T"></typeparam>
             <returns></returns>
+            <example>
+            <code>
+            var member = PageMemberFactory.Create(state, offset, ref startIndex);
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.Internal.PaginableCalc">
             <summary>
@@ -479,6 +670,11 @@
             <param name="limitedMemberCount">limited member count (null or invalid means unlimited)</param>
             <param name="count">real member count from the data source</param>
             <returns></returns>
+            <example>
+            <code>
+            int total = PaginableCalc.GetRealMemberCount(0, 50, 120);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCalc.GetRealPageCount(System.Int32,System.Int32)">
             <summary>
@@ -487,6 +683,11 @@
             <param name="realMemberCount">real member count, which may have been limited by <see cref="M:DotNetCore.Collections.Paginable.Internal.PaginableCalc.GetRealMemberCount(System.Nullable{System.Int32},System.Int32)"/></param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <example>
+            <code>
+            int pages = PaginableCalc.GetRealPageCount(120, 50);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCollectionFactory.CreatePageSet``1(System.Collections.Generic.IEnumerable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
@@ -497,6 +698,8 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="enumerable"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableCollectionFactory.CreatePageSet``1(System.Linq.IQueryable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
@@ -507,6 +710,8 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="queryable"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         </member>
         <member name="F:DotNetCore.Collections.Paginable.Internal.PaginableConstants.DEFAULT_PAGE_SIZE">
             <summary>
@@ -615,6 +820,14 @@
         </member>
         <member name="M:DotNetCore.Collections.Paginable.PageBase`1.GetEnumerator">
             <inheritdoc />
+            <example>
+            <code>
+            foreach (var member in page)
+            {
+                var value = member.Value;
+            }
+            </code>
+            </example>
         </member>
         <member name="P:DotNetCore.Collections.Paginable.PageBase`1.SourceIsFull">
             <summary>
@@ -647,9 +860,19 @@
         </member>
         <member name="M:DotNetCore.Collections.Paginable.PageBase`1.GetMetadata">
             <inheritdoc />
+            <example>
+            <code>
+            PageMetadata metadata = page.GetMetadata();
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.PageBase`1.ToOriginalItems">
             <inheritdoc />
+            <example>
+            <code>
+            IEnumerable&lt;T&gt; items = page.ToOriginalItems();
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.PageBase`1.InitializeMetaInfo(System.Int32,System.Int32,System.Int32,System.Int32)">
             <summary>
@@ -728,6 +951,11 @@
         </member>
         <member name="M:DotNetCore.Collections.Paginable.PageMetadata.ToString">
             <inheritdoc />
+            <example>
+            <code>
+            string text = page.ToString();
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.PaginableEnumerable`1">
             <summary>
@@ -800,6 +1028,14 @@
         </member>
         <member name="M:DotNetCore.Collections.Paginable.PaginableSetBase`1.GetEnumerator">
             <inheritdoc />
+            <example>
+            <code>
+            foreach (var member in page)
+            {
+                var value = member.Value;
+            }
+            </code>
+            </example>
         </member>
         <member name="P:DotNetCore.Collections.Paginable.PaginableSetBase`1.PageSize">
             <inheritdoc />
@@ -823,6 +1059,12 @@
             </summary>
             <param name="pageNumber"></param>
             <returns></returns>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="pageNumber"/> is out of its allowed range.</exception>
+            <example>
+            <code>
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.PaginableSetBase`1.GetSpecifiedPage(System.Int32,System.Int32,System.Int32)">
             <summary>
@@ -842,16 +1084,27 @@
             obtained from this library is always in a valid state (immutable-by-convention:
             configure the snapshot once at startup, then treat it as read-only).
             </remarks>
+            <example>
+            <code>
+            PaginableSettingsManager.UpdateSettings(new PaginableSettings
+            {
+                DefaultPageSize = 50,
+                MaxMemberItems = 10_000_000
+            });
+            </code>
+            </example>
         </member>
         <member name="P:DotNetCore.Collections.Paginable.PaginableSettings.DefaultPageSize">
             <summary>
             Gets or sets default page size (must be greater than or equal to one)
             </summary>
+            <exception cref="T:System.ArgumentOutOfRangeException">The assigned value is less than one.</exception>
         </member>
         <member name="P:DotNetCore.Collections.Paginable.PaginableSettings.MaxMemberItems">
             <summary>
             Gets or sets max member items (must be greater than or equal to one)
             </summary>
+            <exception cref="T:System.ArgumentOutOfRangeException">The assigned value is less than one.</exception>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.PaginableSettingsManager">
             <summary>
@@ -873,6 +1126,16 @@
             Update paginable settings with a new, fully validated settings snapshot.
             </summary>
             <param name="settings"></param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="settings"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            PaginableSettingsManager.UpdateSettings(new PaginableSettings
+            {
+                DefaultPageSize = 50,
+                MaxMemberItems = 10_000_000
+            });
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.QueryablePage`1">
             <summary>
@@ -904,6 +1167,11 @@
             Get empty page
             </summary>
             <returns></returns>
+            <example>
+            <code>
+            var page = EmptyPage&lt;ExampleModel&gt;.Empty();
+            </code>
+            </example>
         </member>
     </members>
 </doc>

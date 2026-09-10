@@ -64,6 +64,11 @@
         public bool HasNext { get; }
 
         /// <inheritdoc />
+        /// <example>
+        /// <code>
+        /// string text = page.ToString();
+        /// </code>
+        /// </example>
         public override string ToString()
         {
             return $@"

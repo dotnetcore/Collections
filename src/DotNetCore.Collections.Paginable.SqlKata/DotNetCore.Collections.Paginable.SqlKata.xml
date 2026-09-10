@@ -17,6 +17,12 @@
             <param name="query">SqlKata.Query</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(SqlKata.Query,System.Int32,System.Nullable{System.Int32})">
             <summary>
@@ -27,6 +33,12 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(SqlKata.Query,System.Int32)">
             <summary>
@@ -36,6 +48,12 @@
             <param name="query">original SqlKata.Query source</param>
             <param name="pageNumber"></param>
             <returns></returns>
+            <example>
+            <code>
+            var page = query.GetPage(15);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(SqlKata.Query,System.Int32,System.Int32)">
             <summary>
@@ -46,6 +64,12 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(SqlKata.Query,System.Int32)">
             <summary>
@@ -55,6 +79,12 @@
             <param name="query">original SqlKata.Query source</param>
             <param name="pageNumber"></param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await query.GetPageAsync(15, 50, cancellationToken);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(SqlKata.Query,System.Int32,System.Int32)">
             <summary>
@@ -65,6 +95,13 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var page = query.GetPage(15, 50);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlKataCollFactory.CreatePageSet``1(SqlKata.Query,System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
@@ -75,6 +112,8 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.Internal.SqlKataQueryState`1">
             <summary>
@@ -124,6 +163,11 @@
             Get empty page
             </summary>
             <returns></returns>
+            <example>
+            <code>
+            var page = EmptyPage&lt;ExampleModel&gt;.Empty();
+            </code>
+            </example>
         </member>
     </members>
 </doc>

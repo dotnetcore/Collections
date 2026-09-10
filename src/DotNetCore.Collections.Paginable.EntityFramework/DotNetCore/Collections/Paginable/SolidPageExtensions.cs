@@ -17,6 +17,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="source">DbSet source</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = context.ExampleModels.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableQueryable<T> ToPaginable<T>(this DbSet<T> source, int? limitedMemberCount = null) where T : class
             => source.AsQueryable().ToPaginable(limitedMemberCount: limitedMemberCount);
 
@@ -28,6 +34,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = context.ExampleModels.ToPaginable(50);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableQueryable<T> ToPaginable<T>(this DbSet<T> source, int pageSize, int? limitedMemberCount = null) where T : class
             => source.AsQueryable().ToPaginable(pageSize, limitedMemberCount);
 
@@ -38,6 +50,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="source">DbSet source</param>
         /// <param name="pageNumber">page number</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(15);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, int pageNumber) where T : class
             => source.AsQueryable().GetPage(pageNumber);
 
@@ -49,6 +66,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(15, 50);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, int pageNumber, int pageSize) where T : class
             => source.AsQueryable().GetPage(pageNumber, pageSize);
 
@@ -60,6 +82,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="predicate">Predicate</param>
         /// <param name="pageNumber">page number</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageNumber) where T : class
             => source.Where(predicate).GetPage(pageNumber);
 
@@ -72,6 +99,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15, 50);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageNumber, int pageSize) where T : class
             => source.Where(predicate).GetPage(pageNumber, pageSize);
     }

@@ -18,6 +18,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="additionalQueryFunc"></param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableDosQuery<T> ToPaginable<T>(this FromSection<T> query, int? limitedMemberCount = null,
             Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null) where T : Entity
             => PaginableDosCollFactory.CreatePageSet(query, limitedMemberCount: limitedMemberCount, additionalQueryFunc: additionalQueryFunc);
@@ -31,6 +37,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="additionalQueryFunc"></param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableDosQuery<T> ToPaginable<T>(this FromSection<T> query, int pageSize, int? limitedMemberCount = null,
             Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null) where T : Entity
             => PaginableDosCollFactory.CreatePageSet(query, pageSize, limitedMemberCount, additionalQueryFunc: additionalQueryFunc);
@@ -43,6 +55,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="additionalQueryFunc"></param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = query.GetPage(15);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this FromSection<T> query, int pageNumber, Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null) where T : Entity
             => GetPage(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, additionalQueryFunc: additionalQueryFunc);
 
@@ -55,6 +73,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="additionalQueryFunc"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this FromSection<T> query, int pageNumber, int pageSize, Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null)
             where T : Entity
         {

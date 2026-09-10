@@ -18,6 +18,8 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="limitedMemberCount"></param>
         /// <param name="includeNestedMembers"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="select"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         public static PaginableFreeSqlQuery<T> CreatePageSet<T>(ISelect<T> select, int? pageSize = null, int? limitedMemberCount = null, bool? includeNestedMembers = null)
             where T : class
         {
@@ -49,6 +51,8 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="includeNestedMembers"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="select"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         public static async Task<PaginableFreeSqlQuery<T>> CreatePageSetAsync<T>(ISelect<T> select, int? pageSize = null, int? limitedMemberCount = null, bool? includeNestedMembers = null, CancellationToken cancellationToken = default)
             where T : class
         {

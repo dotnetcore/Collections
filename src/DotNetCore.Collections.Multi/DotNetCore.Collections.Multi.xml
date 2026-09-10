@@ -103,38 +103,71 @@
             Adds a (key, value) pair. When duplicate values are disallowed and the value already
             exists under the key, the call is silently ignored.
             </summary>
+            <example>
+            <code>
+            map.Add("orders", 1001);
+            map.Add("orders", 1002);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.AddRange(`0,System.Collections.Generic.IEnumerable{`1})">
             <summary>
             Adds each value of the specified collection under the key.
             </summary>
+            <exception cref="T:System.ArgumentNullException"><paramref name="values"/> is <c>null</c>.</exception>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.ContainsKey(`0)">
             <summary>
             Determines whether the map contains the key.
             </summary>
+            <example>
+            <code>
+            bool has = map.ContainsKey("orders");
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.Contains(`0,`1)">
             <summary>
             Determines whether the specified value exists under the key.
             </summary>
+            <example>
+            <code>
+            bool has = map.Contains("orders", 1001);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.ContainsValue(`1)">
             <summary>
             Determines whether the specified value exists under any key.
             </summary>
+            <example>
+            <code>
+            bool has = map.ContainsValue(1001);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.Remove(`0)">
             <summary>
             Removes the key together with all of its values. Returns <c>true</c> when the key was
             present.
             </summary>
+            <example>
+            <code>
+            bool removed = map.Remove("orders");
+            // removes the key with all its values
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.Remove(`0,`1)">
             <summary>
             Removes a single occurrence of the value under the key. Returns <c>true</c> when a
             value was removed. The key is dropped automatically once its last value is removed.
             </summary>
+            <example>
+            <code>
+            bool removed = map.Remove("orders", 1001);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.UnionWith(`0,System.Collections.Generic.IEnumerable{`1})">
             <summary>
@@ -142,6 +175,12 @@
             present (set-union semantics on the key's values). Creates the key when absent. With
             a duplicating inner collection, existing duplicate values keep their multiplicities.
             </summary>
+            <exception cref="T:System.ArgumentNullException"><paramref name="values"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            map.UnionWith("orders", new[] { 1003, 1004 });
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.IntersectionWith(`0,System.Collections.Generic.IEnumerable{`1})">
             <summary>
@@ -149,6 +188,12 @@
             (set-intersection semantics on the key's values). The key is dropped when no values
             remain; a missing key is a no-op.
             </summary>
+            <exception cref="T:System.ArgumentNullException"><paramref name="values"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            map.IntersectionWith("orders", new[] { 1001 });
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.ExceptWith(`0,System.Collections.Generic.IEnumerable{`1})">
             <summary>
@@ -156,11 +201,22 @@
             (set-difference semantics). The key is dropped when no values remain; a missing key
             is a no-op.
             </summary>
+            <exception cref="T:System.ArgumentNullException"><paramref name="values"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            map.ExceptWith("orders", new[] { 1001 });
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.Clear">
             <summary>
             Removes all keys and values.
             </summary>
+            <example>
+            <code>
+            map.Clear();
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.TryGetValue(`0,System.Collections.Generic.IReadOnlyCollection{`1}@)">
             <summary>
@@ -168,18 +224,37 @@
             <c>false</c> and <paramref name="value"/> is <c>null</c> (check the return value
             before use).
             </summary>
+            <example>
+            <code>
+            if (map.TryGetValue("orders", out var values))
+            {
+                foreach (var v in values) { }
+            }
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.AsLookup">
             <summary>
             Returns a read-only <see cref="T:System.Linq.ILookup`2"/> view of the map
             (a missing key yields an empty grouping).
             </summary>
+            <example>
+            <code>
+            ILookup&lt;string, int&gt; lookup = map.AsLookup();
+            foreach (var v in lookup["orders"]) { }
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.Clone">
             <summary>
             Creates a shallow copy: value references are shared, key-value associations are
             independent.
             </summary>
+            <example>
+            <code>
+            MultiDictionary&lt;string, int&gt; copy = map.Clone();
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.ToDictionary">
             <summary>
@@ -187,23 +262,46 @@
             outer dictionary is independent of the map; the inner collections are shared
             (live views of the values stored for each key).
             </summary>
+            <example>
+            <code>
+            IReadOnlyDictionary&lt;string, IReadOnlyCollection&lt;int&gt;&gt; snapshot = map.ToDictionary();
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.AsReadOnly">
             <summary>
             Returns a live read-only view of the map: lookups and enumeration reflect subsequent
             changes to the owning map. Mutating members are not exposed.
             </summary>
+            <example>
+            <code>
+            IReadOnlyDictionary&lt;string, IReadOnlyCollection&lt;int&gt;&gt; view = map.AsReadOnly();
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.ToString">
             <summary>
             Returns the contents in expanded per-key form, comma separated,
             e.g. <c>k1:[v1,v2],k2:[v3]</c>.
             </summary>
+            <example>
+            <code>
+            string text = map.ToString();
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiDictionary`2.GetEnumerator">
             <summary>
             Enumerates the map as flat (key, value) pairs — one entry per value.
             </summary>
+            <example>
+            <code>
+            foreach (var pair in map)
+            {
+                // one pair per stored value
+            }
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Multi.MultiList`1">
             <summary>
@@ -280,39 +378,78 @@
             <summary>
             Adds a single copy of the element.
             </summary>
+            <example>
+            <code>
+            bag.Add("apple");
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.Add(`0,System.Int32)">
             <summary>
             Adds the specified number of copies of the element. A non-positive
             <paramref name="times"/> is coerced to one copy (legacy behaviour).
             </summary>
+            <example>
+            <code>
+            bag.Add("apple", 3);
+            // bag.CountOf("apple") == 3
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.AddRange(System.Collections.Generic.IEnumerable{`0})">
             <summary>
             Adds one copy of each element of the specified collection.
             </summary>
+            <exception cref="T:System.ArgumentNullException"><paramref name="items"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            bag.AddRange(new[] { "a", "a", "b" });
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.Contains(`0)">
             <summary>
             Determines whether the multiset contains at least one copy of the element.
             </summary>
+            <example>
+            <code>
+            bool has = bag.Contains("apple");
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.ContainsAll(System.Collections.Generic.IEnumerable{`0})">
             <summary>
             Determines whether the multiset contains at least one copy of every element of the
             specified collection.
             </summary>
+            <exception cref="T:System.ArgumentNullException"><paramref name="items"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            bool has = bag.ContainsAll(new[] { "a", "b" });
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.CountOf(`0)">
             <summary>
             Gets the number of copies of the element (zero when absent).
             </summary>
+            <example>
+            <code>
+            int copies = bag.CountOf("apple");
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.Remove(`0)">
             <summary>
             Removes a single copy of the element and returns the number of copies remaining
             afterwards. Returns zero when the element is absent (no copy was removed).
             </summary>
+            <example>
+            <code>
+            int removed = bag.Remove("apple");
+            // removes a single copy
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.Remove(`0,System.Int32)">
             <summary>
@@ -321,32 +458,68 @@
             copy (legacy behaviour). Returns zero when the element is absent. The element is
             dropped from the multiset once its copy count reaches zero.
             </summary>
+            <example>
+            <code>
+            bag.Remove("apple", 2);
+            // removes at most 2 copies
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.RemoveAllCopies(`0)">
             <summary>
             Removes every copy of the element. Returns <c>true</c> when at least one copy was
             removed, <c>false</c> when the element was absent.
             </summary>
+            <example>
+            <code>
+            bool any = bag.RemoveAllCopies("apple");
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.Clear">
             <summary>
             Removes all elements and copies.
             </summary>
+            <example>
+            <code>
+            bag.Clear();
+            // bag.TotalCount == 0
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.ToList">
             <summary>
             Returns a list containing every copy of every element (duplicates expanded).
             </summary>
+            <example>
+            <code>
+            List&lt;string&gt; copy = bag.ToList();
+            // duplicate copies preserved
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.ToArray">
             <summary>
             Returns an array containing every copy of every element (duplicates expanded).
             </summary>
+            <example>
+            <code>
+            string[] copy = bag.ToArray();
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.DistinctItems">
             <summary>
             Enumerates the distinct elements only, ignoring copy counts.
             </summary>
+            <example>
+            <code>
+            foreach (var item in bag.DistinctItems())
+            {
+                // each element once
+            }
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.EntrySet">
             <summary>
@@ -357,6 +530,12 @@
             <summary>
             Creates a shallow copy: element references are shared, copy counts are independent.
             </summary>
+            <example>
+            <code>
+            MultiList&lt;string&gt; copy = bag.Clone();
+            // deep copy: independent counts
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.ToDictionary">
             <summary>
@@ -365,6 +544,12 @@
             <see cref="T:System.InvalidOperationException"/> when the multiset contains a <c>null</c>
             element, which can not be represented as a dictionary key.
             </summary>
+            <exception cref="T:System.InvalidOperationException">The operation is not valid for the current state of the collection.</exception>
+            <example>
+            <code>
+            IReadOnlyDictionary&lt;string, int&gt; counts = bag.ToDictionary();
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.AsReadOnly">
             <summary>
@@ -372,11 +557,23 @@
             <see cref="P:System.Collections.Generic.IReadOnlyCollection`1.Count"/> reflect subsequent changes to the owning
             multiset. Mutating members are not exposed.
             </summary>
+            <example>
+            <code>
+            IReadOnlyCollection&lt;string&gt; view = bag.AsReadOnly();
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.CopyTo(`0[],System.Int32)">
             <summary>
             Copies every copy of every element (duplicates expanded) to the target array.
             </summary>
+            <exception cref="T:System.ArgumentNullException"><paramref name="array"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is out of its allowed range.</exception>
+            <example>
+            <code>
+            bag.CopyTo(array, 0);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.UnionWith(System.Collections.Generic.IEnumerable{`0})">
             <summary>
@@ -385,6 +582,12 @@
             collections. Occurrences in <paramref name="other"/> are counted element-wise (a
             <see cref="T:DotNetCore.Collections.Multi.MultiList`1"/> argument contributes its full multiplicities).
             </summary>
+            <example>
+            <code>
+            bag.UnionWith(new[] { "a", "c" });
+            // adds one copy of each missing element
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.IntersectionWith(System.Collections.Generic.IEnumerable{`0})">
             <summary>
@@ -392,6 +595,12 @@
             multiset semantics: each element keeps the <b>minimum</b> of its copy counts in both
             collections. Elements absent from <paramref name="other"/> are dropped.
             </summary>
+            <example>
+            <code>
+            bag.IntersectionWith(new[] { "a" });
+            // keeps min(copies(here), copies(other))
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.ExceptWith(System.Collections.Generic.IEnumerable{`0})">
             <summary>
@@ -399,6 +608,12 @@
             multiset semantics: each element loses up to the number of copies present in
             <paramref name="other"/> (never below zero).
             </summary>
+            <example>
+            <code>
+            bag.ExceptWith(new[] { "a" });
+            // removes every copy of the elements
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.SymmetricExceptWith(System.Collections.Generic.IEnumerable{`0})">
             <summary>
@@ -406,6 +621,11 @@
             each element ends up with the <b>absolute difference</b> of its copy counts in both
             collections.
             </summary>
+            <example>
+            <code>
+            bag.SymmetricExceptWith(new[] { "a", "d" });
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.IsSubsetOf(System.Collections.Generic.IEnumerable{`0})">
             <summary>
@@ -413,45 +633,89 @@
             multiset semantics: the copy count of every element in this multiset must be less
             than or equal to its copy count in <paramref name="other"/>.
             </summary>
+            <example>
+            <code>
+            bool ok = bag.IsSubsetOf(other);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.IsSupersetOf(System.Collections.Generic.IEnumerable{`0})">
             <summary>
             Determines whether the multiset is a superset of the specified collection, using
             multiset semantics.
             </summary>
+            <example>
+            <code>
+            bool ok = bag.IsSupersetOf(other);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.IsProperSubsetOf(System.Collections.Generic.IEnumerable{`0})">
             <summary>
             Determines whether the multiset is a proper subset of the specified collection
             (a subset that is not equal as a multiset).
             </summary>
+            <example>
+            <code>
+            bool ok = bag.IsProperSubsetOf(other);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.IsProperSupersetOf(System.Collections.Generic.IEnumerable{`0})">
             <summary>
             Determines whether the multiset is a proper superset of the specified collection
             (a superset that is not equal as a multiset).
             </summary>
+            <example>
+            <code>
+            bool ok = bag.IsProperSupersetOf(other);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.Overlaps(System.Collections.Generic.IEnumerable{`0})">
             <summary>
             Determines whether the multiset and the specified collection share at least one
             element.
             </summary>
+            <exception cref="T:System.ArgumentNullException"><paramref name="other"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            bool ok = bag.Overlaps(other);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.IsDisjointFrom(System.Collections.Generic.IEnumerable{`0})">
             <summary>
             Determines whether the multiset and the specified collection share no elements.
             </summary>
+            <example>
+            <code>
+            bool ok = bag.IsDisjointFrom(other);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.GetEnumerator">
             <summary>
             Enumerates every copy of every element (duplicates expanded).
             </summary>
+            <example>
+            <code>
+            foreach (var item in bag)
+            {
+                // copies expanded
+            }
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Multi.MultiList`1.ToString">
             <summary>
             Returns the expanded form (every copy, duplicates included), comma separated.
             </summary>
+            <example>
+            <code>
+            string text = bag.ToString();
+            </code>
+            </example>
         </member>
     </members>
 </doc>

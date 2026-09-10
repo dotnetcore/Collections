@@ -17,6 +17,11 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="startIndex"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var member = PageMemberFactory.Create(state, offset, ref startIndex);
+        /// </code>
+        /// </example>
         public static PageMember<T> Create<T>(T memberValue, int offset, ref int startIndex)
             => new(memberValue, offset, ref startIndex);
 
@@ -29,6 +34,11 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="startIndex"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var member = PageMemberFactory.Create(state, offset, ref startIndex);
+        /// </code>
+        /// </example>
         public static PageMember<T> Create<T>(IEnumerable<T> memberColl, int index, int offset, ref int startIndex)
             => new(memberColl.ElementAt(index), offset, ref startIndex);
 
@@ -40,6 +50,11 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="startIndex"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var member = PageMemberFactory.Create(state, offset, ref startIndex);
+        /// </code>
+        /// </example>
         public static PageMember<T> Create<T>(IQueryEntryState<T> state, int offset, ref int startIndex)
             => new(state, offset, ref startIndex);
     }

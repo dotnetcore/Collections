@@ -32,6 +32,11 @@ namespace DotNetCore.Collections.Paginable
         /// Get empty page
         /// </summary>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = EmptyPage&lt;ExampleModel&gt;.Empty();
+        /// </code>
+        /// </example>
         public static EmptyPage<T> Empty() => new();
 
         private Func<IEnumerable<T>, Func<int, Func<int, Action>>> InitializeMemberList()

@@ -9,7 +9,7 @@ namespace DotNetCore.Collections.Paginable.Internal
     /// SqlSugar query state
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SqlSugarQueryState<T> : IQueryEntryState<T>
+    internal class SqlSugarQueryState<T> : IQueryEntryState<T>
     {
         private readonly Lazy<IEnumerable<T>> _mLazySqlSugarQueryMembers;
 

@@ -18,6 +18,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="query">SqlKata.Query</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableSqlKataQuery<T> ToPaginable<T>(this Query query, int? limitedMemberCount = null)
             => PaginableSqlKataCollFactory.CreatePageSet<T>(query, limitedMemberCount: limitedMemberCount);
 
@@ -29,6 +35,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableSqlKataQuery<T> ToPaginable<T>(this Query query, int pageSize, int? limitedMemberCount = null)
             => PaginableSqlKataCollFactory.CreatePageSet<T>(query, pageSize, limitedMemberCount);
 
@@ -39,6 +51,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="query">original SqlKata.Query source</param>
         /// <param name="pageNumber"></param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = query.GetPage(15);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this Query query, int pageNumber)
             => GetPage<T>(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize);
 
@@ -50,6 +68,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this Query query, int pageNumber, int pageSize)
         {
             if (query is null)
@@ -71,6 +95,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="query">original SqlKata.Query source</param>
         /// <param name="pageNumber"></param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await query.GetPageAsync(15, 50, cancellationToken);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this Query query, int pageNumber)
             => GetPageAsync<T>(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize);
 
@@ -82,6 +112,13 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = query.GetPage(15, 50);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static async Task<IPage<T>> GetPageAsync<T>(this Query query, int pageNumber, int pageSize)
         {
             if (query is null)

@@ -25,6 +25,14 @@
             <param name="pageSize">page size</param>
             <param name="descending">ordering direction</param>
             <param name="cancellationToken">cancellation token</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var first = await query.GetFirstPageByKeysetAsync(x =&gt; x.Id, pageSize: 50, cancellationToken: cancellationToken);
+            var lastId = first.LastMember.Id;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.KeysetPageAsyncExtensions.GetPageByKeysetAsync``2(System.Linq.IQueryable{``0},System.Linq.Expressions.Expression{System.Func{``0,``1}},``1,System.Int32,System.Boolean,System.Threading.CancellationToken)">
             <summary>
@@ -38,6 +46,14 @@
             <param name="pageSize">page size</param>
             <param name="descending">ordering direction</param>
             <param name="cancellationToken">cancellation token</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var next = await query.GetPageByKeysetAsync(x =&gt; x.Id, lastId, pageSize: 50, cancellationToken: cancellationToken);
+            var hasMore = next.HasNext;
+            </code>
+            </example>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.SolidPageExtensions">
             <summary>
@@ -52,6 +68,12 @@
             <param name="source">DbSet source</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = context.ExampleModels.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Int32,System.Nullable{System.Int32})">
             <summary>
@@ -62,6 +84,12 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = context.ExampleModels.ToPaginable(50);
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginableAsync``1(System.Linq.IQueryable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Threading.CancellationToken)">
             <summary>
@@ -74,6 +102,14 @@
             <param name="limitedMemberCount">limited member count</param>
             <param name="cancellationToken">cancellation token</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="queryable"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
+            <example>
+            <code>
+            var paginable = await query.ToPaginableAsync(50, cancellationToken: cancellationToken);
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginableAsync``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Threading.CancellationToken)">
             <summary>
@@ -86,6 +122,12 @@
             <param name="limitedMemberCount">limited member count</param>
             <param name="cancellationToken">cancellation token</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = await context.ExampleModels.ToPaginableAsync(50, cancellationToken: cancellationToken);
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Int32)">
             <summary>
@@ -95,6 +137,11 @@
             <param name="source">DbSet source</param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Int32,System.Int32)">
             <summary>
@@ -105,6 +152,11 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(15, 50);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32)">
             <summary>
@@ -115,6 +167,11 @@
             <param name="predicate">Predicate</param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32)">
             <summary>
@@ -126,6 +183,11 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15, 50);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(System.Linq.IQueryable{``0},System.Int32,System.Threading.CancellationToken)">
             <summary>
@@ -138,6 +200,11 @@
             <param name="pageNumber">page number</param>
             <param name="cancellationToken">cancellation token</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await query.GetPageAsync(15, cancellationToken);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(System.Linq.IQueryable{``0},System.Int32,System.Int32,System.Threading.CancellationToken)">
             <summary>
@@ -151,6 +218,13 @@
             <param name="pageSize">page size</param>
             <param name="cancellationToken">cancellation token</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="queryable"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var page = await query.GetPageAsync(15, 50, cancellationToken);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Int32,System.Threading.CancellationToken)">
             <summary>
@@ -161,6 +235,11 @@
             <param name="pageNumber">page number</param>
             <param name="cancellationToken">cancellation token</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await context.ExampleModels.GetPageAsync(15, cancellationToken);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Int32,System.Int32,System.Threading.CancellationToken)">
             <summary>
@@ -172,6 +251,11 @@
             <param name="pageSize">page size</param>
             <param name="cancellationToken">cancellation token</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await context.ExampleModels.GetPageAsync(15, 50, cancellationToken);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Threading.CancellationToken)">
             <summary>
@@ -183,6 +267,11 @@
             <param name="pageNumber">page number</param>
             <param name="cancellationToken">cancellation token</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await context.ExampleModels.GetPageAsync(x =&gt; x.Id &gt; 100, 15, cancellationToken);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(Microsoft.EntityFrameworkCore.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32,System.Threading.CancellationToken)">
             <summary>
@@ -195,6 +284,11 @@
             <param name="pageSize">page size</param>
             <param name="cancellationToken">cancellation token</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await context.ExampleModels.GetPageAsync(x =&gt; x.Id &gt; 100, 15, 50, cancellationToken);
+            </code>
+            </example>
         </member>
     </members>
 </doc>

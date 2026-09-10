@@ -18,6 +18,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="query">ChloeQueryable</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableChloeQuery<T> ToPaginable<T>(this IQuery<T> query, int? limitedMemberCount = null)
             => PaginableChloeCollFactory.CreatePageSet(query, limitedMemberCount: limitedMemberCount);
 
@@ -29,6 +35,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableChloeQuery<T> ToPaginable<T>(this IQuery<T> query, int pageSize, int? limitedMemberCount = null)
             => PaginableChloeCollFactory.CreatePageSet(query, pageSize, limitedMemberCount);
 
@@ -40,6 +52,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="additionalQueryFunc"></param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = query.GetPage(15);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this IQuery<T> query, int pageNumber, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null)
             => GetPage(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, additionalQueryFunc);
 
@@ -52,6 +70,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="additionalQueryFunc"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this IQuery<T> query, int pageNumber, int pageSize, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null)
         {
             if (query is null)

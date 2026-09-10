@@ -28,6 +28,14 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="descending">ordering direction</param>
         /// <param name="cancellationToken">cancellation token</param>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var first = await query.GetFirstPageByKeysetAsync(x =&gt; x.Id, pageSize: 50, cancellationToken: cancellationToken);
+        /// var lastId = first.LastMember.Id;
+        /// </code>
+        /// </example>
         public static async Task<KeysetPage<T>> GetFirstPageByKeysetAsync<T, TKey>(
             this IQueryable<T> source,
             Expression<Func<T, TKey>> keySelector,
@@ -61,6 +69,14 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="descending">ordering direction</param>
         /// <param name="cancellationToken">cancellation token</param>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var next = await query.GetPageByKeysetAsync(x =&gt; x.Id, lastId, pageSize: 50, cancellationToken: cancellationToken);
+        /// var hasMore = next.HasNext;
+        /// </code>
+        /// </example>
         public static async Task<KeysetPage<T>> GetPageByKeysetAsync<T, TKey>(
             this IQueryable<T> source,
             Expression<Func<T, TKey>> keySelector,

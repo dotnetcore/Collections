@@ -21,6 +21,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="source">DbSet source</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = context.ExampleModels.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableQueryable<T> ToPaginable<T>(this DbSet<T> source, int? limitedMemberCount = null) where T : class
             => source.AsQueryable().ToPaginable(limitedMemberCount: limitedMemberCount);
 
@@ -32,6 +38,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = context.ExampleModels.ToPaginable(50);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableQueryable<T> ToPaginable<T>(this DbSet<T> source, int pageSize, int? limitedMemberCount = null) where T : class
             => source.AsQueryable().ToPaginable(pageSize, limitedMemberCount);
 
@@ -45,6 +57,14 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="queryable"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
+        /// <example>
+        /// <code>
+        /// var paginable = await query.ToPaginableAsync(50, cancellationToken: cancellationToken);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static async Task<PaginableQueryable<T>> ToPaginableAsync<T>(this IQueryable<T> queryable, int? pageSize = null, int? limitedMemberCount = null, CancellationToken cancellationToken = default)
         {
             if (queryable is null)
@@ -72,6 +92,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = await context.ExampleModels.ToPaginableAsync(50, cancellationToken: cancellationToken);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static Task<PaginableQueryable<T>> ToPaginableAsync<T>(this DbSet<T> source, int? pageSize = null, int? limitedMemberCount = null, CancellationToken cancellationToken = default) where T : class
             => source.AsQueryable().ToPaginableAsync(pageSize, limitedMemberCount, cancellationToken);
 
@@ -82,6 +108,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="source">DbSet source</param>
         /// <param name="pageNumber">page number</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(15);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, int pageNumber) where T : class
             => source.AsQueryable().GetPage(pageNumber);
 
@@ -93,6 +124,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(15, 50);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, int pageNumber, int pageSize) where T : class
             => source.AsQueryable().GetPage(pageNumber, pageSize);
 
@@ -104,6 +140,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="predicate">Predicate</param>
         /// <param name="pageNumber">page number</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageNumber) where T : class
             => source.Where(predicate).GetPage(pageNumber);
 
@@ -116,6 +157,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15, 50);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageNumber, int pageSize) where T : class
             => source.Where(predicate).GetPage(pageNumber, pageSize);
 
@@ -129,6 +175,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await query.GetPageAsync(15, cancellationToken);
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this IQueryable<T> queryable, int pageNumber, CancellationToken cancellationToken = default)
             => queryable.GetPageAsync(pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, cancellationToken);
 
@@ -143,6 +194,13 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="queryable"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = await query.GetPageAsync(15, 50, cancellationToken);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static async Task<IPage<T>> GetPageAsync<T>(this IQueryable<T> queryable, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             if (queryable is null)
@@ -173,6 +231,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await context.ExampleModels.GetPageAsync(15, cancellationToken);
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this DbSet<T> source, int pageNumber, CancellationToken cancellationToken = default) where T : class
             => source.AsQueryable().GetPageAsync(pageNumber, cancellationToken);
 
@@ -185,6 +248,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await context.ExampleModels.GetPageAsync(15, 50, cancellationToken);
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this DbSet<T> source, int pageNumber, int pageSize, CancellationToken cancellationToken = default) where T : class
             => source.AsQueryable().GetPageAsync(pageNumber, pageSize, cancellationToken);
 
@@ -197,6 +265,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await context.ExampleModels.GetPageAsync(x =&gt; x.Id &gt; 100, 15, cancellationToken);
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageNumber, CancellationToken cancellationToken = default) where T : class
             => source.Where(predicate).GetPageAsync(pageNumber, cancellationToken);
 
@@ -210,6 +283,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await context.ExampleModels.GetPageAsync(x =&gt; x.Id &gt; 100, 15, 50, cancellationToken);
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageNumber, int pageSize, CancellationToken cancellationToken = default) where T : class
             => source.Where(predicate).GetPageAsync(pageNumber, pageSize, cancellationToken);
     }

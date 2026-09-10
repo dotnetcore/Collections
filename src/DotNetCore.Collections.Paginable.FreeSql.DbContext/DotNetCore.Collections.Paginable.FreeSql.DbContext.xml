@@ -18,6 +18,12 @@
             <param name="limitedMemberCount">limited member count</param>
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = context.ExampleModels.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(FreeSql.DbSet{``0},System.Int32,System.Nullable{System.Int32},System.Nullable{System.Boolean})">
             <summary>
@@ -29,6 +35,12 @@
             <param name="limitedMemberCount">limited member count</param>
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = context.ExampleModels.ToPaginable(50);
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Nullable{System.Int32},System.Nullable{System.Boolean})">
             <summary>
@@ -40,6 +52,12 @@
             <param name="limitedMemberCount">limited member count</param>
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = context.ExampleModels.ToPaginable(x =&gt; x.Id &gt; 100);
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Nullable{System.Int32},System.Nullable{System.Boolean})">
             <summary>
@@ -51,6 +69,12 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <param name="includeNestedMembers">include nested members</param>
+            <example>
+            <code>
+            var paginable = context.ExampleModels.ToPaginable(x =&gt; x.Id &gt; 100, 50);
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(FreeSql.DbSet{``0},System.Int32,System.Boolean)">
             <summary>
@@ -61,6 +85,11 @@
             <param name="pageNumber">page number</param>
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(FreeSql.DbSet{``0},System.Int32,System.Int32,System.Boolean)">
             <summary>
@@ -72,6 +101,11 @@
             <param name="pageSize">page size</param>
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(15, 50);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Boolean)">
             <summary>
@@ -83,6 +117,11 @@
             <param name="pageNumber">page number</param>
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32,System.Boolean)">
             <summary>
@@ -95,6 +134,11 @@
             <param name="pageSize">page size</param>
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15, 50);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(FreeSql.DbSet{``0},System.Int32,System.Boolean)">
             <summary>
@@ -105,6 +149,11 @@
             <param name="pageNumber">page number</param>
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await context.ExampleModels.GetPageAsync(15, cancellationToken);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(FreeSql.DbSet{``0},System.Int32,System.Int32,System.Boolean)">
             <summary>
@@ -116,6 +165,11 @@
             <param name="pageSize">page size</param>
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await context.ExampleModels.GetPageAsync(15, 50, cancellationToken);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Boolean)">
             <summary>
@@ -127,6 +181,11 @@
             <param name="pageNumber">page number</param>
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await context.ExampleModels.GetPageAsync(x =&gt; x.Id &gt; 100, 15, cancellationToken);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(FreeSql.DbSet{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32,System.Boolean)">
             <summary>
@@ -139,6 +198,11 @@
             <param name="pageSize">page size</param>
             <param name="includeNestedMembers">include nested members</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await context.ExampleModels.GetPageAsync(x =&gt; x.Id &gt; 100, 15, 50, cancellationToken);
+            </code>
+            </example>
         </member>
     </members>
 </doc>

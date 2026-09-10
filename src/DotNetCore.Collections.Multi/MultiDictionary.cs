@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -158,6 +158,12 @@ namespace DotNetCore.Collections.Multi
         /// Adds a (key, value) pair. When duplicate values are disallowed and the value already
         /// exists under the key, the call is silently ignored.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// map.Add("orders", 1001);
+        /// map.Add("orders", 1002);
+        /// </code>
+        /// </example>
         public void Add(TKey key, TValue value)
         {
             if (!_dict.TryGetValue(key, out var collection))
@@ -179,6 +185,7 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Adds each value of the specified collection under the key.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="values"/> is <c>null</c>.</exception>
         public void AddRange(TKey key, IEnumerable<TValue> values)
         {
             if (values == null)
@@ -195,6 +202,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Determines whether the map contains the key.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool has = map.ContainsKey("orders");
+        /// </code>
+        /// </example>
         public bool ContainsKey(TKey key)
         {
             return _dict.ContainsKey(key);
@@ -203,6 +215,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Determines whether the specified value exists under the key.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool has = map.Contains("orders", 1001);
+        /// </code>
+        /// </example>
         public bool Contains(TKey key, TValue value)
         {
             return _dict.TryGetValue(key, out var collection) && collection.Contains(value);
@@ -211,6 +228,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Determines whether the specified value exists under any key.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool has = map.ContainsValue(1001);
+        /// </code>
+        /// </example>
         public bool ContainsValue(TValue value)
         {
             foreach (var collection in _dict.Values)
@@ -228,6 +250,12 @@ namespace DotNetCore.Collections.Multi
         /// Removes the key together with all of its values. Returns <c>true</c> when the key was
         /// present.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool removed = map.Remove("orders");
+        /// // removes the key with all its values
+        /// </code>
+        /// </example>
         public bool Remove(TKey key)
         {
             return _dict.Remove(key);
@@ -237,6 +265,11 @@ namespace DotNetCore.Collections.Multi
         /// Removes a single occurrence of the value under the key. Returns <c>true</c> when a
         /// value was removed. The key is dropped automatically once its last value is removed.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// bool removed = map.Remove("orders", 1001);
+        /// </code>
+        /// </example>
         public bool Remove(TKey key, TValue value)
         {
             if (!_dict.TryGetValue(key, out var collection))
@@ -266,6 +299,12 @@ namespace DotNetCore.Collections.Multi
         /// present (set-union semantics on the key's values). Creates the key when absent. With
         /// a duplicating inner collection, existing duplicate values keep their multiplicities.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="values"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// map.UnionWith("orders", new[] { 1003, 1004 });
+        /// </code>
+        /// </example>
         public void UnionWith(TKey key, IEnumerable<TValue> values)
         {
             if (values == null)
@@ -288,6 +327,12 @@ namespace DotNetCore.Collections.Multi
         /// (set-intersection semantics on the key's values). The key is dropped when no values
         /// remain; a missing key is a no-op.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="values"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// map.IntersectionWith("orders", new[] { 1001 });
+        /// </code>
+        /// </example>
         public void IntersectionWith(TKey key, IEnumerable<TValue> values)
         {
             if (values == null)
@@ -321,6 +366,12 @@ namespace DotNetCore.Collections.Multi
         /// (set-difference semantics). The key is dropped when no values remain; a missing key
         /// is a no-op.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="values"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// map.ExceptWith("orders", new[] { 1001 });
+        /// </code>
+        /// </example>
         public void ExceptWith(TKey key, IEnumerable<TValue> values)
         {
             if (values == null)
@@ -354,6 +405,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Removes all keys and values.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// map.Clear();
+        /// </code>
+        /// </example>
         public void Clear()
         {
             _dict.Clear();
@@ -364,6 +420,14 @@ namespace DotNetCore.Collections.Multi
         /// <c>false</c> and <paramref name="value"/> is <c>null</c> (check the return value
         /// before use).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// if (map.TryGetValue("orders", out var values))
+        /// {
+        ///     foreach (var v in values) { }
+        /// }
+        /// </code>
+        /// </example>
         public bool TryGetValue(TKey key, out IReadOnlyCollection<TValue> value)
         {
             if (_dict.TryGetValue(key, out var collection))
@@ -380,6 +444,12 @@ namespace DotNetCore.Collections.Multi
         /// Returns a read-only <see cref="ILookup{TKey,TValue}"/> view of the map
         /// (a missing key yields an empty grouping).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// ILookup&lt;string, int&gt; lookup = map.AsLookup();
+        /// foreach (var v in lookup["orders"]) { }
+        /// </code>
+        /// </example>
         public ILookup<TKey, TValue> AsLookup()
         {
             return new LookupView(this);
@@ -389,6 +459,11 @@ namespace DotNetCore.Collections.Multi
         /// Creates a shallow copy: value references are shared, key-value associations are
         /// independent.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// MultiDictionary&lt;string, int&gt; copy = map.Clone();
+        /// </code>
+        /// </example>
         public MultiDictionary<TKey, TValue> Clone()
         {
             var clone = new MultiDictionary<TKey, TValue>(_comparer, _innerFactory);
@@ -411,6 +486,11 @@ namespace DotNetCore.Collections.Multi
         /// outer dictionary is independent of the map; the inner collections are shared
         /// (live views of the values stored for each key).
         /// </summary>
+        /// <example>
+        /// <code>
+        /// IReadOnlyDictionary&lt;string, IReadOnlyCollection&lt;int&gt;&gt; snapshot = map.ToDictionary();
+        /// </code>
+        /// </example>
         public IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>> ToDictionary()
         {
             var dictionary = new Dictionary<TKey, IReadOnlyCollection<TValue>>(_comparer);
@@ -426,6 +506,11 @@ namespace DotNetCore.Collections.Multi
         /// Returns a live read-only view of the map: lookups and enumeration reflect subsequent
         /// changes to the owning map. Mutating members are not exposed.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// IReadOnlyDictionary&lt;string, IReadOnlyCollection&lt;int&gt;&gt; view = map.AsReadOnly();
+        /// </code>
+        /// </example>
         public IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>> AsReadOnly()
         {
             return new ReadOnlyDictionaryView(this);
@@ -435,6 +520,11 @@ namespace DotNetCore.Collections.Multi
         /// Returns the contents in expanded per-key form, comma separated,
         /// e.g. <c>k1:[v1,v2],k2:[v3]</c>.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// string text = map.ToString();
+        /// </code>
+        /// </example>
         public override string ToString()
         {
             return string.Join(",", _dict.Select(pair =>
@@ -444,6 +534,14 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Enumerates the map as flat (key, value) pairs — one entry per value.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// foreach (var pair in map)
+        /// {
+        ///     // one pair per stored value
+        /// }
+        /// </code>
+        /// </example>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             foreach (var pair in _dict)

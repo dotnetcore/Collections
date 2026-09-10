@@ -15,6 +15,11 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="limitedMemberCount">limited member count (null or invalid means unlimited)</param>
         /// <param name="count">real member count from the data source</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// int total = PaginableCalc.GetRealMemberCount(0, 50, 120);
+        /// </code>
+        /// </example>
         public static int GetRealMemberCount(int? limitedMemberCount, int count)
             => limitedMemberCount.IsValid() && limitedMemberCount.HasValue
                 ? limitedMemberCount.Value > count
@@ -28,6 +33,11 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="realMemberCount">real member count, which may have been limited by <see cref="GetRealMemberCount"/></param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// int pages = PaginableCalc.GetRealPageCount(120, 50);
+        /// </code>
+        /// </example>
         public static int GetRealPageCount(int realMemberCount, int pageSize)
             => (int) Math.Ceiling((double) realMemberCount / (double) pageSize);
     }

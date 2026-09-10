@@ -13,6 +13,15 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <param name="page">Page</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="page"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// if (page.IsFirst())
+        /// {
+        ///     // first page of the source
+        /// }
+        /// </code>
+        /// </example>
         public static bool IsFirst(this IPage page)
         {
             if (page is null)
@@ -25,6 +34,15 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <param name="page">Page</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="page"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// if (page.IsLast())
+        /// {
+        ///     // last page of the source
+        /// }
+        /// </code>
+        /// </example>
         public static bool IsLast(this IPage page)
         {
             if (page is null)
@@ -37,6 +55,13 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <param name="page">Page</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="page"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// int first = page.FromMemberNumber();
+        /// // equals (CurrentPageNumber - 1) * PageSize + 1
+        /// </code>
+        /// </example>
         public static int FromMemberNumber(this IPage page)
         {
             if (page is null)
@@ -56,6 +81,13 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <param name="page">Page</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="page"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// int last = page.ToMemberNumber();
+        /// // equals FromMemberNumber() + CurrentPageSize - 1
+        /// </code>
+        /// </example>
         public static int ToMemberNumber(this IPage page)
         {
             if (page is null)

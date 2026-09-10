@@ -19,6 +19,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="query">SqlSugarQueryable</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableSqlSugarQuery<T> ToPaginable<T>(this ISugarQueryable<T> query, int? limitedMemberCount = null)
             => PaginableSqlSugarCollFactory.CreatePageSet(query, limitedMemberCount: limitedMemberCount);
 
@@ -30,6 +36,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableSqlSugarQuery<T> ToPaginable<T>(this ISugarQueryable<T> query, int pageSize, int? limitedMemberCount = null)
             => PaginableSqlSugarCollFactory.CreatePageSet(query, pageSize, limitedMemberCount);
 
@@ -40,6 +52,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="query">original SqlSugarQueryable source</param>
         /// <param name="pageNumber">page number</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = query.GetPage(15);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this ISugarQueryable<T> query, int pageNumber)
             => GetPage(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize);
 
@@ -51,6 +69,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this ISugarQueryable<T> query, int pageNumber, int pageSize)
         {
             if (query is null)
@@ -76,6 +100,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await query.GetPageAsync(15, 50, cancellationToken);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this ISugarQueryable<T> query, int pageNumber, CancellationToken cancellationToken = default)
             => GetPageAsync(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize);
 
@@ -90,6 +120,13 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = query.GetPage(15, 50);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static async Task<IPage<T>> GetPageAsync<T>(this ISugarQueryable<T> query, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             if (query is null)
@@ -122,6 +159,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static Task<PaginableSqlSugarQuery<T>> ToPaginableAsync<T>(this ISugarQueryable<T> query, int? pageSize = null, int? limitedMemberCount = null, CancellationToken cancellationToken = default)
             => PaginableSqlSugarCollFactory.CreatePageSetAsync(query, pageSize, limitedMemberCount);
     }

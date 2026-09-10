@@ -28,6 +28,14 @@ namespace DotNetCore.Collections.Paginable
         /// previous page</param>
         /// <param name="pageSize">requested page size</param>
         /// <param name="descending">ordering direction</param>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var ordered = PaginableKeyset.BuildKeysetQuery(source, x =&gt; x.Id, lastId, pageSize: 50);
+        /// var page = ordered.ToList();
+        /// </code>
+        /// </example>
         public static IQueryable<T> BuildKeysetQuery<T, TKey>(
             IQueryable<T> source,
             Expression<Func<T, TKey>> keySelector,
@@ -74,6 +82,14 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="keySelector">ordering key selector</param>
         /// <param name="pageSize">page size</param>
         /// <param name="descending">ordering direction</param>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var first = query.GetFirstPageByKeyset(x =&gt; x.Id, pageSize: 50);
+        /// var lastId = first.LastMember.Id;
+        /// </code>
+        /// </example>
         public static KeysetPage<T> GetFirstPageByKeyset<T, TKey>(
             this IQueryable<T> source,
             Expression<Func<T, TKey>> keySelector,
@@ -105,6 +121,14 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="lastKey">ordering key of the last member of the previous page</param>
         /// <param name="pageSize">page size</param>
         /// <param name="descending">ordering direction</param>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var next = query.GetPageByKeyset(x =&gt; x.Id, lastId, pageSize: 50);
+        /// var hasMore = next.HasNext;
+        /// </code>
+        /// </example>
         public static KeysetPage<T> GetPageByKeyset<T, TKey>(
             this IQueryable<T> source,
             Expression<Func<T, TKey>> keySelector,
@@ -128,6 +152,14 @@ namespace DotNetCore.Collections.Paginable
         /// <summary>
         /// Gets the first keyset page from an in-memory source (no keyset anchor applied).
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var first = list.GetFirstPageByKeyset(x =&gt; x.Id, pageSize: 50);
+        /// var lastId = first.LastMember.Id;
+        /// </code>
+        /// </example>
         public static KeysetPage<T> GetFirstPageByKeyset<T, TKey>(
             this IEnumerable<T> source,
             Func<T, TKey> keySelector,
@@ -152,6 +184,14 @@ namespace DotNetCore.Collections.Paginable
         /// <summary>
         /// Gets the keyset page that follows <paramref name="lastKey"/> from an in-memory source.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var next = list.GetPageByKeyset(x =&gt; x.Id, lastId, pageSize: 50);
+        /// var hasMore = next.HasNext;
+        /// </code>
+        /// </example>
         public static KeysetPage<T> GetPageByKeyset<T, TKey>(
             this IEnumerable<T> source,
             Func<T, TKey> keySelector,

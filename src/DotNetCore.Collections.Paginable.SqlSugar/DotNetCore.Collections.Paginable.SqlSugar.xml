@@ -17,6 +17,12 @@
             <param name="query">SqlSugarQueryable</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginable``1(SqlSugar.ISugarQueryable{``0},System.Int32,System.Nullable{System.Int32})">
             <summary>
@@ -27,6 +33,12 @@
             <param name="pageSize">page size</param>
             <param name="limitedMemberCount">limited member count</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(SqlSugar.ISugarQueryable{``0},System.Int32)">
             <summary>
@@ -36,6 +48,12 @@
             <param name="query">original SqlSugarQueryable source</param>
             <param name="pageNumber">page number</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = query.GetPage(15);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPage``1(SqlSugar.ISugarQueryable{``0},System.Int32,System.Int32)">
             <summary>
@@ -46,6 +64,12 @@
             <param name="pageNumber">page number</param>
             <param name="pageSize">page size</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(SqlSugar.ISugarQueryable{``0},System.Int32,System.Threading.CancellationToken)">
             <summary>
@@ -58,6 +82,12 @@
             <param name="pageNumber">page number</param>
             <param name="cancellationToken">cancellation token</param>
             <returns></returns>
+            <example>
+            <code>
+            var page = await query.GetPageAsync(15, 50, cancellationToken);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.GetPageAsync``1(SqlSugar.ISugarQueryable{``0},System.Int32,System.Int32,System.Threading.CancellationToken)">
             <summary>
@@ -71,6 +101,13 @@
             <param name="pageSize">page size</param>
             <param name="cancellationToken">cancellation token</param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+            <example>
+            <code>
+            var page = query.GetPage(15, 50);
+            var totalMemberCount = page.TotalMemberCount;
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.SolidPageExtensions.ToPaginableAsync``1(SqlSugar.ISugarQueryable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Threading.CancellationToken)">
             <summary>
@@ -83,6 +120,12 @@
             <param name="limitedMemberCount">limited member count</param>
             <param name="cancellationToken">cancellation token</param>
             <returns></returns>
+            <example>
+            <code>
+            var paginable = query.ToPaginable();
+            var page = paginable.GetPage(15);
+            </code>
+            </example>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlSugarCollFactory.CreatePageSet``1(SqlSugar.ISugarQueryable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
@@ -93,6 +136,8 @@
             <param name="pageSize"></param>
             <param name="limitedMemberCount"></param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         </member>
         <member name="M:DotNetCore.Collections.Paginable.Internal.PaginableSqlSugarCollFactory.CreatePageSetAsync``1(SqlSugar.ISugarQueryable{``0},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Threading.CancellationToken)">
             <summary>
@@ -105,6 +150,8 @@
             <param name="limitedMemberCount"></param>
             <param name="cancellationToken"></param>
             <returns></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         </member>
         <member name="T:DotNetCore.Collections.Paginable.Internal.SqlSugarQueryState`1">
             <summary>
@@ -153,6 +200,11 @@
             Get empty page
             </summary>
             <returns></returns>
+            <example>
+            <code>
+            var page = EmptyPage&lt;ExampleModel&gt;.Empty();
+            </code>
+            </example>
         </member>
     </members>
 </doc>

@@ -9,7 +9,7 @@ namespace DotNetCore.Collections.Paginable.Internal
     /// FreeSql query state
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class FreeSqlQueryState<T> : IQueryEntryState<T> where T : class
+    internal class FreeSqlQueryState<T> : IQueryEntryState<T> where T : class
     {
         private readonly Lazy<IEnumerable<T>> _mLazyFreeSqlQueryMembers;
 

@@ -20,6 +20,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="enumerable">original enumerable result</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = list.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableEnumerable<T> ToPaginable<T>(this IEnumerable<T> enumerable, int? limitedMemberCount = null)
         {
             return PaginableCollectionFactory.CreatePageSet(enumerable, limitedMemberCount: limitedMemberCount);
@@ -33,6 +39,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = list.ToPaginable(50);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableEnumerable<T> ToPaginable<T>(this IEnumerable<T> enumerable, int pageSize, int? limitedMemberCount = null)
         {
             return PaginableCollectionFactory.CreatePageSet(enumerable, pageSize, limitedMemberCount);
@@ -45,6 +57,15 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="enumerable">original enumerable result</param>
         /// <param name="pageNumber">page number</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = list.GetPage(15, 50);
+        /// foreach (var member in page)
+        /// {
+        ///     var value = member.Value;
+        /// }
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this IEnumerable<T> enumerable, int pageNumber)
         {
             return GetPage(enumerable, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize);
@@ -58,6 +79,16 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="enumerable"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = list.GetPage(15, 50);
+        /// foreach (var member in page)
+        /// {
+        ///     var value = member.Value;
+        /// }
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this IEnumerable<T> enumerable, int pageNumber, int pageSize)
         {
             if (enumerable is null)
@@ -112,6 +143,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = await list.ToPaginableAsync(cancellationToken: cancellationToken);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static Task<PaginableEnumerable<T>> ToPaginableAsync<T>(this IEnumerable<T> enumerable, int? limitedMemberCount = null, CancellationToken cancellationToken = default)
             => Task.FromResult(ToPaginable(enumerable, limitedMemberCount));
 
@@ -126,6 +163,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = await list.ToPaginableAsync(50, cancellationToken: cancellationToken);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static Task<PaginableEnumerable<T>> ToPaginableAsync<T>(this IEnumerable<T> enumerable, int pageSize, int? limitedMemberCount = null, CancellationToken cancellationToken = default)
             => Task.FromResult(ToPaginable(enumerable, pageSize, limitedMemberCount));
 
@@ -139,6 +182,15 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await list.GetPageAsync(15, 50, cancellationToken);
+        /// foreach (var member in page)
+        /// {
+        ///     var value = member.Value;
+        /// }
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this IEnumerable<T> enumerable, int pageNumber, CancellationToken cancellationToken = default)
             => Task.FromResult(GetPage(enumerable, pageNumber));
 
@@ -153,6 +205,15 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await list.GetPageAsync(15, 50, cancellationToken);
+        /// foreach (var member in page)
+        /// {
+        ///     var value = member.Value;
+        /// }
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this IEnumerable<T> enumerable, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
             => Task.FromResult(GetPage(enumerable, pageNumber, pageSize));
 
@@ -163,6 +224,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="queryable">original queryable result</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableQueryable<T> ToPaginable<T>(this IQueryable<T> queryable, int? limitedMemberCount = null)
         {
             return PaginableCollectionFactory.CreatePageSet(queryable, limitedMemberCount);
@@ -176,6 +243,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = query.ToPaginable(50);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableQueryable<T> ToPaginable<T>(this IQueryable<T> queryable, int pageSize, int? limitedMemberCount = null)
         {
             return PaginableCollectionFactory.CreatePageSet(queryable, pageSize, limitedMemberCount);
@@ -188,6 +261,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="queryable">original queryable result</param>
         /// <param name="pageNumber">page number</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = query.GetPage(15, 50);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this IQueryable<T> queryable, int pageNumber)
         {
             return GetPage(queryable, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize);
@@ -201,6 +280,13 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="queryable"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = query.GetPage(15, 50);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this IQueryable<T> queryable, int pageNumber, int pageSize)
         {
             if (queryable is null)
@@ -227,6 +313,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="queryableTask"></param>
         /// <param name="pageNumber">page number</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await GetQueryableAsync().GetPageAsync(15, 50);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this Task<IQueryable<T>> queryableTask, int pageNumber)
         {
             return GetPageAsync(queryableTask, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize);
@@ -240,6 +332,13 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="queryableTask"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var page = await GetQueryableAsync().GetPageAsync(15, 50);
+        /// var totalMemberCount = page.TotalMemberCount;
+        /// </code>
+        /// </example>
         public static async Task<IPage<T>> GetPageAsync<T>(this Task<IQueryable<T>> queryableTask, int pageNumber, int pageSize)
         {
             if (queryableTask is null)

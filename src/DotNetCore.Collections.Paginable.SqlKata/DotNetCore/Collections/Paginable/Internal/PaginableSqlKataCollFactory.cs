@@ -14,6 +14,8 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         public static PaginableSqlKataQuery<T> CreatePageSet<T>(Query query, int? pageSize = null, int? limitedMemberCount = null)
         {
             if (query is null)

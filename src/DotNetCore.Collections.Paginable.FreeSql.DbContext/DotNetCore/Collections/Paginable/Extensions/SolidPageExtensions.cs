@@ -19,6 +19,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = context.ExampleModels.ToPaginable();
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableFreeSqlQuery<T> ToPaginable<T>(this DbSet<T> source, int? limitedMemberCount = null, bool? includeNestedMembers = null) where T : class
             => source.Select.ToPaginable(limitedMemberCount: limitedMemberCount, includeNestedMembers);
 
@@ -31,6 +37,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = context.ExampleModels.ToPaginable(50);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableFreeSqlQuery<T> ToPaginable<T>(this DbSet<T> source, int pageSize, int? limitedMemberCount = null, bool? includeNestedMembers = null) where T : class
             => source.Select.ToPaginable(pageSize, limitedMemberCount, includeNestedMembers);
 
@@ -43,6 +55,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var paginable = context.ExampleModels.ToPaginable(x =&gt; x.Id &gt; 100);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableFreeSqlQuery<T> ToPaginable<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int? limitedMemberCount = null,
             bool? includeNestedMembers = null) where T : class
             => source.Where(predicate).ToPaginable(limitedMemberCount: limitedMemberCount, includeNestedMembers);
@@ -56,6 +74,12 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="limitedMemberCount">limited member count</param>
         /// <param name="includeNestedMembers">include nested members</param>
+        /// <example>
+        /// <code>
+        /// var paginable = context.ExampleModels.ToPaginable(x =&gt; x.Id &gt; 100, 50);
+        /// var page = paginable.GetPage(15);
+        /// </code>
+        /// </example>
         public static PaginableFreeSqlQuery<T> ToPaginable<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageSize, int? limitedMemberCount = null,
             bool? includeNestedMembers = null) where T : class
             => source.Where(predicate).ToPaginable(pageSize, limitedMemberCount, includeNestedMembers);
@@ -68,6 +92,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(15);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, int pageNumber, bool includeNestedMembers = false) where T : class
             => source.Select.GetPage(pageNumber, includeNestedMembers);
 
@@ -80,6 +109,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(15, 50);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, int pageNumber, int pageSize, bool includeNestedMembers = false) where T : class
             => source.Select.GetPage(pageNumber, pageSize, includeNestedMembers);
 
@@ -92,6 +126,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageNumber, bool includeNestedMembers = false) where T : class
             => source.Where(predicate).GetPage(pageNumber, includeNestedMembers);
 
@@ -105,6 +144,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = context.ExampleModels.GetPage(x =&gt; x.Id &gt; 100, 15, 50);
+        /// </code>
+        /// </example>
         public static IPage<T> GetPage<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageNumber, int pageSize, bool includeNestedMembers = false)
             where T : class
             => source.Where(predicate).GetPage(pageNumber, pageSize, includeNestedMembers);
@@ -117,6 +161,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await context.ExampleModels.GetPageAsync(15, cancellationToken);
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this DbSet<T> source, int pageNumber, bool includeNestedMembers = false) where T : class
             => source.Select.GetPageAsync(pageNumber, includeNestedMembers);
 
@@ -129,6 +178,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await context.ExampleModels.GetPageAsync(15, 50, cancellationToken);
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this DbSet<T> source, int pageNumber, int pageSize, bool includeNestedMembers = false) where T : class
             => source.Select.GetPageAsync(pageNumber, pageSize, includeNestedMembers);
 
@@ -141,6 +195,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageNumber">page number</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await context.ExampleModels.GetPageAsync(x =&gt; x.Id &gt; 100, 15, cancellationToken);
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageNumber, bool includeNestedMembers = false) where T : class
             => source.Where(predicate).GetPageAsync(pageNumber, includeNestedMembers);
 
@@ -154,6 +213,11 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// var page = await context.ExampleModels.GetPageAsync(x =&gt; x.Id &gt; 100, 15, 50, cancellationToken);
+        /// </code>
+        /// </example>
         public static Task<IPage<T>> GetPageAsync<T>(this DbSet<T> source, Expression<Func<T, bool>> predicate, int pageNumber, int pageSize, bool includeNestedMembers = false)
             where T : class
             => source.Where(predicate).GetPageAsync(pageNumber, pageSize, includeNestedMembers);
