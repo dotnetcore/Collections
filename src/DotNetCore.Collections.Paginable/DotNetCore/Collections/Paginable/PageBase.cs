@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using DotNetCore.Collections.Paginable.Internal;
 
 namespace DotNetCore.Collections.Paginable
 {
@@ -114,23 +115,17 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="skip">skip count</param>
         protected void InitializeMetaInfo(int currentPageNumber, int pageSize, int totalMemberCount, int skip)
         {
-            var totalPageCount = (int) Math.Ceiling((double) totalMemberCount / (double) pageSize);
-            totalPageCount = totalPageCount < 0 ? 0 : totalPageCount;
-            TotalPageCount = totalPageCount == 0 ? 1 : totalPageCount;
+            // The derivation lives in PageMetaInfo so that metadata produced without a page
+            // (see PageMetadata's internal constructor) can not drift from this one.
+            var info = PageMetaInfo.Calculate(currentPageNumber, pageSize, totalMemberCount, skip);
+
+            TotalPageCount = info.TotalPageCount;
             TotalMemberCount = totalMemberCount;
             CurrentPageNumber = currentPageNumber;
             PageSize = pageSize;
-            // Items on the last page = total - skip, clamped into [0, pageSize].
-            // (The previous t % skip formula yielded 0 whenever the total was evenly
-            // divisible by the page size, wrongly emptying the last page.)
-            CurrentPageSize = totalPageCount == 0
-                ? 0
-                : currentPageNumber == totalPageCount
-                    ? Math.Min(Math.Max(totalMemberCount - skip, 0), pageSize)
-                    : pageSize;
-
-            HasPrevious = currentPageNumber > 1;
-            HasNext = currentPageNumber < TotalPageCount;
+            CurrentPageSize = info.CurrentPageSize;
+            HasPrevious = info.HasPrevious;
+            HasNext = info.HasNext;
         }
 
         private void CheckOrInitializePage()

@@ -1,4 +1,6 @@
-﻿namespace DotNetCore.Collections.Paginable
+﻿using DotNetCore.Collections.Paginable.Internal;
+
+namespace DotNetCore.Collections.Paginable
 {
     /// <summary>
     /// Page metadata
@@ -21,6 +23,31 @@
 
             HasPrevious = page.HasPrevious;
             HasNext = page.HasNext;
+        }
+
+        /// <summary>
+        /// Create a new instance of <see cref="PageMetadata"/> from explicit paging metadata,
+        /// without an <see cref="IPage"/> instance to copy from. Used when a caller supplies the
+        /// metadata itself (see <see cref="PageFragmentInfo"/>).
+        /// </summary>
+        /// <param name="currentPageNumber">current page number</param>
+        /// <param name="pageSize">page size</param>
+        /// <param name="totalMemberCount">total member count</param>
+        internal PageMetadata(int currentPageNumber, int pageSize, int totalMemberCount)
+        {
+            var skip = (currentPageNumber - 1) * pageSize;
+            var info = PageMetaInfo.Calculate(currentPageNumber, pageSize, totalMemberCount, skip);
+
+            TotalPageCount = info.TotalPageCount;
+            RealPageCount = totalMemberCount == 0 ? 0 : info.TotalPageCount;
+            TotalMemberCount = totalMemberCount;
+            PageSize = pageSize;
+
+            CurrentPageNumber = currentPageNumber;
+            CurrentPageSize = info.CurrentPageSize;
+
+            HasPrevious = info.HasPrevious;
+            HasNext = info.HasNext;
         }
 
         /// <summary>

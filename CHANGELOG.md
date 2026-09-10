@@ -4,6 +4,25 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [6.1.0] - 2026-09-XX
+
+Unreleased. The date is filled in when the release is tagged; entries land here as the work
+completes, so the same section also carries the 6.1 `Multi` changes.
+
+### Added
+
+- Paging objects can now be created directly from a materialized fragment plus paging metadata:
+  `Paginable.CreatePage(fragment, pageNumber, pageSize, totalMemberCount)`, the
+  `PageFragmentInfo` overload, the `PageFragmentInfo.FromMetadata` / `ToMetadata` round trip, and
+  the `IEnumerable<T>.ToPage(...)` sugar. The fragment is **never re-sliced** and member item
+  numbers match full-source pagination exactly, so a page built from a Dapper / hand-written SQL
+  result, a cached page or an upstream API response (`items` + `totalCount`) is indistinguishable
+  from one sliced out of the full source. The metadata is validated eagerly: `null` fragment,
+  non-positive page numbers, an out-of-range page, a negative or oversized total count, and a
+  fragment larger than the page it claims to be are all rejected at construction time. A fragment
+  shorter than the metadata expects is tolerated and `CurrentPageSize` keeps reporting the
+  metadata value. Closes [#8](https://github.com/dotnetcore/Collections/issues/8).
+
 ## [6.0.0] - 2026-09-10
 
 Modernization release covering both shipped modules (`Paginable` and `Multi`).

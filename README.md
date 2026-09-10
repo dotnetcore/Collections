@@ -339,6 +339,56 @@ var hasMore = next.HasNext; // resolved without COUNT(*)
 sources, and an optional `descending` switch for reverse ordering. Use keyset pagination when you
 do **not** need `TotalPageCount` / `TotalMemberCount`; use the offset APIs above when you do.
 
+### Create a page from a list fragment
+
+Sometimes you already hold one page of data — a hand-written SQL query with `OFFSET` / `FETCH`, a
+cached page, or an upstream API that answers with `items` plus `totalCount`. There is no need to
+hand the library the whole source: `Paginable.CreatePage` wraps the fragment you have. **The
+fragment is never re-sliced** — it is taken to be the exact content of the page you name.
+
+```c#
+var items = connection.Query<Order>(sql, new { offset = 10, fetch = 5 });  // 5 rows
+var total  = connection.ExecuteScalar<int>(countSql);                      // 12
+
+IPage<Order> page = Paginable.CreatePage(items, pageNumber: 3, pageSize: 5, totalMemberCount: total);
+
+page.TotalPageCount;   // 3
+page.CurrentPageSize;  // 2   (a short last page)
+page.HasNext;          // false
+page[0].ItemNumber;    // 11  (the global row number, exactly as full-source paging would give)
+page.GetMetadata();    // a serializable PageMetadata snapshot
+```
+
+The `PageFragmentInfo` overload suits metadata that arrives on its own, `ToPage` is the same thing
+as an extension method, and the metadata converts both ways:
+
+```c#
+// Metadata from an upstream service or a cache entry.
+var info = new PageFragmentInfo(pageNumber: 3, pageSize: 5, totalMemberCount: 12);
+var page1 = Paginable.CreatePage(items, info);
+
+// Sugar: this sequence already *is* one page.
+var page2 = items.ToPage(pageNumber: 3, pageSize: 5, totalMemberCount: 12);
+
+// Round trip from a page that already exists.
+var info2 = PageFragmentInfo.FromMetadata(existingPage.GetMetadata());
+```
+
+`GetPage` and `ToPage` read alike but do opposite things, so keep them apart:
+
+| | Input | Slices? | Use when |
+| --- | --- | --- | --- |
+| `source.GetPage(pageNumber, pageSize)` | the **whole** source | yes (`Skip` + `Take`) | you have the full result set and want one page out of it |
+| `Paginable.CreatePage(fragment, …)` / `fragment.ToPage(…)` | **one already-sliced page** | no | the page is already in hand and only the metadata has to be attached |
+
+Validation is eager: a `null` fragment throws `ArgumentNullException`; `pageNumber < 1`,
+`pageSize < 1`, a negative `totalMemberCount`, a count above `MaxMemberItems`, or a page number
+past the last page throw `ArgumentOutOfRangeException`; a fragment carrying more members than
+`pageSize` — or more than the metadata says the page holds — throws `ArgumentException`. A fragment
+that is *shorter* than the metadata expects is tolerated (an upstream row may have been deleted
+between the count and the fetch) and `CurrentPageSize` keeps reporting the metadata value. The
+total count must be known: when it is not, use the keyset API above rather than inventing a number.
+
 ### Asynchronous paging
 
 The core library exposes `ToPaginableAsync` / `GetPageAsync` for in-memory and `IQueryable<T>`
