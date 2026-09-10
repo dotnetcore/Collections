@@ -11,5 +11,15 @@
 		     files - they are evaluated after this import and would silently win. -->
 		<Version>$(VersionPrefix)</Version>
 		<PackageVersion>$(VersionPrefix)</PackageVersion>
+
+		<!-- The three assembly attributes are pinned to the same source of truth as
+		     Version/PackageVersion above, instead of being left to the SDK's implicit
+		     derivation from <Version>. VersionPrefix is already in the four-part numeric
+		     form AssemblyVersion and FileVersion require (Major.Minor.Patch.Quality), so
+		     the value is identical - this only makes the agreement explicit and keeps a
+		     future SDK default from silently changing what an assembly reports. -->
+		<AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
+		<FileVersion>$(VersionPrefix)</FileVersion>
+		<InformationalVersion>$(VersionPrefix)</InformationalVersion>
 	</PropertyGroup>
 </Project>

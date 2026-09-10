@@ -4,10 +4,10 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
-## [6.1.0] - 2026-09-XX
+## [6.1.0] - 2026-09-10
 
-Unreleased. The date is filled in when the release is tagged; entries land here as the work
-completes, so the same section also carries the 6.1 `Multi` changes.
+Release covering both shipped modules (`Paginable` and `Multi`); every package ships version
+`6.1.0.0` (see `build/version.props`).
 
 ### Added
 
