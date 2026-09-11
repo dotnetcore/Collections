@@ -69,11 +69,17 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Bootstrap test database
-        run: |
-          docker exec -i $(docker ps --filter "ancestor=mcr.microsoft.com/mssql/server:2022-latest" -q) \
-            /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Paginable#2026_Test' \
-            -i /dev/stdin < tests/DotNetCore.Collections.Paginable.DbTests/Scripts/Bootstrap-CiDatabase.sql
+       - name: Bootstrap test database
+         run: |
+           docker exec -i $(docker ps --filter "ancestor=mcr.microsoft.com/mssql/server:2022-latest" -q) \
+             /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Paginable#2026_Test' \
+             -i /dev/stdin < tests/DotNetCore.Collections.Paginable.DbTests/Scripts/Bootstrap-CiDatabase.sql
++
++      - name: Verify seeded row count
++        run: |
++          docker exec -i $(docker ps --filter "ancestor=mcr.microsoft.com/mssql/server:2022-latest" -q) \
++            /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Paginable#2026_Test' \
++            -d PaginableDbTests -Q "SELECT COUNT(*) AS RowCount FROM dbo.Int32Samples"
 
       - name: Restore
         run: dotnet restore tests/DotNetCore.Collections.Paginable.DbTests/DotNetCore.Collections.Paginable.DbTests.csproj
