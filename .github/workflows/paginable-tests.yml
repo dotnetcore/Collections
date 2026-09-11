@@ -47,44 +47,98 @@ jobs:
   db-tests:
     name: Db tests (SQL Server container)
     runs-on: ubuntu-latest
+    env:
+      # Consumed by the steps below. A service definition cannot read job-level env,
+      # so the password is repeated verbatim under services.sqlserver.env; the two
+      # must stay identical.
+      MSSQL_SA_PASSWORD: 'Paginable#2026_Test'
+      SQLSERVER_IMAGE: mcr.microsoft.com/mssql/server:2022-latest
+      SEEDED_ROW_COUNT: '210'
     services:
       sqlserver:
         image: mcr.microsoft.com/mssql/server:2022-latest
         env:
           ACCEPT_EULA: Y
-          MSSQL_SA_PASSWORD: Paginable#2026_Test
+          MSSQL_SA_PASSWORD: 'Paginable#2026_Test'
         ports:
           - 1433:1433
         options: >-
           --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Paginable#2026_Test' -Q 'SELECT 1' || exit 1"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 10
-          --health-start-period 30s
+          --health-retries 12
+          --health-start-period 40s
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # SourceLink needs full history for deterministic build
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          # DbTests targets net8.0: the 8.0 runtime must be installed alongside the
+          # SDK, otherwise `dotnet test` fails with "framework 'Microsoft.NETCore.App'
+          # version '8.0.0' was not found".
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
-       - name: Bootstrap test database
-         run: |
-           docker exec -i $(docker ps --filter "ancestor=mcr.microsoft.com/mssql/server:2022-latest" -q) \
-             /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Paginable#2026_Test' \
-             -i /dev/stdin < tests/DotNetCore.Collections.Paginable.DbTests/Scripts/Bootstrap-CiDatabase.sql
-+
-+      - name: Verify seeded row count
-+        run: |
-+          docker exec -i $(docker ps --filter "ancestor=mcr.microsoft.com/mssql/server:2022-latest" -q) \
-+            /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Paginable#2026_Test' \
-+            -d PaginableDbTests -Q "SELECT COUNT(*) AS RowCount FROM dbo.Int32Samples"
+      - name: Resolve SQL Server container id
+        run: |
+          set -euo pipefail
+          CID="$(docker ps --filter "ancestor=${SQLSERVER_IMAGE}" --format '{{.ID}}' | head -n 1)"
+          if [ -z "$CID" ]; then
+            CID="$(docker ps --format '{{.ID}} {{.Image}}' | grep -i 'mssql/server' | awk '{print $1}' | head -n 1)"
+          fi
+          if [ -z "$CID" ]; then
+            echo "::error::Could not locate the SQL Server service container."
+            docker ps -a
+            exit 1
+          fi
+          echo "Using SQL Server container: $CID"
+          echo "SQLSERVER_CONTAINER_ID=$CID" >> "$GITHUB_ENV"
+
+      - name: Wait for SQL Server to accept queries
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            if docker exec "$SQLSERVER_CONTAINER_ID" /opt/mssql-tools18/bin/sqlcmd \
+                 -C -b -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1; then
+              echo "SQL Server ready after $i attempt(s)."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::SQL Server did not become ready within 60s."
+          exit 1
+
+      - name: Bootstrap test database
+        run: |
+          set -euo pipefail
+          # docker cp avoids piping the script through `docker exec -i ... -i /dev/stdin`.
+          # -b makes sqlcmd abort with a non-zero exit code on the first error, so a
+          # broken seed fails here instead of surfacing as empty-table test failures.
+          docker cp tests/DotNetCore.Collections.Paginable.DbTests/Scripts/Bootstrap-CiDatabase.sql \
+            "$SQLSERVER_CONTAINER_ID":/tmp/bootstrap.sql
+          docker exec "$SQLSERVER_CONTAINER_ID" /opt/mssql-tools18/bin/sqlcmd \
+            -C -b -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -i /tmp/bootstrap.sql
+
+      - name: Verify seeded row count
+        run: |
+          set -euo pipefail
+          ROWS="$(docker exec "$SQLSERVER_CONTAINER_ID" /opt/mssql-tools18/bin/sqlcmd \
+            -C -b -h -1 -W -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -d PaginableDbTests \
+            -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.Int32Samples;" | tr -d '[:space:]')"
+          echo "Seeded row count: $ROWS"
+          if [ "$ROWS" != "$SEEDED_ROW_COUNT" ]; then
+            echo "::error::Expected $SEEDED_ROW_COUNT seeded rows, found '$ROWS'."
+            exit 1
+          fi
 
       - name: Restore
         run: dotnet restore tests/DotNetCore.Collections.Paginable.DbTests/DotNetCore.Collections.Paginable.DbTests.csproj
 
       - name: Run Db tests
         env:
-          PAGINABLE_DBTESTS_CONNECTION_STRING: Server=localhost,1433;Database=PaginableDbTests;User Id=sa;Password=Paginable#2026_Test;TrustServerCertificate=True
+          PAGINABLE_DBTESTS_CONNECTION_STRING: 'Server=localhost,1433;Database=PaginableDbTests;User Id=sa;Password=Paginable#2026_Test;TrustServerCertificate=True'
         run: dotnet test tests/DotNetCore.Collections.Paginable.DbTests/DotNetCore.Collections.Paginable.DbTests.csproj -c Release --no-restore
