@@ -80,6 +80,24 @@ completes.
   pair, plus one temporary list per `RemoveByFirstKey` cascade. `Keys2` deliberately still walks
   the trie, preserving its first-encounter enumeration order. The `GetBySecondKey` XML docs no
   longer describe the method as O(n).
+- Explicit serialization entry points for `MultiList<T>` and `MultiDictionary<TKey, TValue>`
+  (M6-06): `ToSerializableModel()` and the static `FromModel()`, backed by two new plain models.
+  `MultiListModel<T>` carries `Items` (the distinct elements) plus `Counts` (one multiplicity per
+  item); `MultiDictionaryModel<TKey, TValue>` carries `Keys` plus `Values` (one value list per key).
+  Both are ordinary mutable POCOs - public settable properties, no attributes, no interface
+  implementations, no base type - so serializing them needs no particular serializer and the
+  library takes a dependency on none; `System.Text.Json` is one option among many rather than a
+  requirement, and the tests assert that the shipped assembly references no serializer at all.
+  Three points are deliberate. The models carry **data only**: comparers and the multimap's
+  inner-collection strategy are configuration rather than data, so they are not serialized and
+  `FromModel` takes them as arguments (the rebuilt collection is therefore only as faithful as the
+  comparer passed back in). The models handle what `ToDictionary()` can not: a `null` element is an
+  ordinary entry in `Items`, whereas `ToDictionary()` has to throw because a `null` can not be a
+  dictionary key (a `null` key still can not be rebuilt, since the multimap rejects those). And a
+  model is a snapshot while `AsReadOnly()` and `ToDictionary()`'s inner collections are live views,
+  which is the property a serializer needs. `FromModel` validates the model rather than trusting it
+  (null model, null list, mismatched lengths, non-positive copy count, null inner value list), names
+  the offending argument, and merges elements a comparer calls equal in the multiset reading.
 - `PageCreationOptions` and strict fragment checking (F6-11). 6.1 tolerated a fragment shorter
   than its metadata says - a concurrent delete upstream must not make the page unbuildable - and
   that stays the default: `Paginable.CreatePage(fragment, info)`, the four-argument

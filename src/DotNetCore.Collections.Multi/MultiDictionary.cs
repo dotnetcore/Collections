@@ -682,6 +682,101 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Exports the map as a plain serializable model: the keys and, for each of them, an
+        /// independent copy of its values.
+        /// </summary>
+        /// <remarks>
+        /// The model is a snapshot, so unlike <see cref="ToDictionary()"/> (whose inner collections
+        /// are live views) and <see cref="AsReadOnly()"/> (a live view of the whole map) it does not
+        /// change when the map does - the property a serializer needs. See
+        /// <see cref="MultiDictionaryModel{TKey,TValue}"/> for the shape and for why this library
+        /// takes no dependency on any serializer. Use <see cref="FromModel"/> to rebuild the map.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// MultiDictionaryModel&lt;string, int&gt; model = map.ToSerializableModel();
+        /// string json = System.Text.Json.JsonSerializer.Serialize(model);
+        /// </code>
+        /// </example>
+        public MultiDictionaryModel<TKey, TValue> ToSerializableModel()
+        {
+            var keys = new List<TKey>(_dict.Count);
+            var values = new List<List<TValue>>(_dict.Count);
+            foreach (var pair in _dict)
+            {
+                keys.Add(pair.Key);
+                values.Add(new List<TValue>(pair.Value));
+            }
+
+            return new MultiDictionaryModel<TKey, TValue> { Keys = keys, Values = values };
+        }
+
+        /// <summary>
+        /// Rebuilds a multimap from a serializable model.
+        /// </summary>
+        /// <param name="model">the model to read: either one produced by <see cref="ToSerializableModel"/> or one built by hand.</param>
+        /// <param name="comparer">the key comparer of the rebuilt map; <c>null</c> selects <see cref="EqualityComparer{TKey}.Default"/>. The comparer is configuration rather than data, so it is not part of the model and has to be supplied here.</param>
+        /// <param name="allowDuplicateValues">whether the rebuilt map keeps duplicate values under one key (<c>true</c>, the default) or collapses them. Also configuration, so it has to be supplied here; rebuilding a map that was created with duplicates disallowed requires passing <c>false</c> explicitly.</param>
+        /// <returns>a new map holding the model's keys with the model's values.</returns>
+        /// <remarks>
+        /// Values are added in the order the model lists them, so a value order that matters to the
+        /// caller survives the round trip whenever the inner collection preserves it (the default
+        /// <see cref="List{TValue}"/>) does. When <paramref name="allowDuplicateValues"/> is
+        /// <c>false</c>, duplicates inside one entry collapse, exactly as they do on
+        /// <see cref="Add(TKey,TValue)"/>.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="model"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="model"/> is malformed: either list is
+        /// <c>null</c>, the two lists have different lengths, or one of the inner value lists is
+        /// <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var map = MultiDictionary&lt;string, int&gt;.FromModel(model);
+        /// </code>
+        /// </example>
+        public static MultiDictionary<TKey, TValue> FromModel(
+            MultiDictionaryModel<TKey, TValue> model,
+            IEqualityComparer<TKey>? comparer = null,
+            bool allowDuplicateValues = true)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (model.Keys == null)
+            {
+                throw new ArgumentException("The model is malformed: its Keys list is null.", nameof(model));
+            }
+
+            if (model.Values == null)
+            {
+                throw new ArgumentException("The model is malformed: its Values list is null.", nameof(model));
+            }
+
+            if (model.Keys.Count != model.Values.Count)
+            {
+                throw new ArgumentException(
+                    "The model is malformed: Keys and Values have different lengths.", nameof(model));
+            }
+
+            var result = new MultiDictionary<TKey, TValue>(comparer, allowDuplicateValues);
+            for (var i = 0; i < model.Keys.Count; i++)
+            {
+                var values = model.Values[i];
+                if (values == null)
+                {
+                    throw new ArgumentException(
+                        "The model is malformed: one of the inner value lists is null.", nameof(model));
+                }
+
+                result.AddRange(model.Keys[i], values);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns a live read-only view of the map: lookups and enumeration reflect subsequent
         /// changes to the owning map. Mutating members are not exposed.
         /// </summary>

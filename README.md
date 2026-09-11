@@ -557,6 +557,20 @@ That set convention also fixes what the batch delete means: `RemoveRange(key, va
 
 All six types ship in `DotNetCore.Collections.Multi` and target the same frameworks as the package (see the matrix above). Equality always goes through a comparer, never through hash codes alone, so hash collisions between distinct elements/keys can not corrupt a collection: the hash-shaped types match with `IEqualityComparer<T>`, while `OrderedMultiList<T>` matches with its `IComparer<T>`, where "compares equal" *is* "is the same element". `null` handling follows the shape of each type: `MultiList<T>` and `OrderedMultiList<T>` support `null` elements (`null` sorts first under the default comparer), `MultiDictionary<TKey, TValue>` rejects `null` keys but allows `null` values, and both trie types support `null` key components. None of the types is thread-safe.
 
+### Save and restore
+
+`MultiList<T>` and `MultiDictionary<TKey, TValue>` have an **explicit** serialization entry point: `ToSerializableModel()` hands back a plain snapshot and `FromModel()` rebuilds the collection from one. The models — `MultiListModel<T>` (`Items` + `Counts`, parallel lists) and `MultiDictionaryModel<TKey, TValue>` (`Keys` + `Values`, parallel lists) — are ordinary mutable classes with public settable properties, no attributes and no interface implementations, so the library takes no dependency on any serializer. JSON (`System.Text.Json` included), XML, a database row or anything else is the caller's choice:
+
+```c#
+var model = bag.ToSerializableModel();
+string json = JsonSerializer.Serialize(model);
+
+var typed = JsonSerializer.Deserialize<MultiListModel<string>>(json);
+var restored = MultiList<string>.FromModel(typed, comparer);   // pass the comparer back
+```
+
+The model carries **data only**: a comparer, and a multimap's inner-collection strategy, are configuration rather than data, so they are not part of it and are supplied to `FromModel()` — a round trip is only as faithful as the comparer passed back in. The model is also the export that always works. Unlike `ToDictionary()` (which throws when a multiset holds a `null` element, because a `null` can not be a dictionary key) it represents `null` like any other element, and unlike `AsReadOnly()` and `ToDictionary()`'s inner collections it is a snapshot rather than a live view, so it does not move under a serializer's feet.
+
 ### Install the package
 
 ```
@@ -573,6 +587,7 @@ bag.TotalCount;            // 3
 bag.UnionWith(new[] { "apple", "cherry" });
 bag.IsSupersetOf(new[] { "banana" }); // true
 bag.Equals(new MultiList<string> { "banana", "apple", "apple" }); // true (bag equality, any order)
+bag.ToSerializableModel(); // plain snapshot: Items + Counts (see "Save and restore")
 
 // OrderedMultiList<T>: the same bag, kept sorted (red-black tree, O(log n) worst case)
 var shelf = new OrderedMultiList<string> { "mug", "bean", "bean" };
@@ -592,6 +607,7 @@ var lookup = map.AsLookup();          // LINQ-friendly ILookup view
 map.ValueCount("orders");             // 2 (0 for a missing key, never throws)
 map.AddRange("orders", new[] { 1003, 1004 });
 map.RemoveRange("orders", new[] { 1002, 1003 }); // batch delete, set semantics
+map.ToSerializableModel();            // plain snapshot: Keys + Values (see "Save and restore")
 
 // OrderedMultiDictionary<K, V>: the ordered multimap (keys and values both sorted)
 var index = new OrderedMultiDictionary<string, int>();

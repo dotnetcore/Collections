@@ -474,6 +474,100 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Exports the multiset as a plain serializable model: the distinct elements and their copy
+        /// counts, in two parallel lists.
+        /// </summary>
+        /// <remarks>
+        /// The model is a snapshot - mutating the multiset afterwards does not change it - and,
+        /// unlike <see cref="ToDictionary()"/>, it can carry a <c>null</c> element. See
+        /// <see cref="MultiListModel{T}"/> for the shape and for why this library takes no dependency
+        /// on any serializer. Use <see cref="FromModel"/> to rebuild the multiset.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// MultiListModel&lt;string&gt; model = bag.ToSerializableModel();
+        /// string json = System.Text.Json.JsonSerializer.Serialize(model);
+        /// </code>
+        /// </example>
+        public MultiListModel<T> ToSerializableModel()
+        {
+            var items = new List<T>(DistinctCount);
+            var counts = new List<int>(DistinctCount);
+            foreach (var entry in EntrySet())
+            {
+                items.Add(entry.Item);
+                counts.Add(entry.Count);
+            }
+
+            return new MultiListModel<T> { Items = items, Counts = counts };
+        }
+
+        /// <summary>
+        /// Rebuilds a multiset from a serializable model.
+        /// </summary>
+        /// <param name="model">the model to read: either one produced by <see cref="ToSerializableModel"/> or one built by hand.</param>
+        /// <param name="comparer">the element comparer of the rebuilt multiset; <c>null</c> selects <see cref="EqualityComparer{T}.Default"/>. The comparer is configuration rather than data, so it is not part of the model and has to be supplied here.</param>
+        /// <returns>a new multiset holding the model's elements with the model's copy counts.</returns>
+        /// <remarks>
+        /// Elements that are equal under <paramref name="comparer"/> are merged into a single entry
+        /// whose count is their sum - the multiset reading of a model that lists the same element
+        /// twice. A model produced by <see cref="ToSerializableModel"/> never contains such a pair,
+        /// so the merge only affects hand-built models.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="model"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="model"/> is malformed: either list is
+        /// <c>null</c>, the two lists have different lengths, or a copy count is not positive.</exception>
+        /// <example>
+        /// <code>
+        /// var model = new MultiListModel&lt;string&gt;
+        /// {
+        ///     Items = new List&lt;string&gt; { "apple", "banana" },
+        ///     Counts = new List&lt;int&gt; { 2, 1 },
+        /// };
+        ///
+        /// MultiList&lt;string&gt; bag = MultiList&lt;string&gt;.FromModel(model);
+        /// </code>
+        /// </example>
+        public static MultiList<T> FromModel(MultiListModel<T> model, IEqualityComparer<T>? comparer = null)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (model.Items == null)
+            {
+                throw new ArgumentException("The model is malformed: its Items list is null.", nameof(model));
+            }
+
+            if (model.Counts == null)
+            {
+                throw new ArgumentException("The model is malformed: its Counts list is null.", nameof(model));
+            }
+
+            if (model.Items.Count != model.Counts.Count)
+            {
+                throw new ArgumentException(
+                    "The model is malformed: Items and Counts have different lengths.", nameof(model));
+            }
+
+            var result = new MultiList<T>(model.Items.Count, comparer);
+            for (var i = 0; i < model.Items.Count; i++)
+            {
+                var count = model.Counts[i];
+                if (count <= 0)
+                {
+                    throw new ArgumentException(
+                        "The model is malformed: every copy count must be positive.", nameof(model));
+                }
+
+                result.Add(model.Items[i], count);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns a live read-only view of the multiset: enumeration and
         /// <see cref="IReadOnlyCollection{T}.Count"/> reflect subsequent changes to the owning
         /// multiset. Mutating members are not exposed.
