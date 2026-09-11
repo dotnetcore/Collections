@@ -629,6 +629,82 @@ namespace DotNetCore.Collections.Multi
             return new MultiList<T>(other, _comparer);
         }
 
+        /// <summary>
+        /// Views the argument of a multiset operation in place rather than materialising it as a
+        /// <see cref="MultiList{T}"/> (L-07). Returns the argument when it already <em>is</em> a
+        /// multiset whose element comparer is equivalent to this one - reading it directly can not
+        /// change the result, because re-materialising would only re-hash each element under the
+        /// same notion of equality - and <c>null</c> when the caller has to fall back to
+        /// <see cref="Snapshot(IEnumerable{T})"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is where chained multiset operations stop paying for a copy of their argument: the
+        /// common <c>a.UnionWith(b)</c> with <c>b</c> already a multiset used to allocate a whole
+        /// second multiset (and, through <see cref="EntrySet"/>, an iterator per enumeration) just
+        /// to read it back. With the view in hand every operation below can walk the argument's
+        /// count table directly, which is a struct-enumerator walk and therefore allocates nothing.
+        /// When the comparers differ the view is refused and the argument is re-materialised under
+        /// this instance's comparer, exactly as before, so the observable semantics are unchanged.
+        /// </remarks>
+        private MultiList<T>? AsInPlaceArgument(IEnumerable<T> other)
+        {
+            return other is MultiList<T> bag && _counts.Comparer.Equals(bag._counts.Comparer) ? bag : null;
+        }
+
+        /// <summary>
+        /// The scratch buffer the mutating multiset operations stage their target state in. It is
+        /// reused across calls (and cleared afterwards, so it holds no element references between
+        /// calls) because the alternative - a fresh list per call - is a per-call allocation on a
+        /// path that is supposed to be allocation-free. Sized from the receiver on first use so a
+        /// single operation does not pay the growth ladder. This class is not thread-safe, so one
+        /// buffer is enough.
+        /// </summary>
+        private List<(T Item, int Count)>? _scratch;
+
+        private List<(T Item, int Count)> Scratch()
+        {
+            return _scratch ?? (_scratch = new List<(T Item, int Count)>(_counts.Count));
+        }
+
+        /// <summary>
+        /// The copy count of a key that is already known to live in a count table and therefore can
+        /// not be <c>null</c>. Bypasses <see cref="CountOf"/>'s null test, which is both redundant
+        /// for such a key and a box for value element types.
+        /// </summary>
+        private static int CountInTable(Dictionary<T, int> counts, T key)
+        {
+            return counts.TryGetValue(key, out var count) ? count : 0;
+        }
+
+        /// <summary>
+        /// Applies the multiset union to the receiver, reading the argument in place when it is a
+        /// multiset (see <see cref="AsInPlaceArgument"/>).
+        /// </summary>
+        private void UnionWithBag(MultiList<T> otherBag)
+        {
+            // Union with self is the identity (max(c, c) == c). Guarded explicitly because the
+            // loop below adds to the receiver while walking the argument, and here they are the
+            // same count table.
+            if (ReferenceEquals(otherBag, this))
+            {
+                return;
+            }
+
+            foreach (var pair in otherBag._counts)
+            {
+                var current = CountInTable(_counts, pair.Key);
+                if (pair.Value > current)
+                {
+                    Add(pair.Key, pair.Value - current);
+                }
+            }
+
+            if (otherBag._nullCount > _nullCount)
+            {
+                Add(default!, otherBag._nullCount - _nullCount);
+            }
+        }
+
         private void SetCountExact(T item, int count)
         {
             var current = CountOf(item);
@@ -665,6 +741,10 @@ namespace DotNetCore.Collections.Multi
         /// collections. Occurrences in <paramref name="other"/> are counted element-wise (a
         /// <see cref="MultiList{T}"/> argument contributes its full multiplicities).
         /// </summary>
+        /// <remarks>
+        /// Allocates nothing when <paramref name="other"/> is a <see cref="MultiList{T}"/> with an
+        /// equivalent comparer: the argument is read in place instead of being copied.
+        /// </remarks>
         /// <example>
         /// <code>
         /// bag.UnionWith(new[] { "a", "c" });
@@ -673,16 +753,14 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public void UnionWith(IEnumerable<T> other)
         {
-            var otherBag = Snapshot(other);
-            foreach (var entry in otherBag.EntrySet())
+            var inPlace = AsInPlaceArgument(other);
+            if (inPlace != null)
             {
-                var current = CountOf(entry.Item);
-                var target = entry.Count > current ? entry.Count : current;
-                if (target > current)
-                {
-                    Add(entry.Item, target - current);
-                }
+                UnionWithBag(inPlace);
+                return;
             }
+
+            UnionWithBag(Snapshot(other));
         }
 
         /// <summary>
@@ -690,6 +768,11 @@ namespace DotNetCore.Collections.Multi
         /// multiset semantics: each element keeps the <b>minimum</b> of its copy counts in both
         /// collections. Elements absent from <paramref name="other"/> are dropped.
         /// </summary>
+        /// <remarks>
+        /// Allocates nothing when <paramref name="other"/> is a <see cref="MultiList{T}"/> with an
+        /// equivalent comparer: the argument is read in place instead of being copied, and the
+        /// target state is staged in a reused scratch buffer.
+        /// </remarks>
         /// <example>
         /// <code>
         /// bag.IntersectionWith(new[] { "a" });
@@ -698,15 +781,30 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public void IntersectionWith(IEnumerable<T> other)
         {
-            var otherBag = Snapshot(other);
-            var updates = new List<(T Item, int Count)>();
-            foreach (var entry in EntrySet())
+            var otherBag = AsInPlaceArgument(other) ?? Snapshot(other);
+            var scratch = Scratch();
+            try
             {
-                var otherCount = otherBag.CountOf(entry.Item);
-                updates.Add((entry.Item, otherCount < entry.Count ? otherCount : entry.Count));
-            }
+                foreach (var pair in _counts)
+                {
+                    var otherCount = CountInTable(otherBag._counts, pair.Key);
+                    scratch.Add((pair.Key, otherCount < pair.Value ? otherCount : pair.Value));
+                }
 
-            ApplyUpdates(updates);
+                ApplyUpdates(scratch);
+
+                // Intersection keeps the smaller count, the null bucket included. Guarded because
+                // for a value element type the bucket is always empty and `default!` would name the
+                // element default(T) - 0 in a MultiList<int>, say - instead of "no element".
+                if (_nullCount > 0 || otherBag._nullCount > 0)
+                {
+                    SetCountExact(default!, Math.Min(_nullCount, otherBag._nullCount));
+                }
+            }
+            finally
+            {
+                scratch.Clear();
+            }
         }
 
         /// <summary>
@@ -714,6 +812,11 @@ namespace DotNetCore.Collections.Multi
         /// multiset semantics: each element loses up to the number of copies present in
         /// <paramref name="other"/> (never below zero).
         /// </summary>
+        /// <remarks>
+        /// Allocates nothing when <paramref name="other"/> is a <see cref="MultiList{T}"/> with an
+        /// equivalent comparer: the argument is read in place instead of being copied, and the
+        /// target state is staged in a reused scratch buffer.
+        /// </remarks>
         /// <example>
         /// <code>
         /// bag.ExceptWith(new[] { "a" });
@@ -722,15 +825,30 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public void ExceptWith(IEnumerable<T> other)
         {
-            var otherBag = Snapshot(other);
-            var updates = new List<(T Item, int Count)>();
-            foreach (var entry in EntrySet())
+            var otherBag = AsInPlaceArgument(other) ?? Snapshot(other);
+            var scratch = Scratch();
+            try
             {
-                var target = entry.Count - otherBag.CountOf(entry.Item);
-                updates.Add((entry.Item, target > 0 ? target : 0));
-            }
+                foreach (var pair in _counts)
+                {
+                    var target = pair.Value - CountInTable(otherBag._counts, pair.Key);
+                    scratch.Add((pair.Key, target > 0 ? target : 0));
+                }
 
-            ApplyUpdates(updates);
+                ApplyUpdates(scratch);
+
+                // Difference drops up to the argument's null count. Guarded on the bucket being
+                // non-empty: see the note in IntersectionWith.
+                if (_nullCount > 0)
+                {
+                    var nullTarget = _nullCount - otherBag._nullCount;
+                    SetCountExact(default!, nullTarget > 0 ? nullTarget : 0);
+                }
+            }
+            finally
+            {
+                scratch.Clear();
+            }
         }
 
         /// <summary>
@@ -738,6 +856,11 @@ namespace DotNetCore.Collections.Multi
         /// each element ends up with the <b>absolute difference</b> of its copy counts in both
         /// collections.
         /// </summary>
+        /// <remarks>
+        /// Allocates nothing when <paramref name="other"/> is a <see cref="MultiList{T}"/> with an
+        /// equivalent comparer: the argument is read in place instead of being copied, and the
+        /// target state is staged in a reused scratch buffer.
+        /// </remarks>
         /// <example>
         /// <code>
         /// bag.SymmetricExceptWith(new[] { "a", "d" });
@@ -745,22 +868,38 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public void SymmetricExceptWith(IEnumerable<T> other)
         {
-            var otherBag = Snapshot(other);
-            var updates = new List<(T Item, int Count)>();
-            foreach (var entry in EntrySet())
+            var otherBag = AsInPlaceArgument(other) ?? Snapshot(other);
+            var scratch = Scratch();
+            try
             {
-                updates.Add((entry.Item, Math.Abs(entry.Count - otherBag.CountOf(entry.Item))));
-            }
-
-            foreach (var otherEntry in otherBag.EntrySet())
-            {
-                if (CountOf(otherEntry.Item) == 0)
+                foreach (var pair in _counts)
                 {
-                    updates.Add((otherEntry.Item, otherEntry.Count));
+                    scratch.Add((pair.Key, Math.Abs(pair.Value - CountInTable(otherBag._counts, pair.Key))));
+                }
+
+                // Second pass: elements only the argument holds. Read against the receiver's
+                // *current* counts, before any target is applied.
+                foreach (var pair in otherBag._counts)
+                {
+                    if (CountInTable(_counts, pair.Key) == 0)
+                    {
+                        scratch.Add((pair.Key, pair.Value));
+                    }
+                }
+
+                ApplyUpdates(scratch);
+
+                // The symmetric difference of the null buckets is their absolute difference.
+                // Guarded for value element types: see the note in IntersectionWith.
+                if (_nullCount > 0 || otherBag._nullCount > 0)
+                {
+                    SetCountExact(default!, Math.Abs(_nullCount - otherBag._nullCount));
                 }
             }
-
-            ApplyUpdates(updates);
+            finally
+            {
+                scratch.Clear();
+            }
         }
 
         /// <summary>
@@ -768,6 +907,10 @@ namespace DotNetCore.Collections.Multi
         /// multiset semantics: the copy count of every element in this multiset must be less
         /// than or equal to its copy count in <paramref name="other"/>.
         /// </summary>
+        /// <remarks>
+        /// Allocates nothing when <paramref name="other"/> is a <see cref="MultiList{T}"/> with an
+        /// equivalent comparer: the argument is read in place instead of being copied.
+        /// </remarks>
         /// <example>
         /// <code>
         /// bool ok = bag.IsSubsetOf(other);
@@ -775,13 +918,17 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool IsSubsetOf(IEnumerable<T> other)
         {
-            return IsSubsetOfBag(Snapshot(other));
+            return IsSubsetOfBag(AsInPlaceArgument(other) ?? Snapshot(other));
         }
 
         /// <summary>
         /// Determines whether the multiset is a superset of the specified collection, using
         /// multiset semantics.
         /// </summary>
+        /// <remarks>
+        /// Allocates nothing when <paramref name="other"/> is a <see cref="MultiList{T}"/> with an
+        /// equivalent comparer: the argument is read in place instead of being copied.
+        /// </remarks>
         /// <example>
         /// <code>
         /// bool ok = bag.IsSupersetOf(other);
@@ -789,13 +936,17 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool IsSupersetOf(IEnumerable<T> other)
         {
-            return IsSupersetOfBag(Snapshot(other));
+            return IsSupersetOfBag(AsInPlaceArgument(other) ?? Snapshot(other));
         }
 
         /// <summary>
         /// Determines whether the multiset is a proper subset of the specified collection
         /// (a subset that is not equal as a multiset).
         /// </summary>
+        /// <remarks>
+        /// Allocates nothing when <paramref name="other"/> is a <see cref="MultiList{T}"/> with an
+        /// equivalent comparer: the argument is read in place instead of being copied.
+        /// </remarks>
         /// <example>
         /// <code>
         /// bool ok = bag.IsProperSubsetOf(other);
@@ -803,7 +954,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool IsProperSubsetOf(IEnumerable<T> other)
         {
-            var otherBag = Snapshot(other);
+            var otherBag = AsInPlaceArgument(other) ?? Snapshot(other);
             return IsSubsetOfBag(otherBag) && TotalCount != otherBag.TotalCount;
         }
 
@@ -811,6 +962,10 @@ namespace DotNetCore.Collections.Multi
         /// Determines whether the multiset is a proper superset of the specified collection
         /// (a superset that is not equal as a multiset).
         /// </summary>
+        /// <remarks>
+        /// Allocates nothing when <paramref name="other"/> is a <see cref="MultiList{T}"/> with an
+        /// equivalent comparer: the argument is read in place instead of being copied.
+        /// </remarks>
         /// <example>
         /// <code>
         /// bool ok = bag.IsProperSupersetOf(other);
@@ -818,7 +973,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool IsProperSupersetOf(IEnumerable<T> other)
         {
-            var otherBag = Snapshot(other);
+            var otherBag = AsInPlaceArgument(other) ?? Snapshot(other);
             return IsSupersetOfBag(otherBag) && TotalCount != otherBag.TotalCount;
         }
 
@@ -968,30 +1123,35 @@ namespace DotNetCore.Collections.Multi
             }
         }
 
+        /// <remarks>
+        /// Walks both count tables directly rather than through <see cref="EntrySet"/>, whose
+        /// iterator would allocate on every call. The <c>null</c> bucket is compared separately
+        /// because it lives outside <c>_counts</c>.
+        /// </remarks>
         private bool IsSubsetOfBag(MultiList<T> otherBag)
         {
-            foreach (var entry in EntrySet())
+            foreach (var pair in _counts)
             {
-                if (otherBag.CountOf(entry.Item) < entry.Count)
+                if (CountInTable(otherBag._counts, pair.Key) < pair.Value)
                 {
                     return false;
                 }
             }
 
-            return true;
+            return _nullCount == 0 || otherBag._nullCount >= _nullCount;
         }
 
         private bool IsSupersetOfBag(MultiList<T> otherBag)
         {
-            foreach (var entry in otherBag.EntrySet())
+            foreach (var pair in otherBag._counts)
             {
-                if (CountOf(entry.Item) < entry.Count)
+                if (CountInTable(_counts, pair.Key) < pair.Value)
                 {
                     return false;
                 }
             }
 
-            return true;
+            return otherBag._nullCount == 0 || _nullCount >= otherBag._nullCount;
         }
 
         /// <summary>

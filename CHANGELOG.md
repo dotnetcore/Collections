@@ -121,6 +121,31 @@ completes.
   paths is asserted to be zero via `GC.GetAllocatedBytesForCurrentThread()`. As usual the claim is
   proved by counting, not by a stopwatch. A 3,000-step randomized differential re-checks both
   caches after every single step against a naive recomputation.
+- The set operations of `MultiList<T>` no longer copy their argument (M6-08, landing L-07). Every
+  one of them - `UnionWith`, `IntersectionWith`, `ExceptWith`, `SymmetricExceptWith`, the four
+  subset/superset judgments, and `Equals`/`GetHashCode`'s helpers - used to start by materialising
+  `other` as a whole second `MultiList<T>`, so a chained `a.UnionWith(b)` allocated a full multiset
+  just to read it back; on a 32-element argument that was 1,712-2,440 bytes per call. When the
+  argument already **is** a `MultiList<T>` whose element comparer is equivalent to the receiver's,
+  it is now read in place: the operation walks its count table directly, which is a struct-enumerator
+  walk. The three mutating operations additionally stage their target state in a single buffer that
+  is allocated once per instance and reused (cleared afterwards, so it retains no element
+  references). Measured with `GC.GetAllocatedBytesForCurrentThread()`: every one of the eight
+  operations allocates **0 bytes/call** in steady state, and five of them (the four judgments and
+  `UnionWith`) allocate 0 bytes/call even on a receiver that has never run a set operation before -
+  the remaining three pay ~310 bytes once, for that buffer, on a cold receiver only. Three points
+  are deliberate. An argument of any other shape - an array, a LINQ sequence, or a `MultiList<T>`
+  built with a different comparer - still goes through the original materialising path, because its
+  multiplicities have to be counted under the receiver's comparer before the operation can define
+  its result; that path is unchanged and still correct, and the tests assert the two argument shapes
+  never disagree. The `null` bucket is handled separately and only touched when it can be non-empty,
+  because for a value element type it is always empty and `default!` would otherwise name the
+  element `default(T)` - `0` in a `MultiList<int>` - and wipe it. And the behaviour is otherwise
+  bit-for-bit what it was: `IsSubsetOfBag`/`IsSupersetOfBag` were rewritten to walk the count tables
+  instead of `EntrySet()`, whose iterator allocated on every call, with the subset/superset and
+  `null` comparisons preserved. A 3,000-step randomized differential runs each operation twice,
+  once with a multiset argument and once with an equivalent plain array, and requires the two
+  outcomes to agree at every step.
 - `PageCreationOptions` and strict fragment checking (F6-11). 6.1 tolerated a fragment shorter
   than its metadata says - a concurrent delete upstream must not make the page unbuildable - and
   that stays the default: `Paginable.CreatePage(fragment, info)`, the four-argument
