@@ -49,6 +49,23 @@ completes.
 - `DotNetCore.Collections.Multi` now declares `InternalsVisibleTo` for its test assembly. The
   red-black invariants live on internal members and asserting them is how F6-01 justifies its
   complexity, so the suite has to reach them. Nothing becomes public: the members stay internal.
+- `OrderedMultiDictionary<TKey, TValue>` - the ordered counterpart of `MultiDictionary<TKey, TValue>`
+  (F6-02): a multimap whose keys are kept in ascending order by an `IComparer<TKey>` (a
+  `SortedDictionary` axis) and whose per-key values are kept in ascending order by an
+  `IComparer<TValue>` (an `OrderedMultiList<TValue>` in the default duplicating configuration, a
+  `SortedSet<TValue>` when duplicate values are disallowed). Adding, looking up and removing a
+  single pair costs O(log n) worst case on both axes. The per-key value-set operations
+  (`UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith` / `RemoveRange`) keep
+  `MultiDictionary<TKey, TValue>`'s semantics verbatim: the argument is a **set** of values, a
+  value stored N times survives `RemoveRange` with N-1 copies, `ExceptWith` drops every
+  occurrence, and a key whose value collection empties is removed automatically. The type also
+  implements `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>` and ships `AsLookup()` /
+  `AsReadOnly()` / `Clone()` / `EntrySet()`, `ValueCount(key)` / `TotalValueCount`,
+  `ContainsValue`, and `ToString()` walking keys ascending. Identity on both axes is decided by
+  the respective comparers (`null` keys are rejected with `ArgumentNullException`; `null` values
+  follow the value comparer, sorting first under the default one), and the `notnull` key
+  constraint of the annotated `SortedDictionary` is suppressed file-locally, exactly as in
+  `MultiDictionary`, so `TKey` stays nullable-friendly.
 
 ### Breaking
 
