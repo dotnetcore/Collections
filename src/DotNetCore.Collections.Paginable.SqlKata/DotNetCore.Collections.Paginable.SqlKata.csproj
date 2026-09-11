@@ -29,6 +29,33 @@
         <PackageReference Include="SqlKata.Execution" Version="3.2.3"/>
     </ItemGroup>
 
+    <!-- E6-03: two transitives arrive through SqlKata's own dependency graph and
+         both of its usable lines are frozen with advisories still open on them.
+
+         * net451 -> SqlKata 2.2.0 targets netstandard1.x, so NETStandard.Library
+           1.6.1 supplies System.Net.Http 4.3.0 (CVE-2018-8292) and
+           System.Text.RegularExpressions 4.3.0 (CVE-2019-0820). On net451 both
+           come from the framework: their NuGet assets are the `_._` placeholders,
+           so raising the floor costs no assembly and only clears the audit.
+         * netstandard2.0 / 2.1 / net6.0 / net7.0 -> Dapper 1.50.5 (via
+           SqlKata.Execution 3.2.3) pins System.Data.SqlClient 4.4.0
+           (CVE-2024-0056 / CVE-2022-41064).
+
+         Neither SqlKata line can be upgraded past the problem - 2.2.0 is the last
+         net451-capable release and 4.x needs net8.0 - so the transitives are
+         pinned forward to the first release past their advisories rather than
+         suppressing the audit with NoWarn. net461 / net47 / net48 resolve both
+         netstandard1.x transitives from the framework, and net8.0+ runs on
+         SqlKata 4.0.1; those groups are already clean and are left untouched. -->
+    <ItemGroup Condition="'$(TargetFramework)'=='net451'">
+        <PackageReference Include="System.Net.Http" Version="4.3.4"/>
+        <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0' OR '$(TargetFramework)'=='netstandard2.1' OR '$(TargetFramework)'=='net6.0' OR '$(TargetFramework)'=='net7.0'">
+        <PackageReference Include="System.Data.SqlClient" Version="4.8.6"/>
+    </ItemGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj"/>
     </ItemGroup>

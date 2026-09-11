@@ -78,6 +78,25 @@ completes.
   over-long checks throw in both modes - and a `null` options argument is rejected like any
   other.
 
+### Fixed
+
+- `DotNetCore.Collections.Paginable.SqlKata` no longer carries vulnerable transitives in its
+  dependency graph (E6-03). SqlKata's two usable lines are both frozen with advisories still open
+  underneath them, and neither can be upgraded past the problem: `2.2.0` is the last release that
+  targets `net451`, `3.2.3` is what the `netstandard2.x` / `net6.0` / `net7.0` group can take, and
+  `4.x` requires `net8.0`. The three affected transitives are therefore pinned forward, one
+  framework group at a time. On `net451`, `NETStandard.Library 1.6.1` (via SqlKata 2.2.0) used to
+  supply `System.Net.Http 4.3.0` (CVE-2018-8292) and `System.Text.RegularExpressions 4.3.0`
+  (CVE-2019-0820); they are now `4.3.4` and `4.3.1`. Because `net451` takes both of them from the
+  framework — their NuGet assets are the `_._` placeholders — that pin costs no assembly and only
+  settles the audit. On `netstandard2.0` / `2.1` / `net6.0` / `net7.0`, `Dapper 1.50.5` (via
+  `SqlKata.Execution 3.2.3`) used to pin `System.Data.SqlClient 4.4.0` (CVE-2024-0056 /
+  CVE-2022-41064); it is now `4.8.6`, the first release past both advisories. `net461` / `net47` /
+  `net48` resolve the two `netstandard1.x` transitives from the framework and `net8.0` and above run
+  on SqlKata 4.0.1, so those groups were already clean and are untouched. The audit is settled by
+  fixing the graph rather than by `NoWarn`, and the raised floors are recorded in the shipped
+  `packages.lock.json`.
+
 ### Breaking
 
 - An out-of-range argument is now reported as `ArgumentOutOfRangeException` by **every** paging entry
