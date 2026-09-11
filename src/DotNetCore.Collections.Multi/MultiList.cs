@@ -142,9 +142,10 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
-        /// Adds the specified number of copies of the element. A non-positive
-        /// <paramref name="times"/> is coerced to one copy (legacy behaviour).
+        /// Adds the specified number of copies of the element.
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="times"/> is less than
+        /// or equal to zero.</exception>
         /// <example>
         /// <code>
         /// bag.Add("apple", 3);
@@ -155,7 +156,7 @@ namespace DotNetCore.Collections.Multi
         {
             if (times <= 0)
             {
-                times = 1;
+                throw new ArgumentOutOfRangeException(nameof(times), times, "The number of copies must be positive.");
             }
 
             TotalCount += times;
@@ -266,10 +267,11 @@ namespace DotNetCore.Collections.Multi
 
         /// <summary>
         /// Removes up to the specified number of copies of the element and returns the number of
-        /// copies remaining afterwards. A non-positive <paramref name="times"/> is coerced to one
-        /// copy (legacy behaviour). Returns zero when the element is absent. The element is
+        /// copies remaining afterwards. Returns zero when the element is absent. The element is
         /// dropped from the multiset once its copy count reaches zero.
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="times"/> is less than
+        /// or equal to zero.</exception>
         /// <example>
         /// <code>
         /// bag.Remove("apple", 2);
@@ -280,7 +282,7 @@ namespace DotNetCore.Collections.Multi
         {
             if (times <= 0)
             {
-                times = 1;
+                throw new ArgumentOutOfRangeException(nameof(times), times, "The number of copies must be positive.");
             }
 
             var current = CountOf(item);

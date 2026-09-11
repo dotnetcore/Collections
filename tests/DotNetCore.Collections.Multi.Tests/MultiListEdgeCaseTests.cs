@@ -74,32 +74,30 @@ namespace DotNetCore.Collections.Multi.Tests
         }
 
         // ------------------------------------------------------------------
-        // Non-positive times coercion (legacy behaviour)
+        // Non-positive times rejection (M6-05, breaking change)
         // ------------------------------------------------------------------
 
         [Fact]
-        public void Add_ZeroTimes_CoercedToOneCopy()
+        public void Add_ZeroTimes_Throws()
         {
             var bag = new MultiList<string>();
-            bag.Add("a", 0);
-            bag.CountOf("a").ShouldBe(1);
-            bag.TotalCount.ShouldBe(1);
+            Should.Throw<ArgumentOutOfRangeException>(() => bag.Add("a", 0));
         }
 
         [Fact]
-        public void Add_NegativeTimes_CoercedToOneCopy()
+        public void Add_NegativeTimes_Throws()
         {
             var bag = new MultiList<string>();
-            bag.Add("a", -7);
-            bag.CountOf("a").ShouldBe(1);
+            Should.Throw<ArgumentOutOfRangeException>(() => bag.Add("a", -7));
         }
 
         [Fact]
-        public void Remove_ZeroTimes_CoercedToOneCopy()
+        public void Remove_NonPositiveTimes_Throws()
         {
             var bag = Bag("a", "a");
-            bag.Remove("a", 0);
-            bag.CountOf("a").ShouldBe(1);
+            Should.Throw<ArgumentOutOfRangeException>(() => bag.Remove("a", 0));
+            Should.Throw<ArgumentOutOfRangeException>(() => bag.Remove("a", -7));
+            bag.CountOf("a").ShouldBe(2);
         }
 
         // ------------------------------------------------------------------

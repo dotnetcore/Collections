@@ -153,10 +153,11 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
-        /// Adds the specified number of copies of the element. A non-positive
-        /// <paramref name="times"/> is coerced to one copy (legacy behaviour, shared with
-        /// <see cref="MultiList{T}.Add(T, int)"/>).
+        /// Adds the specified number of copies of the element. Non-positive
+        /// <paramref name="times"/> is rejected, matching <see cref="MultiList{T}.Add(T, int)"/>.
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="times"/> is less than
+        /// or equal to zero.</exception>
         /// <example>
         /// <code>
         /// shelf.Add("mug", 3);
@@ -167,7 +168,7 @@ namespace DotNetCore.Collections.Multi
         {
             if (times <= 0)
             {
-                times = 1;
+                throw new ArgumentOutOfRangeException(nameof(times), times, "The number of copies must be positive.");
             }
 
             _tree.AddCount(item, times);
@@ -266,11 +267,12 @@ namespace DotNetCore.Collections.Multi
 
         /// <summary>
         /// Removes up to the specified number of copies of the element and returns the number of
-        /// copies remaining afterwards. A non-positive <paramref name="times"/> is coerced to one
-        /// copy (legacy behaviour, shared with <see cref="MultiList{T}.Remove(T, int)"/>). Returns
-        /// zero when the element is absent. The element is dropped from the multiset once its copy
-        /// count reaches zero.
+        /// copies remaining afterwards. Non-positive <paramref name="times"/> is rejected,
+        /// matching <see cref="MultiList{T}.Remove(T, int)"/>. Returns zero when the element is
+        /// absent. The element is dropped from the multiset once its copy count reaches zero.
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="times"/> is less than
+        /// or equal to zero.</exception>
         /// <example>
         /// <code>
         /// shelf.Remove("mug", 2);
@@ -281,7 +283,7 @@ namespace DotNetCore.Collections.Multi
         {
             if (times <= 0)
             {
-                times = 1;
+                throw new ArgumentOutOfRangeException(nameof(times), times, "The number of copies must be positive.");
             }
 
             var current = CountOf(item);

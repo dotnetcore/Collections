@@ -47,14 +47,12 @@ namespace DotNetCore.Collections.Multi.Tests
         }
 
         [Fact]
-        public void Add_NonPositiveTimes_IsCoercedToOne()
+        public void Add_NonPositiveTimes_Throws()
         {
             var list = new MultiList<string>();
-            list.Add("a", 0);
-            list.CountOf("a").ShouldBe(1);
 
-            list.Add("b", -5);
-            list.CountOf("b").ShouldBe(1);
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Add("a", 0));
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Add("b", -5));
         }
 
         [Fact]
@@ -154,12 +152,13 @@ namespace DotNetCore.Collections.Multi.Tests
         }
 
         [Fact]
-        public void Remove_NonPositiveTimes_IsCoercedToOne()
+        public void Remove_NonPositiveTimes_Throws()
         {
             var list = new MultiList<string>();
             list.Add("a", 3);
 
-            list.Remove("a", 0).ShouldBe(2);
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Remove("a", 0));
+            list.CountOf("a").ShouldBe(3);
         }
 
         [Fact]

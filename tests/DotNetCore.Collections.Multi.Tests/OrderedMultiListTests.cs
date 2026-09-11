@@ -512,29 +512,29 @@ namespace DotNetCore.Collections.Multi.Tests
             list.ValidateTree(out var error).ShouldBeTrue(error ?? "the cleared tree must be valid");
         }
 
-        // Legacy coercion, shared verbatim with MultiList<T>. M6-05 is the item that turns
-        // times <= 0 into an ArgumentOutOfRangeException for both types, so these two tests are
-        // the ones that will have to change when it lands.
+        // M6-05: times <= 0 now throws ArgumentOutOfRangeException on both types, shared
+        // verbatim with MultiList<T>. These tests pin the breaking change.
         [Fact]
-        public void NonPositiveTimesIsCoercedToOneCopyOnAdd()
+        public void NonPositiveTimesThrowsOnAdd()
         {
             var list = new OrderedMultiList<int>();
-            list.Add(1, 0);
-            list.Add(2, -5);
 
-            list.CountOf(1).ShouldBe(1);
-            list.CountOf(2).ShouldBe(1);
-            list.TotalCount.ShouldBe(2);
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Add(1, 0));
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Add(2, -5));
+
+            list.TotalCount.ShouldBe(0);
         }
 
         [Fact]
-        public void NonPositiveTimesIsCoercedToOneCopyOnRemove()
+        public void NonPositiveTimesThrowsOnRemove()
         {
             var list = new OrderedMultiList<int>();
             list.Add(1, 3);
 
-            list.Remove(1, 0).ShouldBe(2);
-            list.Remove(1, -5).ShouldBe(1);
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Remove(1, 0));
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Remove(1, -5));
+
+            list.CountOf(1).ShouldBe(3);
         }
 
         // ------------------------------------------------------------ clone and views

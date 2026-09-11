@@ -50,6 +50,19 @@ completes.
   red-black invariants live on internal members and asserting them is how F6-01 justifies its
   complexity, so the suite has to reach them. Nothing becomes public: the members stay internal.
 
+### Breaking
+
+- `MultiList<T>.Add(item, times)` / `MultiList<T>.Remove(item, times)` and their
+  `OrderedMultiList<T>` counterparts now throw `ArgumentOutOfRangeException` when `times` is
+  less than or equal to zero, replacing the legacy behaviour that silently coerced a
+  non-positive count to one copy. The coercion hid mistakes: `Add(item, 0)` reported success
+  while inserting a copy nobody asked for, and `Remove(item, 0)` silently removed one. Zero
+  copies is already expressible as a no-op by simply not calling, so any non-positive value is
+  now treated as a programming error and rejected with the offending parameter named. The
+  single-copy `Add(item)` / `Remove(item)` overloads and `AddRange(items)` are unchanged. The
+  XML `<exception>` docs declare the behaviour on all four affected members, and the tests pin
+  the exception type on both classes.
+
 ## [6.1.0] - 2026-09-10
 
 Release covering both shipped modules (`Paginable` and `Multi`); every package ships version
