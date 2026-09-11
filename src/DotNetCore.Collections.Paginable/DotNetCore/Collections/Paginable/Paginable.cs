@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DotNetCore.Collections.Paginable
 {
@@ -33,6 +35,12 @@ namespace DotNetCore.Collections.Paginable
     /// <see cref="CreateSinglePageSet{T}(System.Collections.Generic.IEnumerable{T},PageFragmentInfo)"/>
     /// wraps the same page in a <see cref="PaginableSinglePage{T}"/> whose
     /// <see cref="PaginableSinglePage{T}.PageCount"/> is one.
+    /// </para>
+    /// <para>
+    /// The fragment entry points also have async-shaped twins (<c>CreatePageAsync</c>) that
+    /// <b>complete synchronously</b>: a fragment is already in memory, so there is nothing to
+    /// await, and the overloads say so rather than pretending otherwise. Use a provider-specific
+    /// async extension (EF Core, FreeSql, SqlSugar) when real I/O has to be awaited.
     /// </para>
     /// </remarks>
     /// <example>
@@ -404,6 +412,140 @@ namespace DotNetCore.Collections.Paginable
             }
 
             return new PaginableSinglePage<T>(CreatePage(fragment, pageNumber, pageSize, totalMemberCount, options));
+        }
+
+        // ------------------------------------------------------------------ async shape
+        //
+        // A fragment is already in memory, so there is nothing to await: these overloads exist so
+        // that a fragment path can be awaited like any other entry point, and they say so instead
+        // of pretending otherwise. They wrap the synchronous result in Task.FromResult, which
+        // means the returned task is already completed AND that a rejected argument throws from
+        // the call itself rather than through a faulted task. That is the same shape
+        // ToPaginableAsync / GetPageAsync have had since 6.0.
+
+        /// <summary>
+        /// Create a page from an already-sliced fragment plus paging metadata (async shape).
+        /// <b>This completes synchronously</b> - the fragment is already in memory, so there is no
+        /// I/O to await; the same call exposed as a task so it composes with async callers.
+        /// </summary>
+        /// <typeparam name="T">element type of the fragment</typeparam>
+        /// <param name="fragment">the fragment, taken to be the exact content of the requested page</param>
+        /// <param name="metadata">paging metadata of the fragment; validated when it was constructed</param>
+        /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+        /// <returns>a task already completed with the page <see cref="CreatePage{T}(System.Collections.Generic.IEnumerable{T},PageFragmentInfo)"/> would return</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="fragment"/> or <paramref name="metadata"/> is <c>null</c>. Thrown synchronously, not as a faulted task.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="fragment"/> carries more members than the page size, or more than the
+        /// metadata says the page holds. Thrown synchronously, not as a faulted task.
+        /// </exception>
+        /// <example>
+        /// <code>
+        /// IPage&lt;Order&gt; page = await Paginable.CreatePageAsync(items, info, cancellationToken);
+        /// </code>
+        /// </example>
+        public static Task<IPage<T>> CreatePageAsync<T>(IEnumerable<T> fragment, PageFragmentInfo metadata, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(CreatePage(fragment, metadata));
+        }
+
+        /// <summary>
+        /// Create a page from an already-sliced fragment plus a caller-supplied
+        /// <see cref="PageFragmentInfo"/>, selecting the fragment checking strictness (async
+        /// shape). <b>This completes synchronously</b> - see the overload above.
+        /// </summary>
+        /// <typeparam name="T">element type of the fragment</typeparam>
+        /// <param name="fragment">the fragment, taken to be the exact content of the requested page</param>
+        /// <param name="metadata">paging metadata of the fragment; validated when it was constructed</param>
+        /// <param name="options"><see cref="PageCreationOptions.Lenient"/> (the 6.1 behaviour) or
+        /// <see cref="PageCreationOptions.Strict"/></param>
+        /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+        /// <returns>a task already completed with the page <see cref="CreatePage{T}(System.Collections.Generic.IEnumerable{T},PageFragmentInfo,PageCreationOptions)"/> would return</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="fragment"/>, <paramref name="metadata"/> or <paramref name="options"/> is <c>null</c>. Thrown synchronously, not as a faulted task.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="fragment"/> carries more members than the page size, or more than the
+        /// metadata says the page holds; in <see cref="PageCreationOptions.Strict"/> mode also when
+        /// it carries fewer. Thrown synchronously, not as a faulted task.
+        /// </exception>
+        /// <example>
+        /// <code>
+        /// IPage&lt;Order&gt; page = await Paginable.CreatePageAsync(items, info, PageCreationOptions.Strict);
+        /// </code>
+        /// </example>
+        public static Task<IPage<T>> CreatePageAsync<T>(IEnumerable<T> fragment, PageFragmentInfo metadata, PageCreationOptions options, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(CreatePage(fragment, metadata, options));
+        }
+
+        /// <summary>
+        /// Create a page from an already-sliced fragment plus paging metadata (async shape).
+        /// <b>This completes synchronously</b> - the fragment is already in memory, so there is no
+        /// I/O to await; the same call exposed as a task so it composes with async callers.
+        /// </summary>
+        /// <typeparam name="T">element type of the fragment</typeparam>
+        /// <param name="fragment">the fragment, taken to be the exact content of the requested page</param>
+        /// <param name="pageNumber">page number of the fragment, starting at one</param>
+        /// <param name="pageSize">page size</param>
+        /// <param name="totalMemberCount">total member count of the whole source, not of the fragment</param>
+        /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+        /// <returns>a task already completed with the page <see cref="CreatePage{T}(System.Collections.Generic.IEnumerable{T}, int, int, int)"/> would return</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="fragment"/> is <c>null</c>. Thrown synchronously, not as a faulted task.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one; <paramref name="pageSize"/> is less than
+        /// one; <paramref name="totalMemberCount"/> is negative or exceeds the configured
+        /// <c>MaxMemberItems</c>; or <paramref name="pageNumber"/> points past the last page.
+        /// Thrown synchronously, not as a faulted task.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="fragment"/> carries more members than <paramref name="pageSize"/>, or more
+        /// than the metadata says the page holds. Thrown synchronously, not as a faulted task.
+        /// </exception>
+        /// <example>
+        /// <code>
+        /// IPage&lt;Order&gt; page = await Paginable.CreatePageAsync(
+        ///     items, pageNumber: 3, pageSize: 5, totalMemberCount: 12, cancellationToken);
+        /// </code>
+        /// </example>
+        public static Task<IPage<T>> CreatePageAsync<T>(IEnumerable<T> fragment, int pageNumber, int pageSize, int totalMemberCount, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(CreatePage(fragment, pageNumber, pageSize, totalMemberCount));
+        }
+
+        /// <summary>
+        /// Create a page from an already-sliced fragment plus paging metadata, selecting the
+        /// fragment checking strictness (async shape). <b>This completes synchronously</b> - see
+        /// the overload above.
+        /// </summary>
+        /// <typeparam name="T">element type of the fragment</typeparam>
+        /// <param name="fragment">the fragment, taken to be the exact content of the requested page</param>
+        /// <param name="pageNumber">page number of the fragment, starting at one</param>
+        /// <param name="pageSize">page size</param>
+        /// <param name="totalMemberCount">total member count of the whole source, not of the fragment</param>
+        /// <param name="options"><see cref="PageCreationOptions.Lenient"/> (the 6.1 behaviour) or
+        /// <see cref="PageCreationOptions.Strict"/></param>
+        /// <param name="cancellationToken">unused; kept for API-shape symmetry</param>
+        /// <returns>a task already completed with the page <see cref="CreatePage{T}(System.Collections.Generic.IEnumerable{T}, int, int, int, PageCreationOptions)"/> would return</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="fragment"/> or <paramref name="options"/> is <c>null</c>. Thrown synchronously, not as a faulted task.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one; <paramref name="pageSize"/> is less than
+        /// one; <paramref name="totalMemberCount"/> is negative or exceeds the configured
+        /// <c>MaxMemberItems</c>; or <paramref name="pageNumber"/> points past the last page.
+        /// Thrown synchronously, not as a faulted task.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="fragment"/> carries more members than <paramref name="pageSize"/> or more
+        /// than the metadata says the page holds; in <see cref="PageCreationOptions.Strict"/> mode
+        /// also when it carries fewer than the metadata says. Thrown synchronously, not as a
+        /// faulted task.
+        /// </exception>
+        /// <example>
+        /// <code>
+        /// IPage&lt;Order&gt; page = await Paginable.CreatePageAsync(
+        ///     items, pageNumber: 3, pageSize: 5, totalMemberCount: 12, PageCreationOptions.Strict);
+        /// </code>
+        /// </example>
+        public static Task<IPage<T>> CreatePageAsync<T>(IEnumerable<T> fragment, int pageNumber, int pageSize, int totalMemberCount, PageCreationOptions options, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(CreatePage(fragment, pageNumber, pageSize, totalMemberCount, options));
         }
     }
 }

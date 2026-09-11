@@ -439,6 +439,7 @@ parameter that was wrong (`ex.ParamName`):
 | `ToPaginable` / `ToPaginableAsync` | `pageSize < 1` | `ArgumentOutOfRangeException` |
 | `Paginable.CreatePage` / `fragment.ToPage` / `PageFragmentInfo` | see the fragment section above | `ArgumentOutOfRangeException`, plus `ArgumentException` for an over-long fragment |
 | `Paginable.CreateSinglePageSet` | the same rules as `CreatePage` (its arguments are forwarded), plus `pageNumber != 1` on `GetPage` | `ArgumentOutOfRangeException`, plus `ArgumentException` for an over-long fragment |
+| `Paginable.CreatePageAsync` | the same rules as `CreatePage`, thrown **synchronously** rather than through a faulted task | `ArgumentOutOfRangeException`, plus `ArgumentException` for an over-long fragment |
 
 The `GetPage` and keyset families used to throw `IndexOutOfRangeException` for these, which made the
 same mistake (`pageNumber: 0`) report a different type depending on which API the caller used. As of
@@ -461,6 +462,23 @@ using(var context = new ExampleDbContext())
     var totalMemberCount = page.TotalMemberCount;
 }
 ```
+
+`Paginable.CreatePageAsync` gives the fragment API the same shape so an awaitable path can be
+awaited end to end. It **completes synchronously**: the fragment is already in memory, so the
+returned task is already finished by the time it is handed back, and nothing about it touches I/O.
+It says so rather than pretending otherwise — use a provider-specific async extension when real I/O
+has to be awaited.
+
+```c#
+// the fragment is already in hand: the await here is for shape, not for I/O
+IPage<Order> page = await Paginable.CreatePageAsync(items, pageNumber: 3, pageSize: 5, totalMemberCount: 12);
+```
+
+Two consequences follow from `Task.FromResult` and are worth knowing, because they are the opposite
+of what an `…Async` name usually implies: validation throws **synchronously**, from the call itself
+rather than through a faulted task (so a `try` around the call catches it, an `await` would not), and
+the `CancellationToken` parameter is accepted for signature symmetry but never observed. Both match
+the `ToPaginableAsync` / `GetPageAsync` shape the core library has had since 6.0.
 
 ### Configuration
 

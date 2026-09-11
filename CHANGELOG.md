@@ -91,6 +91,16 @@ completes.
   `ArgumentOutOfRangeException`. The factories return the concrete `PaginableSinglePage<T>`, not
   the bare interface, because `IPaginable` exposes only `PageSize` and `MemberCount` - without the
   concrete type the `PageCount` guarantee would be unreadable.
+- `Paginable.CreatePageAsync` (P6-04) - the fragment entry points in an awaitable shape, so a caller
+  that pages asynchronously does not have to special-case the path where the data is already in
+  hand. It **completes synchronously**: a fragment is already in memory, so `Task.FromResult` wraps
+  the same synchronous result and the task is finished before it is returned. Nothing here pretends
+  to be I/O - use a provider-specific async extension when real I/O has to be awaited. Two
+  consequences of `Task.FromResult` are documented on every overload because they invert what an
+  `…Async` name usually promises: validation throws **synchronously** from the call itself rather
+  than through a faulted task, and the `CancellationToken` parameter is accepted for signature
+  symmetry but never observed. Both match `ToPaginableAsync` / `GetPageAsync` as they have been
+  since 6.0. All four overloads mirror `CreatePage`, `PageCreationOptions` included.
 
 ### Fixed
 
