@@ -96,6 +96,13 @@ completes.
   on SqlKata 4.0.1, so those groups were already clean and are untouched. The audit is settled by
   fixing the graph rather than by `NoWarn`, and the raised floors are recorded in the shipped
   `packages.lock.json`.
+- The `<example>` sections of `PaginableCalc.GetRealMemberCount` / `GetRealPageCount` show
+  correctly-arity samples (P6-02). Both were added by the same docs pass and the first called
+  `GetRealMemberCount(0, 50, 120)` — three arguments for a two-argument method — so the shipped
+  IntelliSense sample did not compile. The pair is now a worked example that mirrors the actual
+  call sites (`GetRealMemberCount(limitedMemberCount, count)` then
+  `GetRealPageCount(realMemberCount, size)`), and the "null means unlimited" contract is stated
+  where a reader meets it.
 
 ### Breaking
 
