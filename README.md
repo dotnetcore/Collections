@@ -538,6 +538,8 @@ using(var connection = new SqlConnection(connectionString))
 | **`OrderedMultiDictionary<TKey, TValue>`** | values, in order | 1 key &#8594; N values, both axes sorted | `this[key]` | The ordered counterpart of `MultiDictionary<TKey, TValue>`: the same per-key value-set operations with the same set semantics, the same "no value-less key" invariant, and the same `IReadOnlyDictionary` / `AsLookup()` / `RemoveRange` shape — but keys enumerate ascending under an `IComparer<TKey>` and each key's values enumerate ascending under an `IComparer<TValue>`, with single-pair add / lookup / removal costing O(log n) worst case on both axes. |
 | **`MultiKeyDictionary<TKey, TValue>`** | key components | N components &#8594; 1 value | `this[TKey[]]`, `GetByPrefix` | The key is **composite** and you want to query it by a *partial* prefix — a trie over `(region, country, city)` style keys of any arity. |
 | **`TwoKeyDictionary<K1, K2, V>`** | key components | 2 components &#8594; 1 value | `this[k1, k2]` | Exactly the above with exactly two components **of different types**, with a typed indexer instead of a `TKey[]`. Its second axis is queried through a maintained reverse index (`K2` &#8594; set of `K1`), so `GetBySecondKey` / `CountOfSecondKey` / `ContainsSecondKey` / `RemoveBySecondKey` visit only the requested slice instead of scanning the map. |
+| **`ThreeKeyDictionary<K1, K2, K3, V>`** | key components | 3 components &#8594; 1 value | `this[k1, k2, k3]` | The same idea with exactly three differently typed components, following the same axis-tag scheme. The first axis is a prefix, so its slice (`GetByFirstKey` / `CountOfFirstKey` / `RemoveByFirstKey`) is a trie walk; the second and third axes are deliberately **not** backed by an index here — their slices scan, O(n), and the remarks say so. Use `MultiKeyDictionary<TKey, TValue>` when an axis other than the first must be queried hard, with the key order putting that axis first. |
+
 | **`ImmutableMultiList<T>`** / **`ImmutableMultiDictionary<TKey, TValue>`** | elements / values, frozen | as the mutable type, but write-once | any read member | The immutable counterparts of the two core types: an instance never changes, so any number of threads may read it without locks. Mutations return a new instance (or the receiver itself when nothing would change); bulk mutation goes through `ToBuilder()`, whose builder shares the source's state until its first write (copy-on-write) and whose `ToImmutable()` hands back the very source instance while untouched — structural sharing you can assert with `ReferenceEquals`. Both round-trip through the serializable models (`ToSerializableModel` / `FromModel`). |
 | **`ConcurrentMultiDictionary<TKey, TValue>`** | values, thread-safe | 1 key &#8594; N values, sharded | `this[key]` | The thread-safe counterpart of `MultiDictionary<TKey, TValue>`: keys are routed to shards, each an independent `MultiDictionary` behind its own lock, so writes on different keys proceed in parallel. Whole-map reads (`Count`, `TotalValueCount`, `ContainsValue`, enumeration, `Snapshot()`) take a consistent snapshot by locking every shard once, in index order; enumeration is over a snapshot and immune to concurrent writes. |
 | **`ConcurrentMultiList<T>`** | elements, thread-safe | 1 element &#8594; N copies, single lock | `CountOf(element)` | The thread-safe counterpart of `MultiList<T>`: every operation is serialized behind one lock — linearizable and trivially safe. Deliberately **not** sharded: a bag has one global state its operations compare against. Enumeration is over a snapshot. For read-mostly workloads prefer `ImmutableMultiList<T>` plus a builder. |
@@ -549,7 +551,7 @@ Read the name as "what is multiplied": `MultiList` multiplies elements, `MultiDi
 - elements repeat, in sorted order &#8594; `OrderedMultiList<T>`;
 - values repeat under one key &#8594; `MultiDictionary<TKey, TValue>`;
 - values repeat under one key, keys and values both kept sorted &#8594; `OrderedMultiDictionary<TKey, TValue>`;
-- key components combine, and exactly one value is stored per complete key &#8594; `MultiKeyDictionary<TKey, TValue>` (or `TwoKeyDictionary<K1, K2, V>` for two differently typed components).
+- key components combine, and exactly one value is stored per complete key &#8594; `MultiKeyDictionary<TKey, TValue>` (or `TwoKeyDictionary<K1, K2, V>` / `ThreeKeyDictionary<K1, K2, K3, V>` for two or three differently typed components).
 
 In particular, do **not** expect `MultiDictionary<A, B>` to answer "everything for `B`": it maps *one* key to *many* values, not many keys to one value. Looking a composite key up by one of its components is the trie's job — `MultiKeyDictionary<TKey,TValue>.GetByPrefix` (any arity) or `TwoKeyDictionary<K1,K2,V>.GetByFirstKey` / `GetBySecondKey` (arity 2).
 
@@ -659,6 +661,11 @@ var concurrent = new ConcurrentMultiDictionary<int, string>();
 concurrent.Add(1, "a");               // locks only the shard that owns key 1
 concurrent.TryGetValue(1, out var values);
 var snapshot = concurrent.Snapshot(); // consistent whole-map view; enumeration is snapshot-based too
+
+// ThreeKeyDictionary<K1, K2, K3, V>: the same idea for three differently typed components
+var seats = new ThreeKeyDictionary<string, string, int, bool>();
+seats["2026-09-11", "7A", 14] = true;   // date, aircraft, row → occupied
+seats.GetByFirstKey("2026-09-11");      // the whole day's slice — a prefix walk
 ```
 
 ### Examples
