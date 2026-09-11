@@ -27,6 +27,13 @@ namespace DotNetCore.Collections.Paginable
     /// all behave exactly as they do for a page sliced out of a full source - including the
     /// global member numbering.
     /// </para>
+    /// <para>
+    /// When the caller's signature wants an <see cref="IPaginable{T}"/> (or an
+    /// <c>IEnumerable&lt;IPage&lt;T&gt;&gt;</c>) rather than a single page,
+    /// <see cref="CreateSinglePageSet{T}(System.Collections.Generic.IEnumerable{T},PageFragmentInfo)"/>
+    /// wraps the same page in a <see cref="PaginableSinglePage{T}"/> whose
+    /// <see cref="PaginableSinglePage{T}.PageCount"/> is one.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code>
@@ -241,5 +248,162 @@ namespace DotNetCore.Collections.Paginable
         /// </code>
         /// </example>
         public static IPage<T> CreateEmptyPage<T>() => new EmptyPage<T>();
+
+        /// <summary>
+        /// Wrap an already-sliced fragment in a single-page <see cref="IPaginable{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">element type of the fragment</typeparam>
+        /// <param name="fragment">the fragment, taken to be the exact content of the requested page</param>
+        /// <param name="metadata">paging metadata of the fragment; validated when it was constructed</param>
+        /// <returns>a set holding exactly the one page the fragment describes; a
+        /// <see cref="PaginableSinglePage{T}"/> rather than the bare interface, so the caller can
+        /// read <see cref="PaginableSinglePage{T}.PageCount"/> - <see cref="IPaginable"/> itself
+        /// exposes only <see cref="IPaginable.PageSize"/> and <see cref="IPaginable.MemberCount"/>
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="fragment"/> or <paramref name="metadata"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="metadata"/> carries a page number, page size or total member count out of
+        /// range; see <see cref="PageFragmentInfo"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="fragment"/> carries more members than the metadata says the page holds.
+        /// </exception>
+        /// <example>
+        /// <code>
+        /// var info = new PageFragmentInfo(pageNumber: 3, pageSize: 5, totalMemberCount: 12);
+        /// PaginableSinglePage&lt;Order&gt; set = Paginable.CreateSinglePageSet(items, info);
+        ///
+        /// set.PageCount;   // 1
+        /// </code>
+        /// </example>
+        public static PaginableSinglePage<T> CreateSinglePageSet<T>(IEnumerable<T> fragment, PageFragmentInfo metadata)
+        {
+            return CreateSinglePageSet(fragment, metadata, PageCreationOptions.Lenient);
+        }
+
+        /// <summary>
+        /// Wrap an already-sliced fragment in a single-page <see cref="IPaginable{T}"/>, selecting
+        /// the fragment checking strictness.
+        /// </summary>
+        /// <typeparam name="T">element type of the fragment</typeparam>
+        /// <param name="fragment">the fragment, taken to be the exact content of the requested page</param>
+        /// <param name="metadata">paging metadata of the fragment; validated when it was constructed</param>
+        /// <param name="options"><see cref="PageCreationOptions.Lenient"/> (the 6.1 behaviour) or
+        /// <see cref="PageCreationOptions.Strict"/></param>
+        /// <returns>a set holding exactly the one page the fragment describes; a
+        /// <see cref="PaginableSinglePage{T}"/> rather than the bare interface, so the caller can
+        /// read <see cref="PaginableSinglePage{T}.PageCount"/> - <see cref="IPaginable"/> itself
+        /// exposes only <see cref="IPaginable.PageSize"/> and <see cref="IPaginable.MemberCount"/>
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="fragment"/>, <paramref name="metadata"/> or <paramref name="options"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="metadata"/> carries a page number, page size or total member count out of
+        /// range; see <see cref="PageFragmentInfo"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="fragment"/> carries more members than the metadata says the page holds; in
+        /// <see cref="PageCreationOptions.Strict"/> mode also when it carries fewer.
+        /// </exception>
+        /// <example>
+        /// <code>
+        /// var info = new PageFragmentInfo(pageNumber: 3, pageSize: 5, totalMemberCount: 12);
+        /// PaginableSinglePage&lt;Order&gt; set = Paginable.CreateSinglePageSet(items, info, PageCreationOptions.Strict);
+        /// </code>
+        /// </example>
+        public static PaginableSinglePage<T> CreateSinglePageSet<T>(IEnumerable<T> fragment, PageFragmentInfo metadata, PageCreationOptions options)
+        {
+            if (fragment is null)
+            {
+                throw new ArgumentNullException(nameof(fragment), $"{nameof(fragment)} can not be null.");
+            }
+
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), $"{nameof(options)} can not be null.");
+            }
+
+            return new PaginableSinglePage<T>(CreatePage(fragment, metadata, options));
+        }
+
+        /// <summary>
+        /// Wrap an already-sliced fragment in a single-page <see cref="IPaginable{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">element type of the fragment</typeparam>
+        /// <param name="fragment">the fragment, taken to be the exact content of the requested page</param>
+        /// <param name="pageNumber">page number of the fragment, starting at one</param>
+        /// <param name="pageSize">page size</param>
+        /// <param name="totalMemberCount">total member count of the whole source, not of the fragment</param>
+        /// <returns>a set holding exactly the one page the fragment describes; a
+        /// <see cref="PaginableSinglePage{T}"/> rather than the bare interface, so the caller can
+        /// read <see cref="PaginableSinglePage{T}.PageCount"/> - <see cref="IPaginable"/> itself
+        /// exposes only <see cref="IPaginable.PageSize"/> and <see cref="IPaginable.MemberCount"/>
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="fragment"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one; <paramref name="pageSize"/> is less than
+        /// one; <paramref name="totalMemberCount"/> is negative or exceeds the configured
+        /// <c>MaxMemberItems</c>; or <paramref name="pageNumber"/> points past the last page.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="fragment"/> carries more members than <paramref name="pageSize"/>, or more
+        /// than the metadata says the page holds.
+        /// </exception>
+        /// <example>
+        /// <code>
+        /// PaginableSinglePage&lt;Order&gt; set = Paginable.CreateSinglePageSet(items, pageNumber: 3, pageSize: 5, totalMemberCount: 12);
+        /// </code>
+        /// </example>
+        public static PaginableSinglePage<T> CreateSinglePageSet<T>(IEnumerable<T> fragment, int pageNumber, int pageSize, int totalMemberCount)
+        {
+            return CreateSinglePageSet(fragment, pageNumber, pageSize, totalMemberCount, PageCreationOptions.Lenient);
+        }
+
+        /// <summary>
+        /// Wrap an already-sliced fragment in a single-page <see cref="IPaginable{T}"/>, selecting
+        /// the fragment checking strictness.
+        /// </summary>
+        /// <typeparam name="T">element type of the fragment</typeparam>
+        /// <param name="fragment">the fragment, taken to be the exact content of the requested page</param>
+        /// <param name="pageNumber">page number of the fragment, starting at one</param>
+        /// <param name="pageSize">page size</param>
+        /// <param name="totalMemberCount">total member count of the whole source, not of the fragment</param>
+        /// <param name="options"><see cref="PageCreationOptions.Lenient"/> (the 6.1 behaviour) or
+        /// <see cref="PageCreationOptions.Strict"/></param>
+        /// <returns>a set holding exactly the one page the fragment describes; a
+        /// <see cref="PaginableSinglePage{T}"/> rather than the bare interface, so the caller can
+        /// read <see cref="PaginableSinglePage{T}.PageCount"/> - <see cref="IPaginable"/> itself
+        /// exposes only <see cref="IPaginable.PageSize"/> and <see cref="IPaginable.MemberCount"/>
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="fragment"/> or <paramref name="options"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one; <paramref name="pageSize"/> is less than
+        /// one; <paramref name="totalMemberCount"/> is negative or exceeds the configured
+        /// <c>MaxMemberItems</c>; or <paramref name="pageNumber"/> points past the last page.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="fragment"/> carries more members than <paramref name="pageSize"/> or more
+        /// than the metadata says the page holds; in <see cref="PageCreationOptions.Strict"/> mode
+        /// also when it carries fewer than the metadata says.
+        /// </exception>
+        /// <example>
+        /// <code>
+        /// PaginableSinglePage&lt;Order&gt; set = Paginable.CreateSinglePageSet(
+        ///     items, pageNumber: 3, pageSize: 5, totalMemberCount: 12, PageCreationOptions.Strict);
+        /// </code>
+        /// </example>
+        public static PaginableSinglePage<T> CreateSinglePageSet<T>(IEnumerable<T> fragment, int pageNumber, int pageSize, int totalMemberCount, PageCreationOptions options)
+        {
+            if (fragment is null)
+            {
+                throw new ArgumentNullException(nameof(fragment), $"{nameof(fragment)} can not be null.");
+            }
+
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), $"{nameof(options)} can not be null.");
+            }
+
+            return new PaginableSinglePage<T>(CreatePage(fragment, pageNumber, pageSize, totalMemberCount, options));
+        }
     }
 }

@@ -406,6 +406,27 @@ Only the *short*-fragment behaviour differs: the over-long checks throw in both 
 overloads without an options parameter keep the lenient behaviour, and a `null` options argument
 is rejected like any other.
 
+When the caller's side wants an **`IPaginable<T>`** — or an `IEnumerable<IPage<T>>` — rather than a
+single page, `Paginable.CreateSinglePageSet` wraps the same fragment in a one-page set:
+
+```c#
+PaginableSinglePage<Order> set = Paginable.CreateSinglePageSet(items, info);
+
+set.PageCount;                     // 1  the set holds exactly the page you handed it
+set.MemberCount;                   // 12 source-wide, as the page reports it
+set.GetPage(1).CurrentPageNumber;  // 3  the page keeps its global number
+set.GetPage(2);                    // ArgumentOutOfRangeException: the set has one page
+```
+
+`PageCount` is always one, and deliberately **not** the wrapped page's own `TotalPageCount`: a set
+has to be able to serve every page it claims, and this one physically holds a single page — there is
+no source to slice the others out of. The set layer answers "how many pages am I handing you"; the
+page inside keeps the source-wide numbering, so a fragment of page 3 of 12 still reports itself as
+page 3 of 12. `MemberCount` follows `PaginableSetBase<T>` and reports the member count of the whole
+source. The factory takes the same metadata and the same `PageCreationOptions` switch as
+`CreatePage`, and returns the concrete `PaginableSinglePage<T>` rather than the bare interface, so
+that `PageCount` is readable at all — `IPaginable` itself exposes only `PageSize` and `MemberCount`.
+
 ### Validation and exceptions
 
 Every entry point rejects an out-of-range *argument* with `ArgumentOutOfRangeException` and names the
@@ -417,6 +438,7 @@ parameter that was wrong (`ex.ParamName`):
 | `GetFirstPageByKeyset` / `GetPageByKeyset` (and the EF Core `…Async` pair) | `pageSize < 1` | `ArgumentOutOfRangeException` |
 | `ToPaginable` / `ToPaginableAsync` | `pageSize < 1` | `ArgumentOutOfRangeException` |
 | `Paginable.CreatePage` / `fragment.ToPage` / `PageFragmentInfo` | see the fragment section above | `ArgumentOutOfRangeException`, plus `ArgumentException` for an over-long fragment |
+| `Paginable.CreateSinglePageSet` | the same rules as `CreatePage` (its arguments are forwarded), plus `pageNumber != 1` on `GetPage` | `ArgumentOutOfRangeException`, plus `ArgumentException` for an over-long fragment |
 
 The `GetPage` and keyset families used to throw `IndexOutOfRangeException` for these, which made the
 same mistake (`pageNumber: 0`) report a different type depending on which API the caller used. As of

@@ -77,6 +77,20 @@ completes.
   `ArgumentException` naming the fragment. Only the short-fragment behaviour differs - the
   over-long checks throw in both modes - and a `null` options argument is rejected like any
   other.
+- `Paginable.CreateSinglePageSet` and `PaginableSinglePage<T>` (P6-03) - the set shape of the same
+  fragment API, for callers whose signature wants an `IPaginable<T>` (or an
+  `IEnumerable<IPage<T>>`) while the data in hand is one already-assembled page. The fragment is
+  wrapped as-is, so `GetPage(1)` is exactly the page `CreatePage` would have built, with identical
+  metadata and members, and the same metadata and `PageCreationOptions` arguments apply.
+  `PageCount` is **always one**, which is deliberately not the wrapped page's own
+  `TotalPageCount`: a set must be able to serve every page it claims and this one holds a single
+  page with no source to slice the others from. The set layer therefore answers "how many pages am
+  I handing you" while the page keeps the source-wide numbering (a fragment of page 3 of 12 still
+  reports page 3 of 12), and `MemberCount` reports the source-wide total, as
+  `PaginableSetBase<T>` does. `GetPage` accepts only one and reports anything else as
+  `ArgumentOutOfRangeException`. The factories return the concrete `PaginableSinglePage<T>`, not
+  the bare interface, because `IPaginable` exposes only `PageSize` and `MemberCount` - without the
+  concrete type the `PageCount` guarantee would be unreadable.
 
 ### Fixed
 
