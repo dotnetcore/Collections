@@ -389,6 +389,23 @@ that is *shorter* than the metadata expects is tolerated (an upstream row may ha
 between the count and the fetch) and `CurrentPageSize` keeps reporting the metadata value. The
 total count must be known: when it is not, use the keyset API above rather than inventing a number.
 
+That short-fragment tolerance is the 6.1 default and is configurable since 6.2: when a short
+fragment is more likely a bug than a race — a stale `totalMemberCount`, a fragment sliced by the
+wrong query — opt into strict checking with `PageCreationOptions.Strict`:
+
+```c#
+// default (lenient): a short fragment stays buildable, CurrentPageSize reports the metadata value
+var page1 = Paginable.CreatePage(items, info);
+
+// strict: the same situation throws ArgumentException naming the fragment
+var page2 = Paginable.CreatePage(items, info, PageCreationOptions.Strict);
+var page3 = items.ToPage(pageNumber: 3, pageSize: 5, totalMemberCount: 12, PageCreationOptions.Strict);
+```
+
+Only the *short*-fragment behaviour differs: the over-long checks throw in both modes, the
+overloads without an options parameter keep the lenient behaviour, and a `null` options argument
+is rejected like any other.
+
 ### Validation and exceptions
 
 Every entry point rejects an out-of-range *argument* with `ArgumentOutOfRangeException` and names the

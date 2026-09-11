@@ -66,6 +66,17 @@ completes.
   follow the value comparer, sorting first under the default one), and the `notnull` key
   constraint of the annotated `SortedDictionary` is suppressed file-locally, exactly as in
   `MultiDictionary`, so `TKey` stays nullable-friendly.
+- `PageCreationOptions` and strict fragment checking (F6-11). 6.1 tolerated a fragment shorter
+  than its metadata says - a concurrent delete upstream must not make the page unbuildable - and
+  that stays the default: `Paginable.CreatePage(fragment, info)`, the four-argument
+  `CreatePage` and `fragment.ToPage(...)` behave exactly as before. When a short fragment is
+  more likely a bug than a race - a stale `totalMemberCount`, a fragment sliced by the wrong
+  query - pass `PageCreationOptions.Strict` through the new overloads
+  `CreatePage(fragment, info, options)` / `CreatePage(fragment, pageNumber, pageSize,
+  totalMemberCount, options)` / `fragment.ToPage(..., options)`: the same situation throws
+  `ArgumentException` naming the fragment. Only the short-fragment behaviour differs - the
+  over-long checks throw in both modes - and a `null` options argument is rejected like any
+  other.
 
 ### Breaking
 

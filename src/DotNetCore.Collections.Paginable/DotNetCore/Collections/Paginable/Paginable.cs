@@ -101,6 +101,35 @@ namespace DotNetCore.Collections.Paginable
         /// </example>
         public static IPage<T> CreatePage<T>(IEnumerable<T> fragment, PageFragmentInfo metadata)
         {
+            return CreatePage(fragment, metadata, PageCreationOptions.Lenient);
+        }
+
+        /// <summary>
+        /// Create a page from an already-sliced fragment plus a caller-supplied
+        /// <see cref="PageFragmentInfo"/>, selecting the fragment checking strictness.
+        /// </summary>
+        /// <typeparam name="T">element type of the fragment</typeparam>
+        /// <param name="fragment">the fragment, taken to be the exact content of the requested page</param>
+        /// <param name="metadata">paging metadata of the fragment; validated when it was constructed</param>
+        /// <param name="options"><see cref="PageCreationOptions.Lenient"/> (the 6.1 behaviour) or
+        /// <see cref="PageCreationOptions.Strict"/></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="fragment"/>, <paramref name="metadata"/> or <paramref name="options"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="fragment"/> carries more members than the page size, or more than the
+        /// metadata says the page holds. In <see cref="PageCreationOptions.Strict"/> mode, a
+        /// fragment that is <b>shorter</b> than the metadata says throws as well - under
+        /// <see cref="PageCreationOptions.Lenient"/> (the 6.1 default) it is tolerated and
+        /// <see cref="IPage.CurrentPageSize"/> keeps reporting the metadata value.
+        /// </exception>
+        /// <example>
+        /// <code>
+        /// var info = new PageFragmentInfo(pageNumber: 3, pageSize: 5, totalMemberCount: 12);
+        /// IPage&lt;Order&gt; page = Paginable.CreatePage(items, info, PageCreationOptions.Strict);
+        /// </code>
+        /// </example>
+        public static IPage<T> CreatePage<T>(IEnumerable<T> fragment, PageFragmentInfo metadata, PageCreationOptions options)
+        {
             if (fragment is null)
             {
                 throw new ArgumentNullException(nameof(fragment), $"{nameof(fragment)} can not be null.");
@@ -109,6 +138,11 @@ namespace DotNetCore.Collections.Paginable
             if (metadata is null)
             {
                 throw new ArgumentNullException(nameof(metadata), $"{nameof(metadata)} can not be null.");
+            }
+
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), $"{nameof(options)} can not be null.");
             }
 
             // Computed in long: PageFragmentInfo has already range-checked the same expression,
@@ -139,7 +173,59 @@ namespace DotNetCore.Collections.Paginable
                     nameof(fragment));
             }
 
+            if (options.IsStrict && materialized.Count < expected)
+            {
+                throw new ArgumentException(
+                    $"Strict mode: fragment carries {materialized.Count} member(s) but page {metadata.PageNumber} " +
+                    $"(page size {metadata.PageSize}, total member count {metadata.TotalMemberCount}) holds {expected}. " +
+                    "A short fragment usually means the total member count is stale or the fragment was sliced by a different query.",
+                    nameof(fragment));
+            }
+
             return new EnumerablePage<T>(materialized, metadata.PageNumber, metadata.PageSize, metadata.TotalMemberCount, sourceIsFull: false);
+        }
+
+        /// <summary>
+        /// Create a page from an already-sliced fragment plus paging metadata, selecting the
+        /// fragment checking strictness.
+        /// </summary>
+        /// <typeparam name="T">element type of the fragment</typeparam>
+        /// <param name="fragment">the fragment, taken to be the exact content of the requested page</param>
+        /// <param name="pageNumber">page number of the fragment, starting at one</param>
+        /// <param name="pageSize">page size</param>
+        /// <param name="totalMemberCount">total member count of the whole source, not of the fragment</param>
+        /// <param name="options"><see cref="PageCreationOptions.Lenient"/> (the 6.1 behaviour) or
+        /// <see cref="PageCreationOptions.Strict"/></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="fragment"/> or <paramref name="options"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one; <paramref name="pageSize"/> is less than
+        /// one; <paramref name="totalMemberCount"/> is negative or exceeds the configured
+        /// <c>MaxMemberItems</c>; or <paramref name="pageNumber"/> points past the last page.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="fragment"/> carries more members than <paramref name="pageSize"/> or more
+        /// than the metadata says the page holds; in <see cref="PageCreationOptions.Strict"/> mode
+        /// also when it carries fewer than the metadata says.
+        /// </exception>
+        /// <example>
+        /// <code>
+        /// IPage&lt;Order&gt; page = Paginable.CreatePage(items, pageNumber: 3, pageSize: 5, totalMemberCount: 12, PageCreationOptions.Strict);
+        /// </code>
+        /// </example>
+        public static IPage<T> CreatePage<T>(IEnumerable<T> fragment, int pageNumber, int pageSize, int totalMemberCount, PageCreationOptions options)
+        {
+            if (fragment is null)
+            {
+                throw new ArgumentNullException(nameof(fragment), $"{nameof(fragment)} can not be null.");
+            }
+
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), $"{nameof(options)} can not be null.");
+            }
+
+            return CreatePage(fragment, new PageFragmentInfo(pageNumber, pageSize, totalMemberCount), options);
         }
 
         /// <summary>
