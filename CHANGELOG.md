@@ -98,6 +98,29 @@ completes.
   which is the property a serializer needs. `FromModel` validates the model rather than trusting it
   (null model, null list, mismatched lengths, non-positive copy count, null inner value list), names
   the offending argument, and merges elements a comparer calls equal in the multiset reading.
+- Two caches under `MultiDictionary<TKey, TValue>` (M6-07), both landing L-05 and L-06 and both
+  invisible from the outside: **no signature changed and no behaviour moved**, so the full suite
+  passes unchanged and the pair is a pure performance change. `TotalValueCount` is now a stored
+  count maintained by every mutation rather than a walk over all inner collections (L-06), and
+  `ContainsValue` is answered by a backwards index - value &#8594; keys - maintained on the write
+  path rather than by scanning every key's values (L-05). Both caches are updated by *every* path
+  that can move them, which is the whole risk of the change: `Add` (including the branch where a
+  custom inner factory hands back a non-empty collection), `AddRange`, both `Remove` overloads,
+  `RemoveRange`, `IntersectionWith`, `ExceptWith`, `SymmetricExceptWith`, `Clear` and `Clone`
+  (rebuilt through the public `Add` so the caches are maintained rather than copied). Three details
+  are deliberate. A `null` value is an ordinary value and gets a dedicated bucket, because a
+  `Dictionary<TValue, …>` can not key on `null`; value equality is
+  `EqualityComparer<TValue>.Default`, the same notion the per-key collections use. Key membership
+  in the index uses the map's own `IEqualityComparer<TKey>`, so removing `"a"` clears the entry
+  indexed under `"A"` when the comparer says they are the same key. And a value index entry is
+  dropped as soon as its last key is gone, so `ContainsValue` never answers from a value nobody
+  stores. The write-path cost the acceptance criteria asked to measure is pinned the same way the
+  gain is: a value type counts its own equality and hash operations, and the suite asserts that
+  maintaining the index during an `Add` costs a constant few, whether 1 or 4,096 values are already
+  stored, while a `ContainsValue` on 4,096 values costs the same as on 64. Allocation of the read
+  paths is asserted to be zero via `GC.GetAllocatedBytesForCurrentThread()`. As usual the claim is
+  proved by counting, not by a stopwatch. A 3,000-step randomized differential re-checks both
+  caches after every single step against a naive recomputation.
 - `PageCreationOptions` and strict fragment checking (F6-11). 6.1 tolerated a fragment shorter
   than its metadata says - a concurrent delete upstream must not make the page unbuildable - and
   that stays the default: `Paginable.CreatePage(fragment, info)`, the four-argument

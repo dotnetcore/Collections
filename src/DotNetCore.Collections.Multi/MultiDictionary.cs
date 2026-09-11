@@ -53,6 +53,29 @@ namespace DotNetCore.Collections.Multi
         private readonly Func<ICollection<TValue>> _innerFactory;
 
         /// <summary>
+        /// Cached total number of values across all keys, kept in step by every mutation instead of
+        /// being recomputed on each read (L-06). Previously <see cref="TotalValueCount"/> walked
+        /// every inner collection, which costs O(keys) per read.
+        /// </summary>
+        private int _totalValueCount;
+
+        /// <summary>
+        /// Backwards index over values: maps a value to the set of keys that store it, so
+        /// <see cref="ContainsValue(TValue)"/> answers without scanning (L-05). Keeps
+        /// <see cref="EqualityComparer{TValue}.Default"/> as its notion of value equality - which is
+        /// what the per-key collections themselves use.
+        /// </summary>
+        private readonly Dictionary<TValue, HashSet<TKey>> _valueIndex;
+
+        /// <summary>
+        /// The <c>null</c>-value bucket of the backwards index, held outside
+        /// <see cref="_valueIndex"/> because <see cref="Dictionary{TKey,TValue}"/> rejects a
+        /// <c>null</c> key while this type allows <c>null</c> values. No allocation is paid until a
+        /// <c>null</c> value is actually stored.
+        /// </summary>
+        private HashSet<TKey>? _nullValueKeys;
+
+        /// <summary>
         /// Initializes an empty <see cref="MultiDictionary{TKey,TValue}"/> that allows duplicate
         /// values per key (inner <see cref="List{TValue}"/>).
         /// </summary>
@@ -98,6 +121,7 @@ namespace DotNetCore.Collections.Multi
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
             _innerFactory = innerFactory ?? (() => new List<TValue>());
             _dict = new Dictionary<TKey, ICollection<TValue>>(_comparer);
+            _valueIndex = new Dictionary<TValue, HashSet<TKey>>();
         }
 
         /// <summary>
@@ -118,19 +142,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Gets the total number of values across all keys.
         /// </summary>
-        public int TotalValueCount
-        {
-            get
-            {
-                var total = 0;
-                foreach (var collection in _dict.Values)
-                {
-                    total += collection.Count;
-                }
-
-                return total;
-            }
-        }
+        /// <remarks>
+        /// Runs in O(1): the total is a cached count that every mutation maintains, rather than a
+        /// per-read walk over the inner collections (which cost O(keys)).
+        /// </remarks>
+        public int TotalValueCount => _totalValueCount;
 
         /// <summary>
         /// Gets the number of values stored under the key, or <c>0</c> when the key is absent
@@ -195,19 +211,44 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public void Add(TKey key, TValue value)
         {
-            if (!_dict.TryGetValue(key, out var collection))
+            var isNewKey = !_dict.TryGetValue(key, out var collection);
+            if (isNewKey)
             {
                 collection = _innerFactory();
                 _dict.Add(key, collection);
             }
 
-            var before = collection.Count;
+            var before = collection!.Count;
             collection.Add(value);
-            if (before == 0 && collection.Count == 0)
+            var after = collection.Count;
+
+            if (isNewKey && after == 0)
             {
                 // The (deduplicating) factory rejected the value into a fresh, still-empty
                 // collection: drop the key to preserve the "no empty inner collections" invariant.
+                // Nothing entered the caches, so neither is touched.
                 _dict.Remove(key);
+                return;
+            }
+
+            if (isNewKey)
+            {
+                // A custom factory can hand back a non-empty collection, and everything it brings
+                // in becomes visible with the key. Indexing the whole collection (rather than just
+                // the argument) keeps the backwards index complete; IndexAddValue is idempotent.
+                _totalValueCount += after;
+                foreach (var existing in collection)
+                {
+                    IndexAddValue(existing, key);
+                }
+            }
+            else
+            {
+                _totalValueCount += after - before;
+                if (after > before)
+                {
+                    IndexAddValue(value, key);
+                }
             }
         }
 
@@ -257,6 +298,13 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Determines whether the specified value exists under any key.
         /// </summary>
+        /// <remarks>
+        /// Runs in O(1) against a backwards index (value &#8594; keys), rather than scanning every
+        /// inner collection (which cost O(keys &#215; values)). Value equality is
+        /// <see cref="EqualityComparer{TValue}.Default"/>, the same notion the per-key collections
+        /// use. A <c>null</c> value is an ordinary value and is stored in a dedicated bucket, since
+        /// a <see cref="Dictionary{TKey,TValue}"/> can not key on <c>null</c>.
+        /// </remarks>
         /// <example>
         /// <code>
         /// bool has = map.ContainsValue(1001);
@@ -264,15 +312,9 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool ContainsValue(TValue value)
         {
-            foreach (var collection in _dict.Values)
-            {
-                if (collection.Contains(value))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return value == null
+                ? _nullValueKeys != null
+                : _valueIndex.ContainsKey(value);
         }
 
         /// <summary>
@@ -287,7 +329,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool Remove(TKey key)
         {
-            return _dict.Remove(key);
+            return RemoveKeyCore(key);
         }
 
         /// <summary>
@@ -306,17 +348,7 @@ namespace DotNetCore.Collections.Multi
                 return false;
             }
 
-            if (!collection.Remove(value))
-            {
-                return false;
-            }
-
-            if (collection.Count == 0)
-            {
-                _dict.Remove(key);
-            }
-
-            return true;
+            return RemoveOccurrence(key, collection, value);
         }
 
         /// <summary>
@@ -384,15 +416,10 @@ namespace DotNetCore.Collections.Multi
             var removedAny = false;
             foreach (var value in removals)
             {
-                if (collection.Remove(value))
+                if (RemoveOccurrence(key, collection, value))
                 {
                     removedAny = true;
                 }
-            }
-
-            if (collection.Count == 0)
-            {
-                _dict.Remove(key);
             }
 
             return removedAny;
@@ -459,13 +486,8 @@ namespace DotNetCore.Collections.Multi
             {
                 if (!keep.Contains(value))
                 {
-                    collection.Remove(value);
+                    RemoveOccurrence(key, collection, value);
                 }
-            }
-
-            if (collection.Count == 0)
-            {
-                _dict.Remove(key);
             }
         }
 
@@ -498,15 +520,10 @@ namespace DotNetCore.Collections.Multi
             {
                 if (removals.Contains(value))
                 {
-                    while (collection.Remove(value))
+                    while (RemoveOccurrence(key, collection, value))
                     {
                     }
                 }
-            }
-
-            if (collection.Count == 0)
-            {
-                _dict.Remove(key);
             }
         }
 
@@ -562,22 +579,16 @@ namespace DotNetCore.Collections.Multi
             // values, and the loop below mutates the map.
             var toggles = DistinctValuesOf(values);
 
-            _dict.TryGetValue(key, out var collection);
-
             foreach (var value in toggles)
             {
-                if (collection == null || !collection.Remove(value))
+                // Re-read the key each round: a removal may have dropped it (RemoveOccurrence
+                // removes the key once nothing is left under it), and the adding branch recreates
+                // it. Going through the public Add keeps the "no empty inner collection" invariant
+                // in a single place, caches included.
+                if (!_dict.TryGetValue(key, out var collection) || !RemoveOccurrence(key, collection, value))
                 {
-                    // Toggled on: either the key is absent or the value was not stored. Going
-                    // through the public Add keeps the "no empty inner collection" invariant in
-                    // a single place.
                     Add(key, value);
                 }
-            }
-
-            if (collection != null && collection.Count == 0)
-            {
-                _dict.Remove(key);
             }
         }
 
@@ -592,6 +603,9 @@ namespace DotNetCore.Collections.Multi
         public void Clear()
         {
             _dict.Clear();
+            _totalValueCount = 0;
+            _valueIndex.Clear();
+            _nullValueKeys = null;
         }
 
         /// <summary>
@@ -645,16 +659,16 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public MultiDictionary<TKey, TValue> Clone()
         {
+            // Built through the public Add (rather than by reaching into the clone's dictionary as
+            // this used to) so the clone's caches are maintained by the same single set of rules as
+            // any other instance - no second, hand-written copy of the bookkeeping to keep in step.
             var clone = new MultiDictionary<TKey, TValue>(_comparer, _innerFactory);
             foreach (var pair in _dict)
             {
-                var collection = clone._innerFactory();
                 foreach (var value in pair.Value)
                 {
-                    collection.Add(value);
+                    clone.Add(pair.Key, value);
                 }
-
-                clone._dict.Add(pair.Key, collection);
             }
 
             return clone;
@@ -888,6 +902,120 @@ namespace DotNetCore.Collections.Multi
             }
 
             return result;
+        }
+
+        // ------------------------------------------------------------------
+        // Cache and backwards-index maintenance (L-05 / L-06)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Removes the key with everything stored under it, keeping both caches in step. Returns
+        /// <c>true</c> when the key was present.
+        /// </summary>
+        /// <remarks>
+        /// The walk over the key's values is what makes the backwards index exact: after the key
+        /// disappears, it must stop being listed for every value it used to store.
+        /// </remarks>
+        private bool RemoveKeyCore(TKey key)
+        {
+            if (!_dict.TryGetValue(key, out var collection))
+            {
+                return false;
+            }
+
+            _totalValueCount -= collection.Count;
+            foreach (var value in collection)
+            {
+                IndexRemoveValue(value, key);
+            }
+
+            return _dict.Remove(key);
+        }
+
+        /// <summary>
+        /// Removes a single occurrence of <paramref name="value"/> from the key's collection, keeping
+        /// both caches in step, and drops the key once nothing is left under it. Returns <c>true</c>
+        /// when an occurrence was actually removed.
+        /// </summary>
+        /// <remarks>
+        /// The index entry is only dropped when the value is gone from the key <em>after</em> the
+        /// removal, because a duplicating inner collection can hold the same value several times.
+        /// </remarks>
+        private bool RemoveOccurrence(TKey key, ICollection<TValue> collection, TValue value)
+        {
+            if (!collection.Remove(value))
+            {
+                return false;
+            }
+
+            _totalValueCount--;
+            if (!collection.Contains(value))
+            {
+                IndexRemoveValue(value, key);
+            }
+
+            if (collection.Count == 0)
+            {
+                _dict.Remove(key);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Records that <paramref name="key"/> stores <paramref name="value"/>. Idempotent: a value
+        /// already associated with the key is left as it is.
+        /// </summary>
+        private void IndexAddValue(TValue value, TKey key)
+        {
+            if (value == null)
+            {
+                (_nullValueKeys ?? (_nullValueKeys = new HashSet<TKey>(_comparer))).Add(key);
+                return;
+            }
+
+            if (!_valueIndex.TryGetValue(value, out var keys))
+            {
+                keys = new HashSet<TKey>(_comparer);
+                _valueIndex.Add(value, keys);
+            }
+
+            keys.Add(key);
+        }
+
+        /// <summary>
+        /// Drops the (<paramref name="value"/>, <paramref name="key"/>) membership from the
+        /// backwards index. The index entry is removed once its last key is gone, so
+        /// <see cref="ContainsValue(TValue)"/> never answers from a value nobody stores.
+        /// </summary>
+        private void IndexRemoveValue(TValue value, TKey key)
+        {
+            if (value == null)
+            {
+                if (_nullValueKeys == null)
+                {
+                    return;
+                }
+
+                _nullValueKeys.Remove(key);
+                if (_nullValueKeys.Count == 0)
+                {
+                    _nullValueKeys = null;
+                }
+
+                return;
+            }
+
+            if (!_valueIndex.TryGetValue(value, out var keys))
+            {
+                return;
+            }
+
+            keys.Remove(key);
+            if (keys.Count == 0)
+            {
+                _valueIndex.Remove(value);
+            }
         }
 
         private sealed class ReadOnlyDictionaryView :
