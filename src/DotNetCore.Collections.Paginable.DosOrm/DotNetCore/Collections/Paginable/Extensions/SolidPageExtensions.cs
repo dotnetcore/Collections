@@ -74,6 +74,9 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="additionalQueryFunc"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one, or <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var page = paginable.GetPage(15);
@@ -86,10 +89,10 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
 
             if (pageNumber < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than one");
 
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             return new DosPage<T>(query, pageNumber, pageSize, DosHelper.Count(query), additionalQueryFunc: additionalQueryFunc);
         }

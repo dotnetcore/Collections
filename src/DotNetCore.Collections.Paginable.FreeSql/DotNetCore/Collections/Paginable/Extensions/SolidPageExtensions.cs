@@ -76,6 +76,9 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="includeNestedMembers">include nested members</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="select"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one, or <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var page = freeSql.Select&lt;ExampleModel&gt;().GetPage(15, 50);
@@ -87,10 +90,10 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentNullException(nameof(select), $"{nameof(select)} can not be null.");
 
             if (pageNumber < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than one");
 
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             return new FreeSqlPage<T>(select, pageNumber, pageSize, FreeSqlHelper.Count(select).AsInt32(), includeNestedMembers);
         }
@@ -128,6 +131,10 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="select"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one, <paramref name="pageSize"/> is less than one, or
+        /// <paramref name="pageNumber"/> points past the last page.
+        /// </exception>
         /// <example>
         /// <code>
         /// var page = await freeSql.Select&lt;ExampleModel&gt;().GetPageAsync(15, 50, cancellationToken);
@@ -139,16 +146,16 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentNullException(nameof(select), $"{nameof(select)} can not be null.");
 
             if (pageNumber < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than one");
 
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             var totalMemberCount = (await FreeSqlHelper.CountAsync(select, cancellationToken)).AsInt32();
 
             var skip = (pageNumber - 1) * pageSize;
             if (totalMemberCount > 0 && skip >= totalMemberCount)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be greater than pages count");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be greater than pages count");
 
             var members = await select.Page(pageNumber, pageSize).ToListAsync(includeNestedMembers, cancellationToken);
 

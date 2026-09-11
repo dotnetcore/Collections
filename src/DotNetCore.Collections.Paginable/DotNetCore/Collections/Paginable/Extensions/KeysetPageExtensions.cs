@@ -84,6 +84,9 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="descending">ordering direction</param>
         /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var first = query.GetFirstPageByKeyset(x =&gt; x.Id, pageSize: 50);
@@ -101,7 +104,7 @@ namespace DotNetCore.Collections.Paginable
             if (keySelector is null)
                 throw new ArgumentNullException(nameof(keySelector));
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             var ordered = descending
                 ? source.OrderByDescending(keySelector).Take(pageSize + 1)
@@ -123,6 +126,9 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="descending">ordering direction</param>
         /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var next = query.GetPageByKeyset(x =&gt; x.Id, lastId, pageSize: 50);
@@ -141,7 +147,7 @@ namespace DotNetCore.Collections.Paginable
             if (keySelector is null)
                 throw new ArgumentNullException(nameof(keySelector));
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             var query = PaginableKeyset.BuildKeysetQuery(source, keySelector, lastKey, pageSize, descending);
             var candidates = query.ToList();
@@ -154,6 +160,9 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var first = list.GetFirstPageByKeyset(x =&gt; x.Id, pageSize: 50);
@@ -171,7 +180,7 @@ namespace DotNetCore.Collections.Paginable
             if (keySelector is null)
                 throw new ArgumentNullException(nameof(keySelector));
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             var ordered = descending
                 ? source.OrderByDescending(keySelector).Take(pageSize + 1)
@@ -186,6 +195,9 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var next = list.GetPageByKeyset(x =&gt; x.Id, lastId, pageSize: 50);
@@ -204,7 +216,7 @@ namespace DotNetCore.Collections.Paginable
             if (keySelector is null)
                 throw new ArgumentNullException(nameof(keySelector));
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             var comparer = Comparer<TKey>.Default;
             var filtered = descending

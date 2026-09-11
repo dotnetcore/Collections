@@ -149,8 +149,8 @@ namespace DotNetCore.Collections.Paginable.Tests {
             Should.Throw<ArgumentNullException>(() => ((IQueryable<Student>)null).GetFirstPageByKeyset(s => s.Id, 10));
             Should.Throw<ArgumentNullException>(() => source.AsQueryable().GetFirstPageByKeyset((System.Linq.Expressions.Expression<Func<Student, int>>)null, 10));
 
-            Should.Throw<IndexOutOfRangeException>(() => source.GetFirstPageByKeyset(s => s.Id, 0));
-            Should.Throw<IndexOutOfRangeException>(() => source.AsQueryable().GetPageByKeyset(s => s.Id, 1, 0));
+            Should.Throw<ArgumentOutOfRangeException>(() => source.GetFirstPageByKeyset(s => s.Id, 0));
+            Should.Throw<ArgumentOutOfRangeException>(() => source.AsQueryable().GetPageByKeyset(s => s.Id, 1, 0));
         }
 
         #endregion

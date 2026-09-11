@@ -69,6 +69,9 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one, or <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var page = paginable.GetPage(15);
@@ -80,10 +83,10 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
 
             if (pageNumber < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than one");
 
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             return new SqlKataPage<T>(query, pageNumber, pageSize, SqlKataHelper.Count(query));
         }
@@ -113,6 +116,9 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one, or <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var page = query.GetPage(15, 50);
@@ -125,10 +131,10 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
 
             if (pageNumber < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than one");
 
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             return new SqlKataPage<T>(query, pageNumber, pageSize, await SqlKataHelper.CountAsync(query));
         }

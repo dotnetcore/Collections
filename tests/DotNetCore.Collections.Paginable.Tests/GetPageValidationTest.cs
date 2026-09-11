@@ -20,44 +20,44 @@ namespace DotNetCore.Collections.Paginable.Tests {
 
         [Fact]
         public void GetPageForEnumerable_ShouldThrow_WhenPageNumberIsZero() {
-            Assert.Throws<IndexOutOfRangeException>(() => EmptyListForStudents.GetPage(0, 9));
+            Assert.Throws<ArgumentOutOfRangeException>(() => EmptyListForStudents.GetPage(0, 9));
         }
 
         [Fact]
         public void GetPageForEnumerable_ShouldThrow_WhenPageNumberIsNegative() {
-            Assert.Throws<IndexOutOfRangeException>(() => EmptyListForStudents.GetPage(-1, 9));
+            Assert.Throws<ArgumentOutOfRangeException>(() => EmptyListForStudents.GetPage(-1, 9));
         }
 
         [Fact]
         public void GetPageForEnumerable_ShouldThrow_WhenPageSizeIsZero() {
-            Assert.Throws<IndexOutOfRangeException>(() => EmptyListForStudents.GetPage(1, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => EmptyListForStudents.GetPage(1, 0));
         }
 
         [Fact]
         public void GetPageForEnumerable_ShouldThrow_WhenPageSizeIsNegative() {
-            Assert.Throws<IndexOutOfRangeException>(() => EmptyListForStudents.GetPage(1, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => EmptyListForStudents.GetPage(1, -1));
         }
 
         // ----- GetPage for IQueryable<T> -----
 
         [Fact]
         public void GetPageForQueryable_ShouldThrow_WhenPageNumberIsZero() {
-            Assert.Throws<IndexOutOfRangeException>(() => EmptyQueryForStudents.GetPage(0, 9));
+            Assert.Throws<ArgumentOutOfRangeException>(() => EmptyQueryForStudents.GetPage(0, 9));
         }
 
         [Fact]
         public void GetPageForQueryable_ShouldThrow_WhenPageNumberIsNegative() {
-            Assert.Throws<IndexOutOfRangeException>(() => EmptyQueryForStudents.GetPage(-1, 9));
+            Assert.Throws<ArgumentOutOfRangeException>(() => EmptyQueryForStudents.GetPage(-1, 9));
         }
 
         [Fact]
         public void GetPageForQueryable_ShouldThrow_WhenPageSizeIsZero() {
-            Assert.Throws<IndexOutOfRangeException>(() => EmptyQueryForStudents.GetPage(1, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => EmptyQueryForStudents.GetPage(1, 0));
         }
 
         [Fact]
         public void GetPageForQueryable_ShouldThrow_WhenPageSizeIsNegative() {
-            Assert.Throws<IndexOutOfRangeException>(() => EmptyQueryForStudents.GetPage(1, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => EmptyQueryForStudents.GetPage(1, -1));
         }
 
         // ----- ToPaginable -----
@@ -86,13 +86,13 @@ namespace DotNetCore.Collections.Paginable.Tests {
 
         [Fact]
         public async Task GetPageAsync_ShouldThrow_WhenPageNumberIsZero() {
-            await Assert.ThrowsAsync<IndexOutOfRangeException>(
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                 () => Task.FromResult(EmptyQueryForStudents).GetPageAsync(0, 9));
         }
 
         [Fact]
         public async Task GetPageAsync_ShouldThrow_WhenPageSizeIsZero() {
-            await Assert.ThrowsAsync<IndexOutOfRangeException>(
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                 () => Task.FromResult(EmptyQueryForStudents).GetPageAsync(1, 0));
         }
 

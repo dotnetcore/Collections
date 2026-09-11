@@ -52,6 +52,22 @@ completes.
 
 ### Breaking
 
+- An out-of-range argument is now reported as `ArgumentOutOfRangeException` by **every** paging entry
+  point, replacing the `IndexOutOfRangeException` that the `GetPage` family and the keyset
+  (`GetFirstPageByKeyset` / `GetPageByKeyset`) family used to throw. The change covers the core
+  `IEnumerable<T>` / `IQueryable<T>` / `Task<IQueryable<T>>` paths, both keyset extension classes
+  including the EF Core async pair, and all nine ORM integration packages — 40 throw sites in 10
+  files. It closes a split the 6.1 fragment API opened: `Paginable.CreatePage` / `fragment.ToPage`
+  already answered an out-of-range argument with `ArgumentOutOfRangeException` and named the
+  offending parameter, so the same mistake (`pageNumber: 0`) reported a different type depending on
+  which entry point the caller happened to use. `ArgumentOutOfRangeException` derives from
+  `ArgumentException`, so callers catching `ArgumentException` (or `Exception`) are unaffected; a
+  caller that specifically caught or asserted on `IndexOutOfRangeException` must be updated.
+  **Only the type changes** — the rejection conditions are untouched (an empty source still yields a
+  single empty page), and the exceptions now carry `ParamName`. The XML `<exception>` docs declare
+  the type on all 21 affected public members, and the 15 new tests in
+  `GetPageExceptionTypeTest` pin the exact type and parameter name per path.
+
 - `MultiList<T>.Add(item, times)` / `MultiList<T>.Remove(item, times)` and their
   `OrderedMultiList<T>` counterparts now throw `ArgumentOutOfRangeException` when `times` is
   less than or equal to zero, replacing the legacy behaviour that silently coerced a

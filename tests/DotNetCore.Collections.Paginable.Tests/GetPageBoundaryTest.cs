@@ -22,8 +22,8 @@ namespace DotNetCore.Collections.Paginable.Tests {
         [Fact]
         public void QueryablePathOutOfRangeTest() {
             var students = BuildStudents(10);
-            Should.Throw<IndexOutOfRangeException>(() => students.AsQueryable().GetPage(3, 5));
-            Should.Throw<IndexOutOfRangeException>(() => students.AsQueryable().GetPage(99, 5));
+            Should.Throw<ArgumentOutOfRangeException>(() => students.AsQueryable().GetPage(3, 5));
+            Should.Throw<ArgumentOutOfRangeException>(() => students.AsQueryable().GetPage(99, 5));
         }
 
         [Fact]

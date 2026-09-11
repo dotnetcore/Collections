@@ -91,10 +91,12 @@ namespace DotNetCore.Collections.Paginable.Tests {
 
         [Fact]
         public void PageOutOfRangeTest() {
-            // Out-of-range pages now throw eagerly (previously the IEnumerable path
-            // crashed lazily during enumeration with ArgumentOutOfRangeException).
-            Should.Throw<IndexOutOfRangeException>(() => TenItemsForStudents.GetPage(3, 5));
-            Should.Throw<IndexOutOfRangeException>(() => TenItemsForStudents.GetPage(99, 5));
+            // Out-of-range pages throw eagerly, and since F6-10 every path reports the same
+            // type: ArgumentOutOfRangeException. The IEnumerable path used to throw
+            // IndexOutOfRangeException while a lazy enumeration crashed with
+            // ArgumentOutOfRangeException, which is exactly the split F6-10 removed.
+            Should.Throw<ArgumentOutOfRangeException>(() => TenItemsForStudents.GetPage(3, 5));
+            Should.Throw<ArgumentOutOfRangeException>(() => TenItemsForStudents.GetPage(99, 5));
         }
 
         [Fact]
@@ -102,7 +104,7 @@ namespace DotNetCore.Collections.Paginable.Tests {
             IEnumerable<Student> lazySource = Enumerable.Range(0, 100)
                 .Select(x => new Student { Id = x, Name = $"Student-{x}" });
 
-            Should.Throw<IndexOutOfRangeException>(() => lazySource.GetPage(21, 5));
+            Should.Throw<ArgumentOutOfRangeException>(() => lazySource.GetPage(21, 5));
         }
     }
 }

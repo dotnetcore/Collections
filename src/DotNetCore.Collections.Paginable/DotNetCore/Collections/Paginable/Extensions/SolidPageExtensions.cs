@@ -80,6 +80,10 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="enumerable"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one, <paramref name="pageSize"/> is less than one, or
+        /// <paramref name="pageNumber"/> points past the last page.
+        /// </exception>
         /// <example>
         /// <code>
         /// var page = list.GetPage(15, 50);
@@ -95,10 +99,10 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentNullException(nameof(enumerable), $"{nameof(enumerable)} can not be null.");
 
             if (pageNumber < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than one");
 
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             var skip = (pageNumber - 1) * pageSize;
 
@@ -107,7 +111,7 @@ namespace DotNetCore.Collections.Paginable
             {
                 var totalMemberCount = collection.Count;
                 if (totalMemberCount > 0 && skip >= totalMemberCount)
-                    throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be greater than pages count");
+                    throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be greater than pages count");
 
                 var pageItems = enumerable.Skip(skip).Take(pageSize).ToList();
                 return new EnumerablePage<T>(pageItems, pageNumber, pageSize, totalMemberCount, sourceIsFull: false);
@@ -128,7 +132,7 @@ namespace DotNetCore.Collections.Paginable
             }
 
             if (index > 0 && skip >= index)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be greater than pages count");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be greater than pages count");
 
             return new EnumerablePage<T>(items, pageNumber, pageSize, index, sourceIsFull: false);
         }
@@ -281,6 +285,10 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="queryable"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one, <paramref name="pageSize"/> is less than one, or
+        /// <paramref name="pageNumber"/> points past the last page.
+        /// </exception>
         /// <example>
         /// <code>
         /// var page = query.GetPage(15, 50);
@@ -293,15 +301,15 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentNullException(nameof(queryable), $"{nameof(queryable)} can not be null.");
 
             if (pageNumber < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than one");
 
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             var totalMemberCount = queryable.Count();
             var skip = (pageNumber - 1) * pageSize;
             if (totalMemberCount > 0 && skip >= totalMemberCount)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be greater than pages count");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be greater than pages count");
 
             return new QueryablePage<T>(queryable, pageNumber, pageSize, totalMemberCount);
         }
@@ -333,6 +341,9 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="pageSize">page size</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="queryableTask"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one, or <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var page = await GetQueryableAsync().GetPageAsync(15, 50);
@@ -345,10 +356,10 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentNullException(nameof(queryableTask), $"{nameof(queryableTask)} can not be null.");
 
             if (pageNumber < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than one");
 
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             var queryable = await queryableTask;
 

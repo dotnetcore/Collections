@@ -389,6 +389,24 @@ that is *shorter* than the metadata expects is tolerated (an upstream row may ha
 between the count and the fetch) and `CurrentPageSize` keeps reporting the metadata value. The
 total count must be known: when it is not, use the keyset API above rather than inventing a number.
 
+### Validation and exceptions
+
+Every entry point rejects an out-of-range *argument* with `ArgumentOutOfRangeException` and names the
+parameter that was wrong (`ex.ParamName`):
+
+| Entry point | Rejected when | Thrown |
+| --- | --- | --- |
+| `GetPage` / `GetPageAsync` — all nine ORM integrations and the core `IEnumerable<T>` / `IQueryable<T>` / `Task<IQueryable<T>>` paths | `pageNumber < 1`, `pageSize < 1`, or `pageNumber` points past the last page | `ArgumentOutOfRangeException` |
+| `GetFirstPageByKeyset` / `GetPageByKeyset` (and the EF Core `…Async` pair) | `pageSize < 1` | `ArgumentOutOfRangeException` |
+| `ToPaginable` / `ToPaginableAsync` | `pageSize < 1` | `ArgumentOutOfRangeException` |
+| `Paginable.CreatePage` / `fragment.ToPage` / `PageFragmentInfo` | see the fragment section above | `ArgumentOutOfRangeException`, plus `ArgumentException` for an over-long fragment |
+
+The `GetPage` and keyset families used to throw `IndexOutOfRangeException` for these, which made the
+same mistake (`pageNumber: 0`) report a different type depending on which API the caller used. As of
+6.2 the whole family reports `ArgumentOutOfRangeException` too, so one `catch (ArgumentException)`
+covers both input shapes. An **empty** source is *not* an out-of-range argument — it yields a single
+empty page when the page number and the page size are valid.
+
 ### Asynchronous paging
 
 The core library exposes `ToPaginableAsync` / `GetPageAsync` for in-memory and `IQueryable<T>`

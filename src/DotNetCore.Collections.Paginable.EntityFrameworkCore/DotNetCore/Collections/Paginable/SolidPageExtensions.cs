@@ -59,6 +59,9 @@ namespace DotNetCore.Collections.Paginable
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="queryable"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var paginable = await query.ToPaginableAsync(50, cancellationToken: cancellationToken);
@@ -195,6 +198,10 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="queryable"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageNumber"/> is less than one, <paramref name="pageSize"/> is less than one, or
+        /// <paramref name="pageNumber"/> points past the last page.
+        /// </exception>
         /// <example>
         /// <code>
         /// var page = await query.GetPageAsync(15, 50, cancellationToken);
@@ -207,16 +214,16 @@ namespace DotNetCore.Collections.Paginable
                 throw new ArgumentNullException(nameof(queryable), $"{nameof(queryable)} can not be null.");
 
             if (pageNumber < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than one");
 
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             var totalMemberCount = await queryable.CountAsync(cancellationToken);
 
             var skip = (pageNumber - 1) * pageSize;
             if (totalMemberCount > 0 && skip >= totalMemberCount)
-                throw new IndexOutOfRangeException($"{nameof(pageNumber)} can not be greater than pages count");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be greater than pages count");
 
             var members = await queryable.Skip(skip).Take(pageSize).ToListAsync(cancellationToken);
 

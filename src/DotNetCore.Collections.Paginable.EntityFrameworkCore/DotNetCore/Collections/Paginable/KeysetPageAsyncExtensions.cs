@@ -30,6 +30,9 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="cancellationToken">cancellation token</param>
         /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var first = await query.GetFirstPageByKeysetAsync(x =&gt; x.Id, pageSize: 50, cancellationToken: cancellationToken);
@@ -48,7 +51,7 @@ namespace DotNetCore.Collections.Paginable
             if (keySelector is null)
                 throw new ArgumentNullException(nameof(keySelector));
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             var ordered = descending
                 ? source.OrderByDescending(keySelector).Take(pageSize + 1)
@@ -71,6 +74,9 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="cancellationToken">cancellation token</param>
         /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="keySelector"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="pageSize"/> is less than one.
+        /// </exception>
         /// <example>
         /// <code>
         /// var next = await query.GetPageByKeysetAsync(x =&gt; x.Id, lastId, pageSize: 50, cancellationToken: cancellationToken);
@@ -90,7 +96,7 @@ namespace DotNetCore.Collections.Paginable
             if (keySelector is null)
                 throw new ArgumentNullException(nameof(keySelector));
             if (pageSize < 1)
-                throw new IndexOutOfRangeException($"{nameof(pageSize)} can not be less than one");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
             var query = PaginableKeyset.BuildKeysetQuery(source, keySelector, lastKey, pageSize, descending);
             var candidates = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
