@@ -537,7 +537,7 @@ using(var connection = new SqlConnection(connectionString))
 | **`MultiDictionary<TKey, TValue>`** | values | 1 key &#8594; N values | `this[key]` | One key genuinely owns several values — a multimap. Implements `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>`, offers `AsLookup()` (an `ILookup` view), the per-key value set operations `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, the batch pair `AddRange` / `RemoveRange`, per-key counting via `ValueCount(key)` (alongside `TotalValueCount`), and a configurable inner-collection factory (`allowDuplicateValues` or a custom factory). |
 | **`OrderedMultiDictionary<TKey, TValue>`** | values, in order | 1 key &#8594; N values, both axes sorted | `this[key]` | The ordered counterpart of `MultiDictionary<TKey, TValue>`: the same per-key value-set operations with the same set semantics, the same "no value-less key" invariant, and the same `IReadOnlyDictionary` / `AsLookup()` / `RemoveRange` shape — but keys enumerate ascending under an `IComparer<TKey>` and each key's values enumerate ascending under an `IComparer<TValue>`, with single-pair add / lookup / removal costing O(log n) worst case on both axes. |
 | **`MultiKeyDictionary<TKey, TValue>`** | key components | N components &#8594; 1 value | `this[TKey[]]`, `GetByPrefix` | The key is **composite** and you want to query it by a *partial* prefix — a trie over `(region, country, city)` style keys of any arity. |
-| **`TwoKeyDictionary<K1, K2, V>`** | key components | 2 components &#8594; 1 value | `this[k1, k2]` | Exactly the above with exactly two components **of different types**, with a typed indexer instead of a `TKey[]`. |
+| **`TwoKeyDictionary<K1, K2, V>`** | key components | 2 components &#8594; 1 value | `this[k1, k2]` | Exactly the above with exactly two components **of different types**, with a typed indexer instead of a `TKey[]`. Its second axis is queried through a maintained reverse index (`K2` &#8594; set of `K1`), so `GetBySecondKey` / `CountOfSecondKey` / `ContainsSecondKey` / `RemoveBySecondKey` visit only the requested slice instead of scanning the map. |
 
 Read the name as "what is multiplied": `MultiList` multiplies elements, `MultiDictionary` multiplies values, `MultiKeyDictionary` multiplies keys. Pick by asking *what is allowed to repeat*, never by name similarity:
 
@@ -619,8 +619,8 @@ tree.RemovePrefix(new[] { "eu", "de" });          // drops the whole subtree at 
 var rates = new TwoKeyDictionary<int, string, decimal>();
 rates[1, "USD"] = 1.00m;
 rates[1, "EUR"] = 0.92m;
-rates.CountOfFirstKey(1);             // 2
-rates.GetBySecondKey("USD");          // (1, 1.00m) — O(n) scan, see the XML docs
+rates.CountOfFirstKey(1);             // 2  (a prefix walk over the trie)
+rates.GetBySecondKey("USD");          // (1, 1.00m) — served from the second-axis reverse index
 ```
 
 ### Examples

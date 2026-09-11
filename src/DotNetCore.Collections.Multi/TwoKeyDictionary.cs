@@ -41,6 +41,15 @@ namespace DotNetCore.Collections.Multi
     /// <em>elements</em> (1 element &#8594; N copies).
     /// </para>
     /// <para>
+    /// A second-axis reverse index (<c>K2 &#8594; set of K1</c>) is kept alongside the trie, so
+    /// the second-axis queries — <see cref="GetBySecondKey(K2)"/>, <see cref="CountOfSecondKey(K2)"/>,
+    /// <see cref="ContainsSecondKey(K2)"/> and <see cref="RemoveBySecondKey(K2)"/> — visit only
+    /// the entries of the requested slice instead of scanning the map. The index is maintained on
+    /// every write path and costs one extra dictionary operation per add/remove plus one set entry
+    /// per stored pair; <see cref="Keys2"/> deliberately still walks the trie, preserving its
+    /// first-encounter enumeration order.
+    /// </para>
+    /// <para>
     /// This class is not thread-safe. Wrap it with external synchronization for concurrent use.
     /// </para>
     /// </remarks>
@@ -60,6 +69,24 @@ namespace DotNetCore.Collections.Multi
         IEnumerable<(K1 Key1, K2 Key2, V Value)>
     {
         private readonly MultiKeyDictionary<object, V> _trie;
+
+        /// <summary>
+        /// Reverse index over the second axis: maps each non-null <typeparamref name="K2"/>
+        /// component to the set of <typeparamref name="K1"/> components stored with it. The trie
+        /// is indexed by <c>(K1, K2)</c> in that order, so the second axis is not a prefix and
+        /// can not be resolved by a subtree walk (see
+        /// <see cref="GetBySecondKey(K2)"/>); this index is what turns the four second-axis
+        /// queries from a full scan into a lookup.
+        /// </summary>
+        private readonly Dictionary<K2, HashSet<K1>> _secondIndex;
+
+        /// <summary>
+        /// The <c>null</c> second-axis bucket, held outside <see cref="_secondIndex"/> because
+        /// <see cref="Dictionary{TKey,TValue}"/> rejects a <c>null</c> key. Mirrors the dedicated
+        /// buckets of <see cref="MultiList{T}"/> and <see cref="MultiKeyDictionary{TKey,TValue}"/>;
+        /// no allocation is paid until a <c>null</c> second component is actually stored.
+        /// </summary>
+        private HashSet<K1>? _nullSecondKeySet;
 
         /// <summary>
         /// Wrapper that marks a component as belonging to the first axis. The underlying trie
@@ -109,6 +136,7 @@ namespace DotNetCore.Collections.Multi
             Comparer1 = comparer1 ?? EqualityComparer<K1>.Default;
             Comparer2 = comparer2 ?? EqualityComparer<K2>.Default;
             _trie = new MultiKeyDictionary<object, V>(new AxisComparer(Comparer1, Comparer2));
+            _secondIndex = new Dictionary<K2, HashSet<K1>>(Comparer2);
         }
 
         /// <summary>
@@ -151,6 +179,12 @@ namespace DotNetCore.Collections.Multi
         /// (the second-axis projection of the key space, de-duplicated across all
         /// <typeparamref name="K1"/> values).
         /// </summary>
+        /// <remarks>
+        /// Deliberately still a trie walk rather than a read of the second-axis reverse index: the
+        /// trie yields each second component the first time it is encountered, and swapping that
+        /// for the index's insertion order would silently reorder existing callers' output. The
+        /// index covers the four query members, where order is not part of the answer.
+        /// </remarks>
         public IEnumerable<K2> Keys2
         {
             get
@@ -221,6 +255,7 @@ namespace DotNetCore.Collections.Multi
         public void Add(K1 key1, K2 key2, V value)
         {
             _trie.Add(ToKey(key1, key2), value);
+            IndexAdd(key1, key2);
         }
 
         /// <summary>
@@ -236,7 +271,11 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool Add(K1 key1, K2 key2, V value, bool overwrite)
         {
-            return _trie.Add(ToKey(key1, key2), value, overwrite);
+            // Indexed only after the trie accepted the write: the non-overwriting overload
+            // throws for a duplicate pair, and a rejected write must not touch the index.
+            var replaced = _trie.Add(ToKey(key1, key2), value, overwrite);
+            IndexAdd(key1, key2);
+            return replaced;
         }
 
         /// <summary>
@@ -250,7 +289,13 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool TryAdd(K1 key1, K2 key2, V value)
         {
-            return _trie.TryAdd(ToKey(key1, key2), value);
+            if (!_trie.TryAdd(ToKey(key1, key2), value))
+            {
+                return false;
+            }
+
+            IndexAdd(key1, key2);
+            return true;
         }
 
         // ------------------------------------------------------------------
@@ -319,6 +364,10 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Determines whether the second axis has the specified value under any first key.
         /// </summary>
+        /// <remarks>
+        /// Answered straight from the second-axis reverse index in O(1), rather than by
+        /// scanning every entry.
+        /// </remarks>
         /// <example>
         /// <code>
         /// bool has = map.ContainsSecondKey("USD");
@@ -326,15 +375,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool ContainsSecondKey(K2 key2)
         {
-            foreach (var entry in _trie)
-            {
-                if (Comparer2.Equals(Axis2(entry.Key), key2))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return IndexTryGet(key2, out _);
         }
 
         /// <summary>
@@ -396,6 +437,11 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Gets the number of entries whose second key is <paramref name="key2"/>.
         /// </summary>
+        /// <remarks>
+        /// Read straight off the second-axis reverse index in O(1). Each <typeparamref name="K1"/>
+        /// appears at most once per <typeparamref name="K2"/> — a pair is a single entry — so the
+        /// size of the indexed set is exactly the number of matching entries.
+        /// </remarks>
         /// <example>
         /// <code>
         /// int n = map.CountOfSecondKey("USD");
@@ -403,16 +449,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public int CountOfSecondKey(K2 key2)
         {
-            var total = 0;
-            foreach (var entry in _trie)
-            {
-                if (Comparer2.Equals(Axis2(entry.Key), key2))
-                {
-                    total++;
-                }
-            }
-
-            return total;
+            return IndexTryGet(key2, out var firstKeys) ? firstKeys.Count : 0;
         }
 
         // ------------------------------------------------------------------
@@ -430,7 +467,13 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool Remove(K1 key1, K2 key2)
         {
-            return _trie.Remove(ToKey(key1, key2));
+            if (!_trie.Remove(ToKey(key1, key2)))
+            {
+                return false;
+            }
+
+            IndexRemove(key1, key2);
+            return true;
         }
 
         /// <summary>
@@ -443,13 +486,26 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool Remove(K1 key1, K2 key2, out V value)
         {
-            return _trie.Remove(ToKey(key1, key2), out value);
+            if (!_trie.Remove(ToKey(key1, key2), out value))
+            {
+                return false;
+            }
+
+            IndexRemove(key1, key2);
+            return true;
         }
 
         /// <summary>
         /// Removes every entry whose first key is <paramref name="key1"/> (cascade delete of
         /// the first-axis slice). Returns the number of removed entries.
         /// </summary>
+        /// <remarks>
+        /// The slice's second-axis components are collected <em>before</em> the cascade, because
+        /// afterwards there is nothing left to read them from. That costs one temporary list per
+        /// cascade — O(s) for a slice of s entries — and is what keeps the second-axis reverse
+        /// index in step with the trie (a stale index would answer
+        /// <see cref="ContainsSecondKey(K2)"/> with keys that no longer exist).
+        /// </remarks>
         /// <example>
         /// <code>
         /// int removed = map.RemoveByFirstKey(1);
@@ -457,13 +513,31 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public int RemoveByFirstKey(K1 key1)
         {
-            return _trie.RemovePrefix(ToFirstAxisKey(key1));
+            var affected = new List<K2>();
+            foreach (var entry in GetByFirstKey(key1))
+            {
+                affected.Add(entry.Key2);
+            }
+
+            var removed = _trie.RemovePrefix(ToFirstAxisKey(key1));
+            foreach (var key2 in affected)
+            {
+                IndexRemove(key1, key2);
+            }
+
+            return removed;
         }
 
         /// <summary>
         /// Removes every entry whose second key is <paramref name="key2"/>, across all first
         /// keys. Returns the number of removed entries.
         /// </summary>
+        /// <remarks>
+        /// The first keys of the slice are taken from the reverse index, so only those entries
+        /// are visited — O(s) trie removals for a slice of s entries, against the O(n)
+        /// materialize-and-scan this used to do. A <paramref name="key2"/> the index does not
+        /// know is answered <c>0</c> without touching the trie at all.
+        /// </remarks>
         /// <example>
         /// <code>
         /// int removed = map.RemoveBySecondKey("USD");
@@ -471,18 +545,25 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public int RemoveBySecondKey(K2 key2)
         {
-            var removed = 0;
-            foreach (var entry in new List<(object[] Key, V Value)>(_trie))
+            if (!IndexTryGet(key2, out var firstKeys))
             {
-                if (Comparer2.Equals(Axis2(entry.Key), key2))
+                return 0;
+            }
+
+            // Copied before the loop: the index entry itself is dropped at the end, and the
+            // source set must not be mutated through the index while it is being walked.
+            var keys = new List<K1>(firstKeys);
+
+            var removed = 0;
+            foreach (var key1 in keys)
+            {
+                if (_trie.Remove(ToKey(key1, key2)))
                 {
-                    if (_trie.Remove(entry.Key))
-                    {
-                        removed++;
-                    }
+                    removed++;
                 }
             }
 
+            IndexRemoveBucket(key2);
             return removed;
         }
 
@@ -497,6 +578,8 @@ namespace DotNetCore.Collections.Multi
         public void Clear()
         {
             _trie.Clear();
+            _secondIndex.Clear();
+            _nullSecondKeySet = null;
         }
 
         // ------------------------------------------------------------------
@@ -655,6 +738,86 @@ namespace DotNetCore.Collections.Multi
         private static K2 Axis2(object[] key)
         {
             return (K2)((Axis)key[1]).Value!;
+        }
+
+        // ------------------------------------------------------------------
+        // Second-axis reverse index
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Records that <paramref name="key1"/> is stored under <paramref name="key2"/>.
+        /// Idempotent: overwriting an existing pair re-adds a component the set already holds.
+        /// </summary>
+        private void IndexAdd(K1 key1, K2 key2)
+        {
+            if (key2 == null)
+            {
+                // Dictionary<TKey,> rejects a null key, so the null second component gets an
+                // explicit bucket (the same strategy the trie uses at every node).
+                (_nullSecondKeySet ?? (_nullSecondKeySet = new HashSet<K1>(Comparer1))).Add(key1);
+                return;
+            }
+
+            if (!_secondIndex.TryGetValue(key2, out var firstKeys))
+            {
+                firstKeys = new HashSet<K1>(Comparer1);
+                _secondIndex.Add(key2, firstKeys);
+            }
+
+            firstKeys.Add(key1);
+        }
+
+        /// <summary>
+        /// Drops the (<paramref name="key1"/>, <paramref name="key2"/>) membership. The index
+        /// entry is removed once its last first component is gone, so the index holds exactly
+        /// the second-axis values the map still uses.
+        /// </summary>
+        private void IndexRemove(K1 key1, K2 key2)
+        {
+            if (!IndexTryGet(key2, out var firstKeys))
+            {
+                return;
+            }
+
+            firstKeys.Remove(key1);
+            if (firstKeys.Count == 0)
+            {
+                IndexRemoveBucket(key2);
+            }
+        }
+
+        /// <summary>Drops the whole index entry for the second component.</summary>
+        private void IndexRemoveBucket(K2 key2)
+        {
+            if (key2 == null)
+            {
+                _nullSecondKeySet = null;
+                return;
+            }
+
+            _secondIndex.Remove(key2);
+        }
+
+        /// <summary>
+        /// Looks the second-axis slice up in the reverse index. Returns <c>false</c> when no entry
+        /// carries <paramref name="key2"/>.
+        /// </summary>
+        private bool IndexTryGet(K2 key2, out HashSet<K1> firstKeys)
+        {
+            if (key2 == null)
+            {
+                firstKeys = _nullSecondKeySet!;
+                return _nullSecondKeySet != null;
+            }
+
+            if (_secondIndex.TryGetValue(key2, out var found))
+            {
+                firstKeys = found;
+                return true;
+            }
+
+            firstKeys = null!;
+            return false;
         }
 
         /// <summary>

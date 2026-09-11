@@ -66,6 +66,20 @@ completes.
   follow the value comparer, sorting first under the default one), and the `notnull` key
   constraint of the annotated `SortedDictionary` is suppressed file-locally, exactly as in
   `MultiDictionary`, so `TKey` stays nullable-friendly.
+- `TwoKeyDictionary<K1, K2, V>` now answers its second axis from a maintained reverse index
+  (F6-21). The underlying trie is keyed by `(K1, K2)` in that order, so the second component is
+  not a prefix and a subtree walk can not reach it; `GetBySecondKey`, `CountOfSecondKey`,
+  `ContainsSecondKey` and `RemoveBySecondKey` therefore used to scan the whole map. They now read
+  a `K2 -> set of K1` index kept in step on every write path - `Add` (both overloads), `TryAdd`,
+  `Remove` (both overloads), the `RemoveByFirstKey` cascade, `RemoveBySecondKey` and `Clear` - so
+  only the requested slice is visited: O(1) for `CountOfSecondKey` and `ContainsSecondKey`, and
+  O(s) trie lookups for a slice of s entries for the other two. The index uses the same injected
+  comparers as the map (the second one keys the index, the first one the per-second-key set), and
+  a `null` second component gets a dedicated bucket because `Dictionary<TKey, TValue>` rejects a
+  `null` key. The cost is one extra dictionary operation per write and one set entry per stored
+  pair, plus one temporary list per `RemoveByFirstKey` cascade. `Keys2` deliberately still walks
+  the trie, preserving its first-encounter enumeration order. The `GetBySecondKey` XML docs no
+  longer describe the method as O(n).
 - `PageCreationOptions` and strict fragment checking (F6-11). 6.1 tolerated a fragment shorter
   than its metadata says - a concurrent delete upstream must not make the page unbuildable - and
   that stays the default: `Paginable.CreatePage(fragment, info)`, the four-argument
