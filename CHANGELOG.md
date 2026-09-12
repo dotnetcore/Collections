@@ -4,6 +4,28 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [Unreleased]
+
+### Added
+
+- `BiDictionary<TLeft, TRight>` - a strict one-to-one (bijective) map (F6-03): every left value
+  maps to exactly one right value and no right value is shared by two lefts, with both
+  directions answered in O(1) by two indexes kept in step on every write path — so a removed
+  or rebound entry frees its partner immediately on the other side. Conflict handling is
+  **strict** (R3-01 decision): `Add` throws `ArgumentException` when the left value already has
+  a binding or when the right value is already bound to a different left value, `TryAdd`
+  reports the same conditions without throwing, and there is deliberately no
+  silently-overwriting setter — overwriting a right value would silently unbind the left value
+  it used to belong to, an entry the caller never mentioned, so breaking an existing binding is
+  always an explicit `Remove(left)` or `RemoveRight(right)` first. The type implements
+  `IReadOnlyDictionary<TLeft, TRight>` for the forward direction and exposes the reverse
+  direction through `TryGetLeft` / `GetLeft(right)` / `ContainsRight` plus `AsReverse()`, a live
+  read-only `IReadOnlyDictionary<TRight, TLeft>` view served from the same indexes. `null` is
+  accepted on both sides through dedicated buckets (the binding `(null, null)` is expressible
+  and occupies one entry); `ToDictionary()` exports an independent snapshot that omits a
+  `null`-left binding, because a `Dictionary<TLeft, TRight>` can not key on `null` — the remark
+  says so explicitly.
+
 ## [6.2.0] - 2026-09-12
 
 Release covering both shipped modules (`Paginable` and `Multi`); every package ships version
