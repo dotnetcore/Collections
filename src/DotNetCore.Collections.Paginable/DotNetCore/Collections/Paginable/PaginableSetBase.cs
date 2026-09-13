@@ -15,7 +15,10 @@ namespace DotNetCore.Collections.Paginable
         /// <summary>
         /// Lazy pined paged cache. Concurrent: parallel paging must not corrupt the cache.
         /// </summary>
-        protected readonly ConcurrentDictionary<int, Lazy<IPage<T>>> _lazyPinedPagesCache;
+        // Both real constructors assign this; only the parameterless constructor (kept for
+        // serializer/designer scenarios, never used in-box) leaves it unassigned, so every
+        // reachable instance holds a non-null cache.
+        protected readonly ConcurrentDictionary<int, Lazy<IPage<T>>> _lazyPinedPagesCache = null!;
 
         /// <summary>
         /// Gets limited type
@@ -138,7 +141,18 @@ namespace DotNetCore.Collections.Paginable
         {
             if (pageNumber < 1 || pageNumber > PageCount)
                 throw new ArgumentOutOfRangeException(nameof(pageNumber));
-            return _lazyPinedPagesCache.TryGetValue(pageNumber, out lazyPage);
+
+            // ConcurrentDictionary.TryGetValue annotates its out parameter
+            // [MaybeNullWhen(false)], so it can not be forwarded to a non-nullable out
+            // parameter directly. Callers only read the value when this returns true.
+            if (_lazyPinedPagesCache.TryGetValue(pageNumber, out var cached))
+            {
+                lazyPage = cached;
+                return true;
+            }
+
+            lazyPage = null!;
+            return false;
         }
 
         /// <summary>

@@ -10,9 +10,6 @@ namespace DotNetCore.Collections.Paginable
     {
         private readonly ISugarQueryable<T> _sqlSugarQuery;
 
-        // ReSharper disable once UnusedMember.Local
-        private PaginableSqlSugarQuery() { }
-
         internal PaginableSqlSugarQuery(ISugarQueryable<T> select, int pageSize, int realPageCount, int realMemberCount)
             : base(pageSize, realPageCount, realMemberCount)
         {

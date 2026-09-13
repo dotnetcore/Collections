@@ -44,9 +44,11 @@ namespace DotNetCore.Collections.Paginable
 
         /// <summary>
         /// Gets the last member of this page; feed it back as the keyset anchor of the
-        /// next request. Returns <c>default</c> when the page is empty.
+        /// next request. Returns <c>default</c> - i.e. <c>null</c> for reference element
+        /// types - when the page is empty, so check <see cref="CurrentPageSize"/> before
+        /// dereferencing it.
         /// </summary>
-        public T LastMember => Members.Count > 0 ? Members[Members.Count - 1] : default;
+        public T? LastMember => Members.Count > 0 ? Members[Members.Count - 1] : default;
 
         /// <summary>
         /// Create a keyset page result.

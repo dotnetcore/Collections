@@ -20,7 +20,7 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="currentPageNumber"></param>
         /// <param name="pageSize"></param>
         /// <param name="additionalQueryFunc"></param>
-        public ChloeQueryState(IQuery<T> query, int currentPageNumber, int pageSize, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null)
+        public ChloeQueryState(IQuery<T> query, int currentPageNumber, int pageSize, Func<IQuery<T>, IQuery<T>>? additionalQueryFunc = null)
         {
             if (query is null)
                 throw new ArgumentNullException(nameof(query));

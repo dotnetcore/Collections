@@ -9,12 +9,9 @@ namespace DotNetCore.Collections.Paginable
     public class PaginableChloeQuery<T> : PaginableSetBase<T>
     {
         private readonly IQuery<T> _chloeQuery;
-        private readonly Func<IQuery<T>, IQuery<T>> _additionalQueryFunc;
+        private readonly Func<IQuery<T>, IQuery<T>>? _additionalQueryFunc;
 
-        // ReSharper disable once UnusedMember.Local
-        private PaginableChloeQuery() { }
-
-        internal PaginableChloeQuery(IQuery<T> select, int pageSize, int realPageCount, int realMemberCount, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null)
+        internal PaginableChloeQuery(IQuery<T> select, int pageSize, int realPageCount, int realMemberCount, Func<IQuery<T>, IQuery<T>>? additionalQueryFunc = null)
             : base(pageSize, realPageCount, realMemberCount)
         {
             _chloeQuery = select;
@@ -22,7 +19,7 @@ namespace DotNetCore.Collections.Paginable
         }
 
         internal PaginableChloeQuery(IQuery<T> select, int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount,
-            Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null)
+            Func<IQuery<T>, IQuery<T>>? additionalQueryFunc = null)
             : base(pageSize, realPageCount, realMemberCount, limitedMembersCount)
         {
             _chloeQuery = select;

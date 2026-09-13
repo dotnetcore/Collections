@@ -26,6 +26,32 @@ repository ships the same version (see `build/version.props`).
   `null`-left binding, because a `Dictionary<TLeft, TRight>` can not key on `null` — the remark
   says so explicitly.
 
+### Changed
+
+- **All eleven shipped packages now compile with nullable reference annotations enabled and
+  ship a fully annotated public API (F6-23)**: `DotNetCore.Collections.Multi`,
+  `DotNetCore.Collections.Paginable` and the nine ORM integration packages build warning-free
+  under `<Nullable>enable</Nullable>` across their whole target matrix — zero CS86xx
+  diagnostics, none silenced with `NoWarn` — so consumers who enable nullable in their own
+  project get accurate null-state analysis of these signatures instead of oblivious ones.
+  The full audit confirmed `DotNetCore.Collections.Multi` had been annotated since its
+  rebuild; the annotation work landed in the Paginable module and the integration packages.
+- One annotation is visible to consumers: `KeysetPage<T>.LastMember` is now declared
+  `T?`. It has always returned `default` — i.e. `null` for reference element types — when
+  the page is empty; the annotation now says so, so nullable-enabled callers are prompted to
+  check `CurrentPageSize` before dereferencing the anchor. No runtime behaviour changed
+  anywhere; this entry is annotation-only.
+- Low-generation targets (`net451` / `net461` / `net47` / `net48` / `netstandard2.0`) have no
+  in-box nullable attribute types; a single shared **internal** polyfill of the compiler's
+  nullability attributes (`NullableAttribute` / `NullableContextAttribute` /
+  `NullablePublicOnlyAttribute`, `build/NullabilityAttributes.cs`) is compiled into every
+  assembly for exactly those targets, mirroring what Roslyn embeds by itself when no
+  definition is reachable. `netstandard2.1` and `net6.0+` define the types in-box and do not
+  take the copy. No target framework was raised and no external package was introduced.
+- Dead private parameterless constructors on the paging collections (never callable, kept
+  only as ReSharper noise) were removed; they were the only path on which a paging
+  collection could exist with an unassigned internal state.
+
 ## [6.2.0] - 2026-09-12
 
 Release covering both shipped modules (`Paginable` and `Multi`); every package ships version

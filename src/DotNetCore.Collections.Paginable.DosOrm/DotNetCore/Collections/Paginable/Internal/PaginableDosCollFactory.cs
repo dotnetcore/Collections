@@ -18,7 +18,7 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is out of its allowed range.</exception>
         public static PaginableDosQuery<T> CreatePageSet<T>(FromSection<T> query, int? pageSize = null, int? limitedMemberCount = null,
-            Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null) where T : Entity
+            Func<FromSection<T>, FromSection<T>>? additionalQueryFunc = null) where T : Entity
         {
             if (query is null)
                 throw new ArgumentNullException(nameof(query));

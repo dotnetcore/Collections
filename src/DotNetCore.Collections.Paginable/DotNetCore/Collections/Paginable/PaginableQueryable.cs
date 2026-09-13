@@ -11,9 +11,6 @@ namespace DotNetCore.Collections.Paginable
     {
         private readonly IQueryable<T> _queryable;
 
-        // ReSharper disable once UnusedMember.Local
-        private PaginableQueryable() { }
-
         /// <summary>
         /// Paginable queryable collection.
         /// Public for async provider integrations (e.g. EF Core <c>ToPaginableAsync</c>)

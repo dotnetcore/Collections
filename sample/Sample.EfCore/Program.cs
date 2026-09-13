@@ -80,14 +80,14 @@ namespace Sample.EfCore
         {
             //...
 
-            public virtual DbSet<DemoModel> DemoModels { get; set; }
-            public virtual DbSet<DemoModelItem> DemoModelItems { get; set; }
+            public virtual DbSet<DemoModel> DemoModels { get; set; } = null!;
+            public virtual DbSet<DemoModelItem> DemoModelItems { get; set; } = null!;
         }
 
         public class DemoModel
         {
             public Guid Id { get; set; }
-            public List<DemoModelItem> Items { get; set; }
+            public List<DemoModelItem> Items { get; set; } = null!;
             public bool IsValid { get; set; }
         }
 
@@ -95,7 +95,7 @@ namespace Sample.EfCore
         {
             public Guid Id { get; set; }
             public Guid FatherId { get; set; }
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
         }
     }
 }

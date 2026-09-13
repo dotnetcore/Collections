@@ -10,12 +10,9 @@ namespace DotNetCore.Collections.Paginable
     {
         private readonly FromSection<T> _dosOrmQuery;
 
-        private readonly Func<FromSection<T>, FromSection<T>> _additionalQueryFunc;
+        private readonly Func<FromSection<T>, FromSection<T>>? _additionalQueryFunc;
 
-        // ReSharper disable once UnusedMember.Local
-        private PaginableDosQuery() { }
-
-        internal PaginableDosQuery(FromSection<T> select, int pageSize, int realPageCount, int realMemberCount, Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null)
+        internal PaginableDosQuery(FromSection<T> select, int pageSize, int realPageCount, int realMemberCount, Func<FromSection<T>, FromSection<T>>? additionalQueryFunc = null)
             : base(pageSize, realPageCount, realMemberCount)
         {
             _dosOrmQuery = select;
@@ -23,7 +20,7 @@ namespace DotNetCore.Collections.Paginable
         }
 
         internal PaginableDosQuery(FromSection<T> select, int pageSize, int realPageCount, int realMemberCount, int limitedMembersCount,
-            Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null)
+            Func<FromSection<T>, FromSection<T>>? additionalQueryFunc = null)
             : base(pageSize, realPageCount, realMemberCount, limitedMembersCount)
         {
             _dosOrmQuery = select;

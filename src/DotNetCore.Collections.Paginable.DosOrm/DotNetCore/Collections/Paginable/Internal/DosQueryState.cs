@@ -20,7 +20,7 @@ namespace DotNetCore.Collections.Paginable.Internal
         /// <param name="currentPageNumber"></param>
         /// <param name="pageSize"></param>
         /// <param name="additionalQueryFunc"></param>
-        public DosQueryState(FromSection<T> query, int currentPageNumber, int pageSize, Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null)
+        public DosQueryState(FromSection<T> query, int currentPageNumber, int pageSize, Func<FromSection<T>, FromSection<T>>? additionalQueryFunc = null)
         {
             if (query is null)
                 throw new ArgumentNullException(nameof(query));

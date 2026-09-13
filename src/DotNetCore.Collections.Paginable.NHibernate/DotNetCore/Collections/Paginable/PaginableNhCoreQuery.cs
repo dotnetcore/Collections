@@ -10,9 +10,6 @@ namespace DotNetCore.Collections.Paginable
     {
         private readonly IQueryOver<T> _nhibernateQueryOver;
 
-        // ReSharper disable once UnusedMember.Local
-        private PaginableNhCoreQuery() { }
-
         internal PaginableNhCoreQuery(IQueryOver<T> queryOver, int pageSize, int realPageCount, int realMemberCount)
             : base(pageSize, realPageCount, realMemberCount)
         {

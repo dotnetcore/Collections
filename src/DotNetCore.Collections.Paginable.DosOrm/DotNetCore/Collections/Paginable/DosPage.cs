@@ -23,7 +23,7 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="totalMemberCount"></param>
         /// <param name="additionalQueryFunc"></param>
         // ReSharper disable once RedundantBaseConstructorCall
-        public DosPage(FromSection<T> query, int currentPageNumber, int pageSize, int totalMemberCount, Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null) : base(false)
+        public DosPage(FromSection<T> query, int currentPageNumber, int pageSize, int totalMemberCount, Func<FromSection<T>, FromSection<T>>? additionalQueryFunc = null) : base(false)
         {
             var skip = (currentPageNumber - 1) * pageSize;
             var state = new DosQueryState<T>(query, currentPageNumber, pageSize, additionalQueryFunc);

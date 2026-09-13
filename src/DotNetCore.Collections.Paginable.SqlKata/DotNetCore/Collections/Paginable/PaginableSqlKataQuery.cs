@@ -11,9 +11,6 @@ namespace DotNetCore.Collections.Paginable
     {
         private readonly Query _sqlKataQuery;
 
-        // ReSharper disable once UnusedMember.Local
-        private PaginableSqlKataQuery() { }
-
         internal PaginableSqlKataQuery(Query query, int pageSize, int realPageCount, int realMemberCount)
             : base(pageSize, realPageCount, realMemberCount)
         {

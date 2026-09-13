@@ -25,7 +25,7 @@ namespace DotNetCore.Collections.Paginable
         /// </code>
         /// </example>
         public static PaginableDosQuery<T> ToPaginable<T>(this FromSection<T> query, int? limitedMemberCount = null,
-            Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null) where T : Entity
+            Func<FromSection<T>, FromSection<T>>? additionalQueryFunc = null) where T : Entity
             => PaginableDosCollFactory.CreatePageSet(query, limitedMemberCount: limitedMemberCount, additionalQueryFunc: additionalQueryFunc);
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace DotNetCore.Collections.Paginable
         /// </code>
         /// </example>
         public static PaginableDosQuery<T> ToPaginable<T>(this FromSection<T> query, int pageSize, int? limitedMemberCount = null,
-            Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null) where T : Entity
+            Func<FromSection<T>, FromSection<T>>? additionalQueryFunc = null) where T : Entity
             => PaginableDosCollFactory.CreatePageSet(query, pageSize, limitedMemberCount, additionalQueryFunc: additionalQueryFunc);
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace DotNetCore.Collections.Paginable
         /// var totalMemberCount = page.TotalMemberCount;
         /// </code>
         /// </example>
-        public static IPage<T> GetPage<T>(this FromSection<T> query, int pageNumber, Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null) where T : Entity
+        public static IPage<T> GetPage<T>(this FromSection<T> query, int pageNumber, Func<FromSection<T>, FromSection<T>>? additionalQueryFunc = null) where T : Entity
             => GetPage(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, additionalQueryFunc: additionalQueryFunc);
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace DotNetCore.Collections.Paginable
         /// var page = paginable.GetPage(15);
         /// </code>
         /// </example>
-        public static IPage<T> GetPage<T>(this FromSection<T> query, int pageNumber, int pageSize, Func<FromSection<T>, FromSection<T>> additionalQueryFunc = null)
+        public static IPage<T> GetPage<T>(this FromSection<T> query, int pageNumber, int pageSize, Func<FromSection<T>, FromSection<T>>? additionalQueryFunc = null)
             where T : Entity
         {
             if (query is null)

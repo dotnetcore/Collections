@@ -58,7 +58,7 @@ namespace DotNetCore.Collections.Paginable
         /// var totalMemberCount = page.TotalMemberCount;
         /// </code>
         /// </example>
-        public static IPage<T> GetPage<T>(this IQuery<T> query, int pageNumber, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null)
+        public static IPage<T> GetPage<T>(this IQuery<T> query, int pageNumber, Func<IQuery<T>, IQuery<T>>? additionalQueryFunc = null)
             => GetPage(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, additionalQueryFunc);
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace DotNetCore.Collections.Paginable
         /// var page = paginable.GetPage(15);
         /// </code>
         /// </example>
-        public static IPage<T> GetPage<T>(this IQuery<T> query, int pageNumber, int pageSize, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null)
+        public static IPage<T> GetPage<T>(this IQuery<T> query, int pageNumber, int pageSize, Func<IQuery<T>, IQuery<T>>? additionalQueryFunc = null)
         {
             if (query is null)
                 throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");

@@ -17,7 +17,22 @@
 	     when it launches each inner build, so the path below is unique per TFM. -->
 	<PropertyGroup>
 		<DocumentationFile>$(BaseOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+		<!-- F6-23: every library in this repository ships with nullable reference annotations
+		     enabled, so consumers compiling with nullable context get accurate null-state
+		     analysis of the public API. Per-project overrides stay possible (a csproj value
+		     wins over this import). -->
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
+
+	<!-- F6-23: the low-generation targets have no in-box nullable attribute types, so a single
+	     shared internal polyfill (build/NullabilityAttributes.cs) is compiled into each
+	     assembly for them - same shape Roslyn embeds itself when no definition is reachable.
+	     netstandard2.1 and net6.0+ define the types in-box and must NOT take this copy. The
+	     condition is evaluated per inner build, where $(TargetFramework) is set by the
+	     cross-targeting dispatch (same mechanism as the DocumentationFile path above). -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net451' or '$(TargetFramework)' == 'net461' or '$(TargetFramework)' == 'net47' or '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'netstandard2.0'">
+		<Compile Include="$(MSBuildThisFileDirectory)NullabilityAttributes.cs" Link="NullabilityAttributes.cs" />
+	</ItemGroup>
 
 	<Import Project="package.props" />
 

@@ -13,16 +13,17 @@ namespace DotNetCore.Collections.Paginable
     public abstract class PageBase<T> : IPage<T>
     {
         /// <summary>
-        /// Member list
+        /// Member list. <c>null</c> until <see cref="CheckOrInitializePage"/> has run the
+        /// initialize action; every read goes through that guard first.
         /// </summary>
         // ReSharper disable once InconsistentNaming
-        protected IList<IPageMember<T>> _memberList;
+        protected IList<IPageMember<T>>? _memberList;
 
         /// <summary>
-        /// Initialize action
+        /// Initialize action. Assigned by the page constructors; invoked exactly once.
         /// </summary>
         // ReSharper disable once InconsistentNaming
-        protected Action _initializeAction;
+        protected Action? _initializeAction;
 
         private volatile bool _mHasInitialized;
         private readonly object _mInitializeLock = new();
@@ -45,7 +46,7 @@ namespace DotNetCore.Collections.Paginable
         public IEnumerator<IPageMember<T>> GetEnumerator()
         {
             CheckOrInitializePage();
-            return _memberList.GetEnumerator();
+            return _memberList!.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -82,7 +83,7 @@ namespace DotNetCore.Collections.Paginable
             get
             {
                 CheckOrInitializePage();
-                return _memberList[index];
+                return _memberList![index];
             }
         }
 
@@ -103,7 +104,7 @@ namespace DotNetCore.Collections.Paginable
         public IEnumerable<T> ToOriginalItems()
         {
             CheckOrInitializePage();
-            return _memberList.Select(x => x.Value);
+            return _memberList!.Select(x => x.Value);
         }
 
         /// <summary>

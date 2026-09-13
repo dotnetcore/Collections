@@ -11,9 +11,6 @@ namespace DotNetCore.Collections.Paginable
     {
         private readonly IEnumerable<T> _enumerable;
 
-        // ReSharper disable once UnusedMember.Local
-        private PaginableEnumerable() { }
-
         internal PaginableEnumerable(IEnumerable<T> enumerable, int pageSize, int realPageCount, int realMemberCount)
             : base(pageSize, realPageCount, realMemberCount)
         {

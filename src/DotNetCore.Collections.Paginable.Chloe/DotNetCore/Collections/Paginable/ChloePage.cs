@@ -23,7 +23,7 @@ namespace DotNetCore.Collections.Paginable
         /// <param name="totalMemberCount"></param>
         /// <param name="additionalQueryFunc"></param>
         // ReSharper disable once RedundantBaseConstructorCall
-        public ChloePage(IQuery<T> query, int currentPageNumber, int pageSize, int totalMemberCount, Func<IQuery<T>, IQuery<T>> additionalQueryFunc = null) : base(false)
+        public ChloePage(IQuery<T> query, int currentPageNumber, int pageSize, int totalMemberCount, Func<IQuery<T>, IQuery<T>>? additionalQueryFunc = null) : base(false)
         {
             var skip = (currentPageNumber - 1) * pageSize;
             var state = new ChloeQueryState<T>(query, currentPageNumber, pageSize, additionalQueryFunc);

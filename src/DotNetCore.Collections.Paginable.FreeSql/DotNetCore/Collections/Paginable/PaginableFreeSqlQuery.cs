@@ -11,9 +11,6 @@ namespace DotNetCore.Collections.Paginable
         private readonly ISelect<T> _freeSqlQuery;
         private readonly bool _includeNestedMembers;
 
-        // ReSharper disable once UnusedMember.Local
-        private PaginableFreeSqlQuery() { }
-
         internal PaginableFreeSqlQuery(ISelect<T> select, int pageSize, int realPageCount, int realMemberCount, bool includeNestedMembers)
             : base(pageSize, realPageCount, realMemberCount)
         {
