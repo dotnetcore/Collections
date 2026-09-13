@@ -540,6 +540,7 @@ using(var connection = new SqlConnection(connectionString))
 | **`TwoKeyDictionary<K1, K2, V>`** | key components | 2 components &#8594; 1 value | `this[k1, k2]` | Exactly the above with exactly two components **of different types**, with a typed indexer instead of a `TKey[]`. Its second axis is queried through a maintained reverse index (`K2` &#8594; set of `K1`), so `GetBySecondKey` / `CountOfSecondKey` / `ContainsSecondKey` / `RemoveBySecondKey` visit only the requested slice instead of scanning the map. |
 | **`ThreeKeyDictionary<K1, K2, K3, V>`** | key components | 3 components &#8594; 1 value | `this[k1, k2, k3]` | The same idea with exactly three differently typed components, following the same axis-tag scheme. The first axis is a prefix, so its slice (`GetByFirstKey` / `CountOfFirstKey` / `RemoveByFirstKey`) is a trie walk; the second and third axes are deliberately **not** backed by an index here — their slices scan, O(n), and the remarks say so. Use `MultiKeyDictionary<TKey, TValue>` when an axis other than the first must be queried hard, with the key order putting that axis first. |
 | **`BiDictionary<TLeft, TRight>`** | nothing — both sides are unique | 1 left &#8595; 1 right (bijective), both directions O(1) | `this[left]`, `GetLeft(right)` | A strict one-to-one map: every left value maps to exactly one right value and no right value is shared by two lefts, with both directions answered in O(1) from two indexes kept in step on every write path. Conflicts are **strict** — `Add` throws `ArgumentException` when the right value is already bound to a different left, `TryAdd` reports instead of throwing, and there is deliberately no silently-overwriting setter, because overwriting would silently unbind an entry the caller never mentioned: break an existing binding with an explicit `Remove` / `RemoveRight` first. `null` is accepted on both sides through dedicated buckets; `AsReverse()` returns a live read-only view of the right-to-left direction. |
+| **`ReverseMultiDictionary<V, K>`** | values (inverted) | N keys &#8594; 1 value, seen from the value | `this[value]` | The inverse of `MultiDictionary<TKey, TValue>`: a **snapshot** mapping every stored value to the set of keys that hold it, so "which keys store this value?" is answered in O(1). The constructor copies the bindings out of the source map into a self-contained instance (no reference chain, safe to serialize), and the instance stays mutable on its own with the "no value-less key" invariant mirrored — a value disappears once its last key is removed. Per value the keys form a set, so multiplicities collapse; a `null` value lives in a dedicated bucket while a `null` key is rejected (the exact mirror of the source map). The member names mirror `MultiDictionary` with the axes swapped: `Count`/`ValueCount` counts distinct values, `TotalKeyCount` counts bindings, `KeyCount(value)` counts one value's keys, `ContainsValue(value)` is the O(1) presence check and `ContainsKey(key)` scans. For a read-only view that keeps answering from the live map instead, use `MultiDictionary<TKey, TValue>.AsReverse()` — the two agree at any point in time. |
 
 | **`ImmutableMultiList<T>`** / **`ImmutableMultiDictionary<TKey, TValue>`** | elements / values, frozen | as the mutable type, but write-once | any read member | The immutable counterparts of the two core types: an instance never changes, so any number of threads may read it without locks. Mutations return a new instance (or the receiver itself when nothing would change); bulk mutation goes through `ToBuilder()`, whose builder shares the source's state until its first write (copy-on-write) and whose `ToImmutable()` hands back the very source instance while untouched — structural sharing you can assert with `ReferenceEquals`. Both round-trip through the serializable models (`ToSerializableModel` / `FromModel`). |
 | **`ConcurrentMultiDictionary<TKey, TValue>`** | values, thread-safe | 1 key &#8594; N values, sharded | `this[key]` | The thread-safe counterpart of `MultiDictionary<TKey, TValue>`: keys are routed to shards, each an independent `MultiDictionary` behind its own lock, so writes on different keys proceed in parallel. Whole-map reads (`Count`, `TotalValueCount`, `ContainsValue`, enumeration, `Snapshot()`) take a consistent snapshot by locking every shard once, in index order; enumeration is over a snapshot and immune to concurrent writes. |
@@ -554,6 +555,7 @@ Read the name as "what is multiplied": `MultiList` multiplies elements, `MultiDi
 - values repeat under one key, keys and values both kept sorted &#8594; `OrderedMultiDictionary<TKey, TValue>`;
 - key components combine, and exactly one value is stored per complete key &#8594; `MultiKeyDictionary<TKey, TValue>` (or `TwoKeyDictionary<K1, K2, V>` / `ThreeKeyDictionary<K1, K2, K3, V>` for two or three differently typed components).
 - nothing repeats — each left maps to exactly one right and each right back to exactly one left, and both directions are first-class O(1) lookups &#8594; `BiDictionary<TLeft, TRight>`.
+- many keys share one value and the question is "which keys hold *this* value?" &#8594; invert the map: `MultiDictionary<TKey, TValue>.AsReverse()` for a live read-only view, or `ReverseMultiDictionary<V, K>` for a self-contained snapshot (also usable as a standalone inverted index you fill by hand).
 
 In particular, do **not** expect `MultiDictionary<A, B>` to answer "everything for `B`": it maps *one* key to *many* values, not many keys to one value. Looking a composite key up by one of its components is the trie's job — `MultiKeyDictionary<TKey,TValue>.GetByPrefix` (any arity) or `TwoKeyDictionary<K1,K2,V>.GetByFirstKey` / `GetBySecondKey` (arity 2).
 
@@ -565,7 +567,7 @@ That set convention also fixes what the batch delete means: `RemoveRange(key, va
 
 A multiset argument is read **in place**. Every set operation and subset/superset judgment of `MultiList<T>` — and its `Equals` — reads a `MultiList<T>` argument directly instead of copying it first, so a chained `a.UnionWith(b)` allocates nothing, and the three mutating operations (`IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`) only ever pay for one small staging buffer that is reused across calls. An argument of any other shape (an array, a LINQ sequence, a different `MultiList<T>` whose comparer is not equivalent) is still counted once first, because its multiplicities have to be known before the operation can define its result.
 
-All six types ship in `DotNetCore.Collections.Multi` and target the same frameworks as the package (see the matrix above). Equality always goes through a comparer, never through hash codes alone, so hash collisions between distinct elements/keys can not corrupt a collection: the hash-shaped types match with `IEqualityComparer<T>`, while `OrderedMultiList<T>` matches with its `IComparer<T>`, where "compares equal" *is* "is the same element". `null` handling follows the shape of each type: `MultiList<T>` and `OrderedMultiList<T>` support `null` elements (`null` sorts first under the default comparer), `MultiDictionary<TKey, TValue>` rejects `null` keys but allows `null` values, both trie types support `null` key components, and `BiDictionary<TLeft, TRight>` accepts `null` on both sides through dedicated buckets. None of the types is thread-safe.
+All of the types above ship in `DotNetCore.Collections.Multi` and target the same frameworks as the package (see the matrix above). Equality always goes through a comparer, never through hash codes alone, so hash collisions between distinct elements/keys can not corrupt a collection: the hash-shaped types match with `IEqualityComparer<T>`, while `OrderedMultiList<T>` matches with its `IComparer<T>`, where "compares equal" *is* "is the same element". `null` handling follows the shape of each type: `MultiList<T>` and `OrderedMultiList<T>` support `null` elements (`null` sorts first under the default comparer), `MultiDictionary<TKey, TValue>` rejects `null` keys but allows `null` values, both trie types support `null` key components, `BiDictionary<TLeft, TRight>` accepts `null` on both sides through dedicated buckets, and `ReverseMultiDictionary<V, K>` mirrors its source map inverted — a `null` value is a legitimate entry of the index (dedicated bucket) while a `null` key can never be stored. None of the types is thread-safe.
 
 ### Save and restore
 
@@ -680,6 +682,22 @@ users.TryAdd(3, "bob");      // false — "bob" is already bound to 2, reported 
 // users.Add(3, "bob");      // throws ArgumentException — break the old binding explicitly:
 users.Remove(2);             // frees "bob"
 users.TryAdd(3, "bob");      // true
+
+// ReverseMultiDictionary<V, K>: the inverted snapshot — which keys store this value?
+var map = new MultiDictionary<string, int>();
+map.Add("orders", 1001);
+map.Add("customers", 1001);
+map.Add("customers", 1002);
+
+var inverted = new ReverseMultiDictionary<int, string>(map);
+inverted[1001];                  // ["orders", "customers"] — O(1)
+inverted.KeyCount(1001);         // 2
+inverted.ContainsKey("orders");  // true — some value stores the key "orders"
+inverted.TotalKeyCount;          // 3 distinct (value, key) bindings
+
+map.Add("invoices", 1001);       // the snapshot does not follow the map ...
+inverted[1001];                  // still ["orders", "customers"]
+map.AsReverse()[1001];           // ... but the live view does: ["orders", "customers", "invoices"]
 ```
 
 ### Examples

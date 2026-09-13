@@ -25,6 +25,33 @@ repository ships the same version (see `build/version.props`).
   and occupies one entry); `ToDictionary()` exports an independent snapshot that omits a
   `null`-left binding, because a `Dictionary<TLeft, TRight>` can not key on `null` — the remark
   says so explicitly.
+- `ReverseMultiDictionary<V, K>` - the inverse of `MultiDictionary<TKey, TValue>` (F6-04): a
+  snapshot mapping every stored value to the set of keys that hold it, so "which keys store this
+  value?" is answered in O(1) (with `MultiDictionary.AsReverse()` as the live counterpart, see
+  below). The constructors copy the bindings out of the source map into a fully self-contained
+  instance — no reference chain, so the snapshot stays as it was built while the map changes or
+  is dropped, and it is safe to serialize (R3-02 decision: snapshot type + live view, no
+  bidirectional synchronization). The instance is also a standalone mutable collection of its
+  own, and the "no value-less key" invariant of `MultiDictionary` is mirrored — a value
+  disappears automatically once its last key is removed. Per value the keys form a set, so a key
+  that stores one value several times is listed once (multiplicities collapse); value equality
+  on the indexed axis is `EqualityComparer<V>.Default` (the notion the map's own backwards index
+  uses) and the stored keys compare with the source map's key comparer by default. The member
+  names mirror `MultiDictionary` with the axes swapped: `Count` / `ValueCount` count distinct
+  values, `TotalKeyCount` counts distinct bindings, `KeyCount(value)` counts one value's keys,
+  `ContainsValue(value)` is the O(1) presence check while `ContainsKey(key)` scans the stored
+  keys, and a missing value yields an empty collection rather than throwing. A `null` value of
+  the source surfaces as a `null` entry of the snapshot through a dedicated bucket, while a
+  `null` key is rejected with `ArgumentNullException` — the exact mirror of the source map,
+  which allows `null` values and rejects `null` keys.
+- `MultiDictionary<TKey, TValue>.AsReverse()` - the live half of the inversion entry points: a
+  read-only `IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>>` view served directly from
+  the backwards index the map already maintains for `ContainsValue` (plus the `null`-value
+  bucket), so building it costs nothing, every read runs in O(1), and every subsequent mutation
+  of the map is visible immediately. The same collapse, comparer and `null`-entry semantics as
+  `ReverseMultiDictionary<V, K>`; a value nobody stores yields an empty collection rather than
+  an exception, matching the map's own indexer. The view exposes internal state without copying
+  and is not thread-safe.
 
 ### Changed
 

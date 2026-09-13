@@ -805,6 +805,51 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Returns a live read-only <em>inverted</em> view of the map: value &#8594; the set of
+        /// keys that store it. Lookups and enumeration reflect subsequent changes to the owning
+        /// map; mutating members are not exposed.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The view is served from the backwards index this map already maintains for
+        /// <see cref="ContainsValue(TValue)"/> (plus the dedicated <c>null</c>-value bucket), so
+        /// building it costs nothing and every read runs in O(1). It is the <b>live</b> half of
+        /// the two inversion entry points (R3-02): when a self-contained copy that survives the
+        /// map is wanted instead, build a <see cref="ReverseMultiDictionary{TValue,TKey}"/>
+        /// snapshot - its constructor copies the bindings out, and the two agree at any point in
+        /// time.
+        /// </para>
+        /// <para>
+        /// A key that stores one value several times (a duplicating inner collection) is listed
+        /// once per value: the inversion collapses multiplicities. Value equality is
+        /// <see cref="EqualityComparer{TValue}.Default"/> - the notion the backwards index itself
+        /// uses - and the keys of a set compare with the map's own key comparer. A value nobody
+        /// stores yields an empty collection rather than an exception, matching this map's own
+        /// indexer; a stored <c>null</c> value surfaces as a <c>null</c> entry that enumerates
+        /// last.
+        /// </para>
+        /// <para>
+        /// This view is not thread-safe: it exposes the map's internal state without copying.
+        /// Wrap the map with external synchronization for concurrent use.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// map.Add("orders", 1001);
+        /// map.Add("customers", 1001);
+        ///
+        /// IReadOnlyDictionary&lt;int, IReadOnlyCollection&lt;string&gt;&gt; inverted = map.AsReverse();
+        /// inverted[1001];   // ["orders", "customers"] - live: map changes appear here
+        /// map.Add("invoices", 1001);
+        /// inverted[1001];   // ["orders", "customers", "invoices"]
+        /// </code>
+        /// </example>
+        public IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>> AsReverse()
+        {
+            return new ReverseView(this);
+        }
+
+        /// <summary>
         /// Returns the contents in expanded per-key form, comma separated,
         /// e.g. <c>k1:[v1,v2],k2:[v3]</c>.
         /// </summary>
@@ -1071,6 +1116,144 @@ namespace DotNetCore.Collections.Multi
             private static IReadOnlyCollection<TValue> AsView(ICollection<TValue> collection)
             {
                 return (IReadOnlyCollection<TValue>)collection;
+            }
+        }
+
+        /// <summary>
+        /// The live inverted view returned by <see cref="AsReverse"/>: it reads the owner's
+        /// backwards index (<see cref="_valueIndex"/> and the <c>null</c>-value bucket) directly
+        /// on every access, so no state is copied and every mutation of the owner is visible
+        /// immediately.
+        /// </summary>
+        private sealed class ReverseView : IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>>
+        {
+            private static readonly IReadOnlyCollection<TKey> EmptyKeys = new TKey[0];
+
+            private readonly MultiDictionary<TKey, TValue> _owner;
+
+            public ReverseView(MultiDictionary<TKey, TValue> owner)
+            {
+                _owner = owner;
+            }
+
+            public int Count => _owner._valueIndex.Count + (_owner._nullValueKeys != null ? 1 : 0);
+
+            public IEnumerable<TValue> Keys
+            {
+                get
+                {
+                    foreach (var value in _owner._valueIndex.Keys)
+                    {
+                        yield return value;
+                    }
+
+                    if (_owner._nullValueKeys != null)
+                    {
+                        yield return default!;
+                    }
+                }
+            }
+
+            public IEnumerable<IReadOnlyCollection<TKey>> Values
+            {
+                get
+                {
+                    foreach (var keys in _owner._valueIndex.Values)
+                    {
+                        yield return new KeySetView(keys);
+                    }
+
+                    if (_owner._nullValueKeys != null)
+                    {
+                        yield return new KeySetView(_owner._nullValueKeys);
+                    }
+                }
+            }
+
+            public IReadOnlyCollection<TKey> this[TValue value]
+            {
+                get
+                {
+                    if (value == null)
+                    {
+                        return _owner._nullValueKeys != null
+                            ? new KeySetView(_owner._nullValueKeys)
+                            : EmptyKeys;
+                    }
+
+                    return _owner._valueIndex.TryGetValue(value, out var keys)
+                        ? new KeySetView(keys)
+                        : EmptyKeys;
+                }
+            }
+
+            public bool ContainsKey(TValue value)
+            {
+                return value == null
+                    ? _owner._nullValueKeys != null
+                    : _owner._valueIndex.ContainsKey(value);
+            }
+
+            public bool TryGetValue(TValue value, out IReadOnlyCollection<TKey> keys)
+            {
+                if (ContainsKey(value))
+                {
+                    keys = this[value];
+                    return true;
+                }
+
+                keys = null!;
+                return false;
+            }
+
+            public IEnumerator<KeyValuePair<TValue, IReadOnlyCollection<TKey>>> GetEnumerator()
+            {
+                foreach (var pair in _owner._valueIndex)
+                {
+                    yield return new KeyValuePair<TValue, IReadOnlyCollection<TKey>>(
+                        pair.Key, new KeySetView(pair.Value));
+                }
+
+                if (_owner._nullValueKeys != null)
+                {
+                    yield return new KeyValuePair<TValue, IReadOnlyCollection<TKey>>(
+                        default!, new KeySetView(_owner._nullValueKeys));
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            /// <summary>
+            /// A read-only wrapper serving a <see cref="HashSet{TKey}"/> of the owner's backwards
+            /// index as <see cref="IReadOnlyCollection{TKey}"/>. The framework's own
+            /// <c>HashSet&lt;T&gt;</c> does not declare that interface on net451 / net461
+            /// (neither statically nor at runtime), so a plain cast would fail on exactly those
+            /// targets the package supports; the wrapper is safe everywhere and keeps the view
+            /// live.
+            /// </summary>
+            private sealed class KeySetView : IReadOnlyCollection<TKey>
+            {
+                private readonly HashSet<TKey> _keys;
+
+                public KeySetView(HashSet<TKey> keys)
+                {
+                    _keys = keys;
+                }
+
+                public int Count => _keys.Count;
+
+                public IEnumerator<TKey> GetEnumerator()
+                {
+                    return _keys.GetEnumerator();
+                }
+
+                IEnumerator IEnumerable.GetEnumerator()
+                {
+                    return GetEnumerator();
+                }
             }
         }
 
