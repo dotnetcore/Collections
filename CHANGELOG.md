@@ -4,7 +4,7 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
-## [Unreleased]
+## [6.3.0] - 2026-09-14
 
 ### Added
 
@@ -78,6 +78,15 @@ repository ships the same version (see `build/version.props`).
 - Dead private parameterless constructors on the paging collections (never callable, kept
   only as ReSharper noise) were removed; they were the only path on which a paging
   collection could exist with an unassigned internal state.
+
+### Breaking
+
+- None. This release is additive and annotation-only: the three new public types
+  (`BiDictionary<TLeft,TRight>`, `ReverseMultiDictionary<V,K>`, and
+  `MultiDictionary<TKey,TValue>.AsReverse()`) extend the surface without changing any
+  existing signature, and the nullable rollout (F6-23) is annotation-only —
+  `KeysetPage<T>.LastMember` is now declared `T?` but its IL signature and runtime
+  behaviour are unchanged.
 
 ## [6.2.0] - 2026-09-12
 
