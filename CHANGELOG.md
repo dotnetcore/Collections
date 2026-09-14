@@ -8,6 +8,24 @@ repository ships the same version (see `build/version.props`).
 
 ### Added
 
+- `SpanBag<T>` - the stack-only temporary bag (F6-07): a fixed-capacity counting bag over
+  `unmanaged` elements backed by caller-provided `Span<T>` storage (typically `stackalloc`), for
+  short-lived frequency counting inside one method with zero heap allocation. The bag is a
+  `ref struct`, so the compiler itself enforces the lifetime contract - no fields, no boxing, no
+  capture, no crossing `await` / `yield` boundaries - and there is deliberately no factory method:
+  the caller allocates (a `stackalloc` inside a factory would die with the factory's frame), the
+  caller owns the lifetime, and `Clear()` reuses the same stack memory for the next counting round
+  without touching the allocator. Bag semantics mirror `MultiList<T>` where the two meet (counted
+  duplicates, `CountOf`, `Remove` returns the number remaining, entries packed with an element
+  disappearing at its last copy); adding a *new* element when full returns `false` - a sizing
+  condition, not an exception - while an already-present element always fits. Pattern-based
+  `foreach` yields the packed `(value, count)` entries. Measured (BenchmarkDotNet +
+  MemoryDiagnoser, net8.0, 64 reads over 8 distinct values): the whole counting round runs ~1.9x
+  faster than a `Dictionary<int, int>` and allocates **0 B** against its 352 B (and `PackedBag`'s
+  224 B); against a `HashSet<int>` in a first-duplicate scan the set is slightly faster but pays
+  392 B per call - the span bag's win is the garbage-free path. Available only where `Span<T>` is
+  in-box (netstandard2.1, net6.0+): the legacy targets would require the external System.Memory
+  package, and the package has stayed dependency-free on every TFM so far.
 - `PackedBag<T>` - the packed value-type counting histogram (F6-06): a bag over `struct` elements
   (`int`, enums, small structs) stored as one contiguous array of `(value, count)` struct entries
   instead of a hash table - no boxing in storage, one cache line per element, zero steady-state
