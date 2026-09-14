@@ -27,7 +27,7 @@ namespace DotNetCore.Collections.Multi
     /// trades per-update heap maintenance for per-update O(1): it is fastest when queries come
     /// in bursts and remains correct under any interleaving. Measured (BenchmarkDotNet,
     /// net8.0, 512 adds over 32 distinct values): build-once + 64 Top-1 queries ~1.7x faster
-    /// than re-sorting a <see cref="MultiList{int}"/>'s entries per query with ~1.4x less
+    /// than re-sorting a MultiList&lt;int&gt;'s entries per query with ~1.4x less
     /// garbage; for a build-once-query-once workload, sorting a
     /// <see cref="MultiList{T}"/> once instead is the cheaper route - that boundary is
     /// documented rather than hidden.

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- F6-24 pins the AsReadOnlyView / IReadOnlyCollection exposure hazard at RUNTIME on the
+         affected .NET Framework generation: the framework's HashSet<T> / SortedSet<T> do not
+         declare IReadOnlyCollection<T> on any 4.x target (neither statically nor at runtime),
+         so the pre-fix bare cast threw InvalidCastException exactly here and on net451/net461 -
+         and a net8.0-only test run can never see it. net462 is the lowest .NET Framework target
+         the current xunit runner stack executes; at runtime the machine's 4.x CLR serves the
+         same framework interface surface the hazard lives on. The main test suite stays
+         net8.0-only; this project runs on Windows CI alongside it. -->
+    <TargetFramework>net462</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="Shouldly" Version="4.2.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Multi\DotNetCore.Collections.Multi.csproj" />
+  </ItemGroup>
+
+</Project>

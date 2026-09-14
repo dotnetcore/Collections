@@ -928,9 +928,13 @@ namespace DotNetCore.Collections.Multi
 
         private IReadOnlyCollection<TValue> AsReadOnlyView(ICollection<TValue> collection)
         {
-            // OrderedMultiList<T> and SortedSet<T> (the two built-in inner collections) implement
-            // IReadOnlyCollection<TValue>; the cast is a contract, not a conversion.
-            return (IReadOnlyCollection<TValue>)collection;
+            // Wrapped, not cast: the framework's SortedSet<T> (the allowDuplicateValues:false
+            // factory) does not declare IReadOnlyCollection<T> on the .NET Framework generation
+            // the package supports (F6-24) - the reference assemblies of net451/net461 lack the
+            // declaration and the 4.5.1/4.6.1-era runtimes lack the interface itself, so a bare
+            // cast fails exactly there. The internal wrapper is safe everywhere and keeps the
+            // view live.
+            return new ReadOnlyCollectionView<TValue>(collection);
         }
 
         /// <summary>
@@ -1026,7 +1030,8 @@ namespace DotNetCore.Collections.Multi
 
             private static IReadOnlyCollection<TValue> AsView(ICollection<TValue> collection)
             {
-                return (IReadOnlyCollection<TValue>)collection;
+                // Same rationale as OrderedMultiDictionary.AsReadOnlyView (F6-24): wrapped, never cast.
+                return new ReadOnlyCollectionView<TValue>(collection);
             }
         }
 

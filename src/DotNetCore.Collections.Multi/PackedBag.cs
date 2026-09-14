@@ -17,7 +17,7 @@ namespace DotNetCore.Collections.Multi
     /// contiguous <c>Entry[]</c> of <c>(T Value, int Count)</c> structs: no hash table, no
     /// per-entry object overhead, no boxing of stored values, and one cache line carries both a
     /// value and its count. The measured trade-off (BenchmarkDotNet, net8.0, against
-    /// <see cref="MultiList{int}"/>): for dense domains the packed layout wins outright — at 4
+    /// MultiList&lt;int&gt;): for dense domains the packed layout wins outright — at 4
     /// distinct values Add is ~1.7x and CountOf ~2.1x faster, building a 32-element histogram
     /// allocates ~2.7x less (608 B vs 1616 B) and runs ~1.4x faster, and enumerating the whole
     /// histogram is ~1.5x faster with ~1.5x less garbage. Around 16-32 distinct values the

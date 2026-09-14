@@ -27,7 +27,7 @@ namespace DotNetCore.Collections.Multi.Tests
 
             // A span can not be captured by the Should.Throw lambda (ref struct), so the
             // construction is guarded inline.
-            ArgumentException? caught = null;
+            ArgumentException caught = null;
             try
             {
                 var ignored = new SpanBag<int>(values, counts);

@@ -6,11 +6,13 @@ on:
     paths:
       - 'src/DotNetCore.Collections.Multi/**'
       - 'tests/DotNetCore.Collections.Multi.Tests/**'
+      - 'tests/DotNetCore.Collections.Multi.NetFxTests/**'
       - '.github/workflows/multi-tests.yml'
   pull_request:
     paths:
       - 'src/DotNetCore.Collections.Multi/**'
       - 'tests/DotNetCore.Collections.Multi.Tests/**'
+      - 'tests/DotNetCore.Collections.Multi.NetFxTests/**'
 
 jobs:
   test:
@@ -36,5 +38,12 @@ jobs:
       - name: Pack
         run: dotnet pack src/DotNetCore.Collections.Multi/DotNetCore.Collections.Multi.csproj -c Release --no-build
 
-      - name: Test
+      - name: Test (net8.0)
         run: dotnet test tests/DotNetCore.Collections.Multi.Tests/DotNetCore.Collections.Multi.Tests.csproj -c Release
+
+      - name: Test (.NET Framework regression, F6-24)
+        # net462: the lowest .NET Framework target the xunit runner stack executes. Pins the
+        # IReadOnlyCollection exposure at runtime on the affected generation (the framework's
+        # HashSet<T> / SortedSet<T> do not declare the interface on net451/net461 reference
+        # assemblies or 4.5.1/4.6.1-era runtimes), which a net8.0-only run can never see.
+        run: dotnet test tests/DotNetCore.Collections.Multi.NetFxTests/DotNetCore.Collections.Multi.NetFxTests.csproj -c Release

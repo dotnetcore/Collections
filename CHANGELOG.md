@@ -86,6 +86,29 @@ repository ships the same version (see `build/version.props`).
   contract holds on every supported target — including net451 / net461, where the framework's
   `HashSet<T>` does not declare that interface (the hazard F6-24 fixes for `MultiDictionary`).
 
+### Breaking
+
+- The read-only value views of the multimaps are now served through an internal live wrapper
+  instead of a bare cast to `IReadOnlyCollection<TValue>` (F6-24, root cure): the affected
+  members are `MultiDictionary<TKey, TValue>`'s indexer / `TryGetValue` / `AsReadOnly` /
+  `ToDictionary` / enumerations, its `AsReverse()` key collections, and the same surface of
+  `OrderedMultiDictionary<TKey, TValue>`. **No signature changes anywhere** - every member still
+  declares the same `IReadOnlyCollection<TValue>` / `IReadOnlyDictionary<...>` return type, and
+  the views remain live. What changes is the concrete object behind the interface: it used to be
+  the inner `List<TValue>` / `HashSet<TValue>` / `SortedSet<TValue>` itself on runtimes where
+  those declare `IReadOnlyCollection<T>` (modern .NET), and is now always an internal wrapper.
+  Code that cast the returned view back to the concrete inner collection type (e.g.
+  `(HashSet<TValue>)map[key]`) - never a supported pattern - will now throw; code working against
+  the declared interfaces is unaffected. The reason for the change: the .NET Framework
+  generation the package supports does not declare the interface on `HashSet<T>` /
+  `SortedSet<T>` - the net451/net461 reference assemblies reject a direct assignment
+  (CS0266) and the 4.5.1/4.6.1-era runtimes throw `InvalidCastException` on the cast - so the
+  bare cast was a runtime crash exactly on the deduplicating inner collections
+  (`allowDuplicateValues: false`) of those low-generation consumers. The wrapper removes the
+  dependency on the interface declaration entirely, on every target.
+- Nothing else. The four new types of this cycle (`MultiKeyMultiDictionary<TKey, TValue>`,
+  `PackedBag<T>`, `SpanBag<T>`, `FrequencyPriorityBag<T>`) are additive.
+
 ## [6.3.0] - 2026-09-14
 
 ### Added

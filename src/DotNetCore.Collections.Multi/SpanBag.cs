@@ -323,6 +323,10 @@ namespace DotNetCore.Collections.Multi
             private readonly int _size;
             private int _index;
 
+            /// <summary>
+            /// Initializes the enumerator over the bag's packed storage. Created only by
+            /// <see cref="SpanBag{T}.GetEnumerator"/>.
+            /// </summary>
             public EntryEnumerator(Span<T> values, Span<int> counts, int size)
             {
                 _values = values;

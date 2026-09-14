@@ -339,9 +339,9 @@ namespace DotNetCore.Collections.Multi.Tests
             long seq = 0;
 
             // Expected most frequent: max count, ties by the smallest (earliest) stamp.
-            string? ExpectedMost()
+            string ExpectedMost()
             {
-                string? best = null;
+                string best = null;
                 var bestCount = 0;
                 var bestSeq = long.MaxValue;
                 foreach (var pair in model)
