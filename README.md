@@ -257,6 +257,7 @@ repeat*, never by name similarity.
 | `MultiKeyDictionary<TKey, TValue>` | key components | N components &#8594; 1 value |
 | `TwoKeyDictionary<K1, K2, V>` | key components | 2 components &#8594; 1 value |
 | `ThreeKeyDictionary<K1, K2, K3, V>` | key components | 3 components &#8594; 1 value |
+| `MultiKeyMultiDictionary<TKey, TValue>` | key components and values | N components &#8594; N values |
 | `BiDictionary<TLeft, TRight>` | nothing (bijective) | 1 left &#8596; 1 right |
 | `ReverseMultiDictionary<V, K>` | values, inverted | 1 value &#8594; N keys |
 | `ImmutableMultiList<T>` / `ImmutableMultiDictionary<TKey, TValue>` | frozen | write-once |
@@ -272,6 +273,8 @@ The quick decision list:
 - key components combine, one value per complete key &#8594; `MultiKeyDictionary<TKey, TValue>` (or
   `TwoKeyDictionary<K1, K2, V>` / `ThreeKeyDictionary<K1, K2, K3, V>` for two or three differently
   typed components);
+- key components combine, many values per complete key, queried by prefix &#8594;
+  `MultiKeyMultiDictionary<TKey, TValue>`;
 - each left maps to exactly one right and each right back to exactly one left, both directions O(1)
   &#8594; `BiDictionary<TLeft, TRight>`;
 - many keys share one value and the question is "which keys hold *this* value?" &#8594; invert the map:
@@ -326,6 +329,18 @@ components. The first axis is a prefix, so its slice (`GetByFirstKey` / `CountOf
 index and scan O(n). Use `MultiKeyDictionary<TKey, TValue>` when an axis other than the first must be
 queried hard, with the key order putting that axis first.
 
+**`MultiKeyMultiDictionary<TKey, TValue>`** — the composite key of a trie *and* several values per
+complete key: the combination of `MultiKeyDictionary<TKey, TValue>` (N components &#8594; 1 value)
+and `MultiDictionary<TKey, TValue>` (1 key &#8594; N values). The trie's prefix projection carries
+over (`GetByPrefix` / `CountOfPrefix` / `GetSuffixes` / `GetBranches` / `RemovePrefix`), and the
+value side mirrors `MultiDictionary`: a configurable inner collection factory
+(`allowDuplicateValues`), `AddRange` / `RemoveRange`, the per-key value set operations, the O(1)
+cached `TotalValueCount`, and the "no value-less key" invariant — a key disappears from the trie
+together with its last value. The composite key here is a trie key of homogeneous components of any
+arity, addressable by prefix; `TwoKeyDictionary<K1, K2, V>` / `ThreeKeyDictionary<K1, K2, K3, V>`
+remain the strongly typed facades for two or three *differently typed* components that are always
+addressed in full.
+
 ### One-to-one and inverted
 
 **`BiDictionary<TLeft, TRight>`** — a strict one-to-one map: every left value maps to exactly one
@@ -378,7 +393,10 @@ bag has one global state its operations compare against. For read-mostly workloa
   equal" *is* "is the same element".
 - **`null` handling follows each type's shape.** `MultiList<T>` and `OrderedMultiList<T>` support
   `null` elements (`null` sorts first under the default comparer); `MultiDictionary<TKey, TValue>`
-  rejects `null` keys but allows `null` values; both trie types support `null` key components;
+  rejects `null` keys but allows `null` values; the trie types (`MultiKeyDictionary<TKey, TValue>`,
+  `TwoKeyDictionary<K1, K2, V>`, `ThreeKeyDictionary<K1, K2, K3, V>` and
+  `MultiKeyMultiDictionary<TKey, TValue>`) support `null` key components, and
+  `MultiKeyMultiDictionary<TKey, TValue>` also allows `null` values;
   `BiDictionary<TLeft, TRight>` accepts `null` on both sides; `ReverseMultiDictionary<V, K>` mirrors
   its source map inverted.
 - **None of these types is thread-safe** — use the `Concurrent*` or `Immutable*` counterparts for
@@ -446,6 +464,15 @@ rates[1, "USD"] = 1.00m;
 rates[1, "EUR"] = 0.92m;
 rates.CountOfFirstKey(1);             // 2  (a prefix walk over the trie)
 rates.GetBySecondKey("USD");          // (1, 1.00m) — served from the second-axis reverse index
+
+// MultiKeyMultiDictionary<K, V>: a composite key with many values per complete key
+var assignments = new MultiKeyMultiDictionary<string, int>();
+assignments.Add(new[] { "eu", "de", "berlin" }, 1001);
+assignments.Add(new[] { "eu", "de", "berlin" }, 1002);  // another value under the same key
+assignments.Add(new[] { "eu", "de", "munich" }, 1003);
+assignments[new[] { "eu", "de", "berlin" }];    // [1001, 1002]
+assignments.CountOfPrefix(new[] { "eu", "de" }); // 2 complete keys under the prefix
+assignments.RemovePrefix(new[] { "eu", "de" });  // cascade delete; returns 3 values removed
 
 // ImmutableMultiList<T> / ImmutableMultiDictionary<K, V>: freeze, never mutate
 var frozen = new ImmutableMultiList<string>(new[] { "a", "b" });

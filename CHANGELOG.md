@@ -4,6 +4,35 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [Unreleased]
+
+### Added
+
+- `MultiKeyMultiDictionary<TKey, TValue>` - the composite-key multimap (F6-05): a dictionary whose
+  keys are sequences of components of one type (`TKey[]`) and each complete key maps to a
+  *collection* of values — the combination of `MultiKeyDictionary<TKey, TValue>` (N components
+  &#8594; 1 value, a trie) and `MultiDictionary<TKey, TValue>` (1 key &#8594; N values, a
+  multimap). The trie's prefix projection carries over: `GetByPrefix` enumerates every complete key
+  stored under a partial key together with its live value collection (full keys, or suffix-only
+  with `relative: true`), `CountOfPrefix` counts those keys, `GetSuffixes` / `GetBranches` expose
+  the trie's shape, and `RemovePrefix` cascade-deletes a whole subtree, returning the number of
+  values destroyed. The value side mirrors `MultiDictionary`: a configurable inner collection
+  factory (a duplicating `List<TValue>` by default, a deduplicating `HashSet<TValue>` under
+  `allowDuplicateValues: false`), `AddRange` / `RemoveRange`, the per-key value set operations
+  `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith` (their argument is a
+  *set*, exactly as in `MultiDictionary`), `ValueCount(key)` plus the O(1) cached
+  `TotalValueCount`, and the "no value-less key" invariant — a key is pruned from the trie
+  automatically once its last value is removed, so `Count` / `KeyCount` never report a key without
+  values. `null` key components are supported through the trie's dedicated bucket (a `null` key
+  *array* is rejected with `ArgumentNullException`), and `null` values are ordinary values. The
+  composite key of this type is a trie key of homogeneous components of any arity, addressable by
+  prefix — not the fixed-arity, per-axis-typed scheme of `TwoKeyDictionary<K1, K2, V>` /
+  `ThreeKeyDictionary<K1, K2, K3, V>`, which remain the strongly typed facades for two or three
+  differently typed components addressed in full. Inner value collections are exposed as
+  `IReadOnlyCollection<TValue>` through an internal live wrapper rather than a bare cast, so the
+  contract holds on every supported target — including net451 / net461, where the framework's
+  `HashSet<T>` does not declare that interface (the hazard F6-24 fixes for `MultiDictionary`).
+
 ## [6.3.0] - 2026-09-14
 
 ### Added
