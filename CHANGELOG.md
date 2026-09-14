@@ -8,6 +8,23 @@ repository ships the same version (see `build/version.props`).
 
 ### Added
 
+- `PackedBag<T>` - the packed value-type counting histogram (F6-06): a bag over `struct` elements
+  (`int`, enums, small structs) stored as one contiguous array of `(value, count)` struct entries
+  instead of a hash table - no boxing in storage, one cache line per element, zero steady-state
+  allocation on add and lookup. Bag semantics mirror `MultiList<T>` where the two meet: duplicates
+  are counted (`Add(item, times)`, `CountOf`, copy-expanded enumeration with an element's copies
+  consecutive), `Remove(item)` takes one copy away and returns the number remaining, and an entry
+  is dropped - keeping the array packed, no zero-count holes - once its last copy goes.
+  `EntrySet()` / `DistinctItems()` give the compact histogram views, `TotalCount` / `DistinctCount`
+  the cached counts, plus `Clone` / `ToDictionary` / `TrimExcess`. The measured trade-off
+  (BenchmarkDotNet + MemoryDiagnoser, net8.0, against `MultiList<int>`): building a 32-value
+  histogram allocates ~2.7x less (608 B vs 1616 B) and runs ~1.4x faster, whole-histogram
+  enumeration is ~1.5x faster with ~1.5x less garbage, and at 4 distinct values point operations
+  are 1.7-2.1x faster; the O(1) dictionary lookup catches up around 16-32 distinct values, so the
+  type targets dense domains of roughly up to ~16 distinct values. The `struct` constraint is the
+  documented boundary - `null` and `Nullable<T>` are excluded by design, set operations, equality
+  and comparer injection are deliberately not carried over, and `MultiList<T>` remains the
+  general-purpose bag.
 - `MultiKeyMultiDictionary<TKey, TValue>` - the composite-key multimap (F6-05): a dictionary whose
   keys are sequences of components of one type (`TKey[]`) and each complete key maps to a
   *collection* of values — the combination of `MultiKeyDictionary<TKey, TValue>` (N components

@@ -252,6 +252,7 @@ repeat*, never by name similarity.
 | --- | --- | --- |
 | `MultiList<T>` | elements | 1 element &#8594; N copies |
 | `OrderedMultiList<T>` | elements, ordered | 1 element &#8594; N copies, sorted |
+| `PackedBag<T>` | elements, packed histogram | 1 value-type element &#8594; N copies, dense struct array |
 | `MultiDictionary<TKey, TValue>` | values | 1 key &#8594; N values |
 | `OrderedMultiDictionary<TKey, TValue>` | values, ordered | 1 key &#8594; N values, sorted |
 | `MultiKeyDictionary<TKey, TValue>` | key components | N components &#8594; 1 value |
@@ -268,6 +269,8 @@ The quick decision list:
 
 - elements repeat &#8594; `MultiList<T>`;
 - elements repeat, in sorted order &#8594; `OrderedMultiList<T>`;
+- elements repeat over a small dense value-type domain (enums, small ints) and a histogram is the
+  whole workload &#8594; `PackedBag<T>`;
 - values repeat under one key &#8594; `MultiDictionary<TKey, TValue>`;
 - values repeat under one key, both axes sorted &#8594; `OrderedMultiDictionary<TKey, TValue>`;
 - key components combine, one value per complete key &#8594; `MultiKeyDictionary<TKey, TValue>` (or
@@ -296,6 +299,18 @@ instead of a hash table, so add / lookup / remove cost O(log n) **worst case** w
 ascending. It adds `GetFirst()` / `GetLast()`, `Reverse()`, and `GetRange(from, to)`. It takes an
 `IComparer<T>` rather than an `IEqualityComparer<T>`, because ordering needs a comparison — and that
 comparison is also what decides which elements are the same element.
+
+**`PackedBag<T>`** — the packed counting histogram for value-type elements (`int`, enums, small
+structs; the `struct` constraint excludes `null` and `Nullable<T>` by design). One contiguous array
+of `(value, count)` struct entries instead of a hash table — no boxing in storage, one cache line
+per element. Measured against `MultiList<int>` (BenchmarkDotNet, net8.0): building a 32-value
+histogram allocates ~2.7x less and runs ~1.4x faster, enumerating it is ~1.5x faster with ~1.5x
+less garbage, and at 4 distinct values point operations are 1.7-2.1x faster — the O(1) dictionary
+lookup catches up around 16-32 distinct values, so the recommendation is roughly **up to ~16
+distinct values** and `MultiList<T>` beyond. Bag semantics mirror `MultiList` where they meet
+(counting, copy-expanded enumeration, removal returns the remaining copies); set operations,
+equality and comparer injection are deliberately not carried over — this type is a histogram, not a
+general bag.
 
 ### Multimaps
 
@@ -392,7 +407,8 @@ bag has one global state its operations compare against. For read-mostly workloa
   `IEqualityComparer<T>`; `OrderedMultiList<T>` matches with its `IComparer<T>`, where "compares
   equal" *is* "is the same element".
 - **`null` handling follows each type's shape.** `MultiList<T>` and `OrderedMultiList<T>` support
-  `null` elements (`null` sorts first under the default comparer); `MultiDictionary<TKey, TValue>`
+  `null` elements (`null` sorts first under the default comparer); `PackedBag<T>` is value-type-only
+  (`struct` constraint), so `null` is not applicable to it; `MultiDictionary<TKey, TValue>`
   rejects `null` keys but allows `null` values; the trie types (`MultiKeyDictionary<TKey, TValue>`,
   `TwoKeyDictionary<K1, K2, V>`, `ThreeKeyDictionary<K1, K2, K3, V>` and
   `MultiKeyMultiDictionary<TKey, TValue>`) support `null` key components, and
@@ -422,6 +438,16 @@ shelf.GetLast();                       // "mug"
 shelf.GetRange("a", "n");              // "bean", "bean" (both bounds included)
 shelf.Reverse();                       // "mug", "bean", "bean"
 shelf.EntrySet();                      // sorted (element, copies) pairs
+
+// PackedBag<T>: the packed value-type histogram (no hash table, no boxing in storage)
+var levels = new PackedBag<LogLevel>();
+levels.Add(LogLevel.Info, 42);
+levels.Add(LogLevel.Warn, 7);
+levels.Add(LogLevel.Error, 1);
+levels.CountOf(LogLevel.Warn);         // 7
+levels.TotalCount;                     // 50
+foreach (var (level, count) in levels.EntrySet()) { /* the whole histogram in one pass */ }
+levels.Remove(LogLevel.Info, 10);      // returns copies remaining; an emptied entry is dropped
 
 // MultiDictionary<K, V>: one key, many values
 var map = new MultiDictionary<string, int>();

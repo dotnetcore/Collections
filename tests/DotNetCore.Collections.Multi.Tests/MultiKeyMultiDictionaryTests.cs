@@ -69,7 +69,7 @@ namespace DotNetCore.Collections.Multi.Tests
         public void Ctor_CustomInnerFactory_ValuesEnumerateThroughIt()
         {
             var map = new MultiKeyMultiDictionary<string, int>(
-                (IEqualityComparer<string>?)null, () => new SortedSet<int>());
+                null, () => new SortedSet<int>());
             var key = new[] { "eu", "de" };
             map.Add(key, 3);
             map.Add(key, 1);
