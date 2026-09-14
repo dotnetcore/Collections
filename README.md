@@ -254,6 +254,7 @@ repeat*, never by name similarity.
 | `OrderedMultiList<T>` | elements, ordered | 1 element &#8594; N copies, sorted |
 | `PackedBag<T>` | elements, packed histogram | 1 value-type element &#8594; N copies, dense struct array |
 | `SpanBag<T>` | elements, stack-only | 1 element &#8594; N copies, zero allocation, method-local |
+| `FrequencyPriorityBag<T>` | elements, by frequency | 1 element &#8594; N copies, most-frequent-first |
 | `MultiDictionary<TKey, TValue>` | values | 1 key &#8594; N values |
 | `OrderedMultiDictionary<TKey, TValue>` | values, ordered | 1 key &#8594; N values, sorted |
 | `MultiKeyDictionary<TKey, TValue>` | key components | N components &#8594; 1 value |
@@ -274,6 +275,8 @@ The quick decision list:
   whole workload &#8594; `PackedBag<T>`;
 - elements repeat only for the duration of one method (hot path, no heap) &#8594; `SpanBag<T>`
   (netstandard2.1 / net6.0+);
+- elements repeat and the question is "what is most frequent?" or "give me the Top-K" &#8594;
+  `FrequencyPriorityBag<T>`;
 - values repeat under one key &#8594; `MultiDictionary<TKey, TValue>`;
 - values repeat under one key, both axes sorted &#8594; `OrderedMultiDictionary<TKey, TValue>`;
 - key components combine, one value per complete key &#8594; `MultiKeyDictionary<TKey, TValue>` (or
@@ -323,6 +326,16 @@ the lifetime, `Clear()` reuses the stack memory for the next round. Adding a *ne
 fixed capacity is full returns `false` (a sizing condition, not an exception). Measured against
 `Dictionary<int, int>` (64 reads, 8 distinct): ~1.9x faster and 0 B allocated vs 352 B. Use it
 inside methods, never as state.
+
+**`FrequencyPriorityBag<T>`** — the bag that answers "what is most frequent?" in O(1) and pops it in
+O(log n), making Top-K a loop of `PopMost()` calls. Under the hood a frequency index is the source
+of truth and the max-heap over its counts is materialized **lazily**: updates are O(1) and mark the
+heap dirty, the next query rebuilds it in O(n), and while clean, peeks are O(1) and pops O(log n).
+Ties at equal counts break to the element that reached its current count **earliest** (a documented,
+deterministic FIFO-flavoured rule). Bag semantics mirror `MultiList<T>` — counted duplicates,
+`Remove` returns the copies remaining, `null` is a first-class element. Measured against re-sorting
+a `MultiList<int>` (512 adds, 32 distinct): repeated Top-1 queries ~3.2x faster with ~2.9x less
+garbage; a build-once-query-once workload lands at parity, where sorting once is just as good.
 
 ### Multimaps
 
@@ -476,6 +489,15 @@ int FirstDuplicate(ReadOnlySpan<int> source)
     }
     return -1;
 }
+
+// FrequencyPriorityBag<T>: pop the most frequent element / take the Top-K
+var alerts = new FrequencyPriorityBag<string>();
+alerts.AddRange(new[] { "cpu", "disk", "cpu", "net", "cpu", "disk" });
+alerts.PeekMost();                     // "cpu" — O(1) while the heap is clean
+alerts.PopMost();                      // "cpu", now 2 copies
+var topK = new List<string>();
+for (var i = 0; i < 2; i++) topK.Add(alerts.PopMost()); // the next-most frequent, in order
+// equal counts pop earliest-stamped first; updates are O(1) and the heap rebuilds lazily
 
 // MultiDictionary<K, V>: one key, many values
 var map = new MultiDictionary<string, int>();

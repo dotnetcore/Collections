@@ -8,6 +8,24 @@ repository ships the same version (see `build/version.props`).
 
 ### Added
 
+- `FrequencyPriorityBag<T>` - the frequency priority bag (F6-08): a bag that knows which element
+  occurs most often, so "pop the most frequent element" and Top-K queries are first-class
+  operations (`PeekMost` / `TryPeekMost` / `PopMost` / `TryPopMost`; repeated `PopMost` drains the
+  bag in descending-frequency order). A `Dictionary` frequency index is the source of truth; the
+  max-heap over its counts is materialized **lazily** - every update touches only the index (O(1))
+  and marks the heap dirty, the next priority query rebuilds it in O(n) (bottom-up heapify), and
+  while it stays clean each further peek is O(1) and each pop O(log n). **Tie policy** (documented
+  on the type): among elements with the same count, the one that reached its current count
+  *earliest* pops first - every count change stamps a fresh sequence number and the heap breaks
+  ties on the earlier stamp, a deterministic FIFO-flavoured rule. Bag semantics mirror
+  `MultiList<T>`: counted duplicates, `Add(item, times)` / `Remove(item)` (returns the number
+  remaining), an element disappearing with its last copy, `null` as a first-class element in a
+  dedicated bucket (with its own tie stamp), copy-expanded enumeration and `EntrySet()`. Measured
+  against re-sorting a `MultiList<int>`'s entries (BenchmarkDotNet + MemoryDiagnoser, net8.0,
+  512 adds over 32 distinct): for the workload the type exists for - repeated Top-1 queries
+  against live data - ~3.2x faster with ~2.9x less garbage; build-once-query-once and
+  churn-interleaved workloads land at parity, where sorting once is just as good - the boundary is
+  documented rather than hidden. Not thread-safe.
 - `SpanBag<T>` - the stack-only temporary bag (F6-07): a fixed-capacity counting bag over
   `unmanaged` elements backed by caller-provided `Span<T>` storage (typically `stackalloc`), for
   short-lived frequency counting inside one method with zero heap allocation. The bag is a

@@ -27,7 +27,7 @@
              MultiKeyMultiDictionary<TKey,TValue> combines the trie with per-key value collections
              (N components -> N values). Do not introduce ambiguous names such as
              "MultiMultiDictionary". -->
-        <PackageTags>Collections;MultiSet;MultiDictionary;MultiKeyDictionary;MultiKeyMultiDictionary;TwoKeyDictionary;Bag;Multimap;CompositeKey;PackedBag;Histogram;SpanBag</PackageTags>
+        <PackageTags>Collections;MultiSet;MultiDictionary;MultiKeyDictionary;MultiKeyMultiDictionary;TwoKeyDictionary;Bag;Multimap;CompositeKey;PackedBag;Histogram;SpanBag;FrequencyPriorityBag;PriorityQueue</PackageTags>
         <Description>Multiset (bag), multimap and composite-key dictionary collections for .NET.</Description>
     </PropertyGroup>
 
