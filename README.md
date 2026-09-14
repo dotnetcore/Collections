@@ -4,592 +4,387 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/dotnetcore/CAP/master/LICENSE.txt)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections?ref=badge_shield)
 
-NCC Collections consists of a set of collection-based extensions and tools, such as paging extensions and multiset/multimap collections.
+NCC Collections is a set of collection-based extensions and tools, shipped as two independent
+modules.
 
-See [CHANGELOG.md](CHANGELOG.md) for what is new in each release, including the
-6.0 modernization notes (keyset pagination, end-to-end async, expanded target
-frameworks and the rewritten `Multi` module).
+| Module | Package | What it does |
+| --- | --- | --- |
+| **Paginable** | `DotNetCore.Collections.Paginable` + 9 ORM integrations | Turns any `IEnumerable<T>` / `IQueryable<T>` into paged results, with keyset (cursor) paging and async support. |
+| **Multi** | `DotNetCore.Collections.Multi` | Multiset, multimap, composite-key and thread-safe/immutable collection types. |
 
-### Supported target frameworks
+See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
+**6.3.0** release: `BiDictionary<TLeft, TRight>` (a strict one-to-one bijective map),
+`ReverseMultiDictionary<V, K>` plus the `MultiDictionary.AsReverse()` live view, and nullable
+reference annotations enabled across all eleven packages.
 
-| Package | Target frameworks |
-| --- | --- |
-| `DotNetCore.Collections.Paginable` | `net451`, `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
-| `DotNetCore.Collections.Paginable.Chloe` | `net461`, `net47`, `net48`, `netstandard2.0`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
-| `DotNetCore.Collections.Paginable.DosORM` | `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
-| `DotNetCore.Collections.Paginable.EntityFramework` | `net451`, `net461`, `net47`, `net48`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
-| `DotNetCore.Collections.Paginable.EntityFrameworkCore` | `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
-| `DotNetCore.Collections.Paginable.FreeSql` | `net451`, `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
-| `DotNetCore.Collections.Paginable.FreeSql.DbContext` | `net451`, `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
-| `DotNetCore.Collections.Paginable.NHibernate` | `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
-| `DotNetCore.Collections.Paginable.SqlKata` | `net451`, `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
-| `DotNetCore.Collections.Paginable.SqlSugar` | `net451`, `net461`, `net47`, `net48`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
-| `DotNetCore.Collections.Multi` | `net451`, `net461`, `net47`, `net48`, `netstandard2.0`, `netstandard2.1`, `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0` |
+## Contents
 
-## Nuget Packages
+- [NuGet Packages](#nuget-packages)
+- [Paginable](#paginable)
+- [Multi](#multi)
+- [Building and testing](#building-and-testing)
+- [Releasing](#releasing)
+- [License](#license)
 
-| Package Name                                                                                                                                 | Version                                                                                      | Downloads                                                                                     |
-| -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [DotNetCore.Collections.Paginable](https://www.nuget.org/packages/DotNetCore.Collections.Paginable/)                                         | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.svg)                     | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.svg)                     |
-| [DotNetCore.Collections.Multi](https://www.nuget.org/packages/DotNetCore.Collections.Multi/)                                                 | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Multi.svg)                         | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Multi.svg)                         |
-| [DotNetCore.Collections.Paginable.Chloe](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.Chloe/)                             | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.Chloe.svg)               | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.Chloe.svg)               |
-| [DotNetCore.Collections.Paginable.DosOrm](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.DosOrm/)                           | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.DosOrm.svg)              | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.DosOrm.svg)              |
+## NuGet Packages
+
+| Package Name | Version | Downloads |
+| --- | --- | --- |
+| [DotNetCore.Collections.Paginable](https://www.nuget.org/packages/DotNetCore.Collections.Paginable/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.svg) |
+| [DotNetCore.Collections.Multi](https://www.nuget.org/packages/DotNetCore.Collections.Multi/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Multi.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Multi.svg) |
+| [DotNetCore.Collections.Paginable.Chloe](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.Chloe/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.Chloe.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.Chloe.svg) |
+| [DotNetCore.Collections.Paginable.DosOrm](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.DosORM/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.DosORM.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.DosORM.svg) |
+| [DotNetCore.Collections.Paginable.EntityFramework](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.EntityFramework/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.EntityFramework.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.EntityFramework.svg) |
 | [DotNetCore.Collections.Paginable.EntityFrameworkCore](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.EntityFrameworkCore/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.EntityFrameworkCore.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.EntityFrameworkCore.svg) |
-| [DotNetCore.Collections.Paginable.FreeSql](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.FreeSql/)                         | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.FreeSql.svg)             | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.FreeSql.svg)             |
-| [DotNetCore.Collections.Paginable.NHibernate](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.NHibernate/)                   | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.NHibernate.svg)          | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.NHibernate.svg)          |
-| [DotNetCore.Collections.Paginable.SqlKata](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.SqlKata/)                         | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.SqlKata.svg)             | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.SqlKata.svg)             |
-| [DotNetCore.Collections.Paginable.SqlSugar](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.SqlSugar/)                       | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.SqlSugar.svg)            | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.SqlSugar.svg)            |
+| [DotNetCore.Collections.Paginable.FreeSql](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.FreeSql/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.FreeSql.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.FreeSql.svg) |
+| [DotNetCore.Collections.Paginable.FreeSql.DbContext](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.FreeSql.DbContext/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.FreeSql.DbContext.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.FreeSql.DbContext.svg) |
+| [DotNetCore.Collections.Paginable.NHibernate](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.NHibernate/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.NHibernate.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.NHibernate.svg) |
+| [DotNetCore.Collections.Paginable.SqlKata](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.SqlKata/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.SqlKata.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.SqlKata.svg) |
+| [DotNetCore.Collections.Paginable.SqlSugar](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.SqlSugar/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.SqlSugar.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.SqlSugar.svg) |
 
-## Usage
+## Paginable
 
-### Install the package
+Paging over `IEnumerable<T>` and `IQueryable<T>`. The core library covers in-memory and queryable
+sources; the nine ORM integration packages add a provider-specific `GetPage` / `GetPageAsync`
+extension, so paging stays a single call on the source you already have.
+
+### Installation
 
 ```
 Install-Package DotNetCore.Collections.Paginable
 ```
 
-### Write code
+For a specific ORM, install the matching integration package — see
+[ORM integrations](#orm-integrations).
+
+### Quick start
+
+Materialise a page from any sequence:
 
 ```c#
-IEnumerable<ExampleModel> list = GetList();//...
+IEnumerable<ExampleModel> list = GetList();
 
-//Get a collection of Page, each page has 50 PageMembers
+// Page 15, 50 items per page.
 var paginableList = list.ToPaginable(50);
-
-//Get page 15th
 var page = paginableList.GetPage(15);
 
 for (var i = 0; i < page.CurrentPageSize; i++)
 {
     var itemNumber = page[i].ItemNumber;
-    var itemValue = page[i].Value;
+    var itemValue  = page[i].Value;
 }
 ```
 
-Or use a more streamlined code:
+Or page the source directly, with no intermediate `IPaginable<T>`:
 
 ```c#
-IEnumerable<ExampleModel> list = GetList();//...
-
-//Get page 15th, each page has 50 items.
-var page = list.GetPage(15, 50);
-
-for (var i = 0; i < page.CurrentPageSize; i++)
-{
-    var itemNumber = page[i].ItemNumber;
-    var itemValue = page[i].Value;
-}
+var page = GetList().GetPage(15, 50);
 ```
 
-### Work with IQueryable&lt;T&gt;
+### Paging an `IQueryable<T>`
 
-You can get `IQueryable<T>` from `Where` in EfCore or `Query<T>` in NHibernate, and then:
+`IQueryable<T>` sources (EF Core `Where`, NHibernate `Query<T>`, …) page the same way. The query is
+translated to SQL, so only the requested slice is fetched:
 
 ```c#
-IQueryable<ExampleModel> queryable = GetQueryable();//...
+IQueryable<ExampleModel> queryable = GetQueryable();
 
 var page = queryable.GetPage(15, 50);
-
 var totalMemberCount = page.TotalMemberCount;
-
-for(var i = 0; i < page.CurrentPageSize; i++)
-{
-    var itemNumber = page[i].ItemNumber;
-    var itemValue = page[i].Value;
-}
-```
-
-Just do it.
-
-### Work with ORMs
-
-#### For Chloe ORM
-
-Install `DotNetCore.Collections.Paginable.Chloe` package:
-
-```
-Install-Package DotNetCore.Collections.Paginable.Chloe
-```
-
-then:
-
-```c#
-//... do some config for Chloe by EntityTypeBuilder<ExampleModel>
-
-using(var db = new MsSqlContext(connectionString))
-{
-    var page = db.Query<ExampleModel>().GetPage(15, 50);
-
-    var totalPageCount = page.TotalPageCount;
-    var totalMemberCount = page.TotalMemberCount;
-    var pageSize = page.PageSize;
-
-    var currentPageNumber = page.CurrentPageNumber;
-    var currentPageSize = page.CurrentPageSize;
-
-    var hasNext = page.HasNext;
-    var HasPrevious = page.HasPrevious;
-
-    for(var i = 0; i < currentPageSize; i++)
-    {
-        var id = page[i].Value.Id;
-    }
-}
-```
-
-#### For Dos.ORM
-
-Install `DotNetCore.Collections.Paginable.DosOrm` package:
-
-```
-Install-Package DotNetCore.Collections.Paginable.DosOrm
-```
-
-then:
-
-```c#
-var _session = new DbSession(DatabaseType.SqlServer, connectionString);
-
-var page = _dosOrmSession.From<ExampleModel>().GetPage(1, 9);
-
-var totalPageCount = page.TotalPageCount;
-//...
-
-.
-.
-.
-
-class ExampleModel : Entity
-{
-    public ExampleModel() : base("ExampleModels") { }
-
-    public virtual int Id { get; set; }
-
-    public override Field[] GetPrimaryKeyFields() => new Field[] { new Field("Id"), };
-}
-```
-
-#### For FreeSql
-
-Install `DotNetCore.Collections.Paginable.FreeSql` package:
-
-```
-Install-Package DotNetCore.Collections.Paginable.FreeSql
-```
-
-then:
-
-```c#
-var _freeSql = new FreeSql.FreeSqlBuilder()
-    .UseConnectionString(DataType.SqlServer, connectionString)
-    .UseAutoSyncStructure(false)
-    .Build();
-
-//... do some config for FreeSql
-
-var page = _freeSql.Select<ExampleModel>().GetPage(1, 9);
-
-var totalPageCount = page.TotalPageCount;
-//...
-```
-
-or call the extension method of DbSet directly:
-
-```c#
-var ctx = _freeSql.CreateDbContext();
-var source = ctx.Set<ExampleModel>();
-
-var page = source.GetPage(1, 9);
-
-var totalPageCount = page.TotalPageCount;
-//...
-```
-
-or
-
-```c#
-using(var ctx = new ExampleDbContext())
-{
-    var page = ctx.ExampleModels.GetPage(1, 9);
-
-    var totalPageCount = page.TotalPageCount;
-    //...
-}
-
-.
-.
-.
-
-class ExampleDbContext: DbContext
-{
-    public DbSet<ExampleModel> ExampleModel {get; set;}
-
-    protected override void OnConfiguring(DbContextOptionsBuilder builder)
-    {
-        builder.UseFreeSql(_freeSqlInstance);
-    }
-}
-```
-
-#### For SqlSugar
-
-Install `DotNetCore.Collections.Paginable.SqlSugar` package:
-
-```
-Install-Package DotNetCore.Collections.Paginable.SqlSugar
-```
-
-then:
-
-```c#
-var sqlSugar = new SqlSugarClient(new ConnectionConfig{
-    ConnectionString = connectionString,
-    DbType = DbType.SqlServer,
-    IsAutoCloseConnection = true
-});
-
-//... do some config for sqlSugar
-
-var page = _sqlSugar.Query<ExampleModel>().GetPage(1, 9);
-
-var totalPageCount = page.TotalPageCount;
-//...
-```
-
-#### For NHibernate
-
-Install `DotNetCore.Collections.Paginable.NHibernate` package:
-
-```
-Install-Package DotNetCore.Collections.Paginable.NHibernate
-```
-
-then:
-
-```c#
-//... do some config for NHibernate by FluentNHibernate.ClassMap<ExampleModel>
-
-using(var session = GetAndOpenSession())
-{
-    var page = session.QueryOver<ExampleModel>().GetPage(1, 9);
-
-    var totalPageCount = page.TotalPageCount;
-    //...
-}
-```
-
-#### For Microsoft.EntityFrameworkCore
-
-```c#
-//... do come config for EFCore
-
-using(var context = new ExampleDbContext())
-{
-    var page = context.ExampleModels.Where(x => x.Id > 100).GetPage(1, 9);
-
-    var totalPageCount = page.TotalPageCount;
-    //...
-}
-```
-
-or call the extension method of DbSet directly:
-
-Install `DotNetCore.Collections.Paginable.EntityFrameworkCore` package first:
-
-```
-Install-Package DotNetCore.Collections.Paginable.EntityFrameworkCore
-```
-
-then:
-
-```c#
-using(var context = new ExampleDbContext())
-{
-    var page = context.ExampleModels.GetPage(1, 9);
-
-    var totalPageCount = page.TotalPageCount;
-    //...
-}
-//...
 ```
 
 ### Keyset (seek) pagination
 
-Offset pagination degrades on deep pages because the database still scans the skipped rows.
-Keyset (a.k.a. seek / cursor) pagination replaces `OFFSET n` with a `WHERE key > @lastKey`
-predicate, so every page costs the same and the `COUNT(*)` round trip is avoided. It is the
-recommended mode for infinite-scroll and cursor-style APIs.
+Offset pagination degrades on deep pages because the database still scans the skipped rows. Keyset
+(a.k.a. seek / cursor) pagination replaces `OFFSET n` with a `WHERE key > @lastKey` predicate, so
+every page costs the same and the `COUNT(*)` round trip is avoided — the recommended mode for
+infinite-scroll and cursor-style APIs.
 
 ```c#
-IQueryable<ExampleModel> queryable = GetQueryable();//...
+IQueryable<ExampleModel> queryable = GetQueryable();
 
 // First page: no anchor key yet.
 var first = queryable.GetFirstPageByKeyset(x => x.Id, pageSize: 50);
 
 // Subsequent pages: pass the ordering key of the last row of the previous page.
 var lastId = first.LastMember.Id;
-var next = queryable.GetPageByKeyset(x => x.Id, lastId, pageSize: 50);
+var next   = queryable.GetPageByKeyset(x => x.Id, lastId, pageSize: 50);
 
 foreach (var item in next.Members) { /* ... */ }
-
-var hasMore = next.HasNext; // resolved without COUNT(*)
+var hasMore = next.HasNext;   // resolved without COUNT(*)
 ```
 
 `GetFirstPageByKeyset` / `GetPageByKeyset` also have `IEnumerable<T>` overloads for in-memory
-sources, and an optional `descending` switch for reverse ordering. Use keyset pagination when you
-do **not** need `TotalPageCount` / `TotalMemberCount`; use the offset APIs above when you do.
+sources and an optional `descending` switch for reverse ordering. Use keyset pagination when you do
+**not** need `TotalPageCount` / `TotalMemberCount`; use the offset APIs above when you do.
 
-### Create a page from a list fragment
+### Paging an existing fragment
 
-Sometimes you already hold one page of data — a hand-written SQL query with `OFFSET` / `FETCH`, a
-cached page, or an upstream API that answers with `items` plus `totalCount`. There is no need to
-hand the library the whole source: `Paginable.CreatePage` wraps the fragment you have. **The
-fragment is never re-sliced** — it is taken to be the exact content of the page you name.
+When you already hold one page of data — a hand-written `OFFSET` / `FETCH` query, a cached page, or
+an upstream API that answers with `items` plus `totalCount` — wrap it with `Paginable.CreatePage` /
+`fragment.ToPage`. The fragment is taken to be the exact content of the named page and is **never
+re-sliced**:
 
 ```c#
-var items = connection.Query<Order>(sql, new { offset = 10, fetch = 5 });  // 5 rows
-var total  = connection.ExecuteScalar<int>(countSql);                      // 12
+var items = connection.Query<Order>(sql, new { offset = 10, fetch = 5 }); // 5 rows
+var total = connection.ExecuteScalar<int>(countSql);                      // 12
 
 IPage<Order> page = Paginable.CreatePage(items, pageNumber: 3, pageSize: 5, totalMemberCount: total);
 
 page.TotalPageCount;   // 3
 page.CurrentPageSize;  // 2   (a short last page)
 page.HasNext;          // false
-page[0].ItemNumber;    // 11  (the global row number, exactly as full-source paging would give)
+page[0].ItemNumber;    // 11  (global row number, as full-source paging would give)
 page.GetMetadata();    // a serializable PageMetadata snapshot
 ```
 
-The `PageFragmentInfo` overload suits metadata that arrives on its own, `ToPage` is the same thing
-as an extension method, and the metadata converts both ways:
-
-```c#
-// Metadata from an upstream service or a cache entry.
-var info = new PageFragmentInfo(pageNumber: 3, pageSize: 5, totalMemberCount: 12);
-var page1 = Paginable.CreatePage(items, info);
-
-// Sugar: this sequence already *is* one page.
-var page2 = items.ToPage(pageNumber: 3, pageSize: 5, totalMemberCount: 12);
-
-// Round trip from a page that already exists.
-var info2 = PageFragmentInfo.FromMetadata(existingPage.GetMetadata());
-```
-
-`GetPage` and `ToPage` read alike but do opposite things, so keep them apart:
-
-| | Input | Slices? | Use when |
-| --- | --- | --- | --- |
-| `source.GetPage(pageNumber, pageSize)` | the **whole** source | yes (`Skip` + `Take`) | you have the full result set and want one page out of it |
-| `Paginable.CreatePage(fragment, …)` / `fragment.ToPage(…)` | **one already-sliced page** | no | the page is already in hand and only the metadata has to be attached |
+`GetPage(source, …)` and `CreatePage(fragment, …)` read alike but do opposite things: `GetPage`
+takes the **whole** source and slices it (`Skip` + `Take`); `CreatePage` takes **one already-sliced
+page** and only attaches metadata. Use `Paginable.CreateSinglePageSet` when the caller needs an
+`IPaginable<T>` wrapping that single fragment.
 
 Validation is eager: a `null` fragment throws `ArgumentNullException`; `pageNumber < 1`,
-`pageSize < 1`, a negative `totalMemberCount`, a count above `MaxMemberItems`, or a page number
-past the last page throw `ArgumentOutOfRangeException`; a fragment carrying more members than
-`pageSize` — or more than the metadata says the page holds — throws `ArgumentException`. A fragment
-that is *shorter* than the metadata expects is tolerated (an upstream row may have been deleted
-between the count and the fetch) and `CurrentPageSize` keeps reporting the metadata value. The
-total count must be known: when it is not, use the keyset API above rather than inventing a number.
-
-That short-fragment tolerance is the 6.1 default and is configurable since 6.2: when a short
-fragment is more likely a bug than a race — a stale `totalMemberCount`, a fragment sliced by the
-wrong query — opt into strict checking with `PageCreationOptions.Strict`:
+`pageSize < 1`, a negative `totalMemberCount`, or a page past the last page throw
+`ArgumentOutOfRangeException`; a fragment longer than `pageSize` (or than the metadata expects)
+throws `ArgumentException`. A fragment *shorter* than the metadata expects is tolerated by default
+(an upstream row may have been deleted between the count and the fetch) and `CurrentPageSize` keeps
+reporting the metadata value. Opt into strict checking — where a short fragment is more likely a bug
+than a race — with `PageCreationOptions.Strict`:
 
 ```c#
-// default (lenient): a short fragment stays buildable, CurrentPageSize reports the metadata value
-var page1 = Paginable.CreatePage(items, info);
-
-// strict: the same situation throws ArgumentException naming the fragment
-var page2 = Paginable.CreatePage(items, info, PageCreationOptions.Strict);
-var page3 = items.ToPage(pageNumber: 3, pageSize: 5, totalMemberCount: 12, PageCreationOptions.Strict);
+var page1 = Paginable.CreatePage(items, info);                              // lenient (default)
+var page2 = Paginable.CreatePage(items, info, PageCreationOptions.Strict);  // short fragment throws
 ```
-
-Only the *short*-fragment behaviour differs: the over-long checks throw in both modes, the
-overloads without an options parameter keep the lenient behaviour, and a `null` options argument
-is rejected like any other.
-
-When the caller's side wants an **`IPaginable<T>`** — or an `IEnumerable<IPage<T>>` — rather than a
-single page, `Paginable.CreateSinglePageSet` wraps the same fragment in a one-page set:
-
-```c#
-PaginableSinglePage<Order> set = Paginable.CreateSinglePageSet(items, info);
-
-set.PageCount;                     // 1  the set holds exactly the page you handed it
-set.MemberCount;                   // 12 source-wide, as the page reports it
-set.GetPage(1).CurrentPageNumber;  // 3  the page keeps its global number
-set.GetPage(2);                    // ArgumentOutOfRangeException: the set has one page
-```
-
-`PageCount` is always one, and deliberately **not** the wrapped page's own `TotalPageCount`: a set
-has to be able to serve every page it claims, and this one physically holds a single page — there is
-no source to slice the others out of. The set layer answers "how many pages am I handing you"; the
-page inside keeps the source-wide numbering, so a fragment of page 3 of 12 still reports itself as
-page 3 of 12. `MemberCount` follows `PaginableSetBase<T>` and reports the member count of the whole
-source. The factory takes the same metadata and the same `PageCreationOptions` switch as
-`CreatePage`, and returns the concrete `PaginableSinglePage<T>` rather than the bare interface, so
-that `PageCount` is readable at all — `IPaginable` itself exposes only `PageSize` and `MemberCount`.
-
-### Validation and exceptions
-
-Every entry point rejects an out-of-range *argument* with `ArgumentOutOfRangeException` and names the
-parameter that was wrong (`ex.ParamName`):
-
-| Entry point | Rejected when | Thrown |
-| --- | --- | --- |
-| `GetPage` / `GetPageAsync` — all nine ORM integrations and the core `IEnumerable<T>` / `IQueryable<T>` / `Task<IQueryable<T>>` paths | `pageNumber < 1`, `pageSize < 1`, or `pageNumber` points past the last page | `ArgumentOutOfRangeException` |
-| `GetFirstPageByKeyset` / `GetPageByKeyset` (and the EF Core `…Async` pair) | `pageSize < 1` | `ArgumentOutOfRangeException` |
-| `ToPaginable` / `ToPaginableAsync` | `pageSize < 1` | `ArgumentOutOfRangeException` |
-| `Paginable.CreatePage` / `fragment.ToPage` / `PageFragmentInfo` | see the fragment section above | `ArgumentOutOfRangeException`, plus `ArgumentException` for an over-long fragment |
-| `Paginable.CreateSinglePageSet` | the same rules as `CreatePage` (its arguments are forwarded), plus `pageNumber != 1` on `GetPage` | `ArgumentOutOfRangeException`, plus `ArgumentException` for an over-long fragment |
-| `Paginable.CreatePageAsync` | the same rules as `CreatePage`, thrown **synchronously** rather than through a faulted task | `ArgumentOutOfRangeException`, plus `ArgumentException` for an over-long fragment |
-
-The `GetPage` and keyset families used to throw `IndexOutOfRangeException` for these, which made the
-same mistake (`pageNumber: 0`) report a different type depending on which API the caller used. As of
-6.2 the whole family reports `ArgumentOutOfRangeException` too, so one `catch (ArgumentException)`
-covers both input shapes. An **empty** source is *not* an out-of-range argument — it yields a single
-empty page when the page number and the page size are valid.
 
 ### Asynchronous paging
 
 The core library exposes `ToPaginableAsync` / `GetPageAsync` for in-memory and `IQueryable<T>`
-sources, and the EF Core, FreeSql and SqlSugar integrations provide true end-to-end async
-(`CountAsync` + `ToListAsync`, no synchronous database calls) with `CancellationToken` support.
+sources. The EF Core, FreeSql and SqlSugar integrations provide true end-to-end async (`CountAsync`
++ `ToListAsync`, no synchronous database calls), with `CancellationToken` support:
 
 ```c#
 using(var context = new ExampleDbContext())
 {
     var page = await context.ExampleModels
         .GetPageAsync(pageNumber: 1, pageSize: 50, cancellationToken: ct);
-
     var totalMemberCount = page.TotalMemberCount;
 }
 ```
 
-`Paginable.CreatePageAsync` gives the fragment API the same shape so an awaitable path can be
-awaited end to end. It **completes synchronously**: the fragment is already in memory, so the
-returned task is already finished by the time it is handed back, and nothing about it touches I/O.
-It says so rather than pretending otherwise — use a provider-specific async extension when real I/O
-has to be awaited.
-
-```c#
-// the fragment is already in hand: the await here is for shape, not for I/O
-IPage<Order> page = await Paginable.CreatePageAsync(items, pageNumber: 3, pageSize: 5, totalMemberCount: 12);
-```
-
-Two consequences follow from `Task.FromResult` and are worth knowing, because they are the opposite
-of what an `…Async` name usually implies: validation throws **synchronously**, from the call itself
-rather than through a faulted task (so a `try` around the call catches it, an `await` would not), and
-the `CancellationToken` parameter is accepted for signature symmetry but never observed. Both match
-the `ToPaginableAsync` / `GetPageAsync` shape the core library has had since 6.0.
+`Paginable.CreatePageAsync` mirrors the fragment API but **completes synchronously** — the fragment
+is already in memory, so validation throws from the call itself (catch it with `try`, not `await`)
+and the `CancellationToken` is accepted for signature symmetry only.
 
 ### Configuration
 
-`PaginableSettingsManager` holds a process-wide settings snapshot. Values are validated on
-assignment, so any instance handed out by the library is always in a valid state — configure it
-once at startup and treat it as read-only afterwards.
+`PaginableSettingsManager` holds a process-wide, validated settings snapshot. Configure it once at
+startup and treat it as read-only afterwards:
 
 ```c#
 PaginableSettingsManager.Settings = new PaginableSettings
 {
-    DefaultPageSize = 50,          // must be >= 1
-    MaxMemberItems = 10_000_000    // must be >= 1
+    DefaultPageSize = 50,        // must be >= 1
+    MaxMemberItems  = 10_000_000 // must be >= 1
 };
 ```
 
-#### For SqlKata with Dapper
+### ORM integrations
 
-Install `DotNetCore.Collections.Paginable.SqlKata` package:
+Every integration adds a `GetPage` (and, where the provider supports it, `GetPageAsync`) extension
+on the source type you already use.
 
-```
-Install-Package DotNetCore.Collections.Paginable.SqlKata
-```
+| Provider | Package | Extension on |
+| --- | --- | --- |
+| Chloe | `…Paginable.Chloe` | `db.Query<ExampleModel>()` |
+| Dos.ORM | `…Paginable.DosOrm` | `_session.From<ExampleModel>()` |
+| FreeSql | `…Paginable.FreeSql` | `_freeSql.Select<ExampleModel>()` |
+| SqlSugar | `…Paginable.SqlSugar` | `_sqlSugar.Query<ExampleModel>()` |
+| NHibernate | `…Paginable.NHibernate` | `session.QueryOver<ExampleModel>()` |
+| EF6 | `…Paginable.EntityFramework` | `context.ExampleModels.Where(…)` |
+| EF Core | `…Paginable.EntityFrameworkCore` | `context.ExampleModels` |
+| SqlKata + Dapper | `…Paginable.SqlKata` | `db.Query("ExampleModels")` |
 
-then:
+A representative call (each of the above ends the same way):
 
 ```c#
-using(var connection = new SqlConnection(connectionString))
+var page = source.GetPage(1, 9);           // where `source` is the receiver from the table
+var totalPageCount = page.TotalPageCount;
+```
+
+FreeSql and EF Core additionally expose the `DbSet` / `DbContext` directly:
+
+```c#
+// FreeSql — page a DbSet:
+var ctx = _freeSql.CreateDbContext();
+var page = ctx.Set<ExampleModel>().GetPage(1, 9);
+
+// EF Core — page a DbSet:
+using(var context = new ExampleDbContext())
 {
-    connection.Open();
-
-    var compiler = new SqlServerCompiler();
-    var db = new QueryFactory(connection, compiler);
-
-    var page = db.Query("ExampleModels").GetPage<ExampleModel>(1, 9);
-
-    var totalPageCount = page.TotalCount;
-    //...
+    var page = context.ExampleModels.GetPage(1, 9);
 }
 ```
 
 ### Examples
 
-- [DotNetCore.Collections.Paginable with EFCore](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.EfCore/Program.cs)
-- [DotNetCore.Collections.Paginable with EF6](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Ef/Program.cs)
+- [Paginable with EF Core](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.EfCore/Program.cs)
+- [Paginable with EF6](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Ef/Program.cs)
 
-## MultiSet, MultiDictionary &amp; MultiKeyDictionary
+## Multi
 
-`DotNetCore.Collections.Multi` is independent of the paging extensions and ships in its own package. Every type it exposes shares the `Multi` prefix, but the three core types multiply **three different things** and are orthogonal to each other.
+`DotNetCore.Collections.Multi` ships in its own package and is independent of the paging
+extensions. Every type carries the `Multi` prefix, but the families multiply **different things**
+and are orthogonal to each other.
 
-### The three "multi" types at a glance
-
-| Type | What repeats | Shape | Lookup | Reach for it when |
-| --- | --- | --- | --- | --- |
-| **`MultiList<T>`** | elements | 1 element &#8594; N copies | `CountOf(element)` | You need multiset (bag) semantics: duplicates matter and must be counted. Supports `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, subset &amp; superset judgments, `Overlaps` / `IsDisjointFrom`, multiset structural equality (`Equals` / `GetHashCode`, via `IEquatable<MultiList<T>>`), copy-expanded enumeration and injectable `IEqualityComparer<T>`. |
-| **`OrderedMultiList<T>`** | elements, in order | 1 element &#8594; N copies, sorted | `CountOf(element)` | The same bag semantics as `MultiList<T>`, plus an order. Backed by a red-black tree instead of a hash table, so adding, looking up and removing cost O(log n) **worst case** while enumeration is ascending. Adds `GetFirst()` / `GetLast()`, `Reverse()`, and `GetRange(from, to)` for range queries. Takes an `IComparer<T>` rather than an `IEqualityComparer<T>`, because ordering needs a comparison, and that comparison is also what decides which elements are the same element. |
-| **`MultiDictionary<TKey, TValue>`** | values | 1 key &#8594; N values | `this[key]` | One key genuinely owns several values — a multimap. Implements `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>`, offers `AsLookup()` (an `ILookup` view), the per-key value set operations `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`, the batch pair `AddRange` / `RemoveRange`, per-key counting via `ValueCount(key)` (alongside `TotalValueCount`), and a configurable inner-collection factory (`allowDuplicateValues` or a custom factory). `ContainsValue(value)` and `TotalValueCount` are answered in O(1) from two caches kept in step on the write path — neither ever scans the inner collections. |
-| **`OrderedMultiDictionary<TKey, TValue>`** | values, in order | 1 key &#8594; N values, both axes sorted | `this[key]` | The ordered counterpart of `MultiDictionary<TKey, TValue>`: the same per-key value-set operations with the same set semantics, the same "no value-less key" invariant, and the same `IReadOnlyDictionary` / `AsLookup()` / `RemoveRange` shape — but keys enumerate ascending under an `IComparer<TKey>` and each key's values enumerate ascending under an `IComparer<TValue>`, with single-pair add / lookup / removal costing O(log n) worst case on both axes. |
-| **`MultiKeyDictionary<TKey, TValue>`** | key components | N components &#8594; 1 value | `this[TKey[]]`, `GetByPrefix` | The key is **composite** and you want to query it by a *partial* prefix — a trie over `(region, country, city)` style keys of any arity. |
-| **`TwoKeyDictionary<K1, K2, V>`** | key components | 2 components &#8594; 1 value | `this[k1, k2]` | Exactly the above with exactly two components **of different types**, with a typed indexer instead of a `TKey[]`. Its second axis is queried through a maintained reverse index (`K2` &#8594; set of `K1`), so `GetBySecondKey` / `CountOfSecondKey` / `ContainsSecondKey` / `RemoveBySecondKey` visit only the requested slice instead of scanning the map. |
-| **`ThreeKeyDictionary<K1, K2, K3, V>`** | key components | 3 components &#8594; 1 value | `this[k1, k2, k3]` | The same idea with exactly three differently typed components, following the same axis-tag scheme. The first axis is a prefix, so its slice (`GetByFirstKey` / `CountOfFirstKey` / `RemoveByFirstKey`) is a trie walk; the second and third axes are deliberately **not** backed by an index here — their slices scan, O(n), and the remarks say so. Use `MultiKeyDictionary<TKey, TValue>` when an axis other than the first must be queried hard, with the key order putting that axis first. |
-| **`BiDictionary<TLeft, TRight>`** | nothing — both sides are unique | 1 left &#8595; 1 right (bijective), both directions O(1) | `this[left]`, `GetLeft(right)` | A strict one-to-one map: every left value maps to exactly one right value and no right value is shared by two lefts, with both directions answered in O(1) from two indexes kept in step on every write path. Conflicts are **strict** — `Add` throws `ArgumentException` when the right value is already bound to a different left, `TryAdd` reports instead of throwing, and there is deliberately no silently-overwriting setter, because overwriting would silently unbind an entry the caller never mentioned: break an existing binding with an explicit `Remove` / `RemoveRight` first. `null` is accepted on both sides through dedicated buckets; `AsReverse()` returns a live read-only view of the right-to-left direction. |
-| **`ReverseMultiDictionary<V, K>`** | values (inverted) | N keys &#8594; 1 value, seen from the value | `this[value]` | The inverse of `MultiDictionary<TKey, TValue>`: a **snapshot** mapping every stored value to the set of keys that hold it, so "which keys store this value?" is answered in O(1). The constructor copies the bindings out of the source map into a self-contained instance (no reference chain, safe to serialize), and the instance stays mutable on its own with the "no value-less key" invariant mirrored — a value disappears once its last key is removed. Per value the keys form a set, so multiplicities collapse; a `null` value lives in a dedicated bucket while a `null` key is rejected (the exact mirror of the source map). The member names mirror `MultiDictionary` with the axes swapped: `Count`/`ValueCount` counts distinct values, `TotalKeyCount` counts bindings, `KeyCount(value)` counts one value's keys, `ContainsValue(value)` is the O(1) presence check and `ContainsKey(key)` scans. For a read-only view that keeps answering from the live map instead, use `MultiDictionary<TKey, TValue>.AsReverse()` — the two agree at any point in time. |
-
-| **`ImmutableMultiList<T>`** / **`ImmutableMultiDictionary<TKey, TValue>`** | elements / values, frozen | as the mutable type, but write-once | any read member | The immutable counterparts of the two core types: an instance never changes, so any number of threads may read it without locks. Mutations return a new instance (or the receiver itself when nothing would change); bulk mutation goes through `ToBuilder()`, whose builder shares the source's state until its first write (copy-on-write) and whose `ToImmutable()` hands back the very source instance while untouched — structural sharing you can assert with `ReferenceEquals`. Both round-trip through the serializable models (`ToSerializableModel` / `FromModel`). |
-| **`ConcurrentMultiDictionary<TKey, TValue>`** | values, thread-safe | 1 key &#8594; N values, sharded | `this[key]` | The thread-safe counterpart of `MultiDictionary<TKey, TValue>`: keys are routed to shards, each an independent `MultiDictionary` behind its own lock, so writes on different keys proceed in parallel. Whole-map reads (`Count`, `TotalValueCount`, `ContainsValue`, enumeration, `Snapshot()`) take a consistent snapshot by locking every shard once, in index order; enumeration is over a snapshot and immune to concurrent writes. |
-| **`ConcurrentMultiList<T>`** | elements, thread-safe | 1 element &#8594; N copies, single lock | `CountOf(element)` | The thread-safe counterpart of `MultiList<T>`: every operation is serialized behind one lock — linearizable and trivially safe. Deliberately **not** sharded: a bag has one global state its operations compare against. Enumeration is over a snapshot. For read-mostly workloads prefer `ImmutableMultiList<T>` plus a builder. |
-
-
-Read the name as "what is multiplied": `MultiList` multiplies elements, `MultiDictionary` multiplies values, `MultiKeyDictionary` multiplies keys. Pick by asking *what is allowed to repeat*, never by name similarity:
-
-- elements repeat &#8594; `MultiList<T>`;
-- elements repeat, in sorted order &#8594; `OrderedMultiList<T>`;
-- values repeat under one key &#8594; `MultiDictionary<TKey, TValue>`;
-- values repeat under one key, keys and values both kept sorted &#8594; `OrderedMultiDictionary<TKey, TValue>`;
-- key components combine, and exactly one value is stored per complete key &#8594; `MultiKeyDictionary<TKey, TValue>` (or `TwoKeyDictionary<K1, K2, V>` / `ThreeKeyDictionary<K1, K2, K3, V>` for two or three differently typed components).
-- nothing repeats — each left maps to exactly one right and each right back to exactly one left, and both directions are first-class O(1) lookups &#8594; `BiDictionary<TLeft, TRight>`.
-- many keys share one value and the question is "which keys hold *this* value?" &#8594; invert the map: `MultiDictionary<TKey, TValue>.AsReverse()` for a live read-only view, or `ReverseMultiDictionary<V, K>` for a self-contained snapshot (also usable as a standalone inverted index you fill by hand).
-
-In particular, do **not** expect `MultiDictionary<A, B>` to answer "everything for `B`": it maps *one* key to *many* values, not many keys to one value. Looking a composite key up by one of its components is the trie's job — `MultiKeyDictionary<TKey,TValue>.GetByPrefix` (any arity) or `TwoKeyDictionary<K1,K2,V>.GetByFirstKey` / `GetBySecondKey` (arity 2).
-
-`MultiList<T>` and `OrderedMultiList<T>` are the same multiset with two different storage engines, and the difference shows up in exactly one place: the comparer. `MultiList<T>` takes an `IEqualityComparer<T>` and promises nothing about enumeration order; `OrderedMultiList<T>` takes an `IComparer<T>` and is defined by it, because a red-black tree has to know which of two elements comes first and uses "the comparison returns 0" as its notion of "the same element". Two elements that compare equal therefore share one node and one copy count, and the element that is stored is the one added first. Ordering says nothing about `null` by itself: `Comparer<T>.Default` sorts `null` below every reference, so under the default comparer a `null` element is simply the smallest one, while a custom comparer may put it last or reject it outright.
-
-One multiplicity convention is worth knowing before mixing the two dictionary-shaped types: the per-key operations of `MultiDictionary<TKey, TValue>` all treat their argument as a **set** (a repeated value in the argument does not count twice, matching `ISet<T>`), whereas `MultiList<T>` treats its argument as a **multiset** (multiplicities count, and `SymmetricExceptWith` keeps the absolute difference of the copy counts).
-
-That set convention also fixes what the batch delete means: `RemoveRange(key, values)` removes **one occurrence per distinct argument value**, exactly like calling `Remove(key, value)` once per distinct value — so a value stored N times keeps N-1 copies. Use `ExceptWith(key, values)` when *every* occurrence must go. The batch form is named `RemoveRange` rather than being an overload `Remove(key, IEnumerable<V>)` on purpose: with the overload, the documented `map.Remove(key, null)` (removing a stored `null` value) would become ambiguous at compile time, because `null` converts to both `TValue` and `IEnumerable<TValue>`.
-
-A multiset argument is read **in place**. Every set operation and subset/superset judgment of `MultiList<T>` — and its `Equals` — reads a `MultiList<T>` argument directly instead of copying it first, so a chained `a.UnionWith(b)` allocates nothing, and the three mutating operations (`IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`) only ever pay for one small staging buffer that is reused across calls. An argument of any other shape (an array, a LINQ sequence, a different `MultiList<T>` whose comparer is not equivalent) is still counted once first, because its multiplicities have to be known before the operation can define its result.
-
-All of the types above ship in `DotNetCore.Collections.Multi` and target the same frameworks as the package (see the matrix above). Equality always goes through a comparer, never through hash codes alone, so hash collisions between distinct elements/keys can not corrupt a collection: the hash-shaped types match with `IEqualityComparer<T>`, while `OrderedMultiList<T>` matches with its `IComparer<T>`, where "compares equal" *is* "is the same element". `null` handling follows the shape of each type: `MultiList<T>` and `OrderedMultiList<T>` support `null` elements (`null` sorts first under the default comparer), `MultiDictionary<TKey, TValue>` rejects `null` keys but allows `null` values, both trie types support `null` key components, `BiDictionary<TLeft, TRight>` accepts `null` on both sides through dedicated buckets, and `ReverseMultiDictionary<V, K>` mirrors its source map inverted — a `null` value is a legitimate entry of the index (dedicated bucket) while a `null` key can never be stored. None of the types is thread-safe.
-
-### Save and restore
-
-`MultiList<T>` and `MultiDictionary<TKey, TValue>` have an **explicit** serialization entry point: `ToSerializableModel()` hands back a plain snapshot and `FromModel()` rebuilds the collection from one. The models — `MultiListModel<T>` (`Items` + `Counts`, parallel lists) and `MultiDictionaryModel<TKey, TValue>` (`Keys` + `Values`, parallel lists) — are ordinary mutable classes with public settable properties, no attributes and no interface implementations, so the library takes no dependency on any serializer. JSON (`System.Text.Json` included), XML, a database row or anything else is the caller's choice:
-
-```c#
-var model = bag.ToSerializableModel();
-string json = JsonSerializer.Serialize(model);
-
-var typed = JsonSerializer.Deserialize<MultiListModel<string>>(json);
-var restored = MultiList<string>.FromModel(typed, comparer);   // pass the comparer back
-```
-
-The model carries **data only**: a comparer, and a multimap's inner-collection strategy, are configuration rather than data, so they are not part of it and are supplied to `FromModel()` — a round trip is only as faithful as the comparer passed back in. The model is also the export that always works. Unlike `ToDictionary()` (which throws when a multiset holds a `null` element, because a `null` can not be a dictionary key) it represents `null` like any other element, and unlike `AsReadOnly()` and `ToDictionary()`'s inner collections it is a snapshot rather than a live view, so it does not move under a serializer's feet.
-
-### Install the package
+### Installation
 
 ```
 Install-Package DotNetCore.Collections.Multi
 ```
 
-### Write code
+### Choosing a type
+
+Read each name as "what is multiplied" — `MultiList` multiplies elements, `MultiDictionary`
+multiplies values, `MultiKeyDictionary` multiplies keys. Pick by asking *what is allowed to
+repeat*, never by name similarity.
+
+| Type | Multiplies | Shape |
+| --- | --- | --- |
+| `MultiList<T>` | elements | 1 element &#8594; N copies |
+| `OrderedMultiList<T>` | elements, ordered | 1 element &#8594; N copies, sorted |
+| `MultiDictionary<TKey, TValue>` | values | 1 key &#8594; N values |
+| `OrderedMultiDictionary<TKey, TValue>` | values, ordered | 1 key &#8594; N values, sorted |
+| `MultiKeyDictionary<TKey, TValue>` | key components | N components &#8594; 1 value |
+| `TwoKeyDictionary<K1, K2, V>` | key components | 2 components &#8594; 1 value |
+| `ThreeKeyDictionary<K1, K2, K3, V>` | key components | 3 components &#8594; 1 value |
+| `BiDictionary<TLeft, TRight>` | nothing (bijective) | 1 left &#8596; 1 right |
+| `ReverseMultiDictionary<V, K>` | values, inverted | 1 value &#8594; N keys |
+| `ImmutableMultiList<T>` / `ImmutableMultiDictionary<TKey, TValue>` | frozen | write-once |
+| `ConcurrentMultiDictionary<TKey, TValue>` | values, thread-safe | 1 key &#8594; N values, sharded |
+| `ConcurrentMultiList<T>` | elements, thread-safe | 1 element &#8594; N copies, single lock |
+
+The quick decision list:
+
+- elements repeat &#8594; `MultiList<T>`;
+- elements repeat, in sorted order &#8594; `OrderedMultiList<T>`;
+- values repeat under one key &#8594; `MultiDictionary<TKey, TValue>`;
+- values repeat under one key, both axes sorted &#8594; `OrderedMultiDictionary<TKey, TValue>`;
+- key components combine, one value per complete key &#8594; `MultiKeyDictionary<TKey, TValue>` (or
+  `TwoKeyDictionary<K1, K2, V>` / `ThreeKeyDictionary<K1, K2, K3, V>` for two or three differently
+  typed components);
+- each left maps to exactly one right and each right back to exactly one left, both directions O(1)
+  &#8594; `BiDictionary<TLeft, TRight>`;
+- many keys share one value and the question is "which keys hold *this* value?" &#8594; invert the map:
+  `MultiDictionary<TKey, TValue>.AsReverse()` for a live read-only view, or `ReverseMultiDictionary<V, K>`
+  for a self-contained snapshot.
+
+The following sections describe each family.
+
+### Multisets
+
+**`MultiList<T>`** — a multiset (bag): duplicates matter and are counted. It implements the usual
+set operations (`UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`), subset and
+superset judgments, `Overlaps` / `IsDisjointFrom`, multiset structural equality (`Equals` /
+`GetHashCode`, via `IEquatable<MultiList<T>>`), copy-expanded enumeration, and an injectable
+`IEqualityComparer<T>`.
+
+**`OrderedMultiList<T>`** — the same bag semantics, plus an order. It is backed by a red-black tree
+instead of a hash table, so add / lookup / remove cost O(log n) **worst case** while enumeration is
+ascending. It adds `GetFirst()` / `GetLast()`, `Reverse()`, and `GetRange(from, to)`. It takes an
+`IComparer<T>` rather than an `IEqualityComparer<T>`, because ordering needs a comparison — and that
+comparison is also what decides which elements are the same element.
+
+### Multimaps
+
+**`MultiDictionary<TKey, TValue>`** — one key genuinely owns several values. It implements
+`IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>` and offers `AsLookup()` (an `ILookup`
+view), the per-key value-set operations `UnionWith` / `IntersectionWith` / `ExceptWith` /
+`SymmetricExceptWith`, the batch pair `AddRange` / `RemoveRange`, per-key counting via
+`ValueCount(key)` (alongside `TotalValueCount`), and a configurable inner-collection factory.
+`ContainsValue(value)` and `TotalValueCount` are answered in O(1) from two caches kept in step on
+the write path — neither ever scans the inner collections.
+
+**`OrderedMultiDictionary<TKey, TValue>`** — the ordered counterpart. The same per-key value-set
+operations, the same "no value-less key" invariant, and the same `IReadOnlyDictionary` /
+`AsLookup()` / `RemoveRange` shape — but keys enumerate ascending under an `IComparer<TKey>` and
+each key's values enumerate ascending under an `IComparer<TValue>`, with single-pair add / lookup /
+removal costing O(log n) worst case on both axes.
+
+### Composite keys
+
+**`MultiKeyDictionary<TKey, TValue>`** — the key is **composite** and you query it by a *partial*
+prefix: a trie over `(region, country, city)`-style keys of any arity.
+
+**`TwoKeyDictionary<K1, K2, V>`** — the same idea with exactly two components **of different
+types**, with a typed indexer instead of a `TKey[]`. Its second axis is queried through a maintained
+reverse index (`K2` &#8594; set of `K1`), so `GetBySecondKey` / `CountOfSecondKey` /
+`ContainsSecondKey` / `RemoveBySecondKey` visit only the requested slice.
+
+**`ThreeKeyDictionary<K1, K2, K3, V>`** — the same idea with exactly three differently typed
+components. The first axis is a prefix, so its slice (`GetByFirstKey` / `CountOfFirstKey` /
+`RemoveByFirstKey`) is a trie walk; the second and third axes are deliberately **not** backed by an
+index and scan O(n). Use `MultiKeyDictionary<TKey, TValue>` when an axis other than the first must be
+queried hard, with the key order putting that axis first.
+
+### One-to-one and inverted
+
+**`BiDictionary<TLeft, TRight>`** — a strict one-to-one map: every left value maps to exactly one
+right value and no right value is shared by two lefts, with both directions answered in O(1) from
+two indexes kept in step on every write path. Conflicts are **strict** — `Add` throws
+`ArgumentException` when the right value is already bound, `TryAdd` reports instead, and there is
+deliberately no silently-overwriting setter (break the old binding with an explicit `Remove` /
+`RemoveRight` first). `null` is accepted on both sides through dedicated buckets; `AsReverse()`
+returns a live read-only view of the right-to-left direction.
+
+**`ReverseMultiDictionary<V, K>`** — the inverse of `MultiDictionary<TKey, TValue>`: a **snapshot**
+mapping every stored value to the set of keys that hold it, so "which keys store this value?" is
+answered in O(1). The constructor copies the bindings out of the source map into a self-contained
+instance (safe to serialize), and the instance stays mutable on its own with the "no value-less key"
+invariant mirrored. Member names mirror `MultiDictionary` with the axes swapped: `Count` /
+`ValueCount` count distinct values, `TotalKeyCount` counts bindings, `KeyCount(value)` counts one
+value's keys, `ContainsValue(value)` is the O(1) presence check and `ContainsKey(key)` scans. For a
+read-only view that keeps answering from the live map, use `MultiDictionary<TKey, TValue>.AsReverse()`.
+
+### Immutable and thread-safe
+
+**`ImmutableMultiList<T>`** / **`ImmutableMultiDictionary<TKey, TValue>`** — the immutable
+counterparts of the two core types. An instance never changes, so any number of threads may read it
+without locks. Mutations return a new instance (or the receiver itself when nothing would change);
+bulk mutation goes through `ToBuilder()`, whose builder shares the source's state until its first
+write (copy-on-write). Both round-trip through serializable models.
+
+**`ConcurrentMultiDictionary<TKey, TValue>`** — the thread-safe counterpart of
+`MultiDictionary<TKey, TValue>`. Keys are routed to shards, each an independent `MultiDictionary`
+behind its own lock, so writes on different keys proceed in parallel. Whole-map reads (`Count`,
+`TotalValueCount`, `ContainsValue`, enumeration, `Snapshot()`) take a consistent snapshot by locking
+every shard once, in index order.
+
+**`ConcurrentMultiList<T>`** — the thread-safe counterpart of `MultiList<T>`. Every operation is
+serialized behind one lock — linearizable and trivially safe. It is deliberately **not** sharded: a
+bag has one global state its operations compare against. For read-mostly workloads, prefer
+`ImmutableMultiList<T>` plus a builder.
+
+### Conventions
+
+- **Set vs. multiset arguments.** The per-key operations of `MultiDictionary<TKey, TValue>` treat
+  their argument as a **set** (a repeated value does not count twice, matching `ISet<T>`), whereas
+  `MultiList<T>` treats its argument as a **multiset** (multiplicities count). That convention also
+  fixes the batch delete: `RemoveRange(key, values)` removes **one occurrence per distinct argument
+  value**, so a value stored N times keeps N-1 copies — use `ExceptWith(key, values)` when *every*
+  occurrence must go.
+- **Equality goes through a comparer, never hash codes alone**, so hash collisions between distinct
+  elements/keys can not corrupt a collection. The hash-shaped types match with
+  `IEqualityComparer<T>`; `OrderedMultiList<T>` matches with its `IComparer<T>`, where "compares
+  equal" *is* "is the same element".
+- **`null` handling follows each type's shape.** `MultiList<T>` and `OrderedMultiList<T>` support
+  `null` elements (`null` sorts first under the default comparer); `MultiDictionary<TKey, TValue>`
+  rejects `null` keys but allows `null` values; both trie types support `null` key components;
+  `BiDictionary<TLeft, TRight>` accepts `null` on both sides; `ReverseMultiDictionary<V, K>` mirrors
+  its source map inverted.
+- **None of these types is thread-safe** — use the `Concurrent*` or `Immutable*` counterparts for
+  that guarantee.
+
+### Usage
 
 ```c#
 // MultiList<T>: a bag counting occurrences
@@ -700,6 +495,28 @@ inverted[1001];                  // still ["orders", "customers"]
 map.AsReverse()[1001];           // ... but the live view does: ["orders", "customers", "invoices"]
 ```
 
+### Save and restore
+
+`MultiList<T>` and `MultiDictionary<TKey, TValue>` have an **explicit** serialization entry point:
+`ToSerializableModel()` hands back a plain snapshot and `FromModel()` rebuilds the collection from
+one. The models — `MultiListModel<T>` (`Items` + `Counts`, parallel lists) and
+`MultiDictionaryModel<TKey, TValue>` (`Keys` + `Values`, parallel lists) — are ordinary mutable
+classes with public settable properties and no serializer dependencies, so JSON
+(`System.Text.Json` included), XML or a database row is the caller's choice:
+
+```c#
+var model = bag.ToSerializableModel();
+string json = JsonSerializer.Serialize(model);
+
+var typed = JsonSerializer.Deserialize<MultiListModel<string>>(json);
+var restored = MultiList<string>.FromModel(typed, comparer);   // pass the comparer back
+```
+
+The model carries **data only** — a comparer, and a multimap's inner-collection strategy, are
+configuration rather than data, so they are supplied to `FromModel()`. Unlike `ToDictionary()`
+(which throws on a `null` element) it represents `null` like any other element, and unlike the live
+views it is a snapshot that does not move under a serializer's feet.
+
 ### Examples
 
 - [Sample.Multi](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Multi/Program.cs)
@@ -723,19 +540,41 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 - `paginable-tests.yml` — builds all 11 TFMs, verifies packing (including `.snupkg`), then runs the unit tests and the SQL Server integration tests.
 - `multi-tests.yml` — builds, packs and tests `DotNetCore.Collections.Multi`.
 
+### Publishing
+
+Publishing is automated by the GitHub Actions `Release` workflow
+(`.github/workflows/release.yml`); no local tooling is involved. It runs on a version-tag push —
+`6.3.0` or `v6.3.0` — and can also be started manually through `workflow_dispatch`:
+
+1. **Pack** — all 11 projects are packed in Release configuration into `nuget_pub` on a
+   `windows-latest` runner, with the full git history fetched so SourceLink can attach sources to
+   the deterministic build.
+2. **Authenticate** — the workflow uses NuGet **trusted publishing (OIDC)** instead of a stored API
+   key. The `id-token: write` permission lets GitHub mint a short-lived OIDC token, which the
+   `NuGet/login@v1` step exchanges for a temporary API key (one key per token, valid for roughly an
+   hour, which is why the login step runs immediately before the push).
+3. **Push** — every `.nupkg` and `.snupkg` is pushed to nuget.org with `--skip-duplicate`.
+
+Because publishing relies on trusted publishing, the workflow needs an exactly matching policy on
+nuget.org, configured outside the repository:
+
+| Policy field | Value |
+| --- | --- |
+| Repository owner | `dotnetcore` |
+| Repository | `Collections` |
+| Workflow file | `release.yml` (file name only, no `.github/workflows/` prefix) |
+| Environment | *(empty)* |
+| Secret | `NUGET_USERNAME` — the nuget.org profile name, not the e-mail |
+
+The policy owner must own all 11 `DotNetCore.Collections.*` packages. See
+[Releasing](#releasing) for how the version being published is chosen.
+
 ## Releasing
 
 Versions are driven by `build/version.props`, which is the single source of truth for every
-package — bump the version there and all 11 packages follow.
-
-Publishing to nuget.org is automated by the GitHub Actions `Release` workflow
-(`.github/workflows/release.yml`): pushing a tag such as `6.0.0` (or `v6.0.0`) packs all 11
-projects and pushes every `.nupkg` / `.snupkg` with the key stored in the `NUGET_API_KEY`
-repository secret.
-
-For a local fallback, run `scripts\Publish.bat`, which packs the same 11 projects and pushes
-them with a key taken from the `NUGET_API_KEY` environment variable (or from an interactive
-prompt).
+package — bump the version there and all 11 packages follow. Tag the commit with the matching
+version (`6.3.0` or `v6.3.0`) to trigger the automated publish; see [Publishing](#publishing) for
+what the release workflow does and the one-time nuget.org policy it requires.
 
 ## License
 
