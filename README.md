@@ -13,9 +13,12 @@ modules.
 | **Multi** | `DotNetCore.Collections.Multi` | Multiset, multimap, composite-key and thread-safe/immutable collection types. |
 
 See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
-**6.3.0** release: `BiDictionary<TLeft, TRight>` (a strict one-to-one bijective map),
-`ReverseMultiDictionary<V, K>` plus the `MultiDictionary.AsReverse()` live view, and nullable
-reference annotations enabled across all eleven packages.
+**6.4.0** release: three specialised bags for counted data — `PackedBag<T>` (packed value-type
+histogram), `SpanBag<T>` (stack-only, zero allocation) and `FrequencyPriorityBag<T>`
+(most-frequent-first) — the composite-key multimap `MultiKeyMultiDictionary<TKey, TValue>`, and a
+correctness fix that serves the multimap read-only views through an internal wrapper instead of a
+bare cast, so the deduplicating views work on every supported target (see the CHANGELOG's
+**Breaking** note).
 
 ## Contents
 
@@ -647,7 +650,7 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 
 Publishing is automated by the GitHub Actions `Release` workflow
 (`.github/workflows/release.yml`); no local tooling is involved. It runs on a version-tag push —
-`6.3.0` or `v6.3.0` — and can also be started manually through `workflow_dispatch`:
+`6.4.0` or `v6.4.0` — and can also be started manually through `workflow_dispatch`:
 
 1. **Pack** — all 11 projects are packed in Release configuration into `nuget_pub` on a
    `windows-latest` runner, with the full git history fetched so SourceLink can attach sources to
@@ -676,7 +679,7 @@ The policy owner must own all 11 `DotNetCore.Collections.*` packages. See
 
 Versions are driven by `build/version.props`, which is the single source of truth for every
 package — bump the version there and all 11 packages follow. Tag the commit with the matching
-version (`6.3.0` or `v6.3.0`) to trigger the automated publish; see [Publishing](#publishing) for
+version (`6.4.0` or `v6.4.0`) to trigger the automated publish; see [Publishing](#publishing) for
 what the release workflow does and the one-time nuget.org policy it requires.
 
 ## License
