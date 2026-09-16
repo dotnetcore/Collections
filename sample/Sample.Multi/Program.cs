@@ -22,10 +22,19 @@ namespace Sample.Multi
             MultiKeyDictionaryDemo();
             Console.WriteLine();
             TwoKeyDictionaryDemo();
+            Console.WriteLine();
+            PackedBagDemo();
+            Console.WriteLine();
+            SpanBagDemo();
+            Console.WriteLine();
+            FrequencyPriorityBagDemo();
+            Console.WriteLine();
+            MultiKeyMultiDictionaryDemo();
         }
 
         // The three core types multiply three different things; the fourth is the arity-2
-        // facade over the trie. Keeping the distinction visible is the point of this demo.
+        // facade over the trie; the rest are the specialised bags added in 6.4. Keeping the
+        // distinction visible is the point of this demo.
         private static void TaxonomyAtAGlance()
         {
             Console.WriteLine("=== The \"multi\" types: what each one multiplies ===");
@@ -33,6 +42,10 @@ namespace Sample.Multi
             Console.WriteLine("MultiDictionary<TKey,TValue>    : 1 key            -> N values   (multimap)");
             Console.WriteLine("MultiKeyDictionary<TKey,TValue> : N key components -> 1 value    (composite key / trie)");
             Console.WriteLine("TwoKeyDictionary<K1,K2,V>       : 2 key components -> 1 value    (arity-2 facade over the trie)");
+            Console.WriteLine("MultiKeyMultiDictionary<K,V>    : N key components -> N values   (trie + multimap, 6.4)");
+            Console.WriteLine("PackedBag<T>                    : 1 struct element -> N copies   (packed histogram, 6.4)");
+            Console.WriteLine("SpanBag<T>                      : 1 element        -> N copies   (stack-only, netstandard2.1 / net6.0+, 6.4)");
+            Console.WriteLine("FrequencyPriorityBag<T>         : 1 element        -> N copies   (most-frequent-first, 6.4)");
         }
 
         private static void MultiListBasics()
@@ -238,6 +251,154 @@ namespace Sample.Multi
                 StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase);
             ci["EU", "DE"] = 1;
             Console.WriteLine($"ci[eu, de]              = {ci["eu", "de"]}   (stored as {string.Join("/", ci.Keys1)}/{string.Join("/", ci.Keys2)})");
+        }
+
+        // ---------------------------------------------------------------------------------
+        // 6.4 additions
+        // ---------------------------------------------------------------------------------
+
+        // The value type of the PackedBag demo: a struct element, the shape the type is for.
+        private enum Severity
+        {
+            Debug,
+            Info,
+            Warning,
+            Error
+        }
+
+        private static void PackedBagDemo()
+        {
+            Console.WriteLine("=== PackedBag<T> (packed value-type counting histogram) ===");
+
+            var histogram = new PackedBag<Severity>();
+            histogram.Add(Severity.Info, 5);
+            histogram.Add(Severity.Warning, 2);
+            histogram.Add(Severity.Error);
+            histogram.AddRange(new[] { Severity.Info, Severity.Debug });
+
+            Console.WriteLine($"TotalCount        = {histogram.TotalCount}   (5 info + 2 warning + 1 error + 1 info + 1 debug)");
+            Console.WriteLine($"DistinctCount     = {histogram.DistinctCount}");
+            Console.WriteLine($"CountOf(Info)     = {histogram.CountOf(Severity.Info)}");
+            Console.WriteLine($"Capacity          = {histogram.Capacity}   (one contiguous (value, count) array, no hash table)");
+
+            var remaining = histogram.Remove(Severity.Warning);
+            Console.WriteLine($"Remove(Warning)   = {remaining} remaining copies, TotalCount = {histogram.TotalCount}");
+            histogram.RemoveAllCopies(Severity.Error);
+            Console.WriteLine($"RemoveAllCopies(Error): DistinctCount = {histogram.DistinctCount}   (zero-count entries are dropped, array stays packed)");
+
+            Console.WriteLine("EntrySet          = " + string.Join("; ",
+                histogram.EntrySet().Select(e => e.Item + "x" + e.Count)));
+            Console.WriteLine("DistinctItems     = " + string.Join(", ", histogram.DistinctItems()));
+            Console.WriteLine("ToDictionary      = " + string.Join("; ",
+                histogram.ToDictionary().Select(p => p.Key + ":" + p.Value)));
+            Console.WriteLine("boundary          = struct-only (no null / Nullable<T>), dense domains up to ~16 distinct values");
+        }
+
+        private static void SpanBagDemo()
+        {
+            Console.WriteLine("=== SpanBag<T> (stack-only temporary bag, netstandard2.1 / net6.0+) ===");
+
+            // The caller owns the storage: a stackalloc'd pair of spans that dies with this frame.
+            // SpanBag<T> is a ref struct, so it cannot escape the method either - the compiler
+            // enforces the lifetime contract, and no factory method exists for that very reason.
+            Span<int> values = stackalloc int[16];
+            Span<int> counts = stackalloc int[16];
+            var window = new SpanBag<int>(values, counts);
+
+            foreach (var reading in new[] { 7, 3, 7, 7, 9, 3, 7 })
+            {
+                window.Add(reading);
+            }
+
+            Console.WriteLine($"TotalCount        = {window.TotalCount}   (counting inside one method, zero heap allocation)");
+            Console.WriteLine($"DistinctCount     = {window.DistinctCount}");
+            Console.WriteLine($"CountOf(7)        = {window.CountOf(7)}");
+            Console.WriteLine($"Remove(3)         = {window.Remove(3)} copy left");
+
+            var entries = new List<string>();
+            foreach (var (value, count) in window)
+            {
+                entries.Add(value + "x" + count);
+            }
+            Console.WriteLine("entries           = " + string.Join("; ", entries));
+
+            // Fixed capacity: a new element when full is a sizing condition (false), not an
+            // exception; an already-present element always fits.
+            Span<int> tinyValues = stackalloc int[2];
+            Span<int> tinyCounts = stackalloc int[2];
+            var tiny = new SpanBag<int>(tinyValues, tinyCounts);
+            Console.WriteLine($"capacity-2 bag    = Add(1) {tiny.Add(1)}, Add(2) {tiny.Add(2)}, Add(3) {tiny.Add(3)} (full, rejected), Add(1) {tiny.Add(1)} (already present, fits)");
+
+            window.Clear();
+            Console.WriteLine($"after Clear()     = TotalCount {window.TotalCount}, Capacity {window.Capacity} (same stack memory reused, no allocation)");
+        }
+
+        private static void FrequencyPriorityBagDemo()
+        {
+            Console.WriteLine("=== FrequencyPriorityBag<T> (most-frequent-first) ===");
+
+            var alerts = new FrequencyPriorityBag<string>();
+            alerts.AddRange(new[] { "cpu", "disk", "cpu", "cpu", "disk", "net" });
+
+            Console.WriteLine($"TotalCount        = {alerts.TotalCount}");
+            Console.WriteLine($"DistinctCount     = {alerts.DistinctCount}");
+            Console.WriteLine($"PeekMost()        = {alerts.PeekMost()}   (O(1) while the heap is clean; rebuilt lazily when dirty)");
+
+            // Each PopMost takes one copy away (MultiList multiplicity semantics), so repeating
+            // it yields the Top-K in descending-frequency order. Ties go to whichever element
+            // reached its current count first - the documented FIFO-flavoured policy.
+            var top3 = new List<string>();
+            for (var i = 0; i < 3; i++)
+            {
+                top3.Add(alerts.PopMost());
+            }
+            Console.WriteLine("Top-3 by PopMost  = " + string.Join(" > ", top3));
+
+            Console.WriteLine($"after 3 pops      = TotalCount {alerts.TotalCount} (one copy per pop, not the whole element)");
+            Console.WriteLine("remaining entries = " + string.Join("; ",
+                alerts.EntrySet().Select(e => e.Item + "x" + e.Count)));
+
+            alerts.Clear();
+            Console.WriteLine($"after Clear()     : TryPopMost = {alerts.TryPopMost(out _)}   (empty bag reports false, PopMost would throw)");
+        }
+
+        private static void MultiKeyMultiDictionaryDemo()
+        {
+            Console.WriteLine("=== MultiKeyMultiDictionary<TKey,TValue> (composite key + many values per key) ===");
+
+            var assignments = new MultiKeyMultiDictionary<string, int>();
+            assignments.AddRange(new[] { "eu", "de" }, new[] { 101, 102 });
+            assignments.Add(new[] { "eu", "de" }, 103);
+            assignments.Add(new[] { "eu", "fr" }, 201);
+            assignments.Add(new[] { "us", "ca" }, 301);
+
+            Console.WriteLine($"Count             = {assignments.Count}   (complete keys, not trie nodes)");
+            Console.WriteLine($"NodeCount         = {assignments.NodeCount}");
+            Console.WriteLine($"TotalValueCount   = {assignments.TotalValueCount}");
+            Console.WriteLine($"[eu,de] values    = {string.Join(", ", assignments[new[] { "eu", "de" }])}");
+            Console.WriteLine($"ValueCount([eu,de])= {assignments.ValueCount(new[] { "eu", "de" })}");
+
+            // The trie half's prefix projection carries over, values included.
+            Console.WriteLine($"CountOfPrefix([eu]) = {assignments.CountOfPrefix(new[] { "eu" })}");
+            Console.WriteLine("GetByPrefix([eu])   = " + string.Join("; ",
+                assignments.GetByPrefix(new[] { "eu" })
+                    .Select(e => string.Join("/", e.Key) + "=[" + string.Join(",", e.Values) + "]")));
+            Console.WriteLine("GetByPrefix rel.    = " + string.Join("; ",
+                assignments.GetByPrefix(new[] { "eu" }, relative: true)
+                    .Select(e => string.Join("/", e.Key) + "=[" + string.Join(",", e.Values) + "]")));
+
+            // Per-key value set operations mirror MultiDictionary: the argument is a *set*.
+            assignments.ExceptWith(new[] { "eu", "de" }, new[] { 102 });
+            Console.WriteLine($"ExceptWith([eu,de], 102) = {string.Join(", ", assignments[new[] { "eu", "de" }])}");
+
+            // "No value-less key": a key is pruned from the trie once its last value goes.
+            assignments.Remove(new[] { "eu", "fr" }, 201);
+            Console.WriteLine($"ContainsKey([eu,fr]) after its last value is removed = {assignments.ContainsKey(new[] { "eu", "fr" })}");
+
+            var destroyed = assignments.RemovePrefix(new[] { "eu" });
+            Console.WriteLine($"RemovePrefix([eu])  = {destroyed} values destroyed -> Count = {assignments.Count}");
+            Console.WriteLine("remaining keys      = " + string.Join("; ",
+                assignments.Keys.Select(k => string.Join("/", k))));
         }
     }
 }
