@@ -312,9 +312,14 @@ superset judgments, `Overlaps` / `IsDisjointFrom`, multiset structural equality 
 `GetHashCode`, via `IEquatable<MultiList<T>>`), copy-expanded enumeration, and an injectable
 `IEqualityComparer<T>`.
 
-**`OrderedMultiList<T>`** — the same bag semantics, plus an order. It is backed by a red-black tree
-instead of a hash table, so add / lookup / remove cost O(log n) **worst case** while enumeration is
-ascending. It adds `GetFirst()` / `GetLast()`, `Reverse()`, and `GetRange(from, to)`. It takes an
+**`OrderedMultiList<T>`** — the same bag semantics, plus an order. It is backed by an
+order-statistic B+ tree instead of a hash table, so add / lookup / remove cost O(log n) **worst
+case** while enumeration is ascending. It adds `GetFirst()` / `GetLast()`, `Reverse()`, and
+`GetRange(from, to)`. Because each of its nodes caches how many copies hang below it, reading the
+sorted sequence *by position* costs the same O(log n) as looking a value up: `GetByRank(rank)`
+answers which element holds the copy at that position, `GetRank(item)` answers where its first copy
+sits (`-1` when absent), and `GetMedian()` / `GetQuantile(q)` are the same read at a computed
+position. Rank counts copies, not distinct elements, so it is bounded by `TotalCount`. It takes an
 `IComparer<T>` rather than an `IEqualityComparer<T>`, because ordering needs a comparison — and that
 comparison is also what decides which elements are the same element.
 
@@ -468,14 +473,18 @@ bag.IsSupersetOf(new[] { "banana" }); // true
 bag.Equals(new MultiList<string> { "banana", "apple", "apple" }); // true (bag equality, any order)
 bag.ToSerializableModel(); // plain snapshot: Items + Counts (see "Save and restore")
 
-// OrderedMultiList<T>: the same bag, kept sorted (red-black tree, O(log n) worst case)
+// OrderedMultiList<T>: the same bag, kept sorted (order-statistic B+ tree, O(log n) worst case)
 var shelf = new OrderedMultiList<string> { "mug", "bean", "bean" };
 foreach (var item in shelf) { /* "bean", "bean", "mug" */ }
 shelf.GetFirst();                      // "bean"
 shelf.GetLast();                       // "mug"
-shelf.GetRange("a", "n");              // "bean", "bean" (both bounds included)
+shelf.GetRange("a", "n");              // "bean", "bean", "mug" (both bounds included)
 shelf.Reverse();                       // "mug", "bean", "bean"
 shelf.EntrySet();                      // sorted (element, copies) pairs
+shelf.GetByRank(0);                    // "bean"   (rank counts copies, so 0..TotalCount-1)
+shelf.GetRank("mug");                  // 2        (position of its first copy; -1 when absent)
+shelf.GetMedian();                     // "bean"
+shelf.GetQuantile(0.9);                // "mug"    (nearest rank, never interpolated)
 
 // PackedBag<T>: the packed value-type histogram (no hash table, no boxing in storage)
 var levels = new PackedBag<LogLevel>();

@@ -7,8 +7,9 @@ using Xunit;
 
 namespace DotNetCore.Collections.Multi.Tests
 {
-    // F6-01 / L-10: OrderedMultiList<T>, the ordered counterpart of MultiList<T>, backed by a
-    // left-leaning red-black tree (R2-02).
+    // F6-01 / L-10: OrderedMultiList<T>, the ordered counterpart of MultiList<T>. F6-25 replaced
+    // its engine: it is now backed by an order-statistic B+ tree, which keeps the sorted order and
+    // adds the positional reads (GetByRank / GetRank / GetMedian / GetQuantile) in O(log n).
     //
     // What the suite has to establish, in the order the acceptance criteria state it:
     //
@@ -18,10 +19,12 @@ namespace DotNetCore.Collections.Multi.Tests
     //     alone: SetOperationsMatchMultiList runs both types over the same random inputs and
     //     demands identical results, because "the same multiset semantics" is a claim about the
     //     two types agreeing, not about either one in isolation.
-    //  2. O(log n) is proved by red-black invariants plus the height bound, never by timings
+    //  2. O(log n) is proved by the tree invariants plus the height bound, never by timings
     //     (R2-02 explicitly rules out timing baselines - they are noise in CI). AssertBalanced
-    //     re-checks the invariants and asserts height <= 2*log2(n+1); SequentialInsertsStay-
-    //     Logarithmic adds the case a naive binary search tree would fail catastrophically on.
+    //     re-checks the invariants and asserts the bound that follows from them: every node but
+    //     the root holds at least 15 entries and a branch has at least two children, so height
+    //     <= log15(n/2). SequentialInsertsStayLogarithmic adds the case a naive binary search
+    //     tree would fail catastrophically on.
     //  3. Null elements are supported and sort first under Comparer<T>.Default, with the handling
     //     delegated to the comparer - so a custom comparer can also put null last.
     //  4. The comparer is an IComparer<T>, deliberately unlike MultiList<T>'s IEqualityComparer<T>,
@@ -30,17 +33,21 @@ namespace DotNetCore.Collections.Multi.Tests
     {
         // ------------------------------------------------------------ helpers
 
+        private const int MinimumEntries = 15;
+
         private static void AssertBalanced<T>(OrderedMultiList<T> list, string context)
         {
             list.ValidateTree(out var error).ShouldBeTrue(
-                context + ": the red-black invariants must hold, but " + (error ?? "(no error reported)"));
+                context + ": the order-statistic tree invariants must hold, but " + (error ?? "(no error reported)"));
 
             var distinct = list.DistinctCount;
-            var bound = 2.0 * Math.Log(distinct + 1, 2);
+            var bound = distinct <= 1
+                ? 0.0
+                : Math.Log(distinct / 2.0, MinimumEntries);
             ((double)list.TreeHeight).ShouldBeLessThanOrEqualTo(
                 bound + 0.000001,
-                context + ": height " + list.TreeHeight + " must stay within 2*log2(n+1) = " + bound
-                + " for n = " + distinct);
+                context + ": height " + list.TreeHeight + " must stay within log" + MinimumEntries + "(n/2) = "
+                + bound + " for n = " + distinct);
         }
 
         private static int[] Sequence(Random random, int length, int distinct)
@@ -361,6 +368,305 @@ namespace DotNetCore.Collections.Multi.Tests
             list.Reverse().ShouldBe(list.ToList().AsEnumerable().Reverse());
         }
 
+        // ------------------------------------------------------------ rank and order statistics
+
+        [Fact]
+        public void GetByRankAddressesEveryCopy()
+        {
+            var list = new OrderedMultiList<string>();
+            list.Add("mug");
+            list.Add("bean", 2);
+
+            list.GetByRank(0).ShouldBe("bean");
+            list.GetByRank(1).ShouldBe("bean");
+            list.GetByRank(2).ShouldBe("mug");
+        }
+
+        [Fact]
+        public void GetByRankCountsCopiesRatherThanDistinctElements()
+        {
+            // One distinct element held 10,000 times still answers to 10,000 ranks: rank is
+            // measured over the enumerated sequence, which expands duplicates.
+            var list = new OrderedMultiList<int>();
+            list.Add(7, 10000);
+
+            list.DistinctCount.ShouldBe(1);
+            list.GetByRank(0).ShouldBe(7);
+            list.GetByRank(9999).ShouldBe(7);
+        }
+
+        [Fact]
+        public void GetByRankAgreesWithTheExpandedSequence()
+        {
+            var random = new Random(4242);
+            var list = new OrderedMultiList<int>();
+            list.AddRange(Sequence(random, 600, 40));
+
+            var expanded = list.ToList();
+            for (var rank = 0; rank < expanded.Count; rank++)
+            {
+                list.GetByRank(rank).ShouldBe(expanded[rank], "rank " + rank);
+            }
+
+            AssertBalanced(list, "after 600 rank queries");
+        }
+
+        [Fact]
+        public void GetByRankThrowsOutsideTheStoredCopies()
+        {
+            var list = new OrderedMultiList<int>();
+            list.Add(1, 3);
+
+            Should.Throw<ArgumentOutOfRangeException>(() => list.GetByRank(-1));
+            Should.Throw<ArgumentOutOfRangeException>(() => list.GetByRank(3));
+            Should.Throw<ArgumentOutOfRangeException>(() => list.GetByRank(4));
+            Should.Throw<ArgumentOutOfRangeException>(() => new OrderedMultiList<int>().GetByRank(0));
+        }
+
+        [Fact]
+        public void GetRankIsThePositionOfTheFirstCopy()
+        {
+            var list = new OrderedMultiList<string>();
+            list.Add("mug");
+            list.Add("bean", 2);
+
+            list.GetRank("bean").ShouldBe(0);
+            list.GetRank("mug").ShouldBe(2);
+        }
+
+        [Fact]
+        public void GetRankReportsAnAbsentElementAsMinusOne()
+        {
+            var list = new OrderedMultiList<int>();
+            list.Add(5, 2);
+
+            list.GetRank(4).ShouldBe(-1);
+            list.GetRank(6).ShouldBe(-1);
+            new OrderedMultiList<int>().GetRank(0).ShouldBe(-1);
+        }
+
+        [Fact]
+        public void RanksOfNeighboursDifferByTheirCopyCounts()
+        {
+            var random = new Random(9090);
+            var list = new OrderedMultiList<int>();
+            list.AddRange(Sequence(random, 500, 30));
+
+            var previous = 0;
+            foreach (var entry in list.EntrySet())
+            {
+                list.GetRank(entry.Item).ShouldBe(previous, "rank of " + entry.Item);
+                previous += entry.Count;
+            }
+
+            previous.ShouldBe(list.TotalCount);
+        }
+
+        [Fact]
+        public void GetMedianTakesTheLowerOfTheTwoMiddleCopies()
+        {
+            var odd = new OrderedMultiList<int> { 1, 2, 3 };
+            odd.GetMedian().ShouldBe(2);
+            odd.GetMedian().ShouldBe(odd.GetByRank(1));
+
+            var even = new OrderedMultiList<int> { 1, 2, 3, 4 };
+            even.GetMedian().ShouldBe(2);
+            even.GetMedian().ShouldBe(even.GetQuantile(0.5));
+
+            var weighted = new OrderedMultiList<string>();
+            weighted.Add("a", 9);
+            weighted.Add("z");
+            // Nine copies of "a" outvote the single "z", so the median is the heavy element.
+            weighted.GetMedian().ShouldBe("a");
+        }
+
+        [Fact]
+        public void GetMedianThrowsWhenEmpty()
+        {
+            Should.Throw<InvalidOperationException>(() => new OrderedMultiList<int>().GetMedian());
+        }
+
+        [Fact]
+        public void GetQuantileUsesTheNearestRank()
+        {
+            var list = new OrderedMultiList<string>();
+            list.Add("a", 100);
+            list.Add("z");
+
+            list.GetQuantile(0).ShouldBe("a");
+            list.GetQuantile(0.5).ShouldBe("a");
+            list.GetQuantile(0.99).ShouldBe("a");
+            list.GetQuantile(0.995).ShouldBe("z");
+            list.GetQuantile(1).ShouldBe("z");
+
+            list.GetQuantile(0).ShouldBe(list.GetFirst());
+            list.GetQuantile(1).ShouldBe(list.GetLast());
+        }
+
+        [Fact]
+        public void GetQuantileAgreesWithTheExpandedSequence()
+        {
+            var random = new Random(5150);
+            var list = new OrderedMultiList<int>();
+            list.AddRange(Sequence(random, 700, 25));
+
+            var expanded = list.ToList();
+            for (var point = 0; point <= 100; point++)
+            {
+                var quantile = point / 100d;
+                var expected = (int)Math.Ceiling(quantile * expanded.Count) - 1;
+                list.GetQuantile(quantile).ShouldBe(expanded[expected < 0 ? 0 : expected], "q = " + quantile);
+            }
+        }
+
+        [Fact]
+        public void GetQuantileRejectsAnInvalidArgument()
+        {
+            var list = new OrderedMultiList<int> { 1, 2, 3 };
+
+            Should.Throw<ArgumentOutOfRangeException>(() => list.GetQuantile(-0.001));
+            Should.Throw<ArgumentOutOfRangeException>(() => list.GetQuantile(1.001));
+            Should.Throw<ArgumentOutOfRangeException>(() => list.GetQuantile(double.NaN));
+            Should.Throw<InvalidOperationException>(() => new OrderedMultiList<int>().GetQuantile(0.5));
+        }
+
+        [Fact]
+        public void RankFollowsTheComparerForNullElements()
+        {
+            var first = new OrderedMultiList<string>();
+            first.Add("b");
+            first.Add(null);
+            // Comparer<string>.Default sorts null below everything, so it is rank 0.
+            first.GetRank(null).ShouldBe(0);
+            first.GetByRank(0).ShouldBe(null);
+            first.GetRank("b").ShouldBe(1);
+
+            var last = new OrderedMultiList<string>(new NullLastComparer());
+            last.Add("b");
+            last.Add(null);
+            last.GetRank(null).ShouldBe(1);
+            last.GetByRank(0).ShouldBe("b");
+        }
+
+        [Fact]
+        public void RankFollowsACustomOrder()
+        {
+            var list = new OrderedMultiList<int>(new DescendingComparer());
+            list.Add(1);
+            list.Add(2, 2);
+            list.Add(3);
+
+            // Descending order: 3, 2, 2, 1.
+            list.GetByRank(0).ShouldBe(3);
+            list.GetByRank(1).ShouldBe(2);
+            list.GetRank(1).ShouldBe(3);
+            list.GetMedian().ShouldBe(2);
+        }
+
+        [Fact]
+        public void RanksSurviveRandomOperations()
+        {
+            var random = new Random(20260917);
+            var list = new OrderedMultiList<int>();
+            var model = new SortedDictionary<int, int>();
+
+            for (var step = 0; step < 3000; step++)
+            {
+                var key = random.Next(0, 40);
+                var times = random.Next(1, 4);
+
+                switch (random.Next(4))
+                {
+                    case 0:
+                        list.Add(key, times);
+                        model[key] = (model.TryGetValue(key, out var current) ? current : 0) + times;
+                        break;
+
+                    case 1:
+                        list.Remove(key, times);
+                        if (model.TryGetValue(key, out var existing))
+                        {
+                            var remaining = existing - times;
+                            if (remaining <= 0)
+                            {
+                                model.Remove(key);
+                            }
+                            else
+                            {
+                                model[key] = remaining;
+                            }
+                        }
+
+                        break;
+
+                    case 2:
+                        list.RemoveAllCopies(key);
+                        model.Remove(key);
+                        break;
+
+                    default:
+                        // A rank query at the exact boundary of what the model holds: the last copy.
+                        if (list.TotalCount > 0)
+                        {
+                            list.GetByRank(list.TotalCount - 1).ShouldBe(GetAll(model).Last(), "rank at the top");
+                        }
+
+                        break;
+                }
+
+                if (step % 25 == 0)
+                {
+                    AssertAgainstModel(list, model, "at step " + step);
+                }
+            }
+
+            AssertAgainstModel(list, model, "after 3,000 random operations");
+            AssertBalanced(list, "after 3,000 random operations");
+        }
+
+        private static List<int> GetAll(SortedDictionary<int, int> model)
+        {
+            var copies = new List<int>();
+            foreach (var pair in model)
+            {
+                for (var i = 0; i < pair.Value; i++)
+                {
+                    copies.Add(pair.Key);
+                }
+            }
+
+            return copies;
+        }
+
+        // The expanded oracle is the whole enumerated sequence; every positional read has to agree
+        // with it, which is what pins rank down to copy semantics rather than distinct semantics.
+        private static void AssertAgainstModel(OrderedMultiList<int> list, SortedDictionary<int, int> model, string context)
+        {
+            var copies = GetAll(model);
+
+            list.TotalCount.ShouldBe(copies.Count, context + ": TotalCount");
+            list.DistinctCount.ShouldBe(model.Count, context + ": DistinctCount");
+            list.ToList().ShouldBe(copies, context + ": enumeration");
+
+            for (var rank = 0; rank < copies.Count; rank += 7)
+            {
+                list.GetByRank(rank).ShouldBe(copies[rank], context + ": rank " + rank);
+            }
+
+            for (var key = 0; key < 40; key++)
+            {
+                var expected = copies.IndexOf(key);
+                list.GetRank(key).ShouldBe(expected, context + ": rank of " + key);
+                list.CountOf(key).ShouldBe(model.TryGetValue(key, out var count) ? count : 0, context + ": copies of " + key);
+            }
+
+            if (copies.Count > 0)
+            {
+                list.GetMedian().ShouldBe(copies[(copies.Count - 1) / 2], context + ": median");
+                list.GetQuantile(1).ShouldBe(copies[copies.Count - 1], context + ": top quantile");
+            }
+        }
+
         // ------------------------------------------------------------ null elements
 
         [Fact]
@@ -672,13 +978,13 @@ namespace DotNetCore.Collections.Multi.Tests
             Should.Throw<ArgumentNullException>(() => list.IsDisjointFrom(null));
         }
 
-        // ------------------------------------------------------------ red-black invariants
+        // ------------------------------------------------------------ tree invariants
 
         [Fact]
         public void SequentialAscendingInsertsStayLogarithmic()
         {
             // The adversarial case for an unbalanced binary search tree: 10,000 ascending keys
-            // would make it a linked list. A red-black tree must stay within 2*log2(n+1) ~ 27.
+            // would make it a linked list. The B+ tree stays within log15(n/2) ~ 3 of them.
             var list = new OrderedMultiList<int>();
             const int n = 10000;
             for (var i = 0; i < n; i++)
@@ -687,7 +993,7 @@ namespace DotNetCore.Collections.Multi.Tests
             }
 
             list.DistinctCount.ShouldBe(n);
-            list.TreeHeight.ShouldBeLessThan(30);
+            list.TreeHeight.ShouldBeLessThan(8);
             AssertBalanced(list, "after 10,000 ascending inserts");
         }
 
@@ -701,7 +1007,7 @@ namespace DotNetCore.Collections.Multi.Tests
                 list.Add(i);
             }
 
-            list.TreeHeight.ShouldBeLessThan(30);
+            list.TreeHeight.ShouldBeLessThan(8);
             list.ToList().ShouldBe(Enumerable.Range(0, n));
             AssertBalanced(list, "after 10,000 descending inserts");
         }
@@ -710,12 +1016,12 @@ namespace DotNetCore.Collections.Multi.Tests
         public void DuplicateCopiesDoNotGrowTheTree()
         {
             // The tree is sized by distinct elements, so adding 10,000 copies of one element must
-            // leave it one node deep.
+            // leave it a single root leaf.
             var list = new OrderedMultiList<int>();
             list.Add(1, 10000);
 
             list.DistinctCount.ShouldBe(1);
-            list.TreeHeight.ShouldBe(1);
+            list.TreeHeight.ShouldBe(0);
             list.TotalCount.ShouldBe(10000);
             AssertBalanced(list, "after 10,000 copies of one element");
         }

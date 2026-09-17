@@ -17,8 +17,10 @@ namespace DotNetCore.Collections.Multi
     /// semantics - one distinct element with N copies, duplicates expanded on enumeration, the
     /// same multiset set operations - and differ in the storage underneath and in what that
     /// storage buys: <see cref="MultiList{T}"/> keeps a hash table and answers in O(1) but has no
-    /// defined order, while this type keeps a red-black tree and answers in O(log n) while
-    /// enumerating in sorted order.
+    /// defined order, while this type keeps an order-statistic B+ tree and answers in O(log n)
+    /// while enumerating in sorted order - and, because that tree caches how many copies hang below
+    /// each of its nodes, answering positional reads such as <see cref="GetByRank(int)"/> and
+    /// <see cref="GetRank(T)"/> on the sorted sequence without traversing it.
     /// </para>
     /// <para>
     /// <b>Element ordering and element equality are the same decision here, and it is made by an
@@ -63,14 +65,14 @@ namespace DotNetCore.Collections.Multi
     /// foreach (var item in shelf) { /* "bean", "bean", "mug" */ }
     ///
     /// shelf.GetFirst();                       // "bean"
-    /// shelf.GetRange("a", "n");               // "bean", "bean"
+    /// shelf.GetRange("a", "n");               // "bean", "bean", "mug" ("mug" sorts below "n")
     /// shelf.CountOf("bean");                  // 2
     /// </code>
     /// </example>
     public class OrderedMultiList<T> : IEnumerable<T>, ICollection<T>, IReadOnlyCollection<T>
     {
         private readonly IComparer<T> _comparer;
-        private readonly RedBlackTree<T> _tree;
+        private readonly OrderStatisticTree<T> _tree;
 
         /// <summary>
         /// Initializes an empty <see cref="OrderedMultiList{T}"/> ordered by
@@ -88,7 +90,7 @@ namespace DotNetCore.Collections.Multi
         public OrderedMultiList(IComparer<T>? comparer)
         {
             _comparer = comparer ?? Comparer<T>.Default;
-            _tree = new RedBlackTree<T>(_comparer);
+            _tree = new OrderStatisticTree<T>(_comparer);
         }
 
         /// <summary>
@@ -128,7 +130,7 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Gets the total number of copies across all elements.
         /// </summary>
-        public int TotalCount { get; private set; }
+        public int TotalCount => _tree.ElementCount;
 
         /// <summary>
         /// Gets the number of distinct elements. A stored <c>null</c> element counts as one
@@ -172,7 +174,6 @@ namespace DotNetCore.Collections.Multi
             }
 
             _tree.AddCount(item, times);
-            TotalCount += times;
         }
 
         /// <summary>
@@ -303,7 +304,6 @@ namespace DotNetCore.Collections.Multi
                 _tree.TrySetCount(item, remaining);
             }
 
-            TotalCount -= removed;
             return remaining;
         }
 
@@ -325,7 +325,6 @@ namespace DotNetCore.Collections.Multi
             }
 
             _tree.TryRemoveKey(item);
-            TotalCount -= current;
             return true;
         }
 
@@ -341,7 +340,6 @@ namespace DotNetCore.Collections.Multi
         public void Clear()
         {
             _tree.Clear();
-            TotalCount = 0;
         }
 
         /// <summary>
@@ -382,6 +380,113 @@ namespace DotNetCore.Collections.Multi
             }
 
             return entry.Key;
+        }
+
+        /// <summary>
+        /// Gets the element holding the copy at the specified rank, in O(log n). Rank is measured
+        /// over the sequence this type enumerates: every copy counts, so an element held three times
+        /// answers to three consecutive ranks and <see cref="DistinctCount"/> does not bound them.
+        /// </summary>
+        /// <param name="rank">the zero-based position, from zero to <see cref="TotalCount"/> - 1.</param>
+        /// <returns>the element holding that copy.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="rank"/> is negative or
+        /// greater than or equal to <see cref="TotalCount"/>.</exception>
+        /// <example>
+        /// <code>
+        /// // shelf holds "bean", "bean", "mug"
+        /// shelf.GetByRank(0);                      // "bean"
+        /// shelf.GetByRank(2);                      // "mug"
+        /// </code>
+        /// </example>
+        public T GetByRank(int rank)
+        {
+            if (!_tree.TryGetByRank(rank, out var key))
+            {
+                throw new ArgumentOutOfRangeException(nameof(rank), rank, "The rank must address one of the stored copies, from zero to TotalCount - 1.");
+            }
+
+            return key;
+        }
+
+        /// <summary>
+        /// Gets the rank of the first copy of the element, in O(log n): the number of stored copies
+        /// that sort strictly below it, which is the position its first copy enumerates at. Returns
+        /// <c>-1</c> when the multiset holds no copy of the element, the way
+        /// <see cref="List{T}.IndexOf(T)"/> reports an absent item.
+        /// </summary>
+        /// <param name="item">the element to locate.</param>
+        /// <example>
+        /// <code>
+        /// // shelf holds "bean", "bean", "mug"
+        /// shelf.GetRank("mug");                    // 2
+        /// shelf.GetRank("cup");                    // -1
+        /// </code>
+        /// </example>
+        public int GetRank(T item)
+        {
+            return _tree.TryGetRankOf(item, out var rank) ? rank : -1;
+        }
+
+        /// <summary>
+        /// Gets the median element - the one at the middle rank - in O(log n). With an even number of
+        /// copies there is no single middle element, and <typeparamref name="T"/> offers no way to
+        /// average two of them, so the lower of the two middle elements is returned. Use
+        /// <see cref="GetQuantile(double)"/> to ask for a different point of the distribution.
+        /// </summary>
+        /// <returns>the element holding the middle copy.</returns>
+        /// <exception cref="InvalidOperationException">The multiset is empty.</exception>
+        /// <example>
+        /// <code>
+        /// // shelf holds "bean", "bean", "mug"
+        /// shelf.GetMedian();                       // "bean"
+        /// </code>
+        /// </example>
+        public T GetMedian()
+        {
+            var total = TotalCount;
+            if (total == 0)
+            {
+                throw new InvalidOperationException("The multiset is empty, so it has no median element.");
+            }
+
+            return GetByRank((total - 1) / 2);
+        }
+
+        /// <summary>
+        /// Gets the element at the specified quantile of the multiset, in O(log n). The nearest-rank
+        /// definition is used: the answer is the element at zero-based position
+        /// &#8968;<paramref name="quantile"/> &#215; <see cref="TotalCount"/>&#8969; - 1 of the sorted
+        /// sequence, clamped to the first copy when that lands below it. A quantile therefore never
+        /// interpolates between two elements and never names an element this multiset does not hold.
+        /// <see cref="GetMedian"/> and a quantile of <c>0.5</c> agree.
+        /// </summary>
+        /// <param name="quantile">the point of the distribution, between 0 and 1 inclusive.</param>
+        /// <returns>the element holding that copy.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="quantile"/> is not between 0
+        /// and 1, or is not a number.</exception>
+        /// <exception cref="InvalidOperationException">The multiset is empty.</exception>
+        /// <example>
+        /// <code>
+        /// // shelf holds 100 copies of "a" and 1 of "z"
+        /// shelf.GetQuantile(0.99);                 // "a"
+        /// shelf.GetQuantile(1);                    // "z"
+        /// </code>
+        /// </example>
+        public T GetQuantile(double quantile)
+        {
+            if (double.IsNaN(quantile) || quantile < 0d || quantile > 1d)
+            {
+                throw new ArgumentOutOfRangeException(nameof(quantile), quantile, "The quantile must be between 0 and 1, inclusive.");
+            }
+
+            var total = TotalCount;
+            if (total == 0)
+            {
+                throw new InvalidOperationException("The multiset is empty, so it has no quantile.");
+            }
+
+            var rank = (int)Math.Ceiling(quantile * total) - 1;
+            return GetByRank(rank < 0 ? 0 : rank);
         }
 
         /// <summary>
@@ -967,14 +1072,16 @@ namespace DotNetCore.Collections.Multi
         // ------------------------------------------------------------------
 
         /// <summary>
-        /// Gets the height of the underlying red-black tree. Exposed for invariant assertions,
-        /// which is where the O(log n) guarantee is checked; it is O(n) to compute.
+        /// Gets the number of edges on a root-to-leaf path of the underlying B+ tree. Exposed for
+        /// invariant assertions, which is where the O(log n) guarantee is checked; every leaf sits at
+        /// this depth, so it costs one descent.
         /// </summary>
         internal int TreeHeight => _tree.Height;
 
         /// <summary>
-        /// Re-checks the red-black invariants of the underlying tree. Exposed for the test
-        /// suite, which asserts them instead of relying on timing measurements.
+        /// Re-checks the structural invariants of the underlying tree - uniform leaf depth, node
+        /// occupancy, separator agreement and the cached copy totals. Exposed for the test suite,
+        /// which asserts them instead of relying on timing measurements.
         /// </summary>
         internal bool ValidateTree(out string? error)
         {

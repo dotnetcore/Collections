@@ -6,8 +6,44 @@ repository ships the same version (see `build/version.props`).
 
 ## [Unreleased]
 
+### Added
+
+- `OrderedMultiList<T>` gained its positional read surface (F6-25): `GetByRank(rank)` returns the
+  element sitting at a rank of the *expanded* sorted sequence — counting copies, not distinct
+  elements, so the valid range is `[0, TotalCount-1]` and anything outside throws
+  `ArgumentOutOfRangeException` — `GetRank(item)` returns the rank of an element's first copy or
+  `-1` when it is absent, and `GetMedian()` / `GetQuantile(q)` answer the two statistical reads on
+  top of them (`GetMedian` takes the lower of the two middle copies; `GetQuantile` uses the
+  nearest-rank rule and rejects `NaN` and anything outside `[0, 1]`). All four are **O(log n) worst
+  case**, which the engine swap recorded below is what makes possible: each of the type's nodes
+  caches how many copies hang in its sub-tree, so a rank read is one descent down that sum instead
+  of a scan. Measured against the only thing the type could do before — give up and materialise the
+  expanded sequence, then index or search that copy — with BenchmarkDotNet + MemoryDiagnoser
+  (net8.0, `Distinct` keys at three copies apiece, 64 reads per operation): over 4096 distinct keys
+  `GetByRank` is 31.7 ns against 1,943 ns, `GetRank` 78.9 ns against 2,453 ns, and at 65,536
+  distinct keys the ratios widen to 688x and 1,020x, with 0 B of garbage against 12 kB per read.
+  No existing signature changed, so there is no `### Breaking` entry for this.
+
 ### Changed
 
+- `OrderedMultiList<T>` is now backed by an *order-statistic B+ tree* (`OrderStatisticTree<TKey>`)
+  instead of the internal left-leaning red-black tree, which is deleted. This is an engine swap, not
+  a semantic one: counted duplicates, the first-added key winning a comparer collision, `null`
+  handled entirely by the comparer, injected comparers, and shallow-copy semantics (`Clone`) all
+  behave exactly as before, verified by the pre-existing ordered-multiset suite running unchanged
+  against the new engine - the only test edits were assertions about the old tree's internal
+  *shape*, its height bound and the layout of a single-key tree. The swap is what the rank reads
+  above need, and it pays off independently on the paths that were already there:
+  ascending iteration over 12,288 copies went 129.9 → 75.6 µs and over 196,608 copies 2,662 → 1,284
+  µs with per-operation allocations 440 → 112 B, a 512-wide `GetRange` inside 65,536 distinct keys
+  went 176 → 11.3 µs and 92 kB → 152 B, `RemoveAllCopies` went 3.35 → 1.28 µs per key. The
+  compensation is not uniform and the other direction is recorded too: a wide node trades the
+  red-black tree's single-key hop for a binary search inside a page, so a *small, single-key* probe
+  got slower (`CountOf` over 64 distinct 12.5 → 30.8 ns, `Add` 390 → 472 ns). `OrderedMultiDictionary`
+  is deliberately untouched — it never had a self-implemented engine, being built on the BCL's sorted
+  dictionary over a per-key collection, so giving it the same treatment is a separate piece of work.
+  Alongside: the XML example for `GetRange` was corrected, since `GetRange("a", "n")` over
+  `mug, bean, bean` returns `"bean", "bean", "mug"` — `"mug"` sorts below `"n"`.
 - The paging extensions of six ORM integration packages (`Chloe`, `DosOrm`, `FreeSql`, `SqlSugar`,
   `NHibernate`, `SqlKata`) are now emitted at build time by a Roslyn source generator
   (`src/DotNetCore.Collections.Paginable.SourceGenerators`) instead of being handwritten once per

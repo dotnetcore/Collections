@@ -15,6 +15,8 @@ namespace Sample.Multi
             Console.WriteLine();
             MultiListAdvanced();
             Console.WriteLine();
+            OrderedMultiListDemo();
+            Console.WriteLine();
             MultiDictionaryBasics();
             Console.WriteLine();
             MultiDictionaryAdvanced();
@@ -107,6 +109,31 @@ namespace Sample.Multi
             var snapshot = bag.Clone();
             bag.Clear();
             Console.WriteLine($"after Clear: bag = <empty>, snapshot = {snapshot} (independent)");
+        }
+
+        private static void OrderedMultiListDemo()
+        {
+            Console.WriteLine("=== OrderedMultiList<T> (sorted bag): order and rank ===");
+
+            var shelf = new OrderedMultiList<string> { "mug", "bean", "bean", "axe" };
+            Console.WriteLine($"enumeration       = {string.Join(", ", shelf)}   (ascending, copies expanded)");
+            Console.WriteLine($"GetFirst/GetLast  = {shelf.GetFirst()} / {shelf.GetLast()}");
+            Console.WriteLine($"GetRange(b,n)     = {string.Join(", ", shelf.GetRange("b", "n"))}");
+            Console.WriteLine($"Reverse()         = {string.Join(", ", shelf.Reverse())}");
+
+            // Rank is measured over the expanded sequence, so a held-twice element answers to two
+            // consecutive ranks and TotalCount - not DistinctCount - bounds them.
+            Console.WriteLine($"GetByRank(0..{shelf.TotalCount - 1})   = " + string.Join(", ",
+                Enumerable.Range(0, shelf.TotalCount).Select(shelf.GetByRank)));
+            Console.WriteLine($"GetRank(mug)      = {shelf.GetRank("mug")}   (copies of \"axe\" + copies of \"bean\" before it)");
+            Console.WriteLine($"GetRank(cup)      = {shelf.GetRank("cup")}   (absent, like IndexOf)");
+            Console.WriteLine($"GetMedian()       = {shelf.GetMedian()}   (lower middle of 4 copies)");
+            Console.WriteLine($"GetQuantile(0/1)  = {shelf.GetQuantile(0)} / {shelf.GetQuantile(1)}");
+
+            // The comparer decides both the order and the ranks.
+            var reversed = new OrderedMultiList<string>(Comparer<string>.Create((x, y) => string.CompareOrdinal(y, x)));
+            reversed.AddRange(shelf);
+            Console.WriteLine($"descending ranks = {string.Join(", ", Enumerable.Range(0, reversed.TotalCount).Select(reversed.GetByRank))}");
         }
 
         private static string SymmetricDiff(MultiList<int> a, MultiList<int> b)
