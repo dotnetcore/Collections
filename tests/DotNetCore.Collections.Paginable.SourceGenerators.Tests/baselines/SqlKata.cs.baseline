@@ -1,25 +1,16 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using SqlKata;
 using DotNetCore.Collections.Paginable.Internal;
+using SqlKata;
 
 // ReSharper disable once CheckNamespace
 namespace DotNetCore.Collections.Paginable
 {
-#if !NET451
-    [SolidPageExtensionsFor(
-        ormName: "SqlKata",
-        sourceTypeFullName: "SqlKata.Query",
-        sourceParamName: "query",
-        pageTypeName: "SqlKataPage",
-        paginableTypeName: "PaginableSqlKataQuery",
-        factoryTypeName: "PaginableSqlKataCollFactory",
-        helperTypeName: "SqlKataHelper",
-        SourceTypeIsNonGeneric = true)]
-#endif
-    public static partial class SolidPageExtensions
+    /// <summary>
+    /// Extensions for solid page for sqlkata
+    /// </summary>
+    public static class SolidPageExtensions
     {
-#if NET451
         /// <summary>
         /// Make original SqlKata.Query result to SqlKataPage collection.
         /// </summary>
@@ -58,7 +49,7 @@ namespace DotNetCore.Collections.Paginable
         /// </summary>
         /// <typeparam name="T">element type of your SqlKata.Query source</typeparam>
         /// <param name="query">original SqlKata.Query source</param>
-        /// <param name="pageNumber">page number</param>
+        /// <param name="pageNumber"></param>
         /// <returns></returns>
         /// <example>
         /// <code>
@@ -83,8 +74,7 @@ namespace DotNetCore.Collections.Paginable
         /// </exception>
         /// <example>
         /// <code>
-        /// var page = query.GetPage(15, 50);
-        /// var totalMemberCount = page.TotalMemberCount;
+        /// var page = paginable.GetPage(15);
         /// </code>
         /// </example>
         public static IPage<T> GetPage<T>(this Query query, int pageNumber, int pageSize)
@@ -100,14 +90,13 @@ namespace DotNetCore.Collections.Paginable
 
             return new SqlKataPage<T>(query, pageNumber, pageSize, SqlKataHelper.Count(query));
         }
-#endif
 
         /// <summary>
         /// Get specific page from original SqlKata.Query source
         /// </summary>
         /// <typeparam name="T">element type of your SqlKata.Query source</typeparam>
         /// <param name="query">original SqlKata.Query source</param>
-        /// <param name="pageNumber">page number</param>
+        /// <param name="pageNumber"></param>
         /// <returns></returns>
         /// <example>
         /// <code>

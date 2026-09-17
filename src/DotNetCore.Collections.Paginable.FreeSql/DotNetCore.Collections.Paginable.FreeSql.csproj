@@ -20,4 +20,8 @@
     <ProjectReference Include="..\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'!='net451'">
+    <ProjectReference Include="..\DotNetCore.Collections.Paginable.SourceGenerators\DotNetCore.Collections.Paginable.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
 </Project>

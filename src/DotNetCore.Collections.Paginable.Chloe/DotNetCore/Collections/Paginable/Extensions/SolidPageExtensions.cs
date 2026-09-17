@@ -1,96 +1,19 @@
-﻿using System;
-using System.Threading.Tasks;
 using Chloe;
-using DotNetCore.Collections.Paginable.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace DotNetCore.Collections.Paginable
 {
-    /// <summary>
-    /// Extensions for solid page for Chloe
-    /// </summary>
-    public static class SolidPageExtensions
+    [SolidPageExtensionsFor(
+        ormName: "Chloe",
+        sourceTypeFullName: "Chloe.IQuery<T>",
+        sourceParamName: "query",
+        pageTypeName: "ChloePage",
+        paginableTypeName: "PaginableChloeQuery",
+        factoryTypeName: "PaginableChloeCollFactory",
+        helperTypeName: "ChloeHelper",
+        HasAdditionalQueryFunc = true,
+        SourceDescriptor = "ChloeQueryable")]
+    public static partial class SolidPageExtensions
     {
-        /// <summary>
-        /// Make original ChloeQueryable result to ChloePage collection.
-        /// </summary>
-        /// <typeparam name="T">element type of your enumerable result</typeparam>
-        /// <param name="query">ChloeQueryable</param>
-        /// <param name="limitedMemberCount">limited member count</param>
-        /// <returns></returns>
-        /// <example>
-        /// <code>
-        /// var paginable = query.ToPaginable();
-        /// var page = paginable.GetPage(15);
-        /// </code>
-        /// </example>
-        public static PaginableChloeQuery<T> ToPaginable<T>(this IQuery<T> query, int? limitedMemberCount = null)
-            => PaginableChloeCollFactory.CreatePageSet(query, limitedMemberCount: limitedMemberCount);
-
-        /// <summary>
-        /// Make original ChloeQueryable result to ChloePage collection.
-        /// </summary>
-        /// <typeparam name="T">element type of your enumerable result</typeparam>
-        /// <param name="query">ChloeQueryable</param>
-        /// <param name="pageSize">page size</param>
-        /// <param name="limitedMemberCount">limited member count</param>
-        /// <returns></returns>
-        /// <example>
-        /// <code>
-        /// var paginable = query.ToPaginable();
-        /// var page = paginable.GetPage(15);
-        /// </code>
-        /// </example>
-        public static PaginableChloeQuery<T> ToPaginable<T>(this IQuery<T> query, int pageSize, int? limitedMemberCount = null)
-            => PaginableChloeCollFactory.CreatePageSet(query, pageSize, limitedMemberCount);
-
-        /// <summary>
-        /// Get specific page from original ChloeQueryable source
-        /// </summary>
-        /// <typeparam name="T">element type of your ChloeQueryable source</typeparam>
-        /// <param name="query">original ChloeQueryable source</param>
-        /// <param name="pageNumber">page number</param>
-        /// <param name="additionalQueryFunc"></param>
-        /// <returns></returns>
-        /// <example>
-        /// <code>
-        /// var page = query.GetPage(15);
-        /// var totalMemberCount = page.TotalMemberCount;
-        /// </code>
-        /// </example>
-        public static IPage<T> GetPage<T>(this IQuery<T> query, int pageNumber, Func<IQuery<T>, IQuery<T>>? additionalQueryFunc = null)
-            => GetPage(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, additionalQueryFunc);
-
-        /// <summary>
-        /// Get specific page from original ChloeQueryable source
-        /// </summary>
-        /// <typeparam name="T">element type of your ChloeQueryable source</typeparam>
-        /// <param name="query">original ChloeQueryable source</param>
-        /// <param name="pageNumber">page number</param>
-        /// <param name="pageSize">page size</param>
-        /// <param name="additionalQueryFunc"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"><paramref name="query"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// <paramref name="pageNumber"/> is less than one, or <paramref name="pageSize"/> is less than one.
-        /// </exception>
-        /// <example>
-        /// <code>
-        /// var page = paginable.GetPage(15);
-        /// </code>
-        /// </example>
-        public static IPage<T> GetPage<T>(this IQuery<T> query, int pageNumber, int pageSize, Func<IQuery<T>, IQuery<T>>? additionalQueryFunc = null)
-        {
-            if (query is null)
-                throw new ArgumentNullException(nameof(query), $"{nameof(query)} can not be null.");
-
-            if (pageNumber < 1)
-                throw new ArgumentOutOfRangeException(nameof(pageNumber), $"{nameof(pageNumber)} can not be less than one");
-
-            if (pageSize < 1)
-                throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
-
-            return new ChloePage<T>(query, pageNumber, pageSize, ChloeHelper.Count(query), additionalQueryFunc);
-        }
     }
 }

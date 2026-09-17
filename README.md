@@ -207,6 +207,15 @@ on the source type you already use.
 | EF Core | `…Paginable.EntityFrameworkCore` | `context.ExampleModels` |
 | SqlKata + Dapper | `…Paginable.SqlKata` | `db.Query("ExampleModels")` |
 
+Six of these packages (`Chloe`, `DosOrm`, `FreeSql`, `SqlSugar`, `NHibernate`, `SqlKata`) declare
+their `ToPaginable` / `GetPage` surface once and have the near-identical extension class emitted at
+build time by `DotNetCore.Collections.Paginable.SourceGenerators`. This is build-time only: no
+runtime dependency, no extra package reference, and the public API of those packages is exactly
+what it was before generation — a regression suite compares every emitted member (signature, body
+and XML documentation) against the pre-generation source. The EF6 / EF Core / FreeSql.DbContext
+integrations stay handwritten; they delegate to the queryable extensions instead of a
+provider-specific paging factory, so there is no per-provider boilerplate to generate there.
+
 A representative call (each of the above ends the same way):
 
 ```c#
@@ -634,6 +643,7 @@ dotnet build DotNetCore.Collections.sln -c Release
 
 dotnet test tests/DotNetCore.Collections.Paginable.Tests -c Release
 dotnet test tests/DotNetCore.Collections.Multi.Tests      -c Release
+dotnet test tests/DotNetCore.Collections.Paginable.SourceGenerators.Tests -c Release
 ```
 
 The unit tests run offline. The integration tests in `tests/DotNetCore.Collections.Paginable.DbTests`

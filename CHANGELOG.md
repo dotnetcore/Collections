@@ -4,6 +4,35 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [Unreleased]
+
+### Changed
+
+- The paging extensions of six ORM integration packages (`Chloe`, `DosOrm`, `FreeSql`, `SqlSugar`,
+  `NHibernate`, `SqlKata`) are now emitted at build time by a Roslyn source generator
+  (`src/DotNetCore.Collections.Paginable.SourceGenerators`) instead of being handwritten once per
+  provider. Each package declares what its paging surface looks like — source type and parameter
+  name, page / paginable-collection / factory / helper type names, and which optional shapes it
+  carries (`additionalQueryFunc`, `includeNestedMembers`, async members, the `class` constraint) —
+  with a single `[SolidPageExtensionsFor]` attribute on the `SolidPageExtensions` partial class, and
+  the generator writes out the `ToPaginable` / `ToPaginableAsync` / `GetPage` / `GetPageAsync`
+  members from that declaration. Provider-specific members that do not fit the shape stay
+  handwritten inside the same partial (NHibernate's `ISession` overloads, SqlKata's `GetPageAsync`).
+  Chloe's extension class is now a 19-line declaration where it was 95 lines of handwriting,
+  Dos.ORM's 21 where it was 99. The three packages that also target `net451` (FreeSql, SqlKata,
+  SqlSugar) reference the generator for every other target and keep their handwritten members
+  behind `#if NET451`, so the legacy target compiles exactly as it did before.
+  **No consumer-visible change, and therefore no `### Breaking` entry for this**: the generated
+  members are the same members with the same signatures - including parameter names, which are
+  source-affecting for named-argument callers - and the same XML documentation, so the shipped
+  IntelliSense is unchanged. Verified by a regression suite that runs the generator over each of the
+  six packages and compares every emitted member (signature, body, documentation) against the
+  pre-change source, held as test resources. Packaging is untouched as well: the generator is an
+  analyzer, so no package gains a dependency and none of them ships the generator assembly. The
+  EF6, EF Core and FreeSql.DbContext integrations are deliberately not migrated - they delegate to
+  the queryable extensions rather than to a provider-specific paging factory, so their bodies were
+  never the duplicated shape this replaces.
+
 ## [6.4.0] - 2026-09-16
 
 ### Added

@@ -1,32 +1,17 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SqlSugar;
 using DotNetCore.Collections.Paginable.Internal;
+using SqlSugar;
 
 // ReSharper disable once CheckNamespace
 namespace DotNetCore.Collections.Paginable
 {
-#if !NET451
-    [SolidPageExtensionsFor(
-        ormName: "SqlSugar",
-        sourceTypeFullName: "SqlSugar.ISugarQueryable<T>",
-        sourceParamName: "query",
-        pageTypeName: "SqlSugarPage",
-        paginableTypeName: "PaginableSqlSugarQuery",
-        factoryTypeName: "PaginableSqlSugarCollFactory",
-        helperTypeName: "SqlSugarHelper",
-        HasAsync = true,
-        AsyncCountExpression = "await SqlSugarHelper.CountAsync(query, cancellationToken)",
-        AsyncFetchExpression = "await query.ToPageListAsync(pageNumber, pageSize)",
-        AsyncFetchReturnsList = true,
-        AsyncFetchMethodName = "ToPageListAsync",
-        SourceDescriptor = "SqlSugarQueryable",
-        ForwardAsyncCancellationToken = false)]
-#endif
-    public static partial class SolidPageExtensions
+    /// <summary>
+    /// Extensions for solid page for SqlSugar
+    /// </summary>
+    public static class SolidPageExtensions
     {
-#if NET451
         /// <summary>
         /// Make original SqlSugarQueryable result to SqlSugarPage collection.
         /// </summary>
@@ -90,8 +75,7 @@ namespace DotNetCore.Collections.Paginable
         /// </exception>
         /// <example>
         /// <code>
-        /// var page = query.GetPage(15, 50);
-        /// var totalMemberCount = page.TotalMemberCount;
+        /// var page = paginable.GetPage(15);
         /// </code>
         /// </example>
         public static IPage<T> GetPage<T>(this ISugarQueryable<T> query, int pageNumber, int pageSize)
@@ -107,6 +91,7 @@ namespace DotNetCore.Collections.Paginable
 
             return new SqlSugarPage<T>(query, pageNumber, pageSize, SqlSugarHelper.Count(query));
         }
+
 
         /// <summary>
         /// Get specific page from original SqlSugarQueryable source with true end-to-end async:
@@ -189,6 +174,5 @@ namespace DotNetCore.Collections.Paginable
         /// </example>
         public static Task<PaginableSqlSugarQuery<T>> ToPaginableAsync<T>(this ISugarQueryable<T> query, int? pageSize = null, int? limitedMemberCount = null, CancellationToken cancellationToken = default)
             => PaginableSqlSugarCollFactory.CreatePageSetAsync(query, pageSize, limitedMemberCount);
-#endif
     }
 }

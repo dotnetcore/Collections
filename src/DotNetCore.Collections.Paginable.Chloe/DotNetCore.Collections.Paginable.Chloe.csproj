@@ -19,6 +19,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj" />
+        <ProjectReference Include="..\DotNetCore.Collections.Paginable.SourceGenerators\DotNetCore.Collections.Paginable.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
 </Project>
