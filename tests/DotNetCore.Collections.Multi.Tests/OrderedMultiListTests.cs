@@ -891,6 +891,295 @@ namespace DotNetCore.Collections.Multi.Tests
             list.TotalCount.ShouldBe(1);
         }
 
+        // ------------------------------------------------------------ positional interfaces (F6-27)
+
+        // F6-27: the type implements IReadOnlyList<T> and IList<T> over the expanded sequence.
+        // The contract the acceptance text asked to pin down first, in the order it lists it:
+        //
+        //   * the index domain - Count counts copies, so index i is the i-th copy in ascending
+        //     order and a position never names a distinct element;
+        //   * this[int] and IndexOf are the rank reads under their list names, so the two surfaces
+        //     can not drift apart;
+        //   * Insert only accepts a slot inside the run of equal elements - a sorted sequence has
+        //     no other position for the element - and assigning through the indexer is refused
+        //     outright, because overwriting a position would break the order the type is built on;
+        //   * RemoveAt takes exactly one copy;
+        //   * the read-only view answers the same positional contract and needs no IsReadOnly /
+        //     IsFixedSize, because IReadOnlyList<T> declares no mutating member for either flag to
+        //     describe.
+        //
+        // The scope ruling is pinned too: the unordered MultiList<T> deliberately gets none of
+        // this, because a hash table's enumeration order is an implementation detail and no index
+        // could be honoured across calls.
+
+        [Fact]
+        public void ImplementsBothListInterfaces()
+        {
+            var list = new OrderedMultiList<int>();
+            list.AddRange(new[] { 2, 2, 5 });
+
+            (list is IReadOnlyList<int>).ShouldBeTrue();
+            (list is IList<int>).ShouldBeTrue();
+            ((IReadOnlyList<int>)list).Count.ShouldBe(3);
+            ((IList<int>)list).Count.ShouldBe(3);
+            ((IList<int>)list).IsReadOnly.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void IndexerAndIndexOfAreTheRankReads()
+        {
+            var list = new OrderedMultiList<string>();
+            list.Add("mug");
+            list.Add("bean", 2);
+
+            list[0].ShouldBe("bean");
+            list[1].ShouldBe("bean");
+            list[2].ShouldBe("mug");
+            list.IndexOf("bean").ShouldBe(0);
+            list.IndexOf("mug").ShouldBe(2);
+            list.IndexOf("cup").ShouldBe(-1);
+            ((IReadOnlyList<string>)list)[2].ShouldBe("mug");
+            ((IList<string>)list)[0].ShouldBe("bean");
+        }
+
+        [Fact]
+        public void IndexerAgreesWithTheExpandedSequence()
+        {
+            var random = new Random(627);
+            var list = new OrderedMultiList<int>();
+            list.AddRange(Sequence(random, 500, 25));
+
+            var expanded = list.ToList();
+            for (var index = 0; index < expanded.Count; index++)
+            {
+                list[index].ShouldBe(expanded[index], "index " + index);
+                list.IndexOf(expanded[index]).ShouldBe(
+                    expanded.IndexOf(expanded[index]), "the first copy of the element at index " + index);
+            }
+
+            AssertBalanced(list, "after 500 positional reads");
+        }
+
+        [Fact]
+        public void IndexerAndRemoveAtThrowOutsideTheStoredCopies()
+        {
+            var list = new OrderedMultiList<int>();
+            list.Add(1, 3);
+
+            Should.Throw<ArgumentOutOfRangeException>(() => _ = list[-1]);
+            Should.Throw<ArgumentOutOfRangeException>(() => _ = list[3]);
+            Should.Throw<ArgumentOutOfRangeException>(() => list.RemoveAt(-1));
+            Should.Throw<ArgumentOutOfRangeException>(() => list.RemoveAt(3));
+            Should.Throw<ArgumentOutOfRangeException>(() => new OrderedMultiList<int>().RemoveAt(0));
+        }
+
+        [Fact]
+        public void InsertAcceptsAnySlotInsideTheRunOfEqualElements()
+        {
+            // The "bean" run occupies slots 0 and 1, so a third copy may be requested at 0, 1 or 2.
+            // Every accepted slot yields the same multiset, and the slot does hold the new copy
+            // afterwards - which is the only thing a caller can observe.
+            foreach (var index in new[] { 0, 1, 2 })
+            {
+                var list = new OrderedMultiList<string>();
+                list.Add("mug");
+                list.Add("bean", 2);
+
+                list.Insert(index, "bean");
+
+                list.TotalCount.ShouldBe(4, "index " + index);
+                list.CountOf("bean").ShouldBe(3, "index " + index);
+                list[index].ShouldBe("bean", "index " + index + " has to hold the inserted copy");
+                AssertBalanced(list, "after Insert at " + index);
+            }
+
+            // The "mug" run occupies slots 2..3 once "bean" holds two copies.
+            foreach (var index in new[] { 2, 3 })
+            {
+                var list = new OrderedMultiList<string>();
+                list.Add("mug");
+                list.Add("bean", 2);
+
+                list.Insert(index, "mug");
+
+                list[index].ShouldBe("mug", "index " + index + " has to hold the inserted copy");
+            }
+        }
+
+        [Fact]
+        public void InsertAcceptsTheSlotAnAbsentElementWouldOccupy()
+        {
+            var list = new OrderedMultiList<string>();
+            list.Add("mug");
+
+            list.Insert(0, "bean");
+
+            list.ToList().ShouldBe(new[] { "bean", "mug" });
+            list[0].ShouldBe("bean");
+        }
+
+        [Fact]
+        public void InsertRejectsAPositionTheElementCanNotOccupy()
+        {
+            var list = new OrderedMultiList<string>();
+            list.Add("mug");
+            list.Add("bean", 2);
+
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Insert(3, "bean"));
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Insert(1, "cup"));
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Insert(0, "mug"));
+
+            list.ToList().ShouldBe(new[] { "bean", "bean", "mug" });
+        }
+
+        [Fact]
+        public void InsertRejectsAnIndexOutsideTheList()
+        {
+            var list = new OrderedMultiList<int>();
+            list.Add(1);
+
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Insert(-1, 1));
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Insert(2, 1));
+        }
+
+        [Fact]
+        public void InsertIntoAnEmptyListOnlyAcceptsZero()
+        {
+            var list = new OrderedMultiList<int>();
+
+            Should.Throw<ArgumentOutOfRangeException>(() => list.Insert(1, 5));
+
+            list.Insert(0, 5);
+
+            list.ToList().ShouldBe(new[] { 5 });
+        }
+
+        [Fact]
+        public void InsertAgreesWithAddWhenTheSlotIsLegal()
+        {
+            var random = new Random(915);
+            var inserted = new OrderedMultiList<int>();
+            var added = new OrderedMultiList<int>();
+
+            for (var step = 0; step < 400; step++)
+            {
+                var value = random.Next(30);
+
+                // The leftmost slot a sorted sequence can hold this element at: after every copy
+                // that sorts below it. Computing it from the model is what keeps the test honest -
+                // it asks the type for a position the order really admits, not one the test wishes.
+                inserted.Insert(added.Count(item => item < value), value);
+                added.Add(value);
+            }
+
+            inserted.ToList().ShouldBe(added.ToList());
+            AssertBalanced(inserted, "after 400 inserts");
+        }
+
+        [Fact]
+        public void AssigningThroughTheListIndexerThrows()
+        {
+            var list = new OrderedMultiList<int>();
+            list.AddRange(new[] { 1, 2 });
+            var asList = (IList<int>)list;
+
+            Should.Throw<NotSupportedException>(() => asList[0] = 9);
+            Should.Throw<NotSupportedException>(() => asList[1] = 9);
+
+            list.ToList().ShouldBe(new[] { 1, 2 });
+        }
+
+        [Fact]
+        public void RemoveAtTakesExactlyOneCopy()
+        {
+            var list = new OrderedMultiList<string>();
+            list.Add("mug");
+            list.Add("bean", 2);
+
+            list.RemoveAt(1);
+
+            list.TotalCount.ShouldBe(2);
+            list.CountOf("bean").ShouldBe(1);
+            list.ToList().ShouldBe(new[] { "bean", "mug" });
+
+            list.RemoveAt(0);
+
+            list.TotalCount.ShouldBe(1);
+            list.CountOf("bean").ShouldBe(0);
+            list.ToList().ShouldBe(new[] { "mug" });
+        }
+
+        [Fact]
+        public void PositionalWritesKeepTheTreeInvariants()
+        {
+            var random = new Random(1618);
+            var list = new OrderedMultiList<int>();
+            var model = new List<int>();
+
+            for (var step = 0; step < 1200; step++)
+            {
+                if (model.Count == 0 || random.Next(2) == 0)
+                {
+                    var value = random.Next(20);
+                    var slot = model.Count(item => item < value);
+                    list.Insert(slot, value);
+                    model.Insert(slot, value);
+                }
+                else
+                {
+                    var index = random.Next(model.Count);
+                    list.RemoveAt(index);
+                    model.RemoveAt(index);
+                }
+
+                if (step % 25 == 0)
+                {
+                    list.ToList().ShouldBe(model, "step " + step);
+                    AssertBalanced(list, "step " + step);
+                }
+            }
+
+            list.ToList().ShouldBe(model);
+            AssertBalanced(list, "the end of the run");
+        }
+
+        [Fact]
+        public void ReadOnlyViewAnswersTheSamePositionalContract()
+        {
+            var list = new OrderedMultiList<int>();
+            list.AddRange(new[] { 3, 1, 1 });
+            var view = list.AsReadOnly();
+
+            var positional = (IReadOnlyList<int>)view;
+
+            positional.Count.ShouldBe(3);
+            positional[0].ShouldBe(1);
+            positional[2].ShouldBe(3);
+
+            // The view is live, so its positions follow the multiset it wraps.
+            list.Add(0);
+
+            positional.Count.ShouldBe(4);
+            positional[0].ShouldBe(0);
+
+            // ... and it stays read-only: it carries no mutating member at all.
+            (view is IList<int>).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void TheUnorderedBagDeliberatelyHasNoPositionalContract()
+        {
+            // F6-27's scope ruling. A position only means something once an order exists, and
+            // MultiList<T> is ordered by a hash table - its enumeration order is an implementation
+            // detail, so an index would name a different element from one call to the next. The
+            // ordered type is the one that can honour the contract, so it is the one that gets it.
+            var bag = new MultiList<int>();
+            bag.AddRange(new[] { 3, 1 });
+
+            (bag is IReadOnlyList<int>).ShouldBeFalse();
+            (bag is IList<int>).ShouldBeFalse();
+        }
+
         // ------------------------------------------------------------ parity with MultiList
 
         [Fact]

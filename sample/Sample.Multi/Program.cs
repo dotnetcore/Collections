@@ -134,6 +134,36 @@ namespace Sample.Multi
             var reversed = new OrderedMultiList<string>(Comparer<string>.Create((x, y) => string.CompareOrdinal(y, x)));
             reversed.AddRange(shelf);
             Console.WriteLine($"descending ranks = {string.Join(", ", Enumerable.Range(0, reversed.TotalCount).Select(reversed.GetByRank))}");
+
+            // F6-27: the ordered multiset is a list too. Positions address the expanded sequence, so
+            // the list members and the rank members are the same reads under two names.
+            IReadOnlyList<string> asList = shelf;
+            Console.WriteLine($"shelf[0] / shelf[3] = {asList[0]} / {asList[3]}   (same as GetByRank(0) / GetByRank(3))");
+            Console.WriteLine($"IndexOf(bean)     = {shelf.IndexOf("bean")}   (the list name for GetRank)");
+
+            shelf.Insert(2, "bean");
+            Console.WriteLine($"Insert(2, bean)   = {string.Join(", ", shelf)}   (slot 2 sits inside the \"bean\" run)");
+
+            shelf.RemoveAt(0);
+            Console.WriteLine($"RemoveAt(0)       = {string.Join(", ", shelf)}   (one copy, not the whole run)");
+
+            try
+            {
+                ((IList<string>)shelf)[0] = "cup";
+            }
+            catch (NotSupportedException error)
+            {
+                Console.WriteLine($"shelf[0] = cup    -> {error.GetType().Name}: the comparer decides where a copy goes");
+            }
+
+            try
+            {
+                shelf.Insert(0, "mug");
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                Console.WriteLine("Insert(0, mug)    -> ArgumentOutOfRangeException: slot 0 can not hold \"mug\"");
+            }
         }
 
         private static string SymmetricDiff(MultiList<int> a, MultiList<int> b)

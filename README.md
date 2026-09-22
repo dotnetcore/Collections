@@ -323,6 +323,17 @@ position. Rank counts copies, not distinct elements, so it is bounded by `TotalC
 `IComparer<T>` rather than an `IEqualityComparer<T>`, because ordering needs a comparison — and that
 comparison is also what decides which elements are the same element.
 
+Because a position is well defined once an order is, the type also implements `IReadOnlyList<T>` and
+`IList<T>` over the **expanded** sequence: `Count` counts copies, `shelf[i]` is `GetByRank(i)`,
+`IndexOf(item)` is `GetRank(item)`, and `RemoveAt(i)` drops the copy at that position. The two
+members that would let a caller *place* an element are narrowed rather than free, because a comparer
+decides where an element belongs — `Insert(index, item)` accepts only a slot inside the run of equal
+elements (every accepted index yields the same multiset) and throws `ArgumentOutOfRangeException` for
+any other, and assigning through the indexer throws `NotSupportedException`, since writing over a
+position would break the order the whole type is built on. Everything that removes works normally.
+The unordered `MultiList<T>` deliberately gets none of this: a hash table's enumeration order is an
+implementation detail, so no index could be honoured from one call to the next.
+
 **`PackedBag<T>`** — the packed counting histogram for value-type elements (`int`, enums, small
 structs; the `struct` constraint excludes `null` and `Nullable<T>` by design). One contiguous array
 of `(value, count)` struct entries instead of a hash table — no boxing in storage, one cache line
@@ -485,6 +496,11 @@ shelf.GetByRank(0);                    // "bean"   (rank counts copies, so 0..To
 shelf.GetRank("mug");                  // 2        (position of its first copy; -1 when absent)
 shelf.GetMedian();                     // "bean"
 shelf.GetQuantile(0.9);                // "mug"    (nearest rank, never interpolated)
+shelf[2];                              // "mug"    (IReadOnlyList<T>: positions address the copies)
+shelf.IndexOf("mug");                  // 2        (the list name for GetRank)
+shelf.Insert(2, "bean");               // accepted: slot 2 sits inside the "bean" run
+shelf.RemoveAt(0);                     // drops one copy at position 0
+// shelf[0] = "cup";                   // NotSupportedException: the comparer decides where a copy goes
 
 // PackedBag<T>: the packed value-type histogram (no hash table, no boxing in storage)
 var levels = new PackedBag<LogLevel>();

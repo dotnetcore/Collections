@@ -35,6 +35,15 @@ namespace DotNetCore.Collections.Multi
     /// enumeration order. See <see cref="Equals(MultiList{T})"/>.
     /// </para>
     /// <para>
+    /// <b>This type deliberately does not implement <see cref="IReadOnlyList{T}"/> or
+    /// <see cref="IList{T}"/>.</b> It is an <em>unordered</em> multiset: enumeration order is an
+    /// implementation detail of the hash table, so a position would name a different element from
+    /// one call to the next and no positional contract could be honoured. Positional access needs an
+    /// order to be meaningful, which is what <see cref="OrderedMultiList{T}"/> supplies - it keeps
+    /// elements sorted by an <see cref="IComparer{T}"/> and implements both interfaces on top of
+    /// that order.
+    /// </para>
+    /// <para>
     /// This class is not thread-safe. Wrap it with external synchronization for concurrent use.
     /// </para>
     /// </remarks>

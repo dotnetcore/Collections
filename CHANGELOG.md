@@ -24,6 +24,29 @@ repository ships the same version (see `build/version.props`).
   distinct keys the ratios widen to 688x and 1,020x, with 0 B of garbage against 12 kB per read.
   No existing signature changed, so there is no `### Breaking` entry for this.
 
+- `OrderedMultiList<T>` now implements `IReadOnlyList<T>` and `IList<T>` (F6-27), so it can be handed
+  to anything expecting a list — data binding, position-based LINQ, third-party libraries — without
+  copying it into a `List<T>` first. The index domain is the *expanded* sequence, matching what the
+  type already did: `Count` counts copies, so `shelf[i]` is `GetByRank(i)` and `IndexOf(item)` is
+  `GetRank(item)`, both O(log n) and both addressing the i-th copy rather than the i-th distinct
+  element. `RemoveAt(i)` drops exactly one copy. The two members that would let a caller *place* an
+  element are narrowed rather than free, because a comparer decides where an element belongs:
+  `Insert(index, item)` accepts only a slot inside the run of equal elements — every accepted index
+  yields the same multiset, so the parameter is a consistency check and not a placement — and throws
+  `ArgumentOutOfRangeException` for any other, since a sorted sequence has no such position; and
+  assigning through the indexer throws `NotSupportedException`, since writing over a position would
+  break the order the whole type is built on. `IsReadOnly` stays `false` and `Add` / `Remove` /
+  `RemoveAllCopies` are unchanged. `AsReadOnly()` keeps its declared `IReadOnlyCollection<T>` return
+  type — widening it would be a binary-breaking change for existing consumers — but the view it
+  returns now also answers `IReadOnlyList<T>`, with the same positional contract and no mutating
+  member at all, which is why there is no `IsReadOnly` / `IsFixedSize` to define for it. The
+  unordered `MultiList<T>` deliberately does not get the list interfaces: its enumeration order is an
+  implementation detail of the hash table, so an index would name a different element from one call
+  to the next, and that is now stated on the type. No member was removed, renamed or re-signed, so
+  there is no `### Breaking` entry: the one consumer-visible hazard of implementing an interface — a
+  call that used to resolve against an `IEnumerable<T>` arm now also seeing an `IList<T>` arm — is an
+  overload-set ambiguity in the caller, not a change in what this type does.
+
 ### Changed
 
 - `OrderedMultiList<T>` is now backed by an *order-statistic B+ tree* (`OrderStatisticTree<TKey>`)

@@ -48,6 +48,26 @@ namespace DotNetCore.Collections.Multi
     /// <em>key components</em> (N components &#8594; 1 value).
     /// </para>
     /// <para>
+    /// <b>Positional access addresses the expanded sequence, never the distinct elements.</b>
+    /// <see cref="IReadOnlyCollection{T}.Count"/> counts copies, so index <c>i</c> is the
+    /// <c>i</c>-th copy in ascending order and <see cref="this[int]"/> is
+    /// <see cref="GetByRank(int)"/> under another name - the two are interchangeable.
+    /// <see cref="IndexOf(T)"/> is <see cref="GetRank(T)"/>: the position of an element's first
+    /// copy, or <c>-1</c> when it holds none. Both are O(log n), which is what lets this type
+    /// implement <see cref="IReadOnlyList{T}"/> in full.
+    /// </para>
+    /// <para>
+    /// <see cref="IList{T}"/> is implemented as well, but a comparer decides where an element
+    /// belongs, so the two members that would let a caller <em>place</em> one are narrowed rather
+    /// than free. <see cref="Insert(int, T)"/> accepts only a slot inside the run of equal
+    /// elements and throws <see cref="ArgumentOutOfRangeException"/> for any other, because a
+    /// sorted sequence has no such position; and assigning through
+    /// <see cref="IList{T}.this[int]"/> throws <see cref="NotSupportedException"/>, because writing
+    /// an element over a position would break the order the whole type is built on. Everything
+    /// that removes works normally - <see cref="RemoveAt(int)"/>, <see cref="Remove(T)"/>,
+    /// <see cref="RemoveAllCopies(T)"/> - and <see cref="IsReadOnly"/> stays <c>false</c>.
+    /// </para>
+    /// <para>
     /// Structural equality is <b>not</b> overridden: two ordered multisets with the same content
     /// are still distinct objects under <see cref="object.Equals(object)"/>, matching every other
     /// type of this package except <see cref="MultiList{T}"/>. Use
@@ -69,7 +89,7 @@ namespace DotNetCore.Collections.Multi
     /// shelf.CountOf("bean");                  // 2
     /// </code>
     /// </example>
-    public class OrderedMultiList<T> : IEnumerable<T>, ICollection<T>, IReadOnlyCollection<T>
+    public class OrderedMultiList<T> : IEnumerable<T>, ICollection<T>, IReadOnlyCollection<T>, IReadOnlyList<T>, IList<T>
     {
         private readonly IComparer<T> _comparer;
         private readonly OrderStatisticTree<T> _tree;
@@ -489,6 +509,109 @@ namespace DotNetCore.Collections.Multi
             return GetByRank(rank < 0 ? 0 : rank);
         }
 
+        // ------------------------------------------------------------------
+        // Positional access - IReadOnlyList<T> / IList<T> (F6-27)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Gets the element at the specified position of the expanded sequence: the
+        /// <paramref name="index"/>-th copy in ascending order. Identical to
+        /// <see cref="GetByRank(int)"/>, and O(log n).
+        /// </summary>
+        /// <param name="index">the zero-based position, from zero to <see cref="TotalCount"/> - 1.</param>
+        /// <returns>the element holding that copy.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is negative or
+        /// greater than or equal to <see cref="TotalCount"/>.</exception>
+        /// <example>
+        /// <code>
+        /// // shelf holds "bean", "bean", "mug"
+        /// shelf[2];                                // "mug"
+        /// </code>
+        /// </example>
+        public T this[int index] => GetByRank(index);
+
+        /// <summary>
+        /// Gets the position of the first copy of the element in the expanded sequence, or
+        /// <c>-1</c> when the multiset holds no copy of it. Identical to
+        /// <see cref="GetRank(T)"/>, and O(log n).
+        /// </summary>
+        /// <param name="item">the element to locate.</param>
+        /// <example>
+        /// <code>
+        /// // shelf holds "bean", "bean", "mug"
+        /// shelf.IndexOf("mug");                    // 2
+        /// shelf.IndexOf("cup");                    // -1
+        /// </code>
+        /// </example>
+        public int IndexOf(T item) => GetRank(item);
+
+        /// <summary>
+        /// Adds a single copy of the element, provided the requested position is where the comparer
+        /// puts it. The comparer decides where a copy belongs, so <paramref name="index"/> can not
+        /// place the element anywhere the caller likes: it must name a slot inside the run of equal
+        /// elements, that is, the copy before the slot must not sort above
+        /// <paramref name="item"/> and the copy at the slot must not sort below it. Every accepted
+        /// index yields the same multiset, so the parameter is a consistency check rather than a
+        /// placement - which is why an index outside that run throws instead of being ignored.
+        /// Use <see cref="Add(T)"/> when the position is not the caller's concern.
+        /// </summary>
+        /// <param name="index">the position the new copy must occupy, from zero to
+        /// <see cref="TotalCount"/> inclusive.</param>
+        /// <param name="item">the element to add a copy of.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is negative,
+        /// greater than <see cref="TotalCount"/>, or names a position the element can not occupy in
+        /// sorted order.</exception>
+        /// <example>
+        /// <code>
+        /// // shelf holds "bean", "bean", "mug"
+        /// shelf.Insert(0, "bean");                 // accepted: inside the "bean" run
+        /// shelf.Insert(2, "cup");                  // ArgumentOutOfRangeException
+        /// </code>
+        /// </example>
+        public void Insert(int index, T item)
+        {
+            if (index < 0 || index > TotalCount)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index), index, "The index must name an insertion point, from zero to TotalCount inclusive.");
+            }
+
+            if (index > 0 && _comparer.Compare(GetByRank(index - 1), item) > 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index), index, "The element sorts below the copy already before this position, so no sorted sequence can hold it here.");
+            }
+
+            if (index < TotalCount && _comparer.Compare(GetByRank(index), item) < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index), index, "The element sorts above the copy already at this position, so no sorted sequence can hold it here.");
+            }
+
+            Add(item);
+        }
+
+        /// <summary>
+        /// Removes the copy at the specified position of the expanded sequence, in O(log n). The
+        /// remaining copies of the same element shift down by one; the element itself is dropped
+        /// once its last copy is gone.
+        /// </summary>
+        /// <param name="index">the zero-based position, from zero to <see cref="TotalCount"/> - 1.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is negative or
+        /// greater than or equal to <see cref="TotalCount"/>.</exception>
+        /// <example>
+        /// <code>
+        /// // shelf holds "bean", "bean", "mug"
+        /// shelf.RemoveAt(1);                       // "bean", "mug"
+        /// </code>
+        /// </example>
+        public void RemoveAt(int index)
+        {
+            if (index < 0 || index >= TotalCount)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index), index, "The index must address one of the stored copies, from zero to TotalCount - 1.");
+            }
+
+            Remove(GetByRank(index));
+        }
+
         /// <summary>
         /// Enumerates every copy of every element in <b>descending</b> order.
         /// </summary>
@@ -666,9 +789,21 @@ namespace DotNetCore.Collections.Multi
         /// <see cref="IReadOnlyCollection{T}.Count"/> reflect subsequent changes to the owning
         /// multiset, and enumeration stays sorted. Mutating members are not exposed.
         /// </summary>
+        /// <remarks>
+        /// The view answers the same positional contract as the multiset it wraps - its
+        /// <see cref="IReadOnlyCollection{T}.Count"/> counts copies and its
+        /// <see cref="IReadOnlyList{T}.this[int]"/> addresses the expanded sequence - so it can be
+        /// cast to <see cref="IReadOnlyList{T}"/> when a consumer wants positions without wanting
+        /// the mutation surface. There is no <c>IsReadOnly</c> / <c>IsFixedSize</c> to define here:
+        /// <see cref="IReadOnlyList{T}"/> declares no mutating member, so neither flag has anything
+        /// to report. The declared return type stays <see cref="IReadOnlyCollection{T}"/> because
+        /// widening it would be a binary-breaking change for existing consumers.
+        /// </remarks>
         /// <example>
         /// <code>
         /// IReadOnlyCollection&lt;string&gt; view = shelf.AsReadOnly();
+        /// IReadOnlyList&lt;string&gt; positional = (IReadOnlyList&lt;string&gt;)view;
+        /// positional[0];                           // the smallest copy
         /// </code>
         /// </example>
         public IReadOnlyCollection<T> AsReadOnly()
@@ -1020,7 +1155,7 @@ namespace DotNetCore.Collections.Multi
             return GetEnumerator();
         }
 
-        private sealed class ReadOnlyView : IReadOnlyCollection<T>
+        private sealed class ReadOnlyView : IReadOnlyList<T>
         {
             private readonly OrderedMultiList<T> _owner;
 
@@ -1030,6 +1165,10 @@ namespace DotNetCore.Collections.Multi
             }
 
             public int Count => _owner.TotalCount;
+
+            // Same contract as the owner: positions address the expanded sequence, so this is a
+            // rank read and stays O(log n).
+            public T this[int index] => _owner.GetByRank(index);
 
             public IEnumerator<T> GetEnumerator()
             {
@@ -1051,6 +1190,15 @@ namespace DotNetCore.Collections.Multi
             var before = TotalCount;
             Remove(item);
             return TotalCount < before;
+        }
+
+        // A comparer decides where an element belongs, so assigning over a position would have to
+        // reorder the sequence - and the whole type is that order. Read the value instead, or use
+        // RemoveAt / Insert / Add, which are all well defined.
+        T IList<T>.this[int index]
+        {
+            get => GetByRank(index);
+            set => throw new NotSupportedException("A position can not be assigned to: the comparer decides where an element belongs, so overwriting a copy would break the sorted order. Use Insert, Add, RemoveAt or Remove instead.");
         }
 
         /// <summary>
