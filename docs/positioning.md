@@ -11,7 +11,7 @@ Two independent packages:
 
 | Package | What it covers |
 | --- | --- |
-| `DotNetCore.Collections.Paginable` | paging over `IEnumerable<T>` and `IQueryable<T>`, plus provider-specific extensions for eight ORM stacks |
+| `DotNetCore.Collections.Paginable` | paging over `IEnumerable<T>` and `IQueryable<T>`, plus provider-specific extensions for nine ORM stacks |
 | `DotNetCore.Collections.Multi` | the "multi" families: multisets, multimaps, composite keys, bijection, inverted lookup, and the concurrent / immutable / packed / ordered specializations |
 
 Both target the same broad framework matrix — `net451`, `net461`, `net47`, `net48`,
@@ -63,10 +63,10 @@ reviewable.
 **Paging is a library, not a helper method.** Offset paging (`GetPage(pageNumber, pageSize)`) and
 keyset / seek paging (`GetPageByKeyset(keySelector, lastKey, pageSize)`) over `IEnumerable<T>` and
 `IQueryable<T>`, with `IPage<T>` / `PageMetadata` / `TotalPageCount` / `TotalMemberCount` as a real
-contract, plus fragment paging for a slice of an existing page. The eight ORM integration packages
+contract, plus fragment paging for a slice of an existing page. The nine ORM integration packages
 make it a single call on the source you already have, and the shared per-provider extension class is
 emitted at build time by a source generator — so the surface stays identical across providers
-without eight copies of the same file.
+without nine copies of the same file.
 
 **Specializations when the general type is the wrong shape.** `PackedBag<T>` is a dense `(value,
 count)` struct array for a small value-type domain — no hash table, no boxing in storage. `SpanBag<T>`
