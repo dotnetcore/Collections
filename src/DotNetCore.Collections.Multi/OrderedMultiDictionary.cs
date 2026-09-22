@@ -19,8 +19,7 @@ namespace DotNetCore.Collections.Multi
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This is the ordered counterpart of <see cref="MultiDictionary{TKey,TValue}"/> and the
-    /// equivalent of PowerCollections' <c>OrderedMultiDictionary&lt;TKey, TValue&gt;</c>. The two
+    /// This is the ordered counterpart of <see cref="MultiDictionary{TKey,TValue}"/>. The two
     /// types share their per-key value-set semantics — the argument of every set operation is a
     /// <em>set</em> of values, a value may be stored several times under one key, and an inner
     /// collection is recycled the moment it empties so the map never holds a key without values —

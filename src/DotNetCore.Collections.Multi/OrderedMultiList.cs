@@ -12,15 +12,15 @@ namespace DotNetCore.Collections.Multi
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This is the ordered counterpart of <see cref="MultiList{T}"/> and the equivalent of
-    /// PowerCollections' <c>OrderedBag&lt;T&gt;</c>. The two types share their copy-counting
-    /// semantics - one distinct element with N copies, duplicates expanded on enumeration, the
-    /// same multiset set operations - and differ in the storage underneath and in what that
-    /// storage buys: <see cref="MultiList{T}"/> keeps a hash table and answers in O(1) but has no
-    /// defined order, while this type keeps an order-statistic B+ tree and answers in O(log n)
-    /// while enumerating in sorted order - and, because that tree caches how many copies hang below
-    /// each of its nodes, answering positional reads such as <see cref="GetByRank(int)"/> and
-    /// <see cref="GetRank(T)"/> on the sorted sequence without traversing it.
+    /// This is the ordered counterpart of <see cref="MultiList{T}"/>. The two types share their
+    /// copy-counting semantics - one distinct element with N copies, duplicates expanded on
+    /// enumeration, the same multiset set operations - and differ in the storage underneath and in
+    /// what that storage buys: <see cref="MultiList{T}"/> keeps a hash table and answers in O(1) but
+    /// has no defined order, while this type keeps an order-statistic B+ tree and answers in
+    /// O(log n) while enumerating in sorted order - and, because that tree caches how many copies
+    /// hang below each of its nodes, answering positional reads such as
+    /// <see cref="GetByRank(int)"/> and <see cref="GetRank(T)"/> on the sorted sequence without
+    /// traversing it.
     /// </para>
     /// <para>
     /// <b>Element ordering and element equality are the same decision here, and it is made by an
