@@ -23,6 +23,10 @@ namespace DotNetCore.Collections.Paginable
         AsyncFetchMethodName = "ToPageListAsync",
         SourceDescriptor = "SqlSugarQueryable",
         ForwardAsyncCancellationToken = false)]
+#else
+    /// <summary>
+    /// Extensions for solid page for SqlSugar
+    /// </summary>
 #endif
     public static partial class SolidPageExtensions
     {

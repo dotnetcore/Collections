@@ -27,6 +27,10 @@ namespace DotNetCore.Collections.Paginable
         AsyncFetchMethodName = "ToListAsync",
         SourceDescriptor = "FreeSql.Select`1",
         SourceExample = "freeSql.Select&lt;ExampleModel&gt;()")]
+#else
+    /// <summary>
+    /// Extensions for solid page for FreeSql
+    /// </summary>
 #endif
     public static partial class SolidPageExtensions
     {

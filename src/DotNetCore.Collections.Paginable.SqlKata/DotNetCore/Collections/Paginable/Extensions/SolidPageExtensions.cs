@@ -16,6 +16,10 @@ namespace DotNetCore.Collections.Paginable
         factoryTypeName: "PaginableSqlKataCollFactory",
         helperTypeName: "SqlKataHelper",
         SourceTypeIsNonGeneric = true)]
+#else
+    /// <summary>
+    /// Extensions for solid page for SqlKata
+    /// </summary>
 #endif
     public static partial class SolidPageExtensions
     {

@@ -93,7 +93,9 @@ repository ships the same version (see `build/version.props`).
   Chloe's extension class is now a 19-line declaration where it was 95 lines of handwriting,
   Dos.ORM's 21 where it was 99. The three packages that also target `net451` (FreeSql, SqlKata,
   SqlSugar) reference the generator for every other target and keep their handwritten members
-  behind `#if NET451`, so the legacy target compiles exactly as it did before.
+  behind `#if NET451`; the legacy target keeps the same members, and carries the class-level XML
+  summary in the handwritten partial itself so that it too compiles warning-free (see `### Fixed`
+  below).
   **No consumer-visible change, and therefore no `### Breaking` entry for this**: the generated
   members are the same members with the same signatures - including parameter names, which are
   source-affecting for named-argument callers - and the same XML documentation, so the shipped
@@ -104,6 +106,17 @@ repository ships the same version (see `build/version.props`).
   EF6, EF Core and FreeSql.DbContext integrations are deliberately not migrated - they delegate to
   the queryable extensions rather than to a provider-specific paging factory, so their bodies were
   never the duplicated shape this replaces.
+
+### Fixed
+
+- The three ORM integration packages that still target `net451` (`FreeSql`, `SqlKata`, `SqlSugar`)
+  emitted `CS1591` for their `SolidPageExtensions` class on that target alone. The class-level
+  `<summary>` had moved into the source generator, and the generator is deliberately not referenced
+  on `net451`, so on that target nothing documented the type while the project still compiles with
+  XML documentation required. Each handwritten `#if NET451` partial now carries the same
+  class-level summary the generator emits, so the shipped XML documentation for the type is
+  identical on every target and the build is warning-free again. No API change, and the three
+  packages that never targeted `net451` (`Chloe`, `DosOrm`, `NHibernate`) were unaffected.
 
 ## [6.4.0] - 2026-09-16
 
