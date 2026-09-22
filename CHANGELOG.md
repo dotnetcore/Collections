@@ -54,6 +54,12 @@ repository ships the same version (see `build/version.props`).
   deliberately does not provide and what to use instead, and how to choose between the hash path and
   the tree path. It also records the limits in both directions rather than only the favourable ones.
 
+- Documentation: [`docs/migrating.md`](docs/migrating.md) is the guide for a codebase moving its
+  sorted, positional and multiset work onto `DotNetCore.Collections.Multi` from one of the classic
+  ordered-collection libraries — type and member mapping by shape, the twelve semantic differences
+  that change behaviour rather than spelling, a migration checklist, and the operations that have no
+  counterpart here.
+
 ### Changed
 
 - `OrderedMultiList<T>` is now backed by an *order-statistic B+ tree* (`OrderStatisticTree<TKey>`)
