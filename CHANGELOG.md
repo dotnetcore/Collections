@@ -47,6 +47,13 @@ repository ships the same version (see `build/version.props`).
   call that used to resolve against an `IEnumerable<T>` arm now also seeing an `IList<T>` arm — is an
   overload-set ambiguity in the caller, not a change in what this type does.
 
+- Documentation: [`docs/positioning.md`](docs/positioning.md) states where the library fits — the
+  capability axes it was built around (multisets and multimaps, composite keys, bijection, inverted
+  lookup, order *and* position, concurrency and immutability as explicit types, paging as a library,
+  packed and stack-only specializations, `net451` … `net10.0` from one code path), the six things it
+  deliberately does not provide and what to use instead, and how to choose between the hash path and
+  the tree path. It also records the limits in both directions rather than only the favourable ones.
+
 ### Changed
 
 - `OrderedMultiList<T>` is now backed by an *order-statistic B+ tree* (`OrderStatisticTree<TKey>`)

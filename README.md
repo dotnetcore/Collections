@@ -23,11 +23,19 @@ bare cast, so the deduplicating views work on every supported target (see the CH
 ## Contents
 
 - [NuGet Packages](#nuget-packages)
+- [Documentation](#documentation)
 - [Paginable](#paginable)
 - [Multi](#multi)
 - [Building and testing](#building-and-testing)
 - [Releasing](#releasing)
 - [License](#license)
+
+## Documentation
+
+- [Where Collections fits](docs/positioning.md) — what the library is for, what it deliberately
+  does not do, and how to choose between the hash path and the tree path.
+- [Migrating to Collections](docs/migrating.md) — type and member mapping, the semantic differences
+  to plan for, and what has no counterpart.
 
 ## NuGet Packages
 
