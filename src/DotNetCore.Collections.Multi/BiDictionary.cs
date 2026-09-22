@@ -69,7 +69,7 @@ namespace DotNetCore.Collections.Multi
     /// users.TryAdd(3, "bob");          // true
     /// </code>
     /// </example>
-    public class BiDictionary<TLeft, TRight> : IReadOnlyDictionary<TLeft, TRight>
+    public class BiDictionary<TLeft, TRight> : IReadOnlyDictionary<TLeft, TRight>, IBiMap<TLeft, TRight>
     {
         private readonly Dictionary<TLeft, TRight> _forward;
         private readonly Dictionary<TRight, TLeft> _reverse;

@@ -44,6 +44,7 @@ namespace DotNetCore.Collections.Multi
     /// </remarks>
     public class MultiDictionary<TKey, TValue> :
         IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>,
+        IMultiDictionary<TKey, TValue>,
         IEnumerable<KeyValuePair<TKey, TValue>>
     {
         private static readonly IReadOnlyCollection<TValue> EmptyValues = new TValue[0];

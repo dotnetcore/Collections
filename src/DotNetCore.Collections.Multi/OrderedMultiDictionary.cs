@@ -84,6 +84,7 @@ namespace DotNetCore.Collections.Multi
     /// </example>
     public class OrderedMultiDictionary<TKey, TValue> :
         IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>,
+        IMultiDictionary<TKey, TValue>,
         IEnumerable<KeyValuePair<TKey, TValue>>
     {
         private static readonly IReadOnlyCollection<TValue> EmptyValues = new TValue[0];

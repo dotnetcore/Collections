@@ -23,6 +23,34 @@ repository ships the same version (see `build/version.props`).
   The output is stable enough to assert on. No existing signature changed, so there is no
   `### Breaking` entry for this.
 
+- `IMultiSet<T>`, `IMultiDictionary<TKey, TValue>` and `IBiMap<TLeft, TRight>` (F6-32) give the
+  multiset, the multimap and the bidirectional map a shared contract, so code can be written against
+  the behaviour instead of a concrete class and the implementation can be mocked, replaced or swapped.
+  Each interface extends the read-only BCL abstraction that already describes it rather than restating
+  it: `IMultiSet<T>` is an `IReadOnlyCollection<T>`, `IMultiDictionary<TKey, TValue>` an
+  `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>` and `IBiMap<TLeft, TRight>` an
+  `IReadOnlyDictionary<TLeft, TRight>`. `MultiList<T>` and `OrderedMultiList<T>` implement
+  `IMultiSet<T>`; `MultiDictionary<TKey, TValue>` and `OrderedMultiDictionary<TKey, TValue>` implement
+  `IMultiDictionary<TKey, TValue>`; `BiDictionary<TLeft, TRight>` implements `IBiMap<TLeft, TRight>`.
+  The member sets are deliberately minimal — only what every implementation can honour. Set algebra,
+  the comparer properties and the view/export helpers (`AsReadOnly`, `AsReverse`, `ToList`, `Clone`)
+  stay on the concrete types: they are not uniformly available across the family (the concurrent and
+  immutable variants have no algebra, and an immutable variant returns a new instance from what looks
+  like a mutating call), and exposing them would have leaked which implementation sits behind the
+  interface.
+  Two members are where a naive abstraction would have gone wrong, and both are spelled out in the XML
+  documentation of the interface. `Count` is the number of *copies* on `IMultiSet<T>` and the number of
+  *keys* on `IMultiDictionary<TKey, TValue>` — the inherited member keeps exactly the meaning the
+  concrete types already gave it, so re-typing a variable from a concrete type to the interface does
+  not silently change what it counts. And `IMultiDictionary<TKey, TValue>.Values` deliberately hides
+  the inherited per-key `Values` to stay the flattened sequence, matching the concrete types, with the
+  grouped view left reachable through the inherited dictionary members.
+  No existing behaviour or signature changed — every implementing member already existed with the same
+  shape, so no overload resolution moved and no `### Breaking` entry is needed. The member sets are
+  pinned by tests, and each interface is additionally exercised by a hand-written implementation that
+  shares no code with these packages: the abstraction is only worth having if a third party can
+  satisfy it.
+
 ### Fixed
 
 - `DotNetCore.Collections.Paginable.SqlSugar`: `ToPaginableAsync` and the short `GetPageAsync`

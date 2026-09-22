@@ -47,7 +47,7 @@ namespace DotNetCore.Collections.Multi
     /// This class is not thread-safe. Wrap it with external synchronization for concurrent use.
     /// </para>
     /// </remarks>
-    public class MultiList<T> : IEnumerable<T>, ICollection<T>, IReadOnlyCollection<T>, IEquatable<MultiList<T>>
+    public class MultiList<T> : IEnumerable<T>, ICollection<T>, IReadOnlyCollection<T>, IMultiSet<T>, IEquatable<MultiList<T>>
     {
         private readonly Dictionary<T, int> _counts;
         private readonly IEqualityComparer<T> _comparer;

@@ -89,7 +89,7 @@ namespace DotNetCore.Collections.Multi
     /// shelf.CountOf("bean");                  // 2
     /// </code>
     /// </example>
-    public class OrderedMultiList<T> : IEnumerable<T>, ICollection<T>, IReadOnlyCollection<T>, IReadOnlyList<T>, IList<T>
+    public class OrderedMultiList<T> : IEnumerable<T>, ICollection<T>, IReadOnlyCollection<T>, IReadOnlyList<T>, IList<T>, IMultiSet<T>
     {
         private readonly IComparer<T> _comparer;
         private readonly OrderStatisticTree<T> _tree;
