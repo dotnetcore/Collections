@@ -23,6 +23,20 @@ repository ships the same version (see `build/version.props`).
   The output is stable enough to assert on. No existing signature changed, so there is no
   `### Breaking` entry for this.
 
+### Fixed
+
+- `DotNetCore.Collections.Paginable.SqlSugar`: `ToPaginableAsync` and the short `GetPageAsync`
+  overload accepted a `CancellationToken` and then dropped it — it never reached the factory, so
+  cancelling had no effect on either call (F6-38). The token is now threaded through the factory and
+  through the page fetch, and it is honoured at the boundary this library owns: an already-cancelled
+  token stops the call before the first database round-trip instead of performing it. The token could
+  not simply be handed on because SqlSugar 5.1.3 exposes `CountAsync()`,
+  `CountAsync(Expression<Func<T, bool>>)` and `ToPageListAsync(int, int, RefAsync<int>)`, and no
+  `CancellationToken` overload on any of them; mid-query cancellation therefore stays the provider's
+  to provide, and `SqlSugarHelper` is the single place that changes when it does. Callers who passed
+  a token and relied on it being ignored now observe `OperationCanceledException` — the behaviour the
+  parameter always promised, so there is no `### Breaking` entry for this.
+
 ## [6.5.0] - 2026-09-22
 
 ### Added

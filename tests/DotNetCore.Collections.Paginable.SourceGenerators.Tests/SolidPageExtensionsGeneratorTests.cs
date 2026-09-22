@@ -241,6 +241,82 @@ namespace TestNs
     }
 
     [Fact]
+    public void AsyncCancellationToken_IsForwardedByDefault()
+    {
+        var stubSource = """
+using DotNetCore.Collections.Paginable;
+
+namespace TestNamespace
+{
+    [SolidPageExtensionsFor(
+        ormName: "TestOrm",
+        sourceTypeFullName: "TestNs.IQuery<T>",
+        sourceParamName: "query",
+        pageTypeName: "TestPage",
+        paginableTypeName: "PaginableTestQuery",
+        factoryTypeName: "TestFactory",
+        helperTypeName: "TestHelper",
+        HasAsync = true,
+        AsyncCountExpression = "await TestHelper.CountAsync(query, cancellationToken)",
+        AsyncFetchExpression = "await TestHelper.FetchPageAsync(query, pageNumber, pageSize, cancellationToken)",
+        AsyncFetchReturnsList = true)]
+    public static partial class SolidPageExtensions { }
+}
+
+namespace TestNs
+{
+    public interface IQuery<T> { }
+}
+""";
+        var (source, _) = RunGenerator(stubSource);
+
+        source.ShouldContain("TestFactory.CreatePageSetAsync(query, pageSize, limitedMemberCount, cancellationToken)");
+        source.ShouldContain("GetPageAsync(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize, cancellationToken)");
+        source.ShouldContain("var members = await TestHelper.FetchPageAsync(query, pageNumber, pageSize, cancellationToken)");
+    }
+
+    [Fact]
+    public void ForwardAsyncCancellationToken_False_DropsTheTokenFromTheAsyncEntryPoints()
+    {
+        var stubSource = """
+using DotNetCore.Collections.Paginable;
+
+namespace TestNamespace
+{
+    [SolidPageExtensionsFor(
+        ormName: "TestOrm",
+        sourceTypeFullName: "TestNs.IQuery<T>",
+        sourceParamName: "query",
+        pageTypeName: "TestPage",
+        paginableTypeName: "PaginableTestQuery",
+        factoryTypeName: "TestFactory",
+        helperTypeName: "TestHelper",
+        HasAsync = true,
+        AsyncCountExpression = "await TestHelper.CountAsync(query, cancellationToken)",
+        AsyncFetchExpression = "await TestHelper.FetchPageAsync(query, pageNumber, pageSize, cancellationToken)",
+        AsyncFetchReturnsList = true,
+        ForwardAsyncCancellationToken = false)]
+    public static partial class SolidPageExtensions { }
+}
+
+namespace TestNs
+{
+    public interface IQuery<T> { }
+}
+""";
+        var (source, _) = RunGenerator(stubSource);
+
+        source.ShouldContain("TestFactory.CreatePageSetAsync(query, pageSize, limitedMemberCount)");
+        source.ShouldContain("GetPageAsync(query, pageNumber, PaginableSettingsManager.Settings.DefaultPageSize)");
+        source.ShouldNotContain("CreatePageSetAsync(query, pageSize, limitedMemberCount, cancellationToken)");
+        source.ShouldNotContain("DefaultPageSize, cancellationToken)");
+
+        // The slot governs forwarding at the extension boundary only: the caller-supplied count
+        // expression keeps whatever token it names.
+        source.ShouldContain("await TestHelper.CountAsync(query, cancellationToken)");
+    }
+
+    [Fact]
     public void AsyncFetchWithoutReturnsList_ReturnsExpressionDirectly()
     {
         var stubSource = """

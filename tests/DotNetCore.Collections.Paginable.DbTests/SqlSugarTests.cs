@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNetCore.Collections.Paginable.DbTests.Models;
 using Shouldly;
 using SqlSugar;
@@ -71,6 +73,35 @@ namespace DotNetCore.Collections.Paginable.DbTests
             page[6].Value.Id.ShouldBe(16);
             page[7].Value.Id.ShouldBe(17);
             page[8].Value.Id.ShouldBe(18);
+        }
+
+        // F6-38: the async entry points used to accept a cancellation token and then drop it.
+        // SqlSugar 5.1.3 has no CancellationToken overload on CountAsync / ToPageListAsync, so the
+        // token is honoured at the boundary this library owns: a token that is already cancelled
+        // must stop the call before the first database round-trip. These two tests need no
+        // reachable database on purpose - if the token were still being dropped, they would run
+        // the queries instead of throwing, and the connection failure would surface as a different
+        // exception than the OperationCanceledException asserted here.
+        [Fact]
+        public async Task GetPageAsync_WithCancelledToken_StopsBeforeAnyDatabaseRoundTrip()
+        {
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            var query = _sqlSugar.Queryable<Int32Sample>();
+
+            await Should.ThrowAsync<OperationCanceledException>(() => query.GetPageAsync(1, 9, cts.Token));
+        }
+
+        [Fact]
+        public async Task ToPaginableAsync_WithCancelledToken_StopsBeforeAnyDatabaseRoundTrip()
+        {
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            var query = _sqlSugar.Queryable<Int32Sample>();
+
+            await Should.ThrowAsync<OperationCanceledException>(() => query.ToPaginableAsync(9, cancellationToken: cts.Token));
         }
     }
 }
