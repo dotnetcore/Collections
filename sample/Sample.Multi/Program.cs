@@ -17,6 +17,8 @@ namespace Sample.Multi
             Console.WriteLine();
             OrderedMultiListDemo();
             Console.WriteLine();
+            OrderedMultiDictionaryDemo();
+            Console.WriteLine();
             MultiDictionaryBasics();
             Console.WriteLine();
             MultiDictionaryAdvanced();
@@ -166,6 +168,45 @@ namespace Sample.Multi
             {
                 Console.WriteLine("Insert(0, mug)    -> ArgumentOutOfRangeException: slot 0 can not hold \"mug\"");
             }
+        }
+
+        private static void OrderedMultiDictionaryDemo()
+        {
+            Console.WriteLine("=== OrderedMultiDictionary<TKey,TValue> (sorted multimap): order and rank ===");
+
+            var index = new OrderedMultiDictionary<string, int>();
+            index.Add("b", 9);
+            index.Add("b", 3);
+            index.Add("a", 7);
+            index.Add("c", 5);
+            index.Add("c", 5);
+
+            Console.WriteLine($"enumeration       = {index}   (keys ascending, each key's copies expanded)");
+            Console.WriteLine($"KeyCount          = {index.KeyCount}, TotalValueCount = {index.TotalValueCount}   (keys vs copies)");
+
+            // Rank is measured over the same expanded sequence the map enumerates in, so
+            // TotalValueCount - not KeyCount - bounds the valid ranks, exactly as on the list.
+            Console.WriteLine($"GetByRank(0..{index.TotalValueCount - 1})  = " + string.Join(", ",
+                Enumerable.Range(0, index.TotalValueCount).Select(r => index.GetByRank(r))));
+            Console.WriteLine($"GetRank(b, 3)     = {index.GetRank("b", 3)}   (the 1 copy of \"a\" precedes it)");
+            Console.WriteLine($"GetRank(b, 4)     = {index.GetRank("b", 4)}   (absent, like the list's IndexOf)");
+            Console.WriteLine($"GetMedian()       = {index.GetMedian()}   (lower middle of 5 copies)");
+            Console.WriteLine($"GetQuantile(0/1)  = {index.GetQuantile(0)} / {index.GetQuantile(1)}");
+
+            // The key comparer decides the key order, and with it the ranks.
+            var byLength = new OrderedMultiDictionary<string, int>(
+                Comparer<string>.Create((x, y) => x.Length.CompareTo(y.Length)));
+            byLength.Add("bb", 1);
+            byLength.Add("a", 2);
+            byLength.Add("ccc", 3);
+            Console.WriteLine($"by key length     = {byLength}   (shortest key first, so \"a\" leads)");
+
+            // allowDuplicateValues: false keeps one copy per value; the rank reads are unaffected.
+            var unique = new OrderedMultiDictionary<string, int>(allowDuplicateValues: false);
+            unique.Add("k", 7);
+            unique.Add("k", 7);
+            unique.Add("k", 5);
+            Console.WriteLine($"deduplicating     = {unique}   (TotalValueCount = {unique.TotalValueCount}, not 3)");
         }
 
         private static string SymmetricDiff(MultiList<int> a, MultiList<int> b)

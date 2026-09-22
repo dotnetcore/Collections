@@ -25,8 +25,21 @@ namespace DotNetCore.Collections.Multi
     /// collection is recycled the moment it empties so the map never holds a key without values —
     /// and differ in the storage underneath and in what that storage buys:
     /// <see cref="MultiDictionary{TKey,TValue}"/> keeps hash tables and answers in O(1) but has no
-    /// defined order, while this type keeps a sorted dictionary over a red-black-tree-backed
-    /// multiset and answers in O(log n) while enumerating keys and values in sorted order.
+    /// defined order, while this type keeps an order-statistic B+ tree and answers in O(log n)
+    /// while enumerating keys and values in sorted order.
+    /// </para>
+    /// <para>
+    /// <b>The storage layer is one B+ tree, not a dictionary of collections (F6-36).</b> Every
+    /// distinct key is a slot in a leaf of <see cref="OrderStatisticTree{TKey,TPayload}"/>, holding
+    /// the key, the key's value bucket and the number of values in that bucket; every node caches
+    /// the number of values stored below it. Two things follow from that shape. First, enumeration
+    /// is a single walk of the chained leaves, so enumerating a key costs no heap object at all —
+    /// the earlier storage, a <see cref="SortedDictionary{TKey,TValue}"/> over per-key collections,
+    /// built two iterator objects per key (≈112 bytes/key, measured) because the value side was
+    /// reached through an interface. Second, the cached totals turn the positional reads
+    /// (<see cref="GetByRank(int)"/>, <see cref="GetRank(TKey,TValue)"/>, <see cref="GetMedian"/>
+    /// and <see cref="GetQuantile(double)"/>) into a single root-to-leaf descent instead of a
+    /// materialised copy of the whole expanded sequence.
     /// </para>
     /// <para>
     /// <b>Ordering and identity are the same decision on each axis, and they are made by
@@ -47,7 +60,9 @@ namespace DotNetCore.Collections.Multi
     /// a custom comparer decides for itself where <c>null</c> belongs and may reject it by
     /// throwing. This type never inspects values itself, so whatever the value comparer does with
     /// <c>null</c> is what happens — the doctrine
-    /// <see cref="OrderedMultiList{T}"/> already follows on its element axis.
+    /// <see cref="OrderedMultiList{T}"/> already follows on its element axis. Since F6-36 both
+    /// duplicate policies share one bucket type, so the <c>allowDuplicateValues: false</c> policy
+    /// accepts <c>null</c> values exactly the way the duplicating one does.
     /// </para>
     /// <para>
     /// <b>Ordering guarantees.</b> <see cref="Keys"/>, enumeration and <see cref="ToString"/> walk
@@ -55,7 +70,15 @@ namespace DotNetCore.Collections.Multi
     /// <see cref="TryGetValue(TKey, out IReadOnlyCollection{TValue})"/> and
     /// <see cref="EntrySet"/> walk the values of every key in ascending order. Values of different
     /// keys are never interleaved by order — the keys decide the outer order and each key's own
-    /// values decide the inner one.
+    /// values decide the inner one. The positional reads address the same sequence enumeration
+    /// produces: rank <c>0</c> is the smallest value of the smallest key, and rank
+    /// <see cref="TotalValueCount"/> - 1 is the largest value of the largest key.
+    /// </para>
+    /// <para>
+    /// <b>Counts.</b> <see cref="Count"/> and <see cref="KeyCount"/> are the number of
+    /// <em>keys</em>; <see cref="TotalValueCount"/> and <see cref="ValueCount(TKey)"/> are the
+    /// number of stored <em>values</em>. A key that is present always holds at least one value,
+    /// because a bucket is dropped the moment it empties.
     /// </para>
     /// <para>
     /// This class is one of the "multi" family of this package. Read the name as "what is
@@ -80,6 +103,10 @@ namespace DotNetCore.Collections.Multi
     /// foreach (var value in index["alpha"]) { /* 10, 30 */ }
     ///
     /// foreach (var pair in index) { /* ("alpha",10), ("alpha",30), ("beta",2) */ }
+    ///
+    /// index.GetByRank(0);                      // ("alpha", 10)
+    /// index.GetMedian();                       // ("alpha", 30)
+    /// index.GetRank("alpha", 30);              // 1
     /// </code>
     /// </example>
     public class OrderedMultiDictionary<TKey, TValue> :
@@ -89,10 +116,15 @@ namespace DotNetCore.Collections.Multi
     {
         private static readonly IReadOnlyCollection<TValue> EmptyValues = new TValue[0];
 
-        private readonly SortedDictionary<TKey, ICollection<TValue>> _map;
+        /// <summary>
+        /// The whole storage layer: one order-statistic B+ tree keyed by the key, each slot holding
+        /// the key, the key's value bucket and the number of values in it, with the value total
+        /// cached on every node so the positional reads can descend on it.
+        /// </summary>
+        private readonly OrderStatisticTree<TKey, OrderedMultiList<TValue>> _tree;
         private readonly IComparer<TKey> _keyComparer;
         private readonly IComparer<TValue> _valueComparer;
-        private readonly Func<ICollection<TValue>> _innerFactory;
+        private readonly bool _allowDuplicateValues;
 
         /// <summary>
         /// Initializes an empty <see cref="OrderedMultiDictionary{TKey,TValue}"/> that allows
@@ -159,27 +191,11 @@ namespace DotNetCore.Collections.Multi
         /// <param name="valueComparer">the comparer that defines value order and value identity, or <c>null</c> for <see cref="System.Collections.Generic.Comparer{T}.Default"/>.</param>
         /// <param name="allowDuplicateValues">whether the same value may be stored more than once under one key.</param>
         public OrderedMultiDictionary(IComparer<TKey>? keyComparer, IComparer<TValue>? valueComparer, bool allowDuplicateValues = true)
-            : this(
-                keyComparer ?? Comparer<TKey>.Default,
-                valueComparer ?? Comparer<TValue>.Default,
-                allowDuplicateValues
-                    ? (Func<ICollection<TValue>>)(() => new OrderedMultiList<TValue>(valueComparer ?? Comparer<TValue>.Default))
-                    : (Func<ICollection<TValue>>)(() => new SortedSet<TValue>(valueComparer ?? Comparer<TValue>.Default)))
         {
-        }
-
-        /// <summary>
-        /// Initializes an empty <see cref="OrderedMultiDictionary{TKey,TValue}"/> with fully
-        /// resolved comparers and inner collection factory. Kept private on purpose: the factory
-        /// is part of the ordering guarantee, so it must not be passable from outside —
-        /// <see cref="Clone"/> is the only caller that supplies one.
-        /// </summary>
-        private OrderedMultiDictionary(IComparer<TKey> keyComparer, IComparer<TValue> valueComparer, Func<ICollection<TValue>> innerFactory)
-        {
-            _keyComparer = keyComparer;
-            _valueComparer = valueComparer;
-            _innerFactory = innerFactory;
-            _map = new SortedDictionary<TKey, ICollection<TValue>>(keyComparer);
+            _keyComparer = keyComparer ?? Comparer<TKey>.Default;
+            _valueComparer = valueComparer ?? Comparer<TValue>.Default;
+            _allowDuplicateValues = allowDuplicateValues;
+            _tree = new OrderStatisticTree<TKey, OrderedMultiList<TValue>>(_keyComparer);
         }
 
         /// <summary>
@@ -200,29 +216,19 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Gets the number of keys in the map.
         /// </summary>
-        public int Count => _map.Count;
+        public int Count => _tree.Count;
 
         /// <summary>
         /// Gets the number of keys in the map (alias of <see cref="Count"/>).
         /// </summary>
-        public int KeyCount => _map.Count;
+        public int KeyCount => _tree.Count;
 
         /// <summary>
-        /// Gets the total number of values across all keys.
+        /// Gets the total number of values across all keys. Runs in O(1): the tree caches the value
+        /// total of every sub-tree, so the figure is read off the root rather than summed over the
+        /// keys.
         /// </summary>
-        public int TotalValueCount
-        {
-            get
-            {
-                var total = 0;
-                foreach (var collection in _map.Values)
-                {
-                    total += collection.Count;
-                }
-
-                return total;
-            }
-        }
+        public int TotalValueCount => _tree.ElementCount;
 
         /// <summary>
         /// Gets the number of values stored under the key, or <c>0</c> when the key is absent
@@ -231,10 +237,10 @@ namespace DotNetCore.Collections.Multi
         /// <param name="key">the key to count the values of.</param>
         /// <returns>the number of values stored under <paramref name="key"/>.</returns>
         /// <remarks>
-        /// Runs in O(log n) to locate the key plus O(1) to read its count. Use
-        /// <see cref="ContainsKey(TKey)"/> when the absent-key case must be told apart from a key
-        /// that is present with zero values — the latter can not occur, because an inner
-        /// collection is dropped as soon as it empties.
+        /// Runs in O(log n): the count is the figure the tree already caches for the slot, so no
+        /// bucket has to be touched. Use <see cref="ContainsKey(TKey)"/> when the absent-key case
+        /// must be told apart from a key that is present with zero values — the latter can not
+        /// occur, because a bucket is dropped as soon as it empties.
         /// </remarks>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c>.</exception>
         /// <example>
@@ -246,13 +252,23 @@ namespace DotNetCore.Collections.Multi
         public int ValueCount(TKey key)
         {
             ThrowIfNullKey(key);
-            return _map.TryGetValue(key, out var collection) ? collection.Count : 0;
+            return _tree.TryGetCount(key, out var count) ? count : 0;
         }
 
         /// <summary>
         /// Gets the keys of the map, in ascending order.
         /// </summary>
-        public IEnumerable<TKey> Keys => _map.Keys;
+        public IEnumerable<TKey> Keys
+        {
+            get
+            {
+                var entries = _tree.GetAscendingEnumerator();
+                while (entries.MoveNext())
+                {
+                    yield return entries.Key;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets all values of the map, flattened across keys: the keys in ascending order, and the
@@ -262,11 +278,16 @@ namespace DotNetCore.Collections.Multi
         {
             get
             {
-                foreach (var collection in _map.Values)
+                var entries = _tree.GetAscendingEnumerator();
+                while (entries.MoveNext())
                 {
-                    foreach (var value in collection)
+                    var values = entries.Payload.GetAscendingEnumerator();
+                    while (values.MoveNext())
                     {
-                        yield return value;
+                        for (var copy = 0; copy < values.Count; copy++)
+                        {
+                            yield return values.Key;
+                        }
                     }
                 }
             }
@@ -290,7 +311,7 @@ namespace DotNetCore.Collections.Multi
             get
             {
                 ThrowIfNullKey(key);
-                return _map.TryGetValue(key, out var collection) ? AsReadOnlyView(collection) : EmptyValues;
+                return _tree.TryGetEntry(key, out var bucket, out _) ? AsReadOnlyView(bucket) : EmptyValues;
             }
         }
 
@@ -301,6 +322,11 @@ namespace DotNetCore.Collections.Multi
         /// </summary>
         /// <param name="key">the key to store the value under.</param>
         /// <param name="value">the value to store.</param>
+        /// <remarks>
+        /// Whether two values count as the same one is decided by <see cref="ValueComparer"/>, not
+        /// by <see cref="object.Equals(object)"/>. Runs in O(log n) on both axes: one descent finds
+        /// (or creates) the key's slot, one more finds the value's place inside the bucket.
+        /// </remarks>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c>.</exception>
         /// <example>
         /// <code>
@@ -312,19 +338,21 @@ namespace DotNetCore.Collections.Multi
         {
             ThrowIfNullKey(key);
 
-            if (!_map.TryGetValue(key, out var collection))
+            if (_tree.TryGetEntry(key, out var bucket, out var count))
             {
-                collection = _innerFactory();
-                _map.Add(key, collection);
+                if (!_allowDuplicateValues && bucket.CountOf(value) != 0)
+                {
+                    return;
+                }
+
+                bucket.Add(value);
+                SyncWeight(key, count, bucket);
+                return;
             }
 
-            collection.Add(value);
-            if (collection.Count == 0)
-            {
-                // A deduplicating collection that refused the very first value would leave the
-                // key without values; drop it to preserve the "no value-less key" invariant.
-                _map.Remove(key);
-            }
+            var created = NewBucket();
+            created.Add(value);
+            _tree.AddCount(key, 1, created);
         }
 
         /// <summary>
@@ -367,7 +395,7 @@ namespace DotNetCore.Collections.Multi
         public bool ContainsKey(TKey key)
         {
             ThrowIfNullKey(key);
-            return _map.ContainsKey(key);
+            return _tree.TryGetCount(key, out _);
         }
 
         /// <summary>
@@ -385,7 +413,7 @@ namespace DotNetCore.Collections.Multi
         public bool Contains(TKey key, TValue value)
         {
             ThrowIfNullKey(key);
-            return _map.TryGetValue(key, out var collection) && collection.Contains(value);
+            return _tree.TryGetEntry(key, out var bucket, out _) && bucket.Contains(value);
         }
 
         /// <summary>
@@ -401,9 +429,10 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool ContainsValue(TValue value)
         {
-            foreach (var collection in _map.Values)
+            var entries = _tree.GetAscendingEnumerator();
+            while (entries.MoveNext())
             {
-                if (collection.Contains(value))
+                if (entries.Payload.Contains(value))
                 {
                     return true;
                 }
@@ -418,6 +447,10 @@ namespace DotNetCore.Collections.Multi
         /// </summary>
         /// <param name="key">the key to remove.</param>
         /// <returns><c>true</c> when the key was present.</returns>
+        /// <remarks>
+        /// Runs in O(log n): the bucket hangs off the slot that is removed, so dropping the key
+        /// drops its values in the same step.
+        /// </remarks>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c>.</exception>
         /// <example>
         /// <code>
@@ -428,7 +461,7 @@ namespace DotNetCore.Collections.Multi
         public bool Remove(TKey key)
         {
             ThrowIfNullKey(key);
-            return _map.Remove(key);
+            return _tree.TryRemoveKey(key);
         }
 
         /// <summary>
@@ -447,21 +480,19 @@ namespace DotNetCore.Collections.Multi
         public bool Remove(TKey key, TValue value)
         {
             ThrowIfNullKey(key);
-            if (!_map.TryGetValue(key, out var collection))
+            if (!_tree.TryGetEntry(key, out var bucket, out _))
             {
                 return false;
             }
 
-            if (!collection.Remove(value))
+            var before = bucket.TotalCount;
+            bucket.Remove(value);
+            if (bucket.TotalCount == before)
             {
                 return false;
             }
 
-            if (collection.Count == 0)
-            {
-                _map.Remove(key);
-            }
-
+            SyncWeight(key, before, bucket);
             return true;
         }
 
@@ -505,7 +536,7 @@ namespace DotNetCore.Collections.Multi
                 throw new ArgumentNullException(nameof(values));
             }
 
-            if (!_map.TryGetValue(key, out var collection))
+            if (!_tree.TryGetEntry(key, out var bucket, out _))
             {
                 return false;
             }
@@ -514,21 +545,19 @@ namespace DotNetCore.Collections.Multi
             // values, and the loop below mutates the map.
             var removals = DistinctValuesOf(values);
 
-            var removedAny = false;
+            var before = bucket.TotalCount;
             foreach (var value in removals)
             {
-                if (collection.Remove(value))
-                {
-                    removedAny = true;
-                }
+                bucket.Remove(value);
             }
 
-            if (collection.Count == 0)
+            if (bucket.TotalCount == before)
             {
-                _map.Remove(key);
+                return false;
             }
 
-            return removedAny;
+            SyncWeight(key, before, bucket);
+            return true;
         }
 
         // ------------------------------------------------------------------
@@ -538,7 +567,7 @@ namespace DotNetCore.Collections.Multi
         /// <summary>
         /// Adds each distinct value of the specified collection under the key when not already
         /// present (set-union semantics on the key's values). Creates the key when absent. With a
-        /// duplicating inner collection, existing duplicate values keep their multiplicities.
+        /// duplicating bucket, existing duplicate values keep their multiplicities.
         /// </summary>
         /// <param name="key">the key to union the values into.</param>
         /// <param name="values">the values to union in.</param>
@@ -556,14 +585,32 @@ namespace DotNetCore.Collections.Multi
                 throw new ArgumentNullException(nameof(values));
             }
 
-            var seen = new SortedSet<TValue>(_valueComparer);
-            foreach (var value in values)
+            var incoming = ToComparerAwareSet(values);
+            if (incoming.Count == 0)
             {
-                if (seen.Add(value) && !Contains(key, value))
+                return;
+            }
+
+            if (!_tree.TryGetEntry(key, out var bucket, out _))
+            {
+                foreach (var value in incoming)
                 {
                     Add(key, value);
                 }
+
+                return;
             }
+
+            var before = bucket.TotalCount;
+            foreach (var value in incoming)
+            {
+                if (bucket.CountOf(value) == 0)
+                {
+                    bucket.Add(value);
+                }
+            }
+
+            SyncWeight(key, before, bucket);
         }
 
         /// <summary>
@@ -587,25 +634,22 @@ namespace DotNetCore.Collections.Multi
                 throw new ArgumentNullException(nameof(values));
             }
 
-            if (!_map.TryGetValue(key, out var collection))
+            if (!_tree.TryGetEntry(key, out var bucket, out _))
             {
                 return;
             }
 
             var keep = ToComparerAwareSet(values);
-            var snapshot = SnapshotOf(collection);
-            foreach (var value in snapshot)
+            var before = bucket.TotalCount;
+            foreach (var value in DistinctSnapshotOf(bucket))
             {
                 if (!keep.Contains(value))
                 {
-                    collection.Remove(value);
+                    bucket.RemoveAllCopies(value);
                 }
             }
 
-            if (collection.Count == 0)
-            {
-                _map.Remove(key);
-            }
+            SyncWeight(key, before, bucket);
         }
 
         /// <summary>
@@ -629,27 +673,22 @@ namespace DotNetCore.Collections.Multi
                 throw new ArgumentNullException(nameof(values));
             }
 
-            if (!_map.TryGetValue(key, out var collection))
+            if (!_tree.TryGetEntry(key, out var bucket, out _))
             {
                 return;
             }
 
             var removals = ToComparerAwareSet(values);
-            var snapshot = SnapshotOf(collection);
-            foreach (var value in snapshot)
+            var before = bucket.TotalCount;
+            foreach (var value in DistinctSnapshotOf(bucket))
             {
                 if (removals.Contains(value))
                 {
-                    while (collection.Remove(value))
-                    {
-                    }
+                    bucket.RemoveAllCopies(value);
                 }
             }
 
-            if (collection.Count == 0)
-            {
-                _map.Remove(key);
-            }
+            SyncWeight(key, before, bucket);
         }
 
         /// <summary>
@@ -667,9 +706,9 @@ namespace DotNetCore.Collections.Multi
         /// <see cref="UnionWith(TKey,IEnumerable{TValue})"/>,
         /// <see cref="IntersectionWith(TKey,IEnumerable{TValue})"/> and
         /// <see cref="ExceptWith(TKey,IEnumerable{TValue})"/>: a repeated value in it does not
-        /// count twice. With a deduplicating inner collection this is precisely the symmetric
-        /// difference of <see cref="ISet{T}"/>; with a duplicating one, a value stored N times
-        /// survives with N-1 copies.
+        /// count twice. With a deduplicating bucket this is precisely the symmetric difference of
+        /// <see cref="ISet{T}"/>; with a duplicating one, a value stored N times survives with N-1
+        /// copies.
         /// </para>
         /// <para>
         /// This matches <see cref="MultiDictionary{TKey,TValue}.SymmetricExceptWith(TKey,IEnumerable{TValue})"/>
@@ -698,23 +737,37 @@ namespace DotNetCore.Collections.Multi
             // values, and the loop below mutates the map.
             var toggles = DistinctValuesOf(values);
 
-            _map.TryGetValue(key, out var collection);
+            if (!_tree.TryGetEntry(key, out var bucket, out _))
+            {
+                foreach (var value in toggles)
+                {
+                    Add(key, value);
+                }
 
+                return;
+            }
+
+            var before = bucket.TotalCount;
             foreach (var value in toggles)
             {
-                if (collection == null || !collection.Remove(value))
+                // "Toggled off" is told apart from "was not stored" by the total, not by the return
+                // value of Remove: removing the last copy and finding nothing both report zero
+                // remaining, and only the total says which of the two happened.
+                var totalBefore = bucket.TotalCount;
+                bucket.Remove(value);
+                if (bucket.TotalCount == totalBefore)
                 {
-                    // Toggled on: either the key is absent or the value was not stored. Going
-                    // through the public Add keeps the "no value-less key" invariant in a single
-                    // place.
-                    Add(key, value);
+                    // Toggled on: the value was not stored. The bucket is mutated directly and the
+                    // cached total is reconciled once, at the end of the loop. Going through the
+                    // public Add here would adjust the cached total as well, and the two
+                    // adjustments would then count the value twice; worse, the adjustment the
+                    // public Add derives its delta from is the cached total of the whole key, which
+                    // an earlier iteration of this loop has already invalidated.
+                    bucket.Add(value);
                 }
             }
 
-            if (collection != null && collection.Count == 0)
-            {
-                _map.Remove(key);
-            }
+            SyncWeight(key, before, bucket);
         }
 
         /// <summary>
@@ -727,7 +780,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public void Clear()
         {
-            _map.Clear();
+            _tree.Clear();
         }
 
         /// <summary>
@@ -750,14 +803,152 @@ namespace DotNetCore.Collections.Multi
         public bool TryGetValue(TKey key, out IReadOnlyCollection<TValue> value)
         {
             ThrowIfNullKey(key);
-            if (_map.TryGetValue(key, out var collection))
+            if (_tree.TryGetEntry(key, out var bucket, out _))
             {
-                value = AsReadOnlyView(collection);
+                value = AsReadOnlyView(bucket);
                 return true;
             }
 
             value = null!;
             return false;
+        }
+
+        // ------------------------------------------------------------------
+        // Positional reads over the expanded sequence (F6-36)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Gets the (key, value) pair holding the copy at the specified rank of the expanded
+        /// sequence, where rank zero is the smallest value of the smallest key and rank
+        /// <see cref="TotalValueCount"/> - 1 the largest value of the largest key. Runs in O(log n):
+        /// the walk skips whole sub-trees by their cached value totals and then reads the offset it
+        /// landed on out of the key's own bucket, both in the same descent.
+        /// </summary>
+        /// <param name="rank">the zero-based rank, from zero to <see cref="TotalValueCount"/> - 1.</param>
+        /// <returns>the pair holding that copy.</returns>
+        /// <remarks>
+        /// This is the positional read of the whole map, and it addresses exactly the sequence
+        /// enumeration produces. Before F6-36 the type could only answer it by materialising the
+        /// entire expanded sequence and indexing into that copy.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="rank"/> is negative or
+        /// greater than or equal to <see cref="TotalValueCount"/>.</exception>
+        /// <example>
+        /// <code>
+        /// // alpha -> [10, 30], beta -> [2]
+        /// index.GetByRank(0);                      // ("alpha", 10)
+        /// index.GetByRank(2);                      // ("beta", 2)
+        /// </code>
+        /// </example>
+        public KeyValuePair<TKey, TValue> GetByRank(int rank)
+        {
+            if (!_tree.TryGetByRank(rank, out var key, out var bucket, out var offsetInBucket))
+            {
+                throw new ArgumentOutOfRangeException(nameof(rank), rank, "The rank must address one of the stored values, from zero to TotalValueCount - 1.");
+            }
+
+            return new KeyValuePair<TKey, TValue>(key, bucket.GetByRank(offsetInBucket));
+        }
+
+        /// <summary>
+        /// Gets the rank of the first copy of the value under the key, in O(log n): the position
+        /// that copy enumerates at, counting from the smallest value of the smallest key. Returns
+        /// <c>-1</c> when the key is absent or holds no copy of the value, the way
+        /// <see cref="OrderedMultiList{T}.GetRank(T)"/> reports an absent element.
+        /// </summary>
+        /// <param name="key">the key holding the value.</param>
+        /// <param name="value">the value to locate.</param>
+        /// <returns>the rank of the value's first copy, or <c>-1</c> when it is not stored.</returns>
+        /// <remarks>
+        /// Whether the argument counts as a stored value is decided by <see cref="ValueComparer"/>,
+        /// so a value the comparer deems equal to a stored one addresses that one's first copy.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// // alpha -> [10, 30], beta -> [2]
+        /// index.GetRank("alpha", 30);              // 1
+        /// index.GetRank("alpha", 99);              // -1
+        /// </code>
+        /// </example>
+        public int GetRank(TKey key, TValue value)
+        {
+            ThrowIfNullKey(key);
+            if (!_tree.TryGetRankOf(key, out var rankBefore))
+            {
+                return -1;
+            }
+
+            if (!_tree.TryGetEntry(key, out var bucket, out _))
+            {
+                return -1;
+            }
+
+            var local = bucket.GetRank(value);
+            return local < 0 ? -1 : rankBefore + local;
+        }
+
+        /// <summary>
+        /// Gets the (key, value) pair holding the middle copy of the expanded sequence, in O(log n).
+        /// With an even number of values there is no single middle one, and the pair holding the
+        /// lower of the two middle copies is returned. Use <see cref="GetQuantile(double)"/> to ask
+        /// for a different point of the distribution.
+        /// </summary>
+        /// <returns>the pair holding the middle copy.</returns>
+        /// <exception cref="InvalidOperationException">The map holds no values.</exception>
+        /// <example>
+        /// <code>
+        /// // alpha -> [10, 30], beta -> [2]
+        /// index.GetMedian();                       // ("alpha", 30)
+        /// </code>
+        /// </example>
+        public KeyValuePair<TKey, TValue> GetMedian()
+        {
+            var total = _tree.ElementCount;
+            if (total == 0)
+            {
+                throw new InvalidOperationException("The map is empty, so it has no median entry.");
+            }
+
+            return GetByRank((total - 1) / 2);
+        }
+
+        /// <summary>
+        /// Gets the (key, value) pair holding the copy at the specified quantile of the expanded
+        /// sequence, in O(log n). The nearest-rank definition is used, the one
+        /// <see cref="OrderedMultiList{T}.GetQuantile(double)"/> already follows: the answer is the
+        /// pair at zero-based position &#8968;<paramref name="quantile"/> &#215;
+        /// <see cref="TotalValueCount"/>&#8969; - 1, clamped to the first copy when that lands below
+        /// it. A quantile therefore never interpolates between two values and never names a value
+        /// this map does not hold. <see cref="GetMedian"/> and a quantile of <c>0.5</c> agree.
+        /// </summary>
+        /// <param name="quantile">the point of the distribution, between 0 and 1 inclusive.</param>
+        /// <returns>the pair holding that copy.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="quantile"/> is not between
+        /// 0 and 1, or is not a number.</exception>
+        /// <exception cref="InvalidOperationException">The map holds no values.</exception>
+        /// <example>
+        /// <code>
+        /// // alpha -> [10, 30], beta -> [2]
+        /// index.GetQuantile(0.99);                 // ("beta", 2)
+        /// index.GetQuantile(0);                    // ("alpha", 10)
+        /// </code>
+        /// </example>
+        public KeyValuePair<TKey, TValue> GetQuantile(double quantile)
+        {
+            if (double.IsNaN(quantile) || quantile < 0d || quantile > 1d)
+            {
+                throw new ArgumentOutOfRangeException(nameof(quantile), quantile, "The quantile must be between 0 and 1, inclusive.");
+            }
+
+            var total = _tree.ElementCount;
+            if (total == 0)
+            {
+                throw new InvalidOperationException("The map is empty, so it has no quantile.");
+            }
+
+            var rank = (int)Math.Ceiling(quantile * total) - 1;
+            return GetByRank(rank < 0 ? 0 : rank);
         }
 
         /// <summary>
@@ -790,16 +981,18 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public OrderedMultiDictionary<TKey, TValue> Clone()
         {
-            var clone = new OrderedMultiDictionary<TKey, TValue>(_keyComparer, _valueComparer, _innerFactory);
-            foreach (var pair in _map)
+            var clone = new OrderedMultiDictionary<TKey, TValue>(_keyComparer, _valueComparer, _allowDuplicateValues);
+            var entries = _tree.GetAscendingEnumerator();
+            while (entries.MoveNext())
             {
-                var collection = clone._innerFactory();
-                foreach (var value in pair.Value)
+                var bucket = clone.NewBucket();
+                var values = entries.Payload.GetAscendingEnumerator();
+                while (values.MoveNext())
                 {
-                    collection.Add(value);
+                    bucket.Add(values.Key, values.Count);
                 }
 
-                clone._map.Add(pair.Key, collection);
+                clone._tree.AddCount(entries.Key, entries.Count, bucket);
             }
 
             return clone;
@@ -845,9 +1038,10 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public IEnumerable<(TKey Key, IReadOnlyCollection<TValue> Values)> EntrySet()
         {
-            foreach (var pair in _map)
+            var entries = _tree.GetAscendingEnumerator();
+            while (entries.MoveNext())
             {
-                yield return (pair.Key, AsReadOnlyView(pair.Value));
+                yield return (entries.Key, AsReadOnlyView(entries.Payload));
             }
         }
 
@@ -863,8 +1057,8 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public override string ToString()
         {
-            return string.Join(",", _map.Select(pair =>
-                $"{pair.Key}:[{string.Join(",", pair.Value)}]"));
+            return string.Join(",", EntrySet().Select(entry =>
+                $"{entry.Key}:[{string.Join(",", entry.Values)}]"));
         }
 
         /// <summary>
@@ -872,6 +1066,12 @@ namespace DotNetCore.Collections.Multi
         /// order, and within one key in ascending value order.
         /// </summary>
         /// <returns>an enumerator over one (key, value) pair per stored value.</returns>
+        /// <remarks>
+        /// The single <c>yield</c> here is the enumerator of the whole map, not of a key: the body
+        /// walks the tree's leaves and each bucket through struct enumerators, so enumerating a key
+        /// allocates nothing. That is the F6-36 fix — the storage this type used before built two
+        /// iterator objects per key, because the value side was reached through an interface.
+        /// </remarks>
         /// <example>
         /// <code>
         /// foreach (var pair in index)
@@ -882,11 +1082,16 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            foreach (var pair in _map)
+            var entries = _tree.GetAscendingEnumerator();
+            while (entries.MoveNext())
             {
-                foreach (var value in pair.Value)
+                var values = entries.Payload.GetAscendingEnumerator();
+                while (values.MoveNext())
                 {
-                    yield return new KeyValuePair<TKey, TValue>(pair.Key, value);
+                    for (var copy = 0; copy < values.Count; copy++)
+                    {
+                        yield return new KeyValuePair<TKey, TValue>(entries.Key, values.Key);
+                    }
                 }
             }
         }
@@ -899,9 +1104,11 @@ namespace DotNetCore.Collections.Multi
         IEnumerator<KeyValuePair<TKey, IReadOnlyCollection<TValue>>>
             IEnumerable<KeyValuePair<TKey, IReadOnlyCollection<TValue>>>.GetEnumerator()
         {
-            foreach (var pair in _map)
+            var entries = _tree.GetAscendingEnumerator();
+            while (entries.MoveNext())
             {
-                yield return new KeyValuePair<TKey, IReadOnlyCollection<TValue>>(pair.Key, AsReadOnlyView(pair.Value));
+                yield return new KeyValuePair<TKey, IReadOnlyCollection<TValue>>(
+                    entries.Key, AsReadOnlyView(entries.Payload));
             }
         }
 
@@ -909,9 +1116,10 @@ namespace DotNetCore.Collections.Multi
         {
             get
             {
-                foreach (var collection in _map.Values)
+                var entries = _tree.GetAscendingEnumerator();
+                while (entries.MoveNext())
                 {
-                    yield return AsReadOnlyView(collection);
+                    yield return AsReadOnlyView(entries.Payload);
                 }
             }
         }
@@ -926,23 +1134,64 @@ namespace DotNetCore.Collections.Multi
             }
         }
 
-        private IReadOnlyCollection<TValue> AsReadOnlyView(ICollection<TValue> collection)
+        /// <summary>
+        /// Creates the bucket a new key stores its values in. Both duplicate policies share this one
+        /// bucket type since F6-36: the policy is enforced by the operations, which either admit a
+        /// second copy or check for the value first, so the value axis is one sorted multiset with
+        /// the positional reads available on either setting.
+        /// </summary>
+        private OrderedMultiList<TValue> NewBucket()
         {
-            // Wrapped, not cast: the framework's SortedSet<T> (the allowDuplicateValues:false
-            // factory) does not declare IReadOnlyCollection<T> on the .NET Framework generation
-            // the package supports (F6-24) - the reference assemblies of net451/net461 lack the
-            // declaration and the 4.5.1/4.6.1-era runtimes lack the interface itself, so a bare
-            // cast fails exactly there. The internal wrapper is safe everywhere and keeps the
-            // view live.
-            return new ReadOnlyCollectionView<TValue>(collection);
+            return new OrderedMultiList<TValue>(_valueComparer);
         }
 
         /// <summary>
-        /// Copies the values of an inner collection into a list before that collection is mutated.
+        /// Brings the tree's per-key value total back in step after the caller mutated the bucket.
+        /// The two figures must never drift: the total is what the positional reads descend on, and
+        /// it is also what <see cref="ValueCount(TKey)"/> and <see cref="TotalValueCount"/> report.
+        /// A bucket that emptied takes its key with it, which is what keeps the "no key without
+        /// values" invariant.
         /// </summary>
-        private static List<TValue> SnapshotOf(ICollection<TValue> collection)
+        private void SyncWeight(TKey key, int before, OrderedMultiList<TValue> bucket)
         {
-            return new List<TValue>(collection);
+            var after = bucket.TotalCount;
+            if (after == before)
+            {
+                return;
+            }
+
+            if (after == 0)
+            {
+                _tree.TryRemoveKey(key);
+                return;
+            }
+
+            _tree.AdjustCount(key, after - before);
+        }
+
+        private IReadOnlyCollection<TValue> AsReadOnlyView(OrderedMultiList<TValue> bucket)
+        {
+            // Wrapped, not cast (F6-24): the view has to reach consumers through the internal
+            // wrapper on every target, so the net451/net461 generation sees the same type the
+            // modern one does. The bucket is a concrete OrderedMultiList<TValue> since F6-36, but
+            // the wrapper is what the pinning tests and the low-generation regression tests assert.
+            return new ReadOnlyCollectionView<TValue>(bucket);
+        }
+
+        /// <summary>
+        /// Returns the distinct values of a bucket in ascending order. Taken before the bucket is
+        /// mutated, because the set operations walk this list while removing from the bucket.
+        /// </summary>
+        private static List<TValue> DistinctSnapshotOf(OrderedMultiList<TValue> bucket)
+        {
+            var result = new List<TValue>(bucket.DistinctCount);
+            var enumerator = bucket.GetAscendingEnumerator();
+            while (enumerator.MoveNext())
+            {
+                result.Add(enumerator.Key);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -985,6 +1234,68 @@ namespace DotNetCore.Collections.Multi
             return result;
         }
 
+        // ------------------------------------------------------------------
+        // Diagnostics for the test suite
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Gets the number of edges on a root-to-leaf path of the storage tree. Exposed for
+        /// invariant assertions, which is where the O(log n) guarantee is checked; every leaf sits
+        /// at this depth, so it costs one descent.
+        /// </summary>
+        internal int TreeHeight => _tree.Height;
+
+        /// <summary>
+        /// Re-checks every structural invariant the storage layer rests on: the B+ invariants of the
+        /// key tree (uniform leaf depth, occupancy, separator agreement, cached totals), the
+        /// agreement between each entry's cached value total and the length of the bucket it holds,
+        /// the B+ invariants of every bucket, and that the buckets add up to the tree's own total.
+        /// Exposed for the test suite, which asserts them instead of relying on timing measurements
+        /// (F6-36, following F6-25 / R2-02).
+        /// </summary>
+        internal bool ValidateTree(out string? error)
+        {
+            if (!_tree.Validate(out error))
+            {
+                return false;
+            }
+
+            var total = 0;
+            var entries = _tree.GetAscendingEnumerator();
+            while (entries.MoveNext())
+            {
+                var bucket = entries.Payload;
+                if (bucket == null)
+                {
+                    error = "an entry carries no value bucket.";
+                    return false;
+                }
+
+                if (bucket.TotalCount != entries.Count)
+                {
+                    error = "the cached value total of an entry disagrees with the bucket it holds.";
+                    return false;
+                }
+
+                if (!bucket.ValidateTree(out var bucketError))
+                {
+                    error = "a value bucket is invalid: " + bucketError;
+                    return false;
+                }
+
+                total += bucket.TotalCount;
+            }
+
+            if (total != _tree.ElementCount)
+            {
+                error = "the value buckets do not add up to the recorded value total.";
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
+
         private sealed class ReadOnlyDictionaryView :
             IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>
         {
@@ -999,8 +1310,17 @@ namespace DotNetCore.Collections.Multi
 
             public IEnumerable<TKey> Keys => _owner.Keys;
 
-            public IEnumerable<IReadOnlyCollection<TValue>> Values =>
-                _owner._map.Values.Select(AsView);
+            public IEnumerable<IReadOnlyCollection<TValue>> Values
+            {
+                get
+                {
+                    var entries = _owner._tree.GetAscendingEnumerator();
+                    while (entries.MoveNext())
+                    {
+                        yield return new ReadOnlyCollectionView<TValue>(entries.Payload);
+                    }
+                }
+            }
 
             public IReadOnlyCollection<TValue> this[TKey key] => _owner[key];
 
@@ -1016,22 +1336,17 @@ namespace DotNetCore.Collections.Multi
 
             public IEnumerator<KeyValuePair<TKey, IReadOnlyCollection<TValue>>> GetEnumerator()
             {
-                foreach (var pair in _owner._map)
+                var entries = _owner._tree.GetAscendingEnumerator();
+                while (entries.MoveNext())
                 {
                     yield return new KeyValuePair<TKey, IReadOnlyCollection<TValue>>(
-                        pair.Key, AsView(pair.Value));
+                        entries.Key, new ReadOnlyCollectionView<TValue>(entries.Payload));
                 }
             }
 
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
-            }
-
-            private static IReadOnlyCollection<TValue> AsView(ICollection<TValue> collection)
-            {
-                // Same rationale as OrderedMultiDictionary.AsReadOnlyView (F6-24): wrapped, never cast.
-                return new ReadOnlyCollectionView<TValue>(collection);
             }
         }
 
@@ -1052,9 +1367,9 @@ namespace DotNetCore.Collections.Multi
             {
                 get
                 {
-                    if (_owner._map.TryGetValue(key, out var collection))
+                    if (_owner._tree.TryGetEntry(key, out var bucket, out _))
                     {
-                        return new GroupingView(key, collection);
+                        return new GroupingView(key, bucket);
                     }
 
                     return new TValue[0];
@@ -1063,9 +1378,10 @@ namespace DotNetCore.Collections.Multi
 
             public IEnumerator<IGrouping<TKey, TValue>> GetEnumerator()
             {
-                foreach (var pair in _owner._map)
+                var entries = _owner._tree.GetAscendingEnumerator();
+                while (entries.MoveNext())
                 {
-                    yield return new GroupingView(pair.Key, pair.Value);
+                    yield return new GroupingView(entries.Key, entries.Payload);
                 }
             }
 

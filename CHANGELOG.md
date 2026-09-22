@@ -51,6 +51,42 @@ repository ships the same version (see `build/version.props`).
   shares no code with these packages: the abstraction is only worth having if a third party can
   satisfy it.
 
+- `OrderedMultiDictionary<TKey, TValue>` gained the positional read surface (F6-36) that its list
+  counterpart received in 6.5.0 (F6-25). `GetByRank(rank)` returns the `(key, value)` pair holding the
+  copy at a rank of the *expanded* sequence — the order the map itself enumerates in, keys ascending
+  and each key's values ascending, counting copies rather than distinct values — `GetRank(key, value)`
+  returns the rank of a value's first copy under the key, or `-1` when the key or the value is absent,
+  `TotalValueCount` is the length of that sequence in O(1), and `GetMedian()` / `GetQuantile(q)` answer
+  the two statistical reads on top of them with the same definitions the list uses (`GetMedian` takes
+  the lower middle copy; `GetQuantile` uses the nearest-rank rule and rejects `NaN` and anything outside
+  `[0, 1]`). All of them are **O(log n) worst case, on both duplicate policies**, and that is what
+  forced the map's per-key buckets to become one uniform type: the deduplicating policy
+  (`allowDuplicateValues: false`) held a `SortedSet<TValue>`, which has no notion of rank at all, so the
+  two policies could not both have answered `GetByRank` before. Nothing observable changed besides
+  resource use — the ordering, the duplicate policy, the views and every existing member keep the
+  semantics they had, which the pre-existing suite confirms by passing with no test edit at all.
+
+### Changed
+
+- `OrderedMultiDictionary<TKey, TValue>` is now backed by the same order-statistic B+ tree as
+  `OrderedMultiList<T>` (`OrderStatisticTree<TKey, TPayload>`), closing the gap 6.5.0 left open when it
+  recorded that this type "never had a self-implemented engine, being built on the BCL's sorted
+  dictionary over a per-key collection". Each key's slot now carries its bucket *and* how many copies
+  hang under it, which is what makes the rank reads above a single descent, and enumeration a single
+  sweep of the tree's leaf chain through value-type enumerators instead of one iterator per key. A
+  payload channel added to the engine is what lets one tree serve both types: `OrderedMultiList<T>`
+  instantiates it with an empty payload struct and pays nothing, while the map stores its bucket object
+  in the same slot as the key and its count. The engine's depth bound was tightened from 40 to 12 in the
+  same pass — 9 levels already cover more distinct keys than `int` can hold — cutting its per-instance
+  scratch arrays from 480 to 144 bytes, and that is where the write path's allocation win below comes
+  from: the buckets are the same type they were, but no longer carry 336 bytes of over-sized scratch
+  space each. The compensation is not uniform, and the other direction is recorded too: keeping the
+  cached copy totals in step makes writes slower, `Add` going 492.5 → 862.6 ns at 64 keys and
+  1,097.1 → 1,547.9 ns at 4,096 keys in the benchmark's own terms — the same cost 6.5.0 recorded for the
+  list's `Add` when it gained this engine. The reference arm moved by at most 8% between the two runs,
+  so the direction is not machine drift. Enumeration, meanwhile, is about three times faster: 410.90 →
+  138.43 µs over 4,096 keys and 9,180.87 → 5,872.90 µs over 65,536.
+
 ### Fixed
 
 - `DotNetCore.Collections.Paginable.SqlSugar`: `ToPaginableAsync` and the short `GetPageAsync`
@@ -64,6 +100,18 @@ repository ships the same version (see `build/version.props`).
   to provide, and `SqlSugarHelper` is the single place that changes when it does. Callers who passed
   a token and relied on it being ignored now observe `OperationCanceledException` — the behaviour the
   parameter always promised, so there is no `### Breaking` entry for this.
+
+- `OrderedMultiDictionary<TKey, TValue>` no longer allocates per key when it is enumerated (F6-36).
+  Enumerating 65,536 keys allocated 7,340,454 bytes — a flat ≈112 bytes per key — and 459,104 bytes at
+  4,096 keys, the same per-key figure at both sizes, which is what identified it as a fixed cost per key
+  rather than growth. The cause was in the enumeration itself: the map walked a
+  `SortedDictionary<TKey, ICollection<TValue>>`, so `pair.Value`'s static type was the *interface*
+  `ICollection<TValue>`, and every key therefore built an `OrderedMultiList<TValue>.GetEnumerator()` — a
+  `yield` iterator — which in turn walked the likewise-`yield` tree iterator: two iterator objects per
+  key. Measured with `BenchmarkDotNet`'s `MemoryDiagnoser` on the same benchmark, before and after, the
+  same figures are now 96 bytes at 4,096 keys and 99 bytes at 65,536 — a constant that does not grow
+  with the key count. The write path allocates less as well, `Add` going 93 → 46 bytes at 64 keys and
+  656 → 423 bytes at 4,096 keys.
 
 ## [6.5.0] - 2026-09-22
 

@@ -4,6 +4,16 @@ using System.Collections.Generic;
 namespace DotNetCore.Collections.Multi
 {
     /// <summary>
+    /// The payload type of an <see cref="OrderStatisticTree{TKey,TPayload}"/> that stores no
+    /// payload. <see cref="OrderedMultiList{T}"/> keys its tree by the element alone, so its
+    /// payload array is never allocated and the tree costs exactly what it did before the
+    /// parameter existed.
+    /// </summary>
+    internal readonly struct NoPayload
+    {
+    }
+
+    /// <summary>
     /// An order-statistic B+ tree that maps every distinct key to the number of copies stored for
     /// it. This is the storage engine of <see cref="OrderedMultiList{T}"/>.
     /// </summary>
@@ -21,8 +31,8 @@ namespace DotNetCore.Collections.Multi
     /// and a branch keeps that figure per child (<see cref="BranchNode.Totals"/>). Selecting the
     /// k-th copy and computing the rank of a key are then a single root-to-leaf descent: at each
     /// level the walk skips the children whose totals fit into the remaining rank, and reads the
-    /// answer off the leaf it lands on. Nothing is traversed, which is what makes
-    /// <see cref="TryGetByRank"/> and <see cref="TryGetRankOf"/> O(log n).
+    /// answer off the leaf it lands on. Nothing is traversed, which is what makes the rank reads
+    /// (<c>TryGetByRank</c> and <c>TryGetRankOf</c>) O(log n).
     /// </para>
     /// <para>
     /// <b>Locality.</b> A balanced binary search tree spends one heap object per distinct key and
@@ -43,13 +53,25 @@ namespace DotNetCore.Collections.Multi
     /// timings, which is what the F6-01 and F6-25 acceptance criteria ask for.
     /// </para>
     /// <para>
+    /// <b>Payloads.</b> A caller may attach one value of <c>TPayload</c> to each key, stored beside
+    /// the key and its count in the same leaf slot and carried along by every split, borrow and
+    /// merge. That is what lets <see cref="OrderedMultiDictionary{TKey,TValue}"/> keep a key's value
+    /// bucket in the tree itself: a leaf sweep then yields the key, the bucket and the copy count
+    /// together, with no second structure to look the bucket up in and no per-key iterator to build.
+    /// The array behind the channel is allocated per leaf on first use, so a tree that never stores a
+    /// payload - <see cref="OrderedMultiList{T}"/>'s, whose <c>TPayload</c> is
+    /// <see cref="NoPayload"/> - pays nothing for it. The payload is <em>not</em> part of ordering or
+    /// identity: a comparer that calls two keys equal makes the first stored payload win, exactly as
+    /// it makes the first stored key win.
+    /// </para>
+    /// <para>
     /// The type is internal and deliberately narrow: it owns the tree, the copy counts and the
     /// sub-tree totals, and knows nothing about the collecting type's bookkeeping beyond
     /// <see cref="Count"/> and <see cref="ElementCount"/>. It is not thread-safe, exactly like the
     /// collection built on top of it.
     /// </para>
     /// </remarks>
-    internal sealed class OrderStatisticTree<TKey>
+    internal sealed class OrderStatisticTree<TKey, TPayload>
     {
         /// <summary>
         /// The most entries a node holds: keys in a leaf, children in a branch. A write is allowed to
@@ -71,11 +93,16 @@ namespace DotNetCore.Collections.Multi
         private const int Capacity = MaxEntries + 2;
 
         /// <summary>
-        /// The longest root-to-leaf path the descent scratch buffers hold. A level is gained only
-        /// when every node on a full path splits, so this many levels cover far more distinct keys
-        /// than the <see cref="int"/> range <see cref="Count"/> is measured in.
+        /// The longest root-to-leaf path the descent scratch buffers hold. The bound follows from
+        /// the occupancy invariants rather than from taste: a level is gained only when a node
+        /// splits, every node but the root keeps at least <see cref="MinEntries"/> entries, and
+        /// <see cref="Count"/> is an <see cref="int"/>, so a tree holding the largest representable
+        /// number of distinct keys is at most <c>1 + ceil(log15(int.MaxValue)) = 9</c> levels deep.
+        /// Twelve leaves a third of the budget unused as margin. The two buffers below are per
+        /// instance, so this figure is also what a per-key payload tree pays: 40 levels used to
+        /// cost 480 bytes per instance, 12 cost 144.
         /// </summary>
-        private const int MaxDepth = 40;
+        private const int MaxDepth = 12;
 
         private readonly IComparer<TKey> _comparer;
         private Node? _root;
@@ -86,6 +113,12 @@ namespace DotNetCore.Collections.Multi
         // descends while another is mid-repair, so no locking is involved.
         private readonly Node?[] _path = new Node?[MaxDepth];
         private readonly int[] _childAt = new int[MaxDepth];
+
+        // Whether any payload has ever been stored. A leaf allocates its payload array on first
+        // use, so a tree that carries no payload (OrderedMultiList's) never pays for one; this flag
+        // is what lets Validate() tell "this tree stores no payloads" apart from "this leaf lost
+        // the payload array its siblings have".
+        private bool _payloadsInUse;
 
         // Cursor of the in-flight Validate() walk. Validation is a diagnostic entry point that is
         // never re-entered, so the walk carries its state here instead of through six ref
@@ -169,6 +202,55 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Gets the payload attached to the key, together with its copy count.
+        /// </summary>
+        /// <returns><c>true</c> when the key is present, <c>false</c> otherwise.</returns>
+        /// <remarks>
+        /// This is the lookup a caller makes when it is about to change the payload and will then
+        /// have to bring the count back in step with <see cref="AdjustCount"/>: the count it reports
+        /// is the figure to compare against afterwards, so the change is
+        /// <c>newTotal - reportedCount</c> rather than a fixed one. A tree that stores no payload
+        /// reports <c>default</c> and is better served by <see cref="TryGetCount"/>.
+        /// </remarks>
+        internal bool TryGetEntry(TKey key, out TPayload payload, out int count)
+        {
+            var leaf = FindLeaf(key);
+            if (leaf == null)
+            {
+                payload = default!;
+                count = 0;
+                return false;
+            }
+
+            var slot = SlotOf(leaf, key);
+            if (slot < 0)
+            {
+                payload = default!;
+                count = 0;
+                return false;
+            }
+
+            payload = leaf.Payloads == null ? default! : leaf.Payloads[slot];
+            count = leaf.Counts[slot];
+            return true;
+        }
+
+        /// <summary>
+        /// Gives the leaf a payload array when it needs one. A leaf that carries no payload never
+        /// allocates, which is what keeps this channel free for the tree that does not use it; the
+        /// tree-wide <c>_payloadsInUse</c> flag is set by the caller once a payload is written, so
+        /// the array is also allocated when a payload-carrying tree inserts into a leaf that has not
+        /// received one yet.
+        /// </summary>
+        private void EnsurePayloads(LeafNode leaf, bool hasPayload)
+        {
+            if (leaf.Payloads == null && (hasPayload || _payloadsInUse))
+            {
+                leaf.Payloads = new TPayload[Capacity];
+            }
+        }
+
+        /// <summary>
         /// Adds the specified number of copies to the key, giving it a slot when the key is not
         /// stored yet. The key recorded on a collision is the one already in the tree, so a comparer
         /// that treats two distinct objects as equal keeps the first of them - the same rule a
@@ -176,6 +258,24 @@ namespace DotNetCore.Collections.Multi
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="times"/> is not positive.</exception>
         internal void AddCount(TKey key, int times)
+        {
+            AddCount(key, times, hasPayload: false, default!);
+        }
+
+        /// <summary>
+        /// Adds the specified number of copies to the key and attaches <paramref name="payload"/> to
+        /// it, giving the key a slot when it is not stored yet. On a collision the stored key and the
+        /// stored payload are both kept, so of two keys the comparer deems equal the first one added
+        /// owns the slot and everything the caller attached to it - the same rule the key already
+        /// follows.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="times"/> is not positive.</exception>
+        internal void AddCount(TKey key, int times, TPayload payload)
+        {
+            AddCount(key, times, hasPayload: true, payload);
+        }
+
+        private void AddCount(TKey key, int times, bool hasPayload, TPayload payload)
         {
             if (times <= 0)
             {
@@ -194,11 +294,24 @@ namespace DotNetCore.Collections.Multi
 
             if (isNewKey)
             {
+                EnsurePayloads(leaf, hasPayload);
+
                 slot = LowerBound(leaf, key);
                 Array.Copy(leaf.Keys, slot, leaf.Keys, slot + 1, leaf.EntryCount - slot);
                 Array.Copy(leaf.Counts, slot, leaf.Counts, slot + 1, leaf.EntryCount - slot);
+                if (leaf.Payloads != null)
+                {
+                    Array.Copy(leaf.Payloads, slot, leaf.Payloads, slot + 1, leaf.EntryCount - slot);
+                }
+
                 leaf.Keys[slot] = key;
                 leaf.Counts[slot] = times;
+                if (hasPayload)
+                {
+                    _payloadsInUse = true;
+                    leaf.Payloads![slot] = payload;
+                }
+
                 leaf.EntryCount++;
                 leaf.KeyCount = leaf.EntryCount;
 
@@ -218,6 +331,51 @@ namespace DotNetCore.Collections.Multi
             {
                 SplitLeaf(depth);
             }
+        }
+
+        /// <summary>
+        /// Applies a signed change to the copy count of a key that is already stored. The count is
+        /// what the rank reads descend on, so this is the call that keeps a caller's own per-key
+        /// total - the length of the bucket it attached as the payload - in step with the tree after
+        /// the caller mutated that bucket.
+        /// </summary>
+        /// <returns><c>true</c> when the key was stored and the count was changed.</returns>
+        /// <remarks>
+        /// Removing a key outright is <see cref="TryRemoveKey"/>'s job: a count that reaches zero
+        /// would leave a slot the rank arithmetic can not skip, so it is rejected instead of
+        /// accepted and repaired later.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="delta"/> is zero, or would
+        /// drive the stored count to zero or below.</exception>
+        internal bool AdjustCount(TKey key, int delta)
+        {
+            if (delta == 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(delta), "The change must be non-zero.");
+            }
+
+            if (_root == null)
+            {
+                return false;
+            }
+
+            var depth = Descend(key);
+            var leaf = (LeafNode)_path[depth]!;
+            var slot = SlotOf(leaf, key);
+            if (slot < 0)
+            {
+                return false;
+            }
+
+            var updated = leaf.Counts[slot] + delta;
+            if (updated <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(delta), delta, "The copy count must stay positive; remove the key instead.");
+            }
+
+            leaf.Counts[slot] = updated;
+            ApplyDelta(depth, delta);
+            return true;
         }
 
         /// <summary>
@@ -276,6 +434,12 @@ namespace DotNetCore.Collections.Multi
 
             Array.Copy(leaf.Keys, slot + 1, leaf.Keys, slot, remaining - slot);
             Array.Copy(leaf.Counts, slot + 1, leaf.Counts, slot, remaining - slot);
+            if (leaf.Payloads != null)
+            {
+                Array.Copy(leaf.Payloads, slot + 1, leaf.Payloads, slot, remaining - slot);
+                leaf.Payloads[remaining] = default!;
+            }
+
             leaf.Keys[remaining] = default!;
             leaf.Counts[remaining] = 0;
             leaf.EntryCount = remaining;
@@ -346,6 +510,73 @@ namespace DotNetCore.Collections.Multi
             var last = leaf.EntryCount - 1;
             entry = new KeyValuePair<TKey, int>(leaf.Keys[last], leaf.Counts[last]);
             return true;
+        }
+
+        /// <summary>
+        /// A struct enumerator over the entries in ascending key order, walking the leaf chain and
+        /// indexing into the node arrays. It exists because <see cref="Ascending"/> is a yield
+        /// iterator, and the ordered multimap built on this engine enumerates <em>once per key</em>:
+        /// one yield per key is one heap object per key, which is precisely the per-key allocation
+        /// this enumerator removes. Being a struct also keeps the sweep a pure array walk, so nothing
+        /// is chased through the heap on the way.
+        /// </summary>
+        internal struct AscendingEnumerator
+        {
+            private LeafNode? _leaf;
+            private int _index;
+            private TKey _key;
+            private TPayload _payload;
+            private int _count;
+
+            internal AscendingEnumerator(LeafNode? first)
+            {
+                _leaf = first;
+                _index = -1;
+                _key = default!;
+                _payload = default!;
+                _count = 0;
+            }
+
+            /// <summary>Gets the key the enumerator is positioned on.</summary>
+            internal TKey Key => _key;
+
+            /// <summary>Gets the payload attached to the current key, or <c>default</c> when the tree stores none.</summary>
+            internal TPayload Payload => _payload;
+
+            /// <summary>Gets the copy count of the current key.</summary>
+            internal int Count => _count;
+
+            /// <summary>Advances to the next key.</summary>
+            /// <returns><c>false</c> when every key has been visited.</returns>
+            internal bool MoveNext()
+            {
+                _index++;
+                while (_leaf != null && _index >= _leaf.EntryCount)
+                {
+                    _leaf = (LeafNode?)_leaf.Next;
+                    _index = 0;
+                }
+
+                if (_leaf == null)
+                {
+                    return false;
+                }
+
+                _key = _leaf.Keys[_index];
+                _count = _leaf.Counts[_index];
+                _payload = _leaf.Payloads == null ? default! : _leaf.Payloads[_index];
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets a struct enumerator over the entries in ascending key order. Unlike
+        /// <see cref="Ascending"/> it allocates nothing, which is what the per-key enumeration of the
+        /// ordered multimap needs.
+        /// </summary>
+        internal AscendingEnumerator GetAscendingEnumerator()
+        {
+            return new AscendingEnumerator(OutermostLeaf(leftmost: true));
         }
 
         /// <summary>
@@ -456,6 +687,64 @@ namespace DotNetCore.Collections.Multi
             // Unreachable while the cached totals agree with the leaves, which is an invariant
             // Validate() checks.
             key = default!;
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the key holding the copy at the specified rank, the payload attached to that key, and
+        /// the rank the copy holds <em>inside</em> that key's own bucket - the offset to hand to the
+        /// bucket's order-statistic read. One descent answers all three, which is what makes a
+        /// positional read of the ordered multimap a single O(log n) walk rather than a descent plus a
+        /// re-descent.
+        /// </summary>
+        /// <returns><c>false</c> when <paramref name="rank"/> is outside the stored copies.</returns>
+        internal bool TryGetByRank(int rank, out TKey key, out TPayload payload, out int offsetInBucket)
+        {
+            var node = _root;
+            if (node == null || rank < 0 || rank >= node.TotalCount)
+            {
+                key = default!;
+                payload = default!;
+                offsetInBucket = 0;
+                return false;
+            }
+
+            while (true)
+            {
+                if (node is LeafNode leaf)
+                {
+                    for (var i = 0; i < leaf.EntryCount; i++)
+                    {
+                        if (rank < leaf.Counts[i])
+                        {
+                            key = leaf.Keys[i];
+                            payload = leaf.Payloads == null ? default! : leaf.Payloads[i];
+                            offsetInBucket = rank;
+                            return true;
+                        }
+
+                        rank -= leaf.Counts[i];
+                    }
+
+                    break;
+                }
+
+                var branch = (BranchNode)node;
+                var child = 0;
+                while (rank >= branch.Totals[child])
+                {
+                    rank -= branch.Totals[child];
+                    child++;
+                }
+
+                node = branch.Children[child];
+            }
+
+            // Unreachable while the cached totals agree with the leaves, which is an invariant
+            // Validate() checks.
+            key = default!;
+            payload = default!;
+            offsetInBucket = 0;
             return false;
         }
 
@@ -738,6 +1027,12 @@ namespace DotNetCore.Collections.Multi
             Array.Copy(left.Counts, keep, right.Counts, 0, moved);
             Array.Clear(left.Keys, keep, moved);
             Array.Clear(left.Counts, keep, moved);
+            if (left.Payloads != null)
+            {
+                right.Payloads = new TPayload[Capacity];
+                Array.Copy(left.Payloads, keep, right.Payloads, 0, moved);
+                Array.Clear(left.Payloads, keep, moved);
+            }
             left.EntryCount = keep;
             right.EntryCount = moved;
             RecomputeLeaf(left);
@@ -870,6 +1165,14 @@ namespace DotNetCore.Collections.Multi
                 leaf.Counts[0] = donor.Counts[from];
                 leaf.EntryCount++;
 
+                if (donor.Payloads != null)
+                {
+                    leaf.Payloads ??= new TPayload[Capacity];
+                    Array.Copy(leaf.Payloads, 0, leaf.Payloads, 1, leaf.EntryCount - 1);
+                    leaf.Payloads[0] = donor.Payloads[from];
+                    donor.Payloads[from] = default!;
+                }
+
                 donor.Keys[from] = default!;
                 donor.Counts[from] = 0;
                 donor.EntryCount = from;
@@ -926,11 +1229,23 @@ namespace DotNetCore.Collections.Multi
                 leaf.Counts[leaf.EntryCount] = donor.Counts[0];
                 leaf.EntryCount++;
 
+                if (donor.Payloads != null)
+                {
+                    leaf.Payloads ??= new TPayload[Capacity];
+                    leaf.Payloads[leaf.EntryCount - 1] = donor.Payloads[0];
+                    Array.Copy(donor.Payloads, 1, donor.Payloads, 0, donor.EntryCount - 1);
+                }
+
                 Array.Copy(donor.Keys, 1, donor.Keys, 0, donor.EntryCount - 1);
                 Array.Copy(donor.Counts, 1, donor.Counts, 0, donor.EntryCount - 1);
                 var tail = donor.EntryCount - 1;
                 donor.Keys[tail] = default!;
                 donor.Counts[tail] = 0;
+                if (donor.Payloads != null)
+                {
+                    donor.Payloads[tail] = default!;
+                }
+
                 donor.EntryCount = tail;
 
                 RecomputeLeaf(donor);
@@ -988,6 +1303,12 @@ namespace DotNetCore.Collections.Multi
                 var rightLeaf = (LeafNode)right;
                 Array.Copy(rightLeaf.Keys, 0, leftLeaf.Keys, leftLeaf.EntryCount, rightLeaf.EntryCount);
                 Array.Copy(rightLeaf.Counts, 0, leftLeaf.Counts, leftLeaf.EntryCount, rightLeaf.EntryCount);
+                if (rightLeaf.Payloads != null)
+                {
+                    leftLeaf.Payloads ??= new TPayload[Capacity];
+                    Array.Copy(rightLeaf.Payloads, 0, leftLeaf.Payloads, leftLeaf.EntryCount, rightLeaf.EntryCount);
+                }
+
                 leftLeaf.EntryCount += rightLeaf.EntryCount;
                 ClearLeaf(rightLeaf);
 
@@ -1100,6 +1421,11 @@ namespace DotNetCore.Collections.Multi
         {
             Array.Clear(leaf.Keys, 0, leaf.EntryCount);
             Array.Clear(leaf.Counts, 0, leaf.EntryCount);
+            if (leaf.Payloads != null)
+            {
+                Array.Clear(leaf.Payloads, 0, leaf.EntryCount);
+            }
+
             leaf.EntryCount = 0;
             leaf.KeyCount = 0;
             leaf.TotalCount = 0;
@@ -1216,6 +1542,18 @@ namespace DotNetCore.Collections.Multi
 
             _leafDepth = level;
 
+            if (_payloadsInUse && leaf.Payloads == null)
+            {
+                _error = "a leaf of a payload-carrying tree has no payload array.";
+                return;
+            }
+
+            if (!_payloadsInUse && leaf.Payloads != null)
+            {
+                _error = "a leaf holds a payload array although the tree stores no payloads.";
+                return;
+            }
+
             if (_previousLeaf != null)
             {
                 if (!ReferenceEquals(_previousLeaf.Next, leaf))
@@ -1252,7 +1590,7 @@ namespace DotNetCore.Collections.Multi
             _previousLeaf = leaf;
         }
 
-        private abstract class Node
+        internal abstract class Node
         {
             /// <summary>
             /// The keys of a leaf, or the separators of a branch. A separator at index <c>i</c> is the
@@ -1280,9 +1618,16 @@ namespace DotNetCore.Collections.Multi
             internal abstract bool IsLeaf { get; }
         }
 
-        private sealed class LeafNode : Node
+        internal sealed class LeafNode : Node
         {
             internal readonly int[] Counts = new int[Capacity];
+
+            /// <summary>
+            /// The payload of each key, aligned with <see cref="Node.Keys"/> and
+            /// <see cref="Counts"/>. Allocated the first time this leaf stores one, so a tree that
+            /// carries no payload - <see cref="OrderedMultiList{T}"/>'s - never pays for the array.
+            /// </summary>
+            internal TPayload[]? Payloads;
 
             internal Node? Next;
 
@@ -1291,7 +1636,7 @@ namespace DotNetCore.Collections.Multi
             internal override bool IsLeaf => true;
         }
 
-        private sealed class BranchNode : Node
+        internal sealed class BranchNode : Node
         {
             internal readonly Node[] Children = new Node[Capacity];
 

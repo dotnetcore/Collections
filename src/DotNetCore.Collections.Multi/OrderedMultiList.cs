@@ -92,7 +92,7 @@ namespace DotNetCore.Collections.Multi
     public class OrderedMultiList<T> : IEnumerable<T>, ICollection<T>, IReadOnlyCollection<T>, IReadOnlyList<T>, IList<T>, IMultiSet<T>
     {
         private readonly IComparer<T> _comparer;
-        private readonly OrderStatisticTree<T> _tree;
+        private readonly OrderStatisticTree<T, NoPayload> _tree;
 
         /// <summary>
         /// Initializes an empty <see cref="OrderedMultiList{T}"/> ordered by
@@ -110,7 +110,7 @@ namespace DotNetCore.Collections.Multi
         public OrderedMultiList(IComparer<T>? comparer)
         {
             _comparer = comparer ?? Comparer<T>.Default;
-            _tree = new OrderStatisticTree<T>(_comparer);
+            _tree = new OrderStatisticTree<T, NoPayload>(_comparer);
         }
 
         /// <summary>
@@ -1218,6 +1218,17 @@ namespace DotNetCore.Collections.Multi
         // ------------------------------------------------------------------
         // Diagnostics for the test suite
         // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Gets a struct enumerator over the distinct elements and their copy counts, in ascending
+        /// order. Exposed for the ordered multimap, which keeps one of these per key: enumerating a
+        /// bucket through <see cref="GetEnumerator"/> would allocate one iterator per key, which is
+        /// exactly the per-key allocation F6-36 exists to remove.
+        /// </summary>
+        internal OrderStatisticTree<T, NoPayload>.AscendingEnumerator GetAscendingEnumerator()
+        {
+            return _tree.GetAscendingEnumerator();
+        }
 
         /// <summary>
         /// Gets the number of edges on a root-to-leaf path of the underlying B+ tree. Exposed for
