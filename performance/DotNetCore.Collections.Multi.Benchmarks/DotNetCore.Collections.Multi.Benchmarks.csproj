@@ -9,6 +9,12 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
+    <!-- F6-26: the head-to-head sweep needs the reference implementation in the same process as
+         the Collections arm, which is the only way both arms see the same runtime, the same JIT
+         decisions and the same machine noise. The package carries net35 / net40 / net45 /
+         netstandard1.0 assets; this net8.0 harness resolves the netstandard1.0 one. It is a
+         benchmark-only dependency - nothing under src/ references it. -->
+    <PackageReference Include="Kaos.Collections" Version="4.1.0" />
   </ItemGroup>
 
   <ItemGroup>

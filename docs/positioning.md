@@ -115,6 +115,14 @@ right choice when you need O(1) point access over a large key space.
   read substantially cheaper, and made *small, single-key* probes slower — a wide node replaces the
   old single-key hop with a binary search inside a page. Both directions are recorded in the
   changelog rather than only the favourable one.
+- **Iteration on the ordered types is not the fastest available.** A head-to-head sweep against a
+  reference implementation of the same shapes ([numbers](HeadToHeadBenchmarks.md)) puts point
+  operations, rank reads and positional removal ahead, and ascending iteration and range enumeration
+  behind by roughly 2.6–3.1x — the cache-locality dividend of a wide node is real and this engine
+  does not collect all of it. `OrderedMultiDictionary<TKey, TValue>` is the worst case on that axis,
+  and the sweep found a concrete reason: enumerating it allocates about 112 B per key, because each
+  key's inner collection is walked through an interface-typed `foreach` over a `yield` iterator. That
+  is logged as a follow-up rather than quietly left out of the table.
 - **More types means a selection step.** Twelve-plus collection types with precise names is a
   deliberate trade: each one is unambiguous once found, but there is a "which one" question that a
   single general-purpose type would not ask. The `Choosing a type` section of the README is the
