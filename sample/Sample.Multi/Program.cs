@@ -32,6 +32,8 @@ namespace Sample.Multi
             FrequencyPriorityBagDemo();
             Console.WriteLine();
             MultiKeyMultiDictionaryDemo();
+            Console.WriteLine();
+            ReadableTypeNamesDemo();
         }
 
         // The three core types multiply three different things; the fourth is the arity-2
@@ -456,6 +458,18 @@ namespace Sample.Multi
             Console.WriteLine($"RemovePrefix([eu])  = {destroyed} values destroyed -> Count = {assignments.Count}");
             Console.WriteLine("remaining keys      = " + string.Join("; ",
                 assignments.Keys.Select(k => string.Join("/", k))));
+        }
+
+        // F6-30: the readable type-name formatter - what a generic type looks like in a log line.
+        private static void ReadableTypeNamesDemo()
+        {
+            Console.WriteLine("=== Type.ToReadableString() (readable type names, 6.6) ===");
+
+            var type = typeof(Dictionary<DateTimeOffset, IReadOnlyDictionary<string, int>>[,]);
+            Console.WriteLine($"CLR      = {type.ToReadableString()}");
+            Console.WriteLine($"C#       = {type.ToReadableString(TypeNameFormat.CSharp)}");
+            Console.WriteLine($"nullable = {typeof(int?).ToReadableString(TypeNameFormat.CSharp)}");
+            Console.WriteLine($"capped   = {typeof(List<List<List<int>>>).ToReadableString(TypeNameFormat.Clr, 2)}");
         }
     }
 }

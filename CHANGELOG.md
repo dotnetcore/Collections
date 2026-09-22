@@ -4,6 +4,25 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [Unreleased]
+
+### Added
+
+- `Type.ToReadableString()` (F6-30) turns a `Type` into one readable line, for diagnostics, log
+  messages and test failure output. Array ranks are kept, generic arguments are rendered
+  recursively and namespaces are dropped, so
+  `typeof(Dictionary<DateTimeOffset, IReadOnlyDictionary<string, int>>[,])` reads as
+  `Dictionary<DateTimeOffset,IReadOnlyDictionary<String,Int32>>[,]` — the shape of the type rather
+  than its assembly-qualified identity. Rank specifiers follow C# source order (outermost first), so
+  the two jagged shapes stay distinguishable; nested types are joined with `.` instead of the
+  reflection `+` separator; and an overload taking `TypeNameFormat.CSharp` gives the C# spelling of
+  the same type, with primitive aliases as keywords and `Nullable<T>` as `T?`. A third overload caps
+  how many levels of array / generic nesting are rendered and collapses the remainder to `...`.
+  That cap is not decoration: a type built through reflection can nest arbitrarily deep, and an
+  unbounded walk would overflow the stack inside the very diagnostic meant to explain the failure.
+  The output is stable enough to assert on. No existing signature changed, so there is no
+  `### Breaking` entry for this.
+
 ## [6.5.0] - 2026-09-22
 
 ### Added

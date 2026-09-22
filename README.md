@@ -670,6 +670,24 @@ configuration rather than data, so they are supplied to `FromModel()`. Unlike `T
 (which throws on a `null` element) it represents `null` like any other element, and unlike the live
 views it is a snapshot that does not move under a serializer's feet.
 
+### Readable type names
+
+`Type.ToReadableString()` spells a type the way you would write it, which is what makes a generic
+type legible in a log line or an assertion message:
+
+```c#
+typeof(Dictionary<DateTimeOffset, IReadOnlyDictionary<string, int>>[,]).ToReadableString();
+// Dictionary<DateTimeOffset,IReadOnlyDictionary<String,Int32>>[,]
+
+typeof(int?).ToReadableString(TypeNameFormat.CSharp);   // int?
+```
+
+Array ranks are kept, generic arguments are rendered recursively, namespaces are dropped, and nested
+types are joined with `.` rather than the reflection `+` separator. Passing `TypeNameFormat.CSharp`
+switches to the C# spelling (primitive aliases as keywords, `Nullable<T>` as `T?`). Nesting is capped
+at `TypeExtensions.DefaultMaxDepth` levels with the remainder collapsed to `...`, so a type assembled
+through reflection in a loop cannot overflow the stack while it is being reported.
+
 ### Examples
 
 - [Sample.Multi](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Multi/Program.cs)
