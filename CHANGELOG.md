@@ -4,7 +4,7 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
-## [Unreleased]
+## [6.5.0] - 2026-09-22
 
 ### Added
 
