@@ -66,6 +66,50 @@ repository ships the same version (see `build/version.props`).
   resource use — the ordering, the duplicate policy, the views and every existing member keep the
   semantics they had, which the pre-existing suite confirms by passing with no test edit at all.
 
+- `Deque<T>` (F6-31) is a double-ended queue: a sequence that can be added to and removed from
+  *both* ends in O(1) amortized time, and read at any position in O(1). The base class library
+  ships no deque — `Queue<T>` and `Stack<T>` are single-ended, and `LinkedList<T>`, the only in-box
+  type with two ends, keeps one heap node per element — so this fills a gap rather than adding a
+  variant. It is one array used as a ring buffer with two moving indices, so `AddFirst` /
+  `AddLast` / `RemoveFirst` / `RemoveLast` are an index move plus one array slot, `GetFirst` /
+  `GetLast` and `this[int]` are a ring read, and growth is the only thing that ever allocates;
+  capacity doubles from 4 the way `List<T>`'s does, and `TrimExcess` and `Capacity` hand the slack
+  back. `TryRemoveFirst` / `TryRemoveLast` and `TryGetFirst` / `TryGetLast` are the non-throwing
+  forms for the cases where an empty deque is a normal outcome rather than a caller mistake.
+  Both list faces are implemented — `IReadOnlyList<T>` and `IList<T>` — because a deque's order is
+  the caller's and not a comparer's, so the indexer setter and `Insert` are meaningful here, unlike
+  on `OrderedMultiList<T>` where a position belongs to the sort and those two have to throw.
+  `AsReadOnly()` returns the wider `IReadOnlyList<T>` rather than the `IReadOnlyCollection<T>` the
+  rest of the package hands out: those types keep the narrower declaration only because widening it
+  would be binary-breaking for consumers they already have, and this type has none.
+  `GetEnumerator()` returns a `struct`, so a `foreach` over a `Deque<T>` allocates nothing.
+  What is *not* O(1) is spelled out rather than papered over: `Contains`, `IndexOf` and `Remove(T)`
+  are O(n) — a deque trades random search away for O(1) access at its two ends — and `Insert` /
+  `RemoveAt` slide whichever side is nearer, costing O(min(index, Count - 1 - index)) and O(1)
+  amortized at either end. Null elements are ordinary elements: no comparer and no hash table sit
+  behind this type, so nothing inspects an element on the way in, and the three members that do
+  compare go through `EqualityComparer<T>.Default` — the same convention `MultiList<T>` follows,
+  where a `null` is an element with a copy count of its own. No existing signature changed, so
+  there is no `### Breaking` entry for this.
+  Measured against the in-box alternatives with BenchmarkDotNet + `MemoryDiagnoser` (R6-02). The
+  rotation arms run `Count` add-then-remove pairs over a collection already holding `Count`
+  elements, so nothing grows and only the end operations are on the clock: `Deque<T>` costs
+  **2.38 / 2.00 / 2.20 ns per end operation** at 64 / 4,096 / 65,536 elements — flat across a
+  1,024x range of work, which is what O(1) means — and `Queue<T>` doing the same at its one end
+  costs 2.40 / 2.38 / 2.32 ns, so the second end is free. `LinkedList<T>` costs 12.5 / 14.9 /
+  24.2 ns per operation and rises with size. On allocation the difference is categorical: the
+  deque rotates at **0 B** on every size, while `LinkedList<T>` allocates **one 48-byte node per
+  element** — 3,072 B at 64, 196,608 B at 4,096 and 3,145,730 B at 65,536. Building a deque of
+  65,536 by appending allocates 525,147 B against `List<T>`'s 525,143 B for the same doubling path
+  (a 4-byte difference) and `LinkedList<T>`'s 3,145,769 B, which is 6.0x. Positional reads are
+  1.35 / 1.26 / 1.28 ns per position — flat, so O(1) — against `List<T>`'s 0.95 / 0.78 / 0.74 ns:
+  the ring's index arithmetic is a constant ~1.7x over a plain bounds-checked load, and that is
+  the honest cost of supporting the wrap. Enumeration is 1.27 / 1.16 / 1.54 ns per element at
+  **0 B**. `AddFirst` and `AddLast` are symmetric (287 / 11,476 / 343,438 ns against 281 / 11,734 /
+  368,438 ns). One caveat on reading those figures: at 65,536 the short-run standard deviation
+  reaches roughly a third of the mean on the rotation arms, so the O(1) claim rests on the
+  per-operation cost staying flat, not on any single absolute number.
+
 ### Changed
 
 - `OrderedMultiDictionary<TKey, TValue>` is now backed by the same order-statistic B+ tree as

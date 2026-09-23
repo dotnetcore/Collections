@@ -36,6 +36,8 @@ namespace Sample.Multi
             MultiKeyMultiDictionaryDemo();
             Console.WriteLine();
             ReadableTypeNamesDemo();
+            Console.WriteLine();
+            DequeDemo();
         }
 
         // The three core types multiply three different things; the fourth is the arity-2
@@ -511,6 +513,66 @@ namespace Sample.Multi
             Console.WriteLine($"C#       = {type.ToReadableString(TypeNameFormat.CSharp)}");
             Console.WriteLine($"nullable = {typeof(int?).ToReadableString(TypeNameFormat.CSharp)}");
             Console.WriteLine($"capped   = {typeof(List<List<List<int>>>).ToReadableString(TypeNameFormat.Clr, 2)}");
+        }
+
+        // F6-31: the .NET base class library ships no deque - Queue<T> and Stack<T> are
+        // single-ended and LinkedList<T> allocates a node per element - so this is the one type
+        // here that fills a gap rather than adding a variant.
+        private static void DequeDemo()
+        {
+            Console.WriteLine("=== Deque<T> (double-ended queue, 6.6): O(1) at both ends ===");
+
+            var line = new Deque<string> { "b", "c" };
+            Console.WriteLine($"start              = {line}");
+
+            line.AddFirst("a");
+            line.AddLast("d");
+            Console.WriteLine($"AddFirst/AddLast   = {line}   (O(1) amortized at both ends)");
+            Console.WriteLine($"RemoveFirst()      = {line.RemoveFirst()} -> {line}");
+            Console.WriteLine($"RemoveLast()       = {line.RemoveLast()} -> {line}");
+            Console.WriteLine($"GetFirst/GetLast   = {line.GetFirst()} / {line.GetLast()}   (read, no removal)");
+
+            // One array, two moving indices: draining the front and refilling the back wraps
+            // around without a single element changing slot and without the buffer growing.
+            var window = new Deque<int>(4);
+            for (var i = 1; i <= 4; i++)
+            {
+                window.AddLast(i);
+            }
+
+            window.RemoveFirst();
+            window.RemoveFirst();
+            window.AddLast(5);
+            window.AddLast(6);
+            Console.WriteLine($"ring (wrapped)     = {window}   (Count = {window.Count}, Capacity = {window.Capacity}: wrapped, never grew)");
+            Console.WriteLine($"positions[0..{window.Count - 1}]    = "
+                + string.Join(", ", Enumerable.Range(0, window.Count).Select(i => window[i])));
+
+            // Positions are O(1); finding one by value is not, and a deque says so rather than
+            // pretending otherwise.
+            Console.WriteLine($"IndexOf(5)         = {window.IndexOf(5)}   (O(n): search is what a deque trades away)");
+
+            window.Insert(1, 99);
+            Console.WriteLine($"Insert(1, 99)      = {window}   (slides the nearer side only)");
+            window.RemoveAt(1);
+            Console.WriteLine($"RemoveAt(1)        = {window}");
+
+            // Capacity doubles like List<T>, and TrimExcess hands the slack back.
+            Console.WriteLine($"Capacity           = {window.Capacity}   (Count = {window.Count}: the insert doubled the buffer)");
+            window.TrimExcess();
+            Console.WriteLine($"TrimExcess()       = Capacity {window.Capacity}");
+
+            // Both list faces are implemented, so a deque can stand in for a list; positions
+            // count from the head and nothing reorders them.
+            IReadOnlyList<string> view = new Deque<string> { "x", "y" }.AsReadOnly();
+            Console.WriteLine($"AsReadOnly()[0]    = {view[0]}   (live view, positions included)");
+
+            // Null elements are ordinary elements: no comparer and no hash table behind this
+            // type, so nothing inspects an element on the way in.
+            var withNulls = new Deque<string>();
+            withNulls.AddFirst(null);
+            withNulls.AddLast("b");
+            Console.WriteLine($"null elements      = {string.Join(", ", withNulls.Select(x => x ?? "<null>"))}   (IndexOf(null) = {withNulls.IndexOf(null)})");
         }
     }
 }
