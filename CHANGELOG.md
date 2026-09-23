@@ -4,7 +4,7 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
-## [Unreleased]
+## [6.6.0] - 2026-09-23
 
 ### Added
 
@@ -156,6 +156,22 @@ repository ships the same version (see `build/version.props`).
   same figures are now 96 bytes at 4,096 keys and 99 bytes at 65,536 — a constant that does not grow
   with the key count. The write path allocates less as well, `Add` going 93 → 46 bytes at 64 keys and
   656 → 423 bytes at 4,096 keys.
+
+### Breaking
+
+- **None.** This release is additive and behaviour-preserving on every shipped surface, and that was
+  checked rather than assumed. Nothing was removed, renamed or re-signed: no file under `src/` was
+  deleted or renamed, every member line the diff drops has a same-shaped replacement, and the
+  packaging surface is untouched — no project file and nothing under `build/` changed between `6.5.0`
+  and this release, so the target frameworks, the dependencies and the package contents are the same.
+  The new public types (`Deque<T>`, `IMultiSet<T>`, `IMultiDictionary<TKey, TValue>`,
+  `IBiMap<TLeft, TRight>`, `TypeExtensions`, `TypeNameFormat`) are additions, and the only edits to
+  existing type declarations are the interfaces appended to `MultiList<T>`, `OrderedMultiList<T>` and
+  `BiDictionary<TLeft, TRight>`. The engine swap behind `OrderedMultiDictionary<TKey, TValue>` is
+  internal, and the one behaviour change — the SqlSugar integration now honouring the
+  `CancellationToken` it accepts instead of silently dropping it — is the semantics that parameter
+  always promised, so only a caller that relied on the token being ignored can observe a difference.
+  No upgrade steps are required.
 
 ## [6.5.0] - 2026-09-22
 

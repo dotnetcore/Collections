@@ -13,15 +13,17 @@ modules.
 | **Multi** | `DotNetCore.Collections.Multi` | Multiset, multimap, composite-key and thread-safe/immutable collection types. |
 
 See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
-**6.5.0** release: `OrderedMultiList<T>` moved onto an order-statistic B+ tree, which brings
-**O(log n)** rank reads — `GetByRank`, `GetRank`, `GetMedian` and `GetQuantile` — and let the type
-take on the `IReadOnlyList<T>` / `IList<T>` contract without copying itself into a `List<T>` first;
-the paging extensions of the six self-contained ORM integration packages are now emitted at build
-time by a Roslyn source generator, with the shipped API and packaging surface unchanged; and two new
-guides — [where Collections fits](docs/positioning.md) and [migrating to
-Collections](docs/migrating.md) — sit alongside a desensitised summary of the head-to-head
-ordered-collection [benchmarks](performance/HeadToHeadBenchmarks.md). Nothing was removed, renamed
-or re-signed, so there is no **Breaking** change in this release.
+**6.6.0** release: `OrderedMultiDictionary<TKey, TValue>` moved onto the same order-statistic B+ tree
+as its list counterpart, which brings the positional reads — `GetByRank`, `GetRank`, `GetMedian` and
+`GetQuantile` — to the ordered multimap too, and drops the ≈112 bytes per key its enumeration used to
+allocate to a constant that no longer grows with the key count; `Deque<T>` closes a gap the base class
+library leaves open, adding a double-ended queue whose two ends are O(1) amortized and whose
+enumeration allocates nothing; `IMultiSet<T>`, `IMultiDictionary<TKey, TValue>` and
+`IBiMap<TLeft, TRight>` give the multiset, the multimap and the bidirectional map a shared contract
+that a third party can implement; `Type.ToReadableString()` spells a `Type` the way you would write
+it; and the SqlSugar integration now honours the `CancellationToken` it always accepted instead of
+dropping it. Nothing was removed, renamed or re-signed, so there is no **Breaking** change in this
+release.
 
 ## Contents
 
@@ -781,7 +783,7 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 
 Publishing is automated by the GitHub Actions `Release` workflow
 (`.github/workflows/release.yml`); no local tooling is involved. It runs on a version-tag push —
-`6.5.0` or `v6.5.0` — and can also be started manually through `workflow_dispatch`:
+`6.6.0` or `v6.6.0` — and can also be started manually through `workflow_dispatch`:
 
 1. **Pack** — all 11 projects are packed in Release configuration into `nuget_pub` on a
    `windows-latest` runner, with the full git history fetched so SourceLink can attach sources to
@@ -810,7 +812,7 @@ The policy owner must own all 11 `DotNetCore.Collections.*` packages. See
 
 Versions are driven by `build/version.props`, which is the single source of truth for every
 package — bump the version there and all 11 packages follow. Tag the commit with the matching
-version (`6.5.0` or `v6.5.0`) to trigger the automated publish; see [Publishing](#publishing) for
+version (`6.6.0` or `v6.6.0`) to trigger the automated publish; see [Publishing](#publishing) for
 what the release workflow does and the one-time nuget.org policy it requires.
 
 ## License
