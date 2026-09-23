@@ -25,8 +25,9 @@ or re-signed, so there is no **Breaking** change in this release.
 
 ## Contents
 
-- [NuGet Packages](#nuget-packages)
 - [Documentation](#documentation)
+- [Why Collections](#why-collections)
+- [NuGet Packages](#nuget-packages)
 - [Paginable](#paginable)
 - [Multi](#multi)
 - [Building and testing](#building-and-testing)
@@ -41,6 +42,70 @@ or re-signed, so there is no **Breaking** change in this release.
   to plan for, and what has no counterpart.
 - [Ordered-collection benchmarks](performance/HeadToHeadBenchmarks.md) — a desensitised summary of
   the head-to-head ordered-collection measurements, favourable and unfavourable both.
+
+## Why Collections
+
+Most collection libraries answer one question — *keep this set or dictionary in order, and let me
+index into it* — and stop there. This one is built around the shapes a plain `Dictionary<TKey,
+TValue>` or `List<T>` cannot express, and it treats the concerns around them as part of the library
+rather than as something you add on top:
+
+- **Multisets and multimaps are first-class.** Counting copies (`CountOf`, `Remove(item, count)`
+  handing back what is left, copy-expanded enumeration, multiplicity-aware set algebra) and many
+  values under one key are types of their own, not a `Dictionary<TKey, int>` or a
+  `Dictionary<TKey, List<TValue>>` you maintain by hand.
+- **Composite keys are a trie.** `MultiKeyDictionary<TKey, TValue>` answers "N components → 1 value"
+  in a single lookup and gives prefix queries for free, with `TwoKeyDictionary<K1, K2, V>` and
+  `ThreeKeyDictionary<K1, K2, K3, V>` as the strongly typed facades for the common arities.
+- **Both directions of a mapping.** `BiDictionary<TLeft, TRight>` keeps the forward and the reverse
+  map in step by construction, and `ReverseMultiDictionary<V, K>` / `MultiDictionary.AsReverse()`
+  answer "which keys hold *this* value?" — an inverted index, which the BCL does not model at all.
+- **Order and position are one feature.** `OrderedMultiList<T>` and `OrderedMultiDictionary<TKey,
+  TValue>` sit on an order-statistic B+ tree, so `GetByRank` / `GetRank` / `GetMedian` /
+  `GetQuantile` are O(log n) descents rather than scans.
+- **Concurrency and immutability are separate types, not a lock you add.** `Concurrent*` and
+  `Immutable*` put the choice in the type name, which is what makes it reviewable.
+- **Paging is a library.** Offset paging and keyset (seek) paging over `IEnumerable<T>` and
+  `IQueryable<T>`, with `IPage<T>` / `TotalPageCount` / `TotalMemberCount` as a real contract, plus
+  nine ORM integrations that make paging one call on the source you already have.
+- **Specializations for the cases the general type gets wrong.** `PackedBag<T>` (a dense value-type
+  histogram, no hash table), `SpanBag<T>` (stack-only, zero heap), `FrequencyPriorityBag<T>`
+  (most-frequent-first, Top-K), and `Deque<T>` (both ends O(1) amortized, zero allocation) — the
+  base class library ships no deque at all.
+- **One code path across the whole framework matrix** — `net451` through `net10.0`, with nullable
+  reference annotations and XML documentation on every public member.
+
+### Interfaces
+
+`IMultiSet<T>`, `IMultiDictionary<TKey, TValue>` and `IBiMap<TLeft, TRight>` give the multiset, the
+multimap and the bidirectional map a shared contract, so code can be written against the behaviour
+instead of a concrete class, and the implementation can be mocked, replaced or swapped. Each
+interface extends the read-only BCL abstraction that already describes it —
+`IReadOnlyCollection<T>`, `IReadOnlyDictionary<TKey, IReadOnlyCollection<TValue>>`,
+`IReadOnlyDictionary<TLeft, TRight>` — rather than restating it, and each member set holds only what
+every implementation can honour: set algebra, the comparer properties and the view helpers stay on
+the concrete types, because they are not uniformly available across the family. `MultiList<T>` and
+`OrderedMultiList<T>` implement the first, `MultiDictionary<TKey, TValue>` and
+`OrderedMultiDictionary<TKey, TValue>` the second, `BiDictionary<TLeft, TRight>` the third. The
+member sets are pinned by tests, and each interface is also exercised by a hand-written
+implementation that shares no code with these packages — the abstraction is only worth having if a
+third party can satisfy it.
+
+### Before you adopt a collection library
+
+Three properties decide the long-term cost of a dependency, and all three are cheap to check:
+
+| Check | Why it decides |
+| --- | --- |
+| **Target frameworks** | A library that ships only a .NET Framework asset — a lone `net461` target, say — cannot be referenced directly from a modern .NET project. Collections ships `net451` through `net10.0` from one code path. |
+| **Dependency footprint** | Every transitive package is another version to keep aligned, and another thing to audit. The core packages here have no runtime dependency of their own: the `net451` / `net461` targets carry a single shim (`System.ValueTuple`, for named tuples), and an ORM integration package depends on its provider and nothing more. |
+| **Release cadence** | A library whose last release is years old is a long-term risk regardless of how good its design is. Releases here are automated from a version tag — see [Publishing](#publishing). |
+
+If what you need is the ordered sorted-collection core, both kinds of library can do it, this one
+included — through the ordered multiset and the order-statistic engine behind it. The reason to
+reach for Collections is the rest of the list above. The full reasoning, including what this library
+deliberately does **not** provide and how to choose between the hash path and the tree path, is in
+[Where Collections fits](docs/positioning.md).
 
 ## NuGet Packages
 

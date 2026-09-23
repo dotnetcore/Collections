@@ -27,6 +27,7 @@ Almost everything in the Multi package answers one of a small set of questions:
 - *does the mapping have to run both ways?* → `BiDictionary<TLeft, TRight>`, `ReverseMultiDictionary<V, K>`
 - *does it have to be ordered, and does "the k-th element" have to be answerable?* → `OrderedMultiList<T>`, `OrderedMultiDictionary<TKey, TValue>`
 - *does it have to survive concurrency or be frozen?* → `Concurrent*`, `Immutable*`
+- *does it have to be cheap at both ends?* → `Deque<T>`
 
 ## 2. The capability axes
 
@@ -68,10 +69,20 @@ make it a single call on the source you already have, and the shared per-provide
 emitted at build time by a source generator — so the surface stays identical across providers
 without nine copies of the same file.
 
+**Behaviour contracts are interfaces.** `IMultiSet<T>`, `IMultiDictionary<TKey, TValue>` and
+`IBiMap<TLeft, TRight>` describe the multiset, the multimap and the bijection as behaviour rather
+than as a concrete class, so an implementation can be mocked, replaced or swapped — and so a
+consumer can be written against the contract without the type's other members leaking through.
+Each interface extends the read-only BCL abstraction it already is, and holds only the members every
+implementation can honour; set algebra, the comparer properties and the view helpers stay on the
+concrete types, where their availability actually differs.
+
 **Specializations when the general type is the wrong shape.** `PackedBag<T>` is a dense `(value,
 count)` struct array for a small value-type domain — no hash table, no boxing in storage. `SpanBag<T>`
 is a `ref struct` over caller-provided `stackalloc` storage for counting inside one method with zero
 heap allocation. `FrequencyPriorityBag<T>` answers "most frequent first" and "Top-K" directly.
+`Deque<T>` is a ring buffer with O(1) amortized access at *both* ends and O(1) reads at any
+position — the BCL ships no deque at all, so this closes a gap rather than adding a variant.
 
 **Framework breadth from one code path.** `net451` through `net10.0`. This is a maintenance cost
 this repository accepts on purpose: it means a library targeting an older framework can take the
@@ -116,8 +127,9 @@ right choice when you need O(1) point access over a large key space.
   old single-key hop with a binary search inside a page. Both directions are recorded in the
   changelog rather than only the favourable one.
 - **Iteration on the ordered types is not the fastest available.** A head-to-head sweep against a
-  reference implementation of the same shapes ([numbers](HeadToHeadBenchmarks.md)) puts point
-  operations, rank reads and positional removal ahead, and ascending iteration and range enumeration
+  reference implementation of the same shapes
+  ([numbers](../performance/HeadToHeadBenchmarks.md)) puts point operations, rank reads and
+  positional removal ahead, and ascending iteration and range enumeration
   behind by roughly 2.6–3.1x — the cache-locality dividend of a wide node is real and this engine
   does not collect all of it. `OrderedMultiDictionary<TKey, TValue>` is the worst case on that axis,
   and the sweep found a concrete reason: enumerating it allocates about 112 B per key, because each
