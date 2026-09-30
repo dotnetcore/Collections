@@ -547,6 +547,106 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Exports the bindings as a plain data model for external serialization: the two sides of
+        /// every binding, as parallel lists.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The model is <see cref="BiDictionaryModel{TLeft,TRight}"/> - a dedicated type, not
+        /// <see cref="MultiDictionaryModel{TKey,TValue}"/>. A bijection is one-to-one, so the
+        /// multimap model's inner <c>List&lt;TValue&gt;</c> would be a list of exactly one element
+        /// on every entry: a shape that invites a reader to expect multiplicity this type can not
+        /// express. Two parallel lists state the actual contract, that entry <c>i</c> binds
+        /// <c>Lefts[i]</c> to <c>Rights[i]</c>.
+        /// </para>
+        /// <para>
+        /// Unlike <see cref="ToDictionary()"/>, a binding whose left value is <c>null</c> <b>is</b>
+        /// carried here - the left side is a <c>List</c>, not a dictionary key, so the restriction
+        /// that forces the omission there does not apply.
+        /// </para>
+        /// <para>
+        /// The model is a snapshot, independent of the map. Use <see cref="FromModel"/> to rebuild,
+        /// supplying the two comparers, which are configuration rather than data.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// BiDictionaryModel&lt;int, string&gt; model = users.ToSerializableModel();
+        /// string json = System.Text.Json.JsonSerializer.Serialize(model);
+        /// </code>
+        /// </example>
+        public BiDictionaryModel<TLeft, TRight> ToSerializableModel()
+        {
+            var lefts = new List<TLeft>(Count);
+            var rights = new List<TRight>(Count);
+            foreach (var pair in this)
+            {
+                lefts.Add(pair.Key);
+                rights.Add(pair.Value);
+            }
+
+            return new BiDictionaryModel<TLeft, TRight> { Lefts = lefts, Rights = rights };
+        }
+
+        /// <summary>
+        /// Rebuilds a bijection from a serializable model.
+        /// </summary>
+        /// <param name="model">the model to read: either one produced by <see cref="ToSerializableModel"/> or one built by hand.</param>
+        /// <param name="leftComparer">the comparer that defines left equality; <c>null</c> selects <see cref="EqualityComparer{TLeft}.Default"/>. Configuration, so it is not part of the model.</param>
+        /// <param name="rightComparer">the comparer that defines right equality; <c>null</c> selects <see cref="EqualityComparer{TRight}.Default"/>. Also configuration.</param>
+        /// <returns>a new dictionary holding the model's bindings.</returns>
+        /// <remarks>
+        /// Bindings are added in the order the model lists them, each through <see cref="Add"/>, so
+        /// a <c>null</c> left value is accepted (it lands in the dedicated bucket, as everywhere in
+        /// this type).
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="model"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="model"/> is malformed - either list is
+        /// <c>null</c> or the two lists have different lengths - <b>or</b> it is not a bijection:
+        /// a left value is repeated, or a right value is bound to two different left values. Both
+        /// of the latter surface as the same conflict <see cref="Add"/> raises, because a model is
+        /// not a way to bypass the type's one-to-one contract.</exception>
+        /// <example>
+        /// <code>
+        /// var users = BiDictionary&lt;int, string&gt;.FromModel(model);
+        /// </code>
+        /// </example>
+        public static BiDictionary<TLeft, TRight> FromModel(
+            BiDictionaryModel<TLeft, TRight> model,
+            IEqualityComparer<TLeft>? leftComparer = null,
+            IEqualityComparer<TRight>? rightComparer = null)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (model.Lefts == null)
+            {
+                throw new ArgumentException("The model is malformed: its Lefts list is null.", nameof(model));
+            }
+
+            if (model.Rights == null)
+            {
+                throw new ArgumentException("The model is malformed: its Rights list is null.", nameof(model));
+            }
+
+            if (model.Lefts.Count != model.Rights.Count)
+            {
+                throw new ArgumentException(
+                    "The model is malformed: Lefts and Rights have different lengths.", nameof(model));
+            }
+
+            var result = new BiDictionary<TLeft, TRight>(leftComparer, rightComparer);
+            for (var i = 0; i < model.Lefts.Count; i++)
+            {
+                result.Add(model.Lefts[i], model.Rights[i]);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Exports the dictionary as a snapshot keyed by the left value. The returned
         /// dictionary is independent of the source.
         /// </summary>

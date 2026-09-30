@@ -486,6 +486,118 @@ namespace DotNetCore.Collections.Multi.Tests
             map.Select((KeyValuePair<int, int> p) => (p.Key, p.Value)).ShouldBe(modelPairs);
         }
 
+        // ------------------------------------------------------------------
+        // AsReverse (F6-41)
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void AsReverse_SwapsTheAxesAndKeepsBothOrdered()
+        {
+            var map = new OrderedMultiDictionary<string, int>();
+            map.Add("b", 2);
+            map.Add("a", 3);
+            map.Add("a", 1);
+
+            var reversed = map.AsReverse();
+
+            reversed.Keys.ShouldBe(new[] { 1, 2, 3 });
+            reversed[1].ShouldBe(new[] { "a" });
+            reversed[2].ShouldBe(new[] { "b" });
+            reversed[3].ShouldBe(new[] { "a" });
+        }
+
+        [Fact]
+        public void AsReverse_ReversedKeyAxisKeepsTheOriginalValueComparer()
+        {
+            var map = new OrderedMultiDictionary<string, string>(
+                keyComparer: null,
+                valueComparer: StringComparer.OrdinalIgnoreCase);
+            map.Add("k", "USD");
+
+            var reversed = map.AsReverse();
+
+            // The reversed key axis is the original value axis, so it must still be
+            // case-insensitive - the comparer travels with the axis.
+            reversed.ContainsKey("usd").ShouldBeTrue();
+            reversed["usd"].ShouldBe(new[] { "k" });
+        }
+
+        [Fact]
+        public void AsReverse_ReversedValueAxisKeepsTheOriginalKeyComparer()
+        {
+            var map = new OrderedMultiDictionary<string, string>(
+                keyComparer: StringComparer.OrdinalIgnoreCase,
+                valueComparer: null);
+            map.Add("USD", "k");
+
+            var reversed = map.AsReverse();
+
+            // The reversed value axis is the original key axis, so it must still be
+            // case-insensitive.
+            reversed.Contains("k", "usd").ShouldBeTrue();
+        }
+
+        [Fact]
+        public void AsReverse_CarriesTheDuplicateValuesPolicy()
+        {
+            var duplicating = new OrderedMultiDictionary<string, int>(allowDuplicateValues: true);
+            duplicating.Add("k", 1);
+            duplicating.Add("k", 1);
+
+            duplicating.AsReverse()[1].ShouldBe(new[] { "k", "k" });
+
+            var distinct = new OrderedMultiDictionary<string, int>(allowDuplicateValues: false);
+            distinct.Add("k", 1);
+            distinct.Add("k", 1);
+
+            distinct.ValueCount("k").ShouldBe(1);
+            distinct.AsReverse()[1].ShouldBe(new[] { "k" });
+        }
+
+        [Fact]
+        public void AsReverse_Empty_IsEmpty()
+        {
+            var map = new OrderedMultiDictionary<string, int>();
+
+            var reversed = map.AsReverse();
+
+            reversed.Count.ShouldBe(0);
+            reversed.Keys.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void AsReverse_IsACopy_MutationsDoNotPropagateEitherWay()
+        {
+            var map = new OrderedMultiDictionary<string, int>();
+            map.Add("a", 1);
+
+            var reversed = map.AsReverse();
+
+            map.Add("b", 2);
+            reversed.Count.ShouldBe(1);
+            reversed.ContainsKey(2).ShouldBeFalse();
+
+            reversed.Add(3, "c");
+            map.Count.ShouldBe(2);
+            map.ContainsKey("c").ShouldBeFalse();
+        }
+
+        [Fact]
+        public void AsReverse_AnswersTheSameQuestionsAsTheForwardSlice()
+        {
+            var map = new OrderedMultiDictionary<string, int>();
+            map.Add("a", 1);
+            map.Add("b", 1);
+            map.Add("c", 2);
+
+            var reversed = map.AsReverse();
+
+            foreach (var key in new[] { "a", "b", "c" })
+            {
+                reversed[map[key].Single()].ShouldContain(key);
+            }
+        }
+
         private static OrderedMultiDictionary<string, int> NewMap()
         {
             return new OrderedMultiDictionary<string, int>();

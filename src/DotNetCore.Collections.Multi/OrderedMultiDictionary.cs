@@ -1046,6 +1046,168 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Returns the map with its two axes swapped: the entries are re-keyed as <c>(value, key)</c>,
+        /// producing an <see cref="OrderedMultiDictionary{TKey,TValue}"/> whose key axis is the
+        /// original value axis and whose value axis is the original key axis.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is a <b>copy</b>, not a view, built by replaying the entries in <b>O(n)</b>. Two
+        /// properties of this type make that the only faithful choice.
+        /// </para>
+        /// <para>
+        /// First, there is no reverse index to read: the storage is a single order-statistic tree
+        /// keyed by the key, so the value &#8594; keys direction is not indexed at all. A live view
+        /// would therefore have to scan the whole map on every access.
+        /// </para>
+        /// <para>
+        /// Second - and decisively - this type's key identity is defined by an
+        /// <see cref="IComparer{TKey}"/>, which supplies no hash codes. Handing the reversal to a
+        /// hash-based structure such as <see cref="ReverseMultiDictionary{V,K}"/> would silently
+        /// re-define which keys count as the same key, exactly the objection that made this type
+        /// refuse a <c>ToDictionary()</c> export (see <see cref="EntrySet"/>). The result is
+        /// therefore another <see cref="OrderedMultiDictionary{TKey,TValue}"/>, which keeps both
+        /// axes ordered and both identity rules intact.
+        /// </para>
+        /// <para>
+        /// The comparers travel with the axes: the reversed key axis keeps
+        /// <see cref="ValueComparer"/> and the reversed value axis keeps <see cref="Comparer"/>. The
+        /// duplicate-values policy is carried over unchanged. The copy is self-contained - mutating
+        /// either map afterwards does not affect the other.
+        /// </para>
+        /// </remarks>
+        /// <returns>an ordered map keyed by this map's values, each holding the keys that stored it.</returns>
+        /// <example>
+        /// <code>
+        /// var index = new OrderedMultiDictionary&lt;string, int&gt;();
+        /// index.Add("orders", 1001);
+        /// index.Add("customers", 1001);
+        ///
+        /// OrderedMultiDictionary&lt;int, string&gt; byValue = index.AsReverse();
+        /// byValue[1001];   // ["customers", "orders"] - ascending, because the key axis is ordered
+        /// </code>
+        /// </example>
+        public OrderedMultiDictionary<TValue, TKey> AsReverse()
+        {
+            var reversed = new OrderedMultiDictionary<TValue, TKey>(
+                _valueComparer, _keyComparer, _allowDuplicateValues);
+            foreach (var (key, values) in EntrySet())
+            {
+                foreach (var value in values)
+                {
+                    reversed.Add(value, key);
+                }
+            }
+
+            return reversed;
+        }
+
+        /// <summary>
+        /// Exports the map as a plain data model for external serialization: the keys and, for each
+        /// of them, an independent copy of its values.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The model is <see cref="MultiDictionaryModel{TKey,TValue}"/> - the same shape
+        /// <see cref="MultiDictionary{TKey,TValue}.ToSerializableModel"/> produces. That shape fits
+        /// here even though this type refuses a <c>ToDictionary()</c> export: the model stores its
+        /// keys in a <c>List</c>, not a dictionary, so it never needs the hash codes an
+        /// <see cref="IComparer{TKey}"/> can not supply.
+        /// </para>
+        /// <para>
+        /// Keys are written in ascending key order and each key's values in ascending value order,
+        /// so the model is a readable rendering of the map. It is a snapshot: later changes to the
+        /// map do not appear in it. Use <see cref="FromModel"/> to rebuild an ordered map, supplying
+        /// the two comparers and the duplicate-values policy, which are configuration rather than
+        /// data.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// MultiDictionaryModel&lt;string, int&gt; model = index.ToSerializableModel();
+        /// string json = System.Text.Json.JsonSerializer.Serialize(model);
+        /// </code>
+        /// </example>
+        public MultiDictionaryModel<TKey, TValue> ToSerializableModel()
+        {
+            var keys = new List<TKey>(_tree.Count);
+            var values = new List<List<TValue>>(_tree.Count);
+            foreach (var (key, entryValues) in EntrySet())
+            {
+                keys.Add(key);
+                values.Add(new List<TValue>(entryValues));
+            }
+
+            return new MultiDictionaryModel<TKey, TValue> { Keys = keys, Values = values };
+        }
+
+        /// <summary>
+        /// Rebuilds an ordered multimap from a serializable model.
+        /// </summary>
+        /// <param name="model">the model to read: either one produced by <see cref="ToSerializableModel"/> or one built by hand.</param>
+        /// <param name="keyComparer">the comparer that defines key order and key identity, or <c>null</c> for <see cref="System.Collections.Generic.Comparer{T}.Default"/>. Configuration, so it is not part of the model.</param>
+        /// <param name="valueComparer">the comparer that defines value order and value identity, or <c>null</c> for <see cref="System.Collections.Generic.Comparer{T}.Default"/>. Also configuration.</param>
+        /// <param name="allowDuplicateValues">whether the rebuilt map keeps duplicate values under one key (<c>true</c>, the default) or ignores a repeat, matching the constructor of the same name.</param>
+        /// <returns>a new ordered map holding the model's keys with the model's values.</returns>
+        /// <remarks>
+        /// The model's ordering is not authoritative - the tree re-sorts by
+        /// <paramref name="keyComparer"/> and each bucket by <paramref name="valueComparer"/> as
+        /// entries arrive - so a hand-built model does not need to be pre-sorted. Validation of the
+        /// model follows <see cref="MultiDictionary{TKey,TValue}.FromModel"/>.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="model"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="model"/> is malformed: either list is
+        /// <c>null</c>, the two lists have different lengths, or one of the inner value lists is
+        /// <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var index = OrderedMultiDictionary&lt;string, int&gt;.FromModel(model);
+        /// </code>
+        /// </example>
+        public static OrderedMultiDictionary<TKey, TValue> FromModel(
+            MultiDictionaryModel<TKey, TValue> model,
+            IComparer<TKey>? keyComparer = null,
+            IComparer<TValue>? valueComparer = null,
+            bool allowDuplicateValues = true)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (model.Keys == null)
+            {
+                throw new ArgumentException("The model is malformed: its Keys list is null.", nameof(model));
+            }
+
+            if (model.Values == null)
+            {
+                throw new ArgumentException("The model is malformed: its Values list is null.", nameof(model));
+            }
+
+            if (model.Keys.Count != model.Values.Count)
+            {
+                throw new ArgumentException(
+                    "The model is malformed: Keys and Values have different lengths.", nameof(model));
+            }
+
+            var result = new OrderedMultiDictionary<TKey, TValue>(keyComparer, valueComparer, allowDuplicateValues);
+            for (var i = 0; i < model.Keys.Count; i++)
+            {
+                var values = model.Values[i];
+                if (values == null)
+                {
+                    throw new ArgumentException(
+                        "The model is malformed: the value list of entry " + i + " is null.", nameof(model));
+                }
+
+                result.AddRange(model.Keys[i], values);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns the contents in expanded per-key form, comma separated, with keys and values in
         /// ascending order, e.g. <c>k1:[v1,v2],k2:[v3]</c>.
         /// </summary>

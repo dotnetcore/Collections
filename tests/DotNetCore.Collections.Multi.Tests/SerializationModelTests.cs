@@ -548,5 +548,328 @@ namespace DotNetCore.Collections.Multi.Tests
             referenced.ShouldNotContain("Newtonsoft.Json");
             referenced.ShouldNotContain("System.Runtime.Serialization.Json");
         }
+
+        // ------------------------------------------------------------------
+        // OrderedMultiDictionary<TKey,TValue> (F6-41)
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void OrderedMultiDictionary_ToSerializableModel_WritesBothAxesAscending()
+        {
+            var map = new OrderedMultiDictionary<string, int>();
+            map.Add("b", 2);
+            map.Add("a", 3);
+            map.Add("a", 1);
+
+            var model = map.ToSerializableModel();
+
+            model.Keys.ShouldBe(new[] { "a", "b" });
+            model.Values[0].ShouldBe(new[] { 1, 3 });
+            model.Values[1].ShouldBe(new[] { 2 });
+        }
+
+        [Fact]
+        public void OrderedMultiDictionary_ToSerializableModel_IsASnapshot()
+        {
+            var map = new OrderedMultiDictionary<string, int>();
+            map.Add("a", 1);
+
+            var model = map.ToSerializableModel();
+            map.Add("b", 2);
+
+            model.Keys.ShouldBe(new[] { "a" });
+        }
+
+        [Fact]
+        public void OrderedMultiDictionary_FromModel_RoundTrips()
+        {
+            var map = new OrderedMultiDictionary<string, int>();
+            map.Add("b", 2);
+            map.Add("a", 3);
+            map.Add("a", 1);
+
+            var restored = OrderedMultiDictionary<string, int>.FromModel(map.ToSerializableModel());
+
+            restored.Count.ShouldBe(map.Count);
+            restored.Keys.ShouldBe(map.Keys);
+            restored["a"].ShouldBe(map["a"]);
+        }
+
+        [Fact]
+        public void OrderedMultiDictionary_FromModel_HonoursTheKeyComparer()
+        {
+            var model = new MultiDictionaryModel<string, int>
+            {
+                Keys = { "USD" },
+                Values = { new List<int> { 1 } }
+            };
+
+            var restored = OrderedMultiDictionary<string, int>.FromModel(
+                model, keyComparer: StringComparer.OrdinalIgnoreCase);
+
+            restored.ContainsKey("usd").ShouldBeTrue();
+        }
+
+        [Fact]
+        public void OrderedMultiDictionary_FromModel_DoesNotRequireAPreSortedModel()
+        {
+            var model = new MultiDictionaryModel<string, int>
+            {
+                Keys = { "c", "a", "b" },
+                Values = { new List<int> { 3 }, new List<int> { 2, 1 }, new List<int> { 4 } }
+            };
+
+            var restored = OrderedMultiDictionary<string, int>.FromModel(model);
+
+            restored.Keys.ShouldBe(new[] { "a", "b", "c" });
+            restored["a"].ShouldBe(new[] { 1, 2 });
+        }
+
+        [Fact]
+        public void OrderedMultiDictionary_FromModel_MalformedModel_Throws()
+        {
+            var mismatched = new MultiDictionaryModel<string, int>
+            {
+                Keys = { "a" },
+                Values = { }
+            };
+
+            Should.Throw<ArgumentException>(
+                () => OrderedMultiDictionary<string, int>.FromModel(mismatched));
+        }
+
+        // ------------------------------------------------------------------
+        // ReverseMultiDictionary<V,K> (F6-41)
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void ReverseMultiDictionary_ToSerializableModel_UsesTheValueAsTheModelKey()
+        {
+            var inverted = new ReverseMultiDictionary<int, string>();
+            inverted.Add(1001, "orders");
+            inverted.Add(1001, "customers");
+            inverted.Add(1002, "customers");
+
+            var model = inverted.ToSerializableModel();
+
+            model.Keys.ShouldBe(new[] { 1001, 1002 }, ignoreOrder: true);
+            foreach (var value in model.Keys)
+            {
+                model.Values[model.Keys.IndexOf(value)]
+                    .ShouldBe(inverted[value], ignoreOrder: true);
+            }
+        }
+
+        [Fact]
+        public void ReverseMultiDictionary_ToSerializableModel_CarriesANullValueAsANullKey()
+        {
+            var inverted = new ReverseMultiDictionary<string, string>();
+            inverted.Add(null, "a");
+
+            var model = inverted.ToSerializableModel();
+
+            model.Keys.ShouldBe(new[] { (string)null! });
+            model.Values.Single().ShouldBe(new[] { "a" });
+        }
+
+        [Fact]
+        public void ReverseMultiDictionary_FromModel_RoundTrips()
+        {
+            var inverted = new ReverseMultiDictionary<int, string>();
+            inverted.Add(1001, "orders");
+            inverted.Add(1001, "customers");
+            inverted.Add(1002, "customers");
+
+            var restored = ReverseMultiDictionary<int, string>.FromModel(inverted.ToSerializableModel());
+
+            restored.ValueCount.ShouldBe(inverted.ValueCount);
+            restored.TotalKeyCount.ShouldBe(inverted.TotalKeyCount);
+            restored[1001].ShouldBe(inverted[1001], ignoreOrder: true);
+        }
+
+        [Fact]
+        public void ReverseMultiDictionary_FromModel_CollapsesRepeatedKeys()
+        {
+            var model = new MultiDictionaryModel<int, string>
+            {
+                Keys = { 1001 },
+                Values = { new List<string> { "orders", "orders" } }
+            };
+
+            var restored = ReverseMultiDictionary<int, string>.FromModel(model);
+
+            restored[1001].ShouldBe(new[] { "orders" });
+            restored.TotalKeyCount.ShouldBe(1);
+        }
+
+        [Fact]
+        public void ReverseMultiDictionary_FromModel_HonoursTheKeyComparer()
+        {
+            var model = new MultiDictionaryModel<int, string>
+            {
+                Keys = { 1001 },
+                Values = { new List<string> { "orders" } }
+            };
+
+            var restored = ReverseMultiDictionary<int, string>.FromModel(
+                model, StringComparer.OrdinalIgnoreCase);
+
+            restored.ContainsKey("ORDERS").ShouldBeTrue();
+        }
+
+        [Fact]
+        public void ReverseMultiDictionary_FromModel_MalformedModel_Throws()
+        {
+            var mismatched = new MultiDictionaryModel<int, string>
+            {
+                Keys = { 1 },
+                Values = { }
+            };
+
+            Should.Throw<ArgumentException>(
+                () => ReverseMultiDictionary<int, string>.FromModel(mismatched));
+        }
+
+        // ------------------------------------------------------------------
+        // BiDictionary<TLeft,TRight> (F6-41) - the dedicated one-to-one model
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void BiDictionary_ToSerializableModel_WritesTwoParallelLists()
+        {
+            var map = new BiDictionary<int, string>();
+            map.Add(1, "alice");
+            map.Add(2, "bob");
+
+            var model = map.ToSerializableModel();
+
+            model.Lefts.ShouldBe(new[] { 1, 2 });
+            model.Rights.ShouldBe(new[] { "alice", "bob" });
+        }
+
+        [Fact]
+        public void BiDictionary_ToSerializableModel_IsASnapshot()
+        {
+            var map = new BiDictionary<int, string>();
+            map.Add(1, "alice");
+
+            var model = map.ToSerializableModel();
+            map.Add(2, "bob");
+
+            model.Lefts.ShouldBe(new[] { 1 });
+            model.Rights.ShouldBe(new[] { "alice" });
+        }
+
+        [Fact]
+        public void BiDictionary_ToSerializableModel_CarriesANullLeftBinding()
+        {
+            // ToDictionary() has to drop this binding (a Dictionary cannot key on null); the model
+            // is a List, so it does not.
+            var map = new BiDictionary<string, string>();
+            map.Add(null, "alice");
+
+            map.ToDictionary().ShouldBeEmpty();
+            map.ToSerializableModel().Lefts.ShouldBe(new[] { (string)null! });
+            map.ToSerializableModel().Rights.ShouldBe(new[] { "alice" });
+        }
+
+        [Fact]
+        public void BiDictionary_FromModel_RoundTrips()
+        {
+            var map = new BiDictionary<int, string>();
+            map.Add(1, "alice");
+            map.Add(2, "bob");
+
+            var restored = BiDictionary<int, string>.FromModel(map.ToSerializableModel());
+
+            restored.Count.ShouldBe(map.Count);
+            restored[1].ShouldBe("alice");
+            restored.GetLeft("bob").ShouldBe(2);
+        }
+
+        [Fact]
+        public void BiDictionary_FromModel_RoundTripsANullLeftBinding()
+        {
+            var map = new BiDictionary<string, string>();
+            map.Add(null, "alice");
+
+            var restored = BiDictionary<string, string>.FromModel(map.ToSerializableModel());
+
+            restored[null].ShouldBe("alice");
+            restored.GetLeft("alice").ShouldBeNull();
+        }
+
+        [Fact]
+        public void BiDictionary_FromModel_HonoursTheComparers()
+        {
+            var model = new BiDictionaryModel<string, string>
+            {
+                Lefts = { "USD" },
+                Rights = { "Dollar" }
+            };
+
+            var restored = BiDictionary<string, string>.FromModel(
+                model, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase);
+
+            restored["usd"].ShouldBe("Dollar");
+            restored.GetLeft("dollar").ShouldBe("USD");
+        }
+
+        [Fact]
+        public void BiDictionary_FromModel_RejectsARepeatedLeft()
+        {
+            var model = new BiDictionaryModel<int, string>
+            {
+                Lefts = { 1, 1 },
+                Rights = { "alice", "bob" }
+            };
+
+            Should.Throw<ArgumentException>(() => BiDictionary<int, string>.FromModel(model));
+        }
+
+        [Fact]
+        public void BiDictionary_FromModel_RejectsARightBoundTwice()
+        {
+            var model = new BiDictionaryModel<int, string>
+            {
+                Lefts = { 1, 2 },
+                Rights = { "alice", "alice" }
+            };
+
+            Should.Throw<ArgumentException>(() => BiDictionary<int, string>.FromModel(model));
+        }
+
+        [Fact]
+        public void BiDictionary_FromModel_NullModel_Throws()
+        {
+            Should.Throw<ArgumentNullException>(() => BiDictionary<int, string>.FromModel(null!));
+        }
+
+        [Fact]
+        public void BiDictionary_FromModel_MalformedModel_Throws()
+        {
+            var nullLefts = new BiDictionaryModel<int, string> { Lefts = null!, Rights = { } };
+            Should.Throw<ArgumentException>(() => BiDictionary<int, string>.FromModel(nullLefts));
+
+            var nullRights = new BiDictionaryModel<int, string> { Lefts = { 1 }, Rights = null! };
+            Should.Throw<ArgumentException>(() => BiDictionary<int, string>.FromModel(nullRights));
+
+            var mismatched = new BiDictionaryModel<int, string> { Lefts = { 1 }, Rights = { } };
+            Should.Throw<ArgumentException>(() => BiDictionary<int, string>.FromModel(mismatched));
+        }
+
+        [Fact]
+        public void BiDictionaryModel_HasNoSerializerAttributes_AndSerializesWithSystemTextJson()
+        {
+            var map = new BiDictionary<int, string>();
+            map.Add(1, "alice");
+
+            var model = map.ToSerializableModel();
+            var json = JsonSerializer.Serialize(model);
+            var back = JsonSerializer.Deserialize<BiDictionaryModel<int, string>>(json)!;
+
+            back.Lefts.ShouldBe(model.Lefts);
+            back.Rights.ShouldBe(model.Rights);
+        }
     }
 }

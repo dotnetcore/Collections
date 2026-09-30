@@ -29,6 +29,31 @@ repository ships the same version (see `build/version.props`).
   underlying trie resolves by prefix walk: `map.AsReverse().GetByFirstKey(k)` answers the same question
   as `map.GetBySecondKey(k)` (two-key) or `map.GetByThirdKey(k)` (three-key), from a structure indexed
   that way.
+- **`AsReverse()` reached the rest of the map family, each with the semantics its own type can
+  honour.** `ImmutableMultiDictionary<TKey, TValue>.AsReverse()` returns the live reverse view at
+  zero cost — the state it reads can never change, so "live" and "snapshot" coincide there.
+  `ConcurrentMultiDictionary<TKey, TValue>.AsReverse()` returns an independent
+  `ReverseMultiDictionary<TValue, TKey>` built from `Snapshot()`: the type keeps no index above its
+  shards, so a live reverse view could only be an index that silently goes stale or an O(n) locked
+  scan per read, and its whole read surface is snapshot-based already.
+  `OrderedMultiDictionary<TKey, TValue>.AsReverse()` returns an ordered copy,
+  `OrderedMultiDictionary<TValue, TKey>`, because this type's key identity is an `IComparer<TKey>`
+  and a hash-based reversal would silently re-define which keys count as the same key. In every case
+  the comparers travel with the axes, and the three-key/two-key `AsReverse()` members from the
+  previous entry are unchanged.
+- **`ToSerializableModel()` / `FromModel()` reached the rest of the family.**
+  `OrderedMultiDictionary<TKey, TValue>`, `ConcurrentMultiDictionary<TKey, TValue>` and
+  `ReverseMultiDictionary<V, K>` reuse the existing `MultiDictionaryModel<TKey, TValue>`, all three
+  being multimaps; the ordered map can use it even though it refuses a `ToDictionary()` export,
+  because the model stores its keys in a `List` and never needs the hash codes an `IComparer<TKey>`
+  can not supply. For `ReverseMultiDictionary<V, K>` the **indexed** axis (the values) plays the
+  model's `Keys` role, and the stored keys play `Values`; the stored keys are a set, so inner-list
+  order is not preserved and a repeated key collapses. `BiDictionary<TLeft, TRight>` gets a
+  **new dedicated model**, `BiDictionaryModel<TLeft, TRight>` (`Lefts` + `Rights`, parallel lists):
+  a bijection is one-to-one, so the multimap model's inner list would hold exactly one element per
+  entry and would misrepresent the type. That model also carries a `null`-left binding, which
+  `BiDictionary.ToDictionary()` has to drop because a `Dictionary` can not key on `null`. A model
+  that is not a bijection is rejected by `FromModel` with the same conflict `Add` raises.
 
 ### Changed
 
@@ -43,7 +68,9 @@ None. No packaged defect was addressed.
 - **None.** Every change is a pure addition: no member was removed, renamed or re-signed, and no
   existing behaviour changed. `ConcurrentMultiList<T>.ToDictionary()` inherits the
   `InvalidOperationException` that `MultiList<T>.ToDictionary()` raises for a `null` element;
-  `EntrySet()` is the `null`-safe alternative on both.
+  `EntrySet()` is the `null`-safe alternative on both. `BiDictionaryModel<TLeft, TRight>` is a new
+  public type; the existing `MultiDictionaryModel<TKey, TValue>` is unchanged, and so is every
+  `AsReverse()` member that already existed.
 
 ## [6.7.0] - 2026-09-30
 

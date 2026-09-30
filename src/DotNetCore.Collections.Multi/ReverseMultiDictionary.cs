@@ -569,6 +569,115 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Exports the inverted relation as a plain data model for external serialization: the
+        /// distinct values and, for each of them, the keys that store it.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The model is <see cref="MultiDictionaryModel{TKey,TValue}"/> instantiated as
+        /// <c>MultiDictionaryModel&lt;V, K&gt;</c> - the indexed axis (the values of this index)
+        /// plays the model's <em>key</em> role, and the stored keys play its <em>value</em> role.
+        /// The shape fits because this index is a multimap too, just one whose axes are already
+        /// swapped; read <c>model.Keys</c> as "the distinct values" and <c>model.Values</c> as
+        /// "their keys".
+        /// </para>
+        /// <para>
+        /// <b>Two properties of the model do not survive a round trip</b>, and both are honest
+        /// reflections of this type rather than limitations of the model. First, the stored keys
+        /// form a <em>set</em>, so the inner list has no meaningful order: a rebuild produces the
+        /// same associations but not necessarily the same enumeration sequence. Second, a repeated
+        /// key inside one inner list is <em>silently collapsed</em> by the set, exactly as
+        /// <see cref="Add"/> collapses it - a model built by hand is not a way to smuggle
+        /// multiplicities in.
+        /// </para>
+        /// <para>
+        /// A stored <c>null</c> value is carried as a <c>null</c> entry of <c>model.Keys</c>,
+        /// enumerating last. Use <see cref="FromModel"/> to rebuild the index, supplying the key
+        /// comparer, which is configuration rather than data.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// MultiDictionaryModel&lt;int, string&gt; model = inverted.ToSerializableModel();
+        /// // model.Keys   == [ 1001, 1002 ]          - the distinct values
+        /// // model.Values == [ ["orders","customers"], ["customers"] ]
+        /// </code>
+        /// </example>
+        public MultiDictionaryModel<V, K> ToSerializableModel()
+        {
+            var keys = new List<V>(Count);
+            var values = new List<List<K>>(Count);
+            foreach (var value in Values)
+            {
+                keys.Add(value);
+                values.Add(new List<K>(this[value]));
+            }
+
+            return new MultiDictionaryModel<V, K> { Keys = keys, Values = values };
+        }
+
+        /// <summary>
+        /// Rebuilds an inverted index from a serializable model.
+        /// </summary>
+        /// <param name="model">the model to read: either one produced by <see cref="ToSerializableModel"/> or one built by hand.</param>
+        /// <param name="comparer">the comparer for the stored keys; <c>null</c> selects <see cref="EqualityComparer{K}.Default"/>. Configuration, so it is not part of the model.</param>
+        /// <returns>a new index holding the model's value &#8594; keys relation.</returns>
+        /// <remarks>
+        /// Each entry is written through <see cref="AddRange"/>, so a repeated key inside one inner
+        /// list collapses (the stored keys are a set) and a <c>null</c> key is rejected, matching
+        /// the ordinary write path. Equality on the indexed axis is
+        /// <see cref="EqualityComparer{V}.Default"/>.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="model"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="model"/> is malformed: either list is
+        /// <c>null</c>, the two lists have different lengths, or one of the inner key lists is
+        /// <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var inverted = ReverseMultiDictionary&lt;int, string&gt;.FromModel(model);
+        /// </code>
+        /// </example>
+        public static ReverseMultiDictionary<V, K> FromModel(
+            MultiDictionaryModel<V, K> model, IEqualityComparer<K>? comparer = null)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (model.Keys == null)
+            {
+                throw new ArgumentException("The model is malformed: its Keys list is null.", nameof(model));
+            }
+
+            if (model.Values == null)
+            {
+                throw new ArgumentException("The model is malformed: its Values list is null.", nameof(model));
+            }
+
+            if (model.Keys.Count != model.Values.Count)
+            {
+                throw new ArgumentException(
+                    "The model is malformed: Keys and Values have different lengths.", nameof(model));
+            }
+
+            var result = new ReverseMultiDictionary<V, K>(comparer);
+            for (var i = 0; i < model.Keys.Count; i++)
+            {
+                var keys = model.Values[i];
+                if (keys == null)
+                {
+                    throw new ArgumentException(
+                        "The model is malformed: the key list of entry " + i + " is null.", nameof(model));
+                }
+
+                result.AddRange(model.Keys[i], keys);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns the contents in per-value form, comma separated,
         /// e.g. <c>v1:[k1,k2],v2:[k3]</c>; a stored <c>null</c> value renders as <c>null:[k1]</c>
         /// and enumerates last.

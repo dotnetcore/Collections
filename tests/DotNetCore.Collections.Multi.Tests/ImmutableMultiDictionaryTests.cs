@@ -209,5 +209,78 @@ namespace DotNetCore.Collections.Multi.Tests
             map.OrderBy(p => p.Key).ThenBy(p => p.Value)
                 .ShouldBe(new[] { new KeyValuePair<string, int>("a", 1), new KeyValuePair<string, int>("a", 2), new KeyValuePair<string, int>("b", 3) });
         }
+
+        // ------------------------------------------------------------------
+        // AsReverse (F6-41)
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void AsReverse_PairsEachValueWithTheKeysThatStoreIt()
+        {
+            var map = new ImmutableMultiDictionary<string, int>()
+                .Add("orders", 1001).Add("customers", 1001).Add("customers", 1002);
+
+            var byValue = map.AsReverse();
+
+            byValue[1001].ShouldBe(new[] { "orders", "customers" }, ignoreOrder: true);
+            byValue[1002].ShouldBe(new[] { "customers" });
+            byValue.Count.ShouldBe(2);
+        }
+
+        [Fact]
+        public void AsReverse_AbsentValue_YieldsAnEmptyCollection()
+        {
+            var map = new ImmutableMultiDictionary<string, int>().Add("a", 1);
+
+            var byValue = map.AsReverse();
+
+            byValue[999].ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void AsReverse_NullValue_IsAnOrdinaryValue()
+        {
+            var map = new ImmutableMultiDictionary<string, string>().Add("a", null);
+
+            var byValue = map.AsReverse();
+
+            byValue[null].ShouldBe(new[] { "a" });
+        }
+
+        [Fact]
+        public void AsReverse_Empty_IsEmpty()
+        {
+            var map = new ImmutableMultiDictionary<string, int>();
+
+            var byValue = map.AsReverse();
+
+            byValue.Count.ShouldBe(0);
+            byValue[1].ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void AsReverse_ReflectsOnlyTheFrozenState_NotLaterDerivedInstances()
+        {
+            var original = new ImmutableMultiDictionary<string, int>().Add("a", 1);
+
+            var byValue = original.AsReverse();
+
+            // Add() returns a *new* instance; the view taken off `original` must not see it.
+            var derived = original.Add("b", 2);
+            derived.AsReverse()[2].ShouldBe(new[] { "b" });
+
+            byValue.Count.ShouldBe(1);
+            byValue[2].ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void AsReverse_AgreesWithTheUnderlyingMultiDictionaryView()
+        {
+            var map = new ImmutableMultiDictionary<string, int>()
+                .Add("orders", 1001).Add("customers", 1001);
+
+            map.AsReverse()[1001]
+                .ShouldBe(map.ToMultiDictionary().AsReverse()[1001], ignoreOrder: true);
+        }
     }
 }

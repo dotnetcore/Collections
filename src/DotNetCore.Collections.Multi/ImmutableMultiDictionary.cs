@@ -284,6 +284,41 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Returns a read-only view of the reverse (value &#8594; keys) direction: the values of the
+        /// map, each paired with the keys that store it.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is the <b>live</b> reverse view of the map - it is
+        /// <see cref="MultiDictionary{TKey,TValue}.AsReverse()"/> on the internal snapshot, so it
+        /// reads the map's own backwards index rather than copying anything, and it allocates
+        /// nothing per operation beyond the wrapper.
+        /// </para>
+        /// <para>
+        /// Because this type is immutable, "live" and "snapshot" are observationally the same
+        /// thing here: the state the view reads can never change after construction. The view is
+        /// therefore returned as-is, at zero cost, rather than materialised. Like the map itself it
+        /// is safe to read from any number of threads.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var frozen = new ImmutableMultiDictionary&lt;string, int&gt;(new[]
+        /// {
+        ///     new KeyValuePair&lt;string, int&gt;("orders", 1001),
+        ///     new KeyValuePair&lt;string, int&gt;("customers", 1001)
+        /// });
+        ///
+        /// IReadOnlyDictionary&lt;int, IReadOnlyCollection&lt;string&gt;&gt; byValue = frozen.AsReverse();
+        /// byValue[1001];   // ["orders", "customers"]
+        /// </code>
+        /// </example>
+        public IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>> AsReverse()
+        {
+            return _snapshot.AsReverse();
+        }
+
+        /// <summary>
         /// Exports the multimap as a snapshot dictionary from key to its value collection. The
         /// inner collections are live views; the outer dictionary is independent.
         /// </summary>

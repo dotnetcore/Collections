@@ -382,8 +382,9 @@ The quick decision list:
 - each left maps to exactly one right and each right back to exactly one left, both directions O(1)
   &#8594; `BiDictionary<TLeft, TRight>`;
 - many keys share one value and the question is "which keys hold *this* value?" &#8594; invert the map:
-  `MultiDictionary<TKey, TValue>.AsReverse()` for a live read-only view, or `ReverseMultiDictionary<V, K>`
-  for a self-contained snapshot.
+  `MultiDictionary<TKey, TValue>.AsReverse()` and `ImmutableMultiDictionary<TKey, TValue>.AsReverse()`
+  for a live read-only view, `ConcurrentMultiDictionary<TKey, TValue>.AsReverse()` for a snapshot, or
+  `ReverseMultiDictionary<V, K>` for a self-contained snapshot you can build by hand.
 
 The following sections describe each family.
 
@@ -462,7 +463,9 @@ the write path — neither ever scans the inner collections.
 operations, the same "no value-less key" invariant, and the same `IReadOnlyDictionary` /
 `AsLookup()` / `RemoveRange` shape — but keys enumerate ascending under an `IComparer<TKey>` and
 each key's values enumerate ascending under an `IComparer<TValue>`, with single-pair add / lookup /
-removal costing O(log n) worst case on both axes.
+removal costing O(log n) worst case on both axes. It also has `AsReverse()` (an ordered copy, not a
+view — see "One-to-one and inverted") and round-trips through `ToSerializableModel()` /
+`FromModel()`.
 
 ### Composite keys
 
@@ -518,6 +521,17 @@ invariant mirrored. Member names mirror `MultiDictionary` with the axes swapped:
 `ValueCount` count distinct values, `TotalKeyCount` counts bindings, `KeyCount(value)` counts one
 value's keys, `ContainsValue(value)` is the O(1) presence check and `ContainsKey(key)` scans. For a
 read-only view that keeps answering from the live map, use `MultiDictionary<TKey, TValue>.AsReverse()`.
+`ToSerializableModel()` / `FromModel()` round-trip it through `MultiDictionaryModel<V, K>` — the
+indexed axis plays the model's key role — with the caveat that the stored keys are a set, so inner
+list order is not preserved and a repeated key collapses.
+
+**`OrderedMultiDictionary<TKey, TValue>.AsReverse()`** is the family's third flavour, and the reason
+`AsReverse` cannot be one rule for everyone: it returns an **ordered copy**,
+`OrderedMultiDictionary<TValue, TKey>`. This type's key identity is an `IComparer<TKey>`, which
+supplies no hash codes, so handing the reversal to a hash-based structure would silently re-define
+which keys count as the same key — the same objection that made it refuse a `ToDictionary()` export.
+Its comparers travel with the axes and its `ToSerializableModel()` reuses the multimap model, which
+is safe here precisely because that model keys on a `List`.
 
 ### Immutable and thread-safe
 
@@ -525,13 +539,17 @@ read-only view that keeps answering from the live map, use `MultiDictionary<TKey
 counterparts of the two core types. An instance never changes, so any number of threads may read it
 without locks. Mutations return a new instance (or the receiver itself when nothing would change);
 bulk mutation goes through `ToBuilder()`, whose builder shares the source's state until its first
-write (copy-on-write). Both round-trip through serializable models.
+write (copy-on-write). Both round-trip through serializable models. `ImmutableMultiDictionary`
+also carries `AsReverse()` — the live reverse view, returned as-is at zero cost because the state it
+reads can never change.
 
 **`ConcurrentMultiDictionary<TKey, TValue>`** — the thread-safe counterpart of
 `MultiDictionary<TKey, TValue>`. Keys are routed to shards, each an independent `MultiDictionary`
 behind its own lock, so writes on different keys proceed in parallel. Whole-map reads (`Count`,
 `TotalValueCount`, `ContainsValue`, enumeration, `Snapshot()`) take a consistent snapshot by locking
-every shard once, in index order.
+every shard once, in index order. Its `AsReverse()` and `ToSerializableModel()` follow that same
+rule and hand back a **snapshot** rather than a live view: with no index above the shards, a live
+reverse view could only be an index that silently goes stale, or an O(n) locked scan per read.
 
 **`ConcurrentMultiList<T>`** — the thread-safe counterpart of `MultiList<T>`. Every operation is
 serialized behind one lock — linearizable and trivially safe. It is deliberately **not** sharded: a
@@ -729,6 +747,28 @@ inverted.TotalKeyCount;          // 3 distinct (value, key) bindings
 map.Add("invoices", 1001);       // the snapshot does not follow the map ...
 inverted[1001];                  // still ["orders", "customers"]
 map.AsReverse()[1001];           // ... but the live view does: ["orders", "customers", "invoices"]
+
+// the rest of the family inverts too — each with the semantics its own type can honour
+var frozen = new ImmutableMultiDictionary<string, int>().Add("orders", 1001);
+frozen.AsReverse()[1001];        // ["orders"] — live view, and the state it reads is frozen
+
+var sharded = new ConcurrentMultiDictionary<string, int>();
+sharded.Add("orders", 1001);
+sharded.AsReverse()[1001];       // ["orders"] — a snapshot: no index above the shards to read live
+
+var ordered = new OrderedMultiDictionary<string, int>();
+ordered.Add("b", 2);
+ordered.Add("a", 2);
+var orderedReverse = ordered.AsReverse();   // OrderedMultiDictionary<int, string>
+orderedReverse[2];               // ["a", "b"] — ordered copy; comparers travel with the axes
+
+// explicit serialization across the family: one model shape for the multimaps,
+// a dedicated one for the bijection
+var model = ordered.ToSerializableModel();              // MultiDictionaryModel<string, int>
+var rebuilt = OrderedMultiDictionary<string, int>.FromModel(model, keyComparer, valueComparer);
+
+var usersModel = users.ToSerializableModel();           // BiDictionaryModel<int, string>
+var usersBack = BiDictionary<int, string>.FromModel(usersModel, leftComparer, rightComparer);
 ```
 
 ### Save and restore
@@ -752,6 +792,28 @@ The model carries **data only** — a comparer, and a multimap's inner-collectio
 configuration rather than data, so they are supplied to `FromModel()`. Unlike `ToDictionary()`
 (which throws on a `null` element) it represents `null` like any other element, and unlike the live
 views it is a snapshot that does not move under a serializer's feet.
+
+The same pair covers the rest of the family. `OrderedMultiDictionary<TKey, TValue>`,
+`ConcurrentMultiDictionary<TKey, TValue>` and `ReverseMultiDictionary<V, K>` all reuse
+`MultiDictionaryModel<TKey, TValue>`, because all three are multimaps — the ordered map even though
+it refuses a `ToDictionary()` export, since the model stores its keys in a `List` and so never needs
+the hash codes an `IComparer<TKey>` can not supply. `ReverseMultiDictionary<V, K>` is the one to read
+carefully: its **indexed** axis (the values) plays the model's `Keys` role, and its stored keys play
+the `Values` role.
+
+`BiDictionary<TLeft, TRight>` gets its own `BiDictionaryModel<TLeft, TRight>` (`Lefts` + `Rights`,
+parallel lists) rather than reusing the multimap model. A bijection is one-to-one, so the multimap
+model's inner list would hold exactly one element on every entry — a shape that invites a reader to
+expect multiplicity the type can not express. The dedicated model also keeps a `null`-left binding,
+which `BiDictionary.ToDictionary()` has to drop because a `Dictionary` can not key on `null`:
+
+```c#
+var users = new BiDictionary<int, string>();
+users.Add(1, "alice");
+
+var model = users.ToSerializableModel();   // Lefts == [1], Rights == ["alice"]
+var restored = BiDictionary<int, string>.FromModel(model, leftComparer, rightComparer);
+```
 
 ### Readable type names
 

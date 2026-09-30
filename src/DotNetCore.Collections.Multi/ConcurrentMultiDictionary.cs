@@ -345,6 +345,131 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Returns the reverse (value &#8594; keys) direction as an independent
+        /// <see cref="ReverseMultiDictionary{V,K}"/> built from a consistent snapshot of the whole
+        /// map.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is a <b>snapshot</b>, not a live view, and the type it lives on is why. The family's
+        /// other <c>AsReverse</c> members (<see cref="MultiDictionary{TKey,TValue}.AsReverse()"/>,
+        /// <see cref="BiDictionary{TLeft,TRight}.AsReverse()"/>) can hand back a zero-copy live view
+        /// because those types each maintain a reverse index. This one does not: it keeps N
+        /// independent <see cref="MultiDictionary{TKey,TValue}"/> shards and no structure above
+        /// them, so a live reverse view could only be (a) an index built once and then silently
+        /// stale, (b) rebuilt on every read at O(n) while holding shard locks, or (c) a scan of
+        /// every shard per access - since a value is not what routes a key to its shard. None of
+        /// those is acceptable, and all of them would be a surprise in a type whose entire read
+        /// surface (enumeration, <see cref="Keys"/>, <see cref="Values"/>, <see cref="Count"/>,
+        /// <see cref="Snapshot"/>) is already snapshot-based.
+        /// </para>
+        /// <para>
+        /// The result is detached: writes to this map afterwards do not appear in it, and the
+        /// returned dictionary can be mutated without affecting this map.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var map = new ConcurrentMultiDictionary&lt;string, int&gt;();
+        /// map.Add("orders", 1001);
+        /// map.Add("customers", 1001);
+        ///
+        /// ReverseMultiDictionary&lt;int, string&gt; byValue = map.AsReverse();
+        /// byValue[1001];   // ["orders", "customers"] - a snapshot, unaffected by later writes
+        /// </code>
+        /// </example>
+        public ReverseMultiDictionary<TValue, TKey> AsReverse()
+        {
+            return new ReverseMultiDictionary<TValue, TKey>(Snapshot());
+        }
+
+        /// <summary>
+        /// Exports a consistent snapshot of the whole map as a plain data model for external
+        /// serialization.
+        /// </summary>
+        /// <remarks>
+        /// Taken from <see cref="Snapshot"/>, so the model is a point-in-time copy: concurrent
+        /// writers running after the call do not alter it. The model's shape is described by
+        /// <see cref="MultiDictionaryModel{TKey,TValue}"/>; use <see cref="FromModel"/> to rebuild
+        /// a map from one.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// MultiDictionaryModel&lt;string, int&gt; model = map.ToSerializableModel();
+        /// string json = System.Text.Json.JsonSerializer.Serialize(model);
+        /// </code>
+        /// </example>
+        public MultiDictionaryModel<TKey, TValue> ToSerializableModel()
+        {
+            return Snapshot().ToSerializableModel();
+        }
+
+        /// <summary>
+        /// Rebuilds a concurrent multimap from a serializable model.
+        /// </summary>
+        /// <param name="model">the model to read: either one produced by <see cref="ToSerializableModel"/> or one built by hand.</param>
+        /// <param name="comparer">the key comparer of the rebuilt map; <c>null</c> selects <see cref="EqualityComparer{TKey}.Default"/>. The comparer is configuration rather than data, so it is not part of the model and has to be supplied here.</param>
+        /// <param name="allowDuplicateValues">whether the rebuilt map keeps duplicate values under one key (<c>true</c>, the default) or collapses them. Also configuration, so it has to be supplied here.</param>
+        /// <param name="shardCount">the number of shards to partition the rebuilt map into; a non-positive value selects the default (8). Shard count is configuration too, and has no bearing on the data.</param>
+        /// <returns>a new map holding the model's keys with the model's values.</returns>
+        /// <remarks>
+        /// Values are added in the order the model lists them. Validation of the model follows
+        /// <see cref="MultiDictionary{TKey,TValue}.FromModel"/>, and each binding is then written
+        /// through the ordinary shard-routed <see cref="Add"/> path.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="model"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="model"/> is malformed: either list is
+        /// <c>null</c>, the two lists have different lengths, or one of the inner value lists is
+        /// <c>null</c>.</exception>
+        /// <example>
+        /// <code>
+        /// var map = ConcurrentMultiDictionary&lt;string, int&gt;.FromModel(model);
+        /// </code>
+        /// </example>
+        public static ConcurrentMultiDictionary<TKey, TValue> FromModel(
+            MultiDictionaryModel<TKey, TValue> model,
+            IEqualityComparer<TKey>? comparer = null,
+            bool allowDuplicateValues = true,
+            int shardCount = 0)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (model.Keys == null)
+            {
+                throw new ArgumentException("The model is malformed: its Keys list is null.", nameof(model));
+            }
+
+            if (model.Values == null)
+            {
+                throw new ArgumentException("The model is malformed: its Values list is null.", nameof(model));
+            }
+
+            if (model.Keys.Count != model.Values.Count)
+            {
+                throw new ArgumentException(
+                    "The model is malformed: Keys and Values have different lengths.", nameof(model));
+            }
+
+            var result = new ConcurrentMultiDictionary<TKey, TValue>(shardCount, comparer, allowDuplicateValues);
+            for (var i = 0; i < model.Keys.Count; i++)
+            {
+                var values = model.Values[i];
+                if (values == null)
+                {
+                    throw new ArgumentException(
+                        "The model is malformed: the value list of entry " + i + " is null.", nameof(model));
+                }
+
+                result.AddRange(model.Keys[i], values);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Enumerates a consistent snapshot of the whole map (see <see cref="Snapshot"/>). The
         /// enumerator is immune to concurrent writes.
         /// </summary>
