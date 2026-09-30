@@ -4,7 +4,13 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
-## [Unreleased]
+## [6.7.1] - 2026-10-01
+
+The first patch release in this repository's history. The 6.7 window is closed, and this is a
+sub-window authorised on its own terms: it carries four consistency items the 6.7 window did not,
+and nothing else. All four are pure additions to the `Multi` package — no member was removed,
+renamed or re-signed, and no existing behaviour changed. If you are on 6.7.0, this release adds
+the missing members to the map family's remaining types; there is nothing to unlearn.
 
 ### Added
 

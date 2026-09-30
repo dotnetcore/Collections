@@ -13,17 +13,17 @@ modules.
 | **Multi** | `DotNetCore.Collections.Multi` | Multiset, multimap, composite-key and thread-safe/immutable collection types. |
 
 See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
-**6.7.0** release: nothing in the packages changed. 6.7.0 ships the same code as the release before
-it, and the
-[CHANGELOG](CHANGELOG.md) says so plainly rather than padding the entry — the version exists to keep
-the release numbering in step, not because there is something to upgrade for. The window went into
-the benchmark side instead, adding a head-to-head comparison of the unordered multimap against an
-external implementation; it is written up in
-[Multimap benchmarks](performance/HeadToHeadMultiMapBenchmarks.md) as a loss, at roughly 2–3x the
-time per `Add` and `Remove` and about 7x the allocation per call at the 64-key size, with the parts
-that cannot be compared stated rather than left out. That summary lives in the repository only — it
-is not packed, so it does not change what `dotnet add package` gives you. Nothing was removed,
-renamed or re-signed, so there is no **Breaking** change in this release.
+**6.7.1** release: the first patch release here, and a small one by design. It closes four
+consistency gaps in the `Multi` package — the `Values` / `ContainsValue` members the two- and
+three-key dictionaries were missing, the read-only projections `ConcurrentMultiList<T>` lacked,
+`AsReverse()` on the two- and three-key dictionaries, and `AsReverse()` plus
+`ToSerializableModel()` / `FromModel()` across the rest of the map family. The last of those is the
+one worth a look: `AsReverse()` now carries the semantics each type can actually honour — a live,
+zero-cost view on `ImmutableMultiDictionary<TKey, TValue>`, a snapshot on
+`ConcurrentMultiDictionary<TKey, TValue>`, and an ordered copy on `OrderedMultiDictionary<TKey,
+TValue>` — and `BiDictionary<TLeft, TRight>` gets its own `BiDictionaryModel<TLeft, TRight>` rather
+than being forced into the multimap shape. Everything is an addition: nothing was removed, renamed
+or re-signed, so there is no **Breaking** change in this release.
 
 ## Contents
 
@@ -861,7 +861,7 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 
 Publishing is automated by the GitHub Actions `Release` workflow
 (`.github/workflows/release.yml`); no local tooling is involved. It runs on a version-tag push —
-`6.7.0` or `v6.7.0` — and can also be started manually through `workflow_dispatch`:
+`6.7.1` or `v6.7.1` — and can also be started manually through `workflow_dispatch`:
 
 1. **Pack** — all 11 projects are packed in Release configuration into `nuget_pub` on a
    `windows-latest` runner, with the full git history fetched so SourceLink can attach sources to
@@ -890,7 +890,7 @@ The policy owner must own all 11 `DotNetCore.Collections.*` packages. See
 
 Versions are driven by `build/version.props`, which is the single source of truth for every
 package — bump the version there and all 11 packages follow. Tag the commit with the matching
-version (`6.7.0` or `v6.7.0`) to trigger the automated publish; see [Publishing](#publishing) for
+version (`6.7.1` or `v6.7.1`) to trigger the automated publish; see [Publishing](#publishing) for
 what the release workflow does and the one-time nuget.org policy it requires.
 
 ## License
