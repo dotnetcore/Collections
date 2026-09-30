@@ -4,6 +4,39 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [6.7.0] - 2026-09-30
+
+This release ships no package changes, and says so rather than dressing it up. The 6.7 version
+window went entirely into the benchmark side — a head-to-head multimap comparison whose code and
+desensitised summary live under `performance/`, which is not packed — so every package here is the
+same code as 6.6.0. It is published anyway to keep the window numbering in step with the rest of the
+release history, and because `build/version.props` is the one place all 11 packages take their
+version from. Already on 6.6.0? There is nothing to gain by upgrading.
+
+### Added
+
+None. No package gained a type, a member or an overload in this release.
+
+### Changed
+
+None. No packaged behaviour, target framework, dependency or package content changed.
+
+### Fixed
+
+None. No packaged defect was addressed in this window.
+
+### Breaking
+
+- **None.** Nothing shipped changed, and that was checked rather than assumed.
+  `git diff 6.6.0..HEAD -- src/` is empty — not "no API change", but no change of any kind: no file
+  under `src/` was added, deleted, renamed or edited, so no member line was dropped, no signature
+  moved, and nothing needs a same-shaped replacement. The packaging surface is untouched as well:
+  nothing under `build/` changed, and the only project file the window touches is
+  `performance/DotNetCore.Collections.Multi.Benchmarks`, which the release workflow never packs —
+  it packs `src/DotNetCore.Collections.*` only — so the target frameworks, the dependencies and the
+  package contents are identical to 6.6.0. There is no behaviour change to weigh, and no upgrade
+  steps are required.
+
 ## [6.6.0] - 2026-09-23
 
 ### Added
