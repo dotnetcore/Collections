@@ -44,6 +44,9 @@ release.
   to plan for, and what has no counterpart.
 - [Ordered-collection benchmarks](performance/HeadToHeadBenchmarks.md) — a desensitised summary of
   the head-to-head ordered-collection measurements, favourable and unfavourable both.
+- [Multimap benchmarks](performance/HeadToHeadMultiMapBenchmarks.md) — a desensitised summary of the
+  head-to-head unordered-multimap measurements. This one is a loss and is written up as one, with
+  the parts that cannot be compared stated rather than left out.
 
 ## Why Collections
 
