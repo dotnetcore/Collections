@@ -249,6 +249,62 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Gets the distinct elements (copies counted once).
+        /// </summary>
+        /// <remarks>
+        /// Reads a snapshot rather than the live bag, so the result is immune to concurrent writes
+        /// and consistent with <see cref="Snapshot"/>. The sibling types
+        /// <see cref="MultiList{T}"/> / <see cref="OrderedMultiList{T}"/> /
+        /// <see cref="ImmutableMultiList{T}"/> expose the same member.
+        /// </remarks>
+        public IEnumerable<T> DistinctItems()
+        {
+            return Snapshot().DistinctItems();
+        }
+
+        /// <summary>
+        /// Gets the distinct elements paired with their copy counts, as (item, count) pairs.
+        /// </summary>
+        /// <remarks>
+        /// Reads a snapshot, as <see cref="DistinctItems"/> does.
+        /// </remarks>
+        public IEnumerable<(T Item, int Count)> EntrySet()
+        {
+            return Snapshot().EntrySet();
+        }
+
+        /// <summary>
+        /// Copies the elements (duplicates included) of a snapshot into a new <see cref="List{T}"/>.
+        /// The result is independent of the bag.
+        /// </summary>
+        public List<T> ToList()
+        {
+            return Snapshot().ToList();
+        }
+
+        /// <summary>
+        /// Copies the elements (duplicates included) of a snapshot into a new array.
+        /// </summary>
+        public T[] ToArray()
+        {
+            return Snapshot().ToArray();
+        }
+
+        /// <summary>
+        /// Exports the bag as a snapshot of distinct element &#8594; copy count.
+        /// </summary>
+        /// <remarks>
+        /// Throws when the bag holds a <c>null</c> element, exactly as
+        /// <see cref="MultiList{T}.ToDictionary()"/> does - a <c>null</c> can not be a dictionary
+        /// key. Use <see cref="EntrySet"/> or <see cref="MultiList{T}.ToSerializableModel"/> for a
+        /// <c>null</c>-safe export.
+        /// </remarks>
+        public IReadOnlyDictionary<T, int> ToDictionary()
+        {
+            return Snapshot().ToDictionary();
+        }
+
+        /// <summary>
         /// Enumerates a snapshot of the bag. The enumerator is immune to concurrent writes.
         /// </summary>
         public IEnumerator<T> GetEnumerator()

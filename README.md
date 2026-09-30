@@ -531,7 +531,9 @@ every shard once, in index order.
 **`ConcurrentMultiList<T>`** — the thread-safe counterpart of `MultiList<T>`. Every operation is
 serialized behind one lock — linearizable and trivially safe. It is deliberately **not** sharded: a
 bag has one global state its operations compare against. For read-mostly workloads, prefer
-`ImmutableMultiList<T>` plus a builder.
+`ImmutableMultiList<T>` plus a builder. It carries the same read-only projections as its siblings —
+`EntrySet()`, `DistinctItems()`, `ToList()`, `ToArray()` and `ToDictionary()` — each taken from a
+snapshot, so the result is immune to concurrent writes.
 
 ### Conventions
 

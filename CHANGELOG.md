@@ -15,6 +15,10 @@ repository ships the same version (see `build/version.props`).
   `ContainsValue` is a full scan (O(n)): neither type keeps a value-side index, since the reverse
   index `TwoKeyDictionary` does maintain is keyed by `K2`, not by the value. Where an O(1) value
   lookup is required, keep using `MultiDictionary<TKey, TValue>.ContainsValue`.
+- **`ConcurrentMultiList<T>` gained the read-only projections its siblings already had** —
+  `EntrySet()`, `DistinctItems()`, `ToList()`, `ToArray()` and `ToDictionary()`. Each is taken from
+  `Snapshot()`, so the result is detached from the bag and unaffected by concurrent writers, which is
+  how enumeration on this type already behaves.
 
 ### Changed
 
