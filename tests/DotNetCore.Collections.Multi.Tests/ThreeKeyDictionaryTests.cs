@@ -288,5 +288,137 @@ namespace DotNetCore.Collections.Multi.Tests
 
             values.ShouldBe(new[] { 1, 2 }, ignoreOrder: true);
         }
+
+        // ------------------------------------------------------------------
+        // AsReverse (F6-40, copy semantics)
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void AsReverse_ReKeysEntriesAsKey3ThenKey2ThenKey1()
+        {
+            var map = new ThreeKeyDictionary<int, string, string, decimal>();
+            map.Add(1, "USD", "2026Q1", 1.00m);
+            map.Add(2, "USD", "2026Q1", 1.05m);
+            map.Add(1, "EUR", "2026Q2", 0.92m);
+
+            var reversed = map.AsReverse();
+
+            reversed["2026Q1", "USD", 1].ShouldBe(1.00m);
+            reversed["2026Q1", "USD", 2].ShouldBe(1.05m);
+            reversed["2026Q2", "EUR", 1].ShouldBe(0.92m);
+            reversed.Count.ShouldBe(3);
+        }
+
+        [Fact]
+        public void AsReverse_GetByFirstKey_AnswersTheOriginalThirdAxisSlice()
+        {
+            var map = new ThreeKeyDictionary<int, string, string, decimal>();
+            map.Add(1, "USD", "2026Q1", 1.00m);
+            map.Add(2, "USD", "2026Q1", 1.05m);
+            map.Add(1, "EUR", "2026Q2", 0.92m);
+
+            var reversed = map.AsReverse();
+
+            reversed.CountOfFirstKey("2026Q1").ShouldBe(map.CountOfThirdKey("2026Q1"));
+
+            // The reversed first-axis slice holds the same entries as the original third-axis
+            // slice; only the tuple component order differs, so project it back to (k1, k2, v).
+            reversed.GetByFirstKey("2026Q1")
+                .Select(e => (e.Key3, e.Key2, e.Value))
+                .ShouldBe(map.GetByThirdKey("2026Q1"), ignoreOrder: true);
+        }
+
+        [Fact]
+        public void AsReverse_MiddleAxisIsUnchanged()
+        {
+            var map = new ThreeKeyDictionary<int, string, string, decimal>();
+            map.Add(1, "USD", "2026Q1", 1.00m);
+            map.Add(2, "USD", "2026Q1", 1.05m);
+
+            var reversed = map.AsReverse();
+
+            // K2 stays the middle axis, so its per-axis count still answers the same way.
+            reversed.CountOfSecondKey("USD").ShouldBe(map.CountOfSecondKey("USD"));
+
+            // Same entries, mirrored component labels: canonicalise both slices to (k1, k3, v).
+            reversed.GetBySecondKey("USD")
+                .Select(e => (e.Key3, e.Key1, e.Value))
+                .ShouldBe(
+                    map.GetBySecondKey("USD").Select(e => (e.Key1, e.Key3, e.Value)),
+                    ignoreOrder: true);
+        }
+
+        [Fact]
+        public void AsReverse_Empty_IsEmpty()
+        {
+            var map = new ThreeKeyDictionary<int, string, int, int>();
+
+            var reversed = map.AsReverse();
+
+            reversed.IsEmpty.ShouldBeTrue();
+            reversed.Count.ShouldBe(0);
+        }
+
+        [Fact]
+        public void AsReverse_IsACopy_MutationsDoNotPropagateEitherWay()
+        {
+            var map = new ThreeKeyDictionary<int, string, int, int>();
+            map.Add(1, "a", 1, 42);
+
+            var reversed = map.AsReverse();
+
+            map.Add(2, "b", 2, 43);
+            reversed.Count.ShouldBe(1);
+            reversed.ContainsKey(2, "b", 2).ShouldBeFalse();
+
+            reversed.Add(3, "c", 3, 44);
+            map.Count.ShouldBe(2);
+            map.ContainsKey(3, "c", 3).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void AsReverse_CarriesTheComparersAcrossTheAxes()
+        {
+            var map = new ThreeKeyDictionary<int, string, string, decimal>(
+                comparer1: null,
+                comparer2: null,
+                comparer3: StringComparer.OrdinalIgnoreCase);
+            map.Add(1, "USD", "2026Q1", 1.00m);
+
+            var reversed = map.AsReverse();
+
+            // The reversed first axis is the original third axis, so it must still be
+            // case-insensitive - the comparer travels with the axis.
+            reversed["2026q1", "USD", 1].ShouldBe(1.00m);
+            reversed.ContainsFirstKey("2026q1").ShouldBeTrue();
+        }
+
+        [Fact]
+        public void AsReverse_NullComponents_AreSupported()
+        {
+            var map = new ThreeKeyDictionary<int, string, string, int>();
+            map.Add(1, "a", null, 42);
+
+            var reversed = map.AsReverse();
+
+            reversed[null, "a", 1].ShouldBe(42);
+            reversed.ContainsKey(null, "a", 1).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void AsReverse_EntriesAreTheMirroredSourceEntries()
+        {
+            var map = new ThreeKeyDictionary<int, string, int, int>();
+            map.Add(1, "a", 10, 100);
+            map.Add(2, "b", 20, 200);
+
+            var reversed = map.AsReverse();
+
+            reversed.Entries
+                .Select(e => (e.Key1, e.Key2, e.Key3, e.Value))
+                .ShouldBe(
+                    new[] { (10, "a", 1, 100), (20, "b", 2, 200) },
+                    ignoreOrder: true);
+        }
     }
 }

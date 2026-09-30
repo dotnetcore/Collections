@@ -660,6 +660,58 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Returns the dictionary with its two key axes swapped: the entries are re-keyed as
+        /// <c>(k2, k1)</c>, producing a <see cref="TwoKeyDictionary{K2,K1,V}"/> whose first axis is
+        /// the original second axis and whose second axis is the original first axis.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is a <b>copy</b>, not a view: a new, independent, fully-typed dictionary is built by
+        /// replaying every entry in <b>O(n)</b>. It therefore deviates from the family's other
+        /// <c>AsReverse</c> members (<see cref="MultiDictionary{TKey,TValue}.AsReverse()"/> and
+        /// <see cref="BiDictionary{TLeft,TRight}.AsReverse()"/>, which hand back a zero-copy live
+        /// view). A live view is not expressible here: <see cref="TwoKeyDictionary{K1,K2,V}"/> is a
+        /// concrete, non-virtual class rather than an interface implementation, so a view could only
+        /// be exposed as a thin <c>IReadOnlyDictionary</c>, discarding the per-axis projection surface
+        /// (<see cref="GetByFirstKey"/> / <see cref="GetBySecondKey"/>) that is this type's point. The
+        /// copy keeps the whole strongly-typed surface usable.
+        /// </para>
+        /// <para>
+        /// The copy is self-contained: mutating either dictionary afterwards does not affect the
+        /// other. The per-axis comparers travel with the axes - the reversed first axis keeps
+        /// <see cref="Comparer2"/> and the reversed second axis keeps <see cref="Comparer1"/> - so
+        /// equality behaves exactly as it did before the swap.
+        /// </para>
+        /// <para>
+        /// The payoff is that the original second axis becomes the <em>first</em> axis of the result.
+        /// The underlying trie resolves the first axis by prefix walk, so
+        /// <c>map.AsReverse().GetByFirstKey(k2)</c> answers the same question as
+        /// <see cref="GetBySecondKey"/>, but from a structure indexed that way.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var map = new TwoKeyDictionary&lt;int, string, decimal&gt;();
+        /// map[1, "USD"] = 1.00m;
+        /// map[2, "USD"] = 1.05m;
+        ///
+        /// TwoKeyDictionary&lt;string, int, decimal&gt; byCurrency = map.AsReverse();
+        /// byCurrency["USD", 1];                    // 1.00
+        /// byCurrency.GetByFirstKey("USD").Count;   // 2 - the original second-axis slice
+        /// </code>
+        /// </example>
+        public TwoKeyDictionary<K2, K1, V> AsReverse()
+        {
+            var reversed = new TwoKeyDictionary<K2, K1, V>(Comparer2, Comparer1);
+            foreach (var entry in Entries)
+            {
+                reversed.Add(entry.Key2, entry.Key1, entry.Value);
+            }
+
+            return reversed;
+        }
+
+        /// <summary>
         /// Returns a live read-only view of the dictionary: enumeration reflects subsequent
         /// changes to the owning dictionary. Mutating members are not exposed.
         /// </summary>

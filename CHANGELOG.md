@@ -19,6 +19,16 @@ repository ships the same version (see `build/version.props`).
   `EntrySet()`, `DistinctItems()`, `ToList()`, `ToArray()` and `ToDictionary()`. Each is taken from
   `Snapshot()`, so the result is detached from the bag and unaffected by concurrent writers, which is
   how enumeration on this type already behaves.
+- **`TwoKeyDictionary<K1, K2, V>` and `ThreeKeyDictionary<K1, K2, K3, V>` gained `AsReverse()`**,
+  which swaps the key axes: `TwoKeyDictionary<K2, K1, V>` and `ThreeKeyDictionary<K3, K2, K1, V>`
+  respectively. It returns an independent, fully-typed **copy** built in O(n) — not a live view —
+  because both types are concrete classes rather than interface implementations, so a view could only
+  be a thin `IReadOnlyDictionary` and would lose the per-axis projection surface
+  (`GetByFirstKey` / `GetBySecondKey` / `GetByThirdKey`). The per-axis comparers travel with the axes.
+  The point of the swap is that the original last axis takes the first-axis position, which the
+  underlying trie resolves by prefix walk: `map.AsReverse().GetByFirstKey(k)` answers the same question
+  as `map.GetBySecondKey(k)` (two-key) or `map.GetByThirdKey(k)` (three-key), from a structure indexed
+  that way.
 
 ### Changed
 

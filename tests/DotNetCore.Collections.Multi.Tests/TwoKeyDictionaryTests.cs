@@ -1019,5 +1019,166 @@ namespace DotNetCore.Collections.Multi.Tests
 
             map.ContainsValue(42).ShouldBeFalse();
         }
+
+        // ------------------------------------------------------------------
+        // AsReverse (F6-40, copy semantics)
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void AsReverse_ReKeysEntriesAsKey2ThenKey1()
+        {
+            var map = new TwoKeyDictionary<int, string, decimal>
+            {
+                [1, "USD"] = 1.00m,
+                [2, "USD"] = 1.05m,
+                [1, "EUR"] = 0.92m
+            };
+
+            var reversed = map.AsReverse();
+
+            reversed["USD", 1].ShouldBe(1.00m);
+            reversed["USD", 2].ShouldBe(1.05m);
+            reversed["EUR", 1].ShouldBe(0.92m);
+            reversed.Count.ShouldBe(3);
+        }
+
+        [Fact]
+        public void AsReverse_GetByFirstKey_MatchesOriginalGetBySecondKey()
+        {
+            var map = new TwoKeyDictionary<int, string, decimal>
+            {
+                [1, "USD"] = 1.00m,
+                [2, "USD"] = 1.05m,
+                [1, "EUR"] = 0.92m
+            };
+
+            var reversed = map.AsReverse();
+
+            reversed.GetByFirstKey("USD")
+                .ShouldBe(map.GetBySecondKey("USD"), ignoreOrder: true);
+            reversed.CountOfFirstKey("USD").ShouldBe(map.CountOfSecondKey("USD"));
+        }
+
+        [Fact]
+        public void AsReverse_GetBySecondKey_MatchesOriginalGetByFirstKey()
+        {
+            var map = new TwoKeyDictionary<int, string, decimal>
+            {
+                [1, "USD"] = 1.00m,
+                [1, "EUR"] = 0.92m,
+                [2, "USD"] = 1.05m
+            };
+
+            var reversed = map.AsReverse();
+
+            reversed.GetBySecondKey(1)
+                .ShouldBe(map.GetByFirstKey(1), ignoreOrder: true);
+        }
+
+        [Fact]
+        public void AsReverse_ContainsKey_AgreesWithSourceOnTheSwappedPair()
+        {
+            var map = new TwoKeyDictionary<int, string, int> { [1, "a"] = 42 };
+
+            var reversed = map.AsReverse();
+
+            reversed.ContainsKey("a", 1).ShouldBeTrue();
+            reversed.ContainsKey("a", 2).ShouldBeFalse();
+            reversed.ContainsFirstKey("a").ShouldBeTrue();
+            reversed.ContainsSecondKey(1).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void AsReverse_Empty_IsEmpty()
+        {
+            var map = new TwoKeyDictionary<int, string, int>();
+
+            var reversed = map.AsReverse();
+
+            reversed.IsEmpty.ShouldBeTrue();
+            reversed.Count.ShouldBe(0);
+        }
+
+        [Fact]
+        public void AsReverse_IsACopy_MutationsDoNotPropagateEitherWay()
+        {
+            var map = new TwoKeyDictionary<int, string, int> { [1, "a"] = 42 };
+
+            var reversed = map.AsReverse();
+
+            // Mutating the source must not show up in the copy.
+            map[2, "b"] = 43;
+            reversed.Count.ShouldBe(1);
+            reversed.ContainsKey("b", 2).ShouldBeFalse();
+
+            // ... and mutating the copy must not show up in the source.
+            reversed["c", 3] = 44;
+            map.Count.ShouldBe(2);
+            map.ContainsKey(3, "c").ShouldBeFalse();
+        }
+
+        [Fact]
+        public void AsReverse_RemoveOnTheCopy_DoesNotAffectTheSource()
+        {
+            var map = new TwoKeyDictionary<int, string, int>
+            {
+                [1, "a"] = 42,
+                [2, "b"] = 43
+            };
+
+            var reversed = map.AsReverse();
+            reversed.Remove("a", 1).ShouldBeTrue();
+
+            reversed.Count.ShouldBe(1);
+            map.Count.ShouldBe(2);
+            map.ContainsKey(1, "a").ShouldBeTrue();
+        }
+
+        [Fact]
+        public void AsReverse_CarriesTheComparersAcrossTheAxes()
+        {
+            var map = new TwoKeyDictionary<int, string, decimal>(
+                comparer1: null,
+                comparer2: StringComparer.OrdinalIgnoreCase)
+            {
+                [1, "USD"] = 1.00m
+            };
+
+            var reversed = map.AsReverse();
+
+            // The reversed first axis is the original second axis, so it must still be
+            // case-insensitive - the comparer travels with the axis.
+            reversed["usd", 1].ShouldBe(1.00m);
+            reversed.ContainsFirstKey("usd").ShouldBeTrue();
+        }
+
+        [Fact]
+        public void AsReverse_NullComponents_AreSupported()
+        {
+            var map = new TwoKeyDictionary<string, string, int> { [null, "a"] = 42 };
+
+            var reversed = map.AsReverse();
+
+            reversed["a", null].ShouldBe(42);
+            reversed.ContainsKey("a", null).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void AsReverse_EntriesAreTheSwappedSourceEntries()
+        {
+            var map = new TwoKeyDictionary<int, string, int>
+            {
+                [1, "a"] = 10,
+                [2, "b"] = 20
+            };
+
+            var reversed = map.AsReverse();
+
+            reversed.Entries
+                .Select(e => (e.Key1, e.Key2, e.Value))
+                .ShouldBe(
+                    new[] { ("a", 1, 10), ("b", 2, 20) },
+                    ignoreOrder: true);
+        }
     }
 }

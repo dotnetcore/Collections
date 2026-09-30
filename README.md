@@ -474,14 +474,19 @@ types**, with a typed indexer instead of a `TKey[]`. Its second axis is queried 
 reverse index (`K2` &#8594; set of `K1`), so `GetBySecondKey` / `CountOfSecondKey` /
 `ContainsSecondKey` / `RemoveBySecondKey` visit only the requested slice. `Values` flattens every
 stored value and `ContainsValue` reports whether any entry holds a given value — the latter as a
-full scan, because the reverse index is keyed by `K2` and not by the value.
+full scan, because the reverse index is keyed by `K2` and not by the value. `AsReverse()` swaps the
+axes into an independent `TwoKeyDictionary<K2, K1, V>` copy (O(n)); the original second axis becomes
+the result's first axis, so `map.AsReverse().GetByFirstKey(k2)` answers the same question as
+`map.GetBySecondKey(k2)` — but from the axis the trie resolves by prefix walk.
 
 **`ThreeKeyDictionary<K1, K2, K3, V>`** — the same idea with exactly three differently typed
 components. The first axis is a prefix, so its slice (`GetByFirstKey` / `CountOfFirstKey` /
 `RemoveByFirstKey`) is a trie walk; the second and third axes are deliberately **not** backed by an
 index and scan O(n). Use `MultiKeyDictionary<TKey, TValue>` when an axis other than the first must be
 queried hard, with the key order putting that axis first. It carries the same `Values` /
-`ContainsValue` pair as `TwoKeyDictionary<K1, K2, V>`, with the same O(n) cost on `ContainsValue`.
+`ContainsValue` pair as `TwoKeyDictionary<K1, K2, V>`, with the same O(n) cost on `ContainsValue`,
+and the same `AsReverse()` copy (O(n)) mirroring the axes to `ThreeKeyDictionary<K3, K2, K1, V>` —
+the original third axis takes the prefix-walk position, while the middle axis is unchanged.
 
 **`MultiKeyMultiDictionary<TKey, TValue>`** — the composite key of a trie *and* several values per
 complete key: the combination of `MultiKeyDictionary<TKey, TValue>` (N components &#8594; 1 value)
@@ -665,6 +670,9 @@ rates[1, "USD"] = 1.00m;
 rates[1, "EUR"] = 0.92m;
 rates.CountOfFirstKey(1);             // 2  (a prefix walk over the trie)
 rates.GetBySecondKey("USD");          // (1, 1.00m) — served from the second-axis reverse index
+var byCurrency = rates.AsReverse();   // TwoKeyDictionary<string, int, decimal> — an O(n) copy
+byCurrency["USD", 1];                 // 1.00m
+byCurrency.GetByFirstKey("USD");      // (1, 1.00m), (…) — the original second-axis slice, now prefix-walked
 
 // MultiKeyMultiDictionary<K, V>: a composite key with many values per complete key
 var assignments = new MultiKeyMultiDictionary<string, int>();

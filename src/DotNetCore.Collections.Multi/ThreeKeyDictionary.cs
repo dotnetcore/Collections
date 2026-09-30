@@ -590,6 +590,59 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Returns the dictionary with its key axes reversed: the entries are re-keyed as
+        /// <c>(k3, k2, k1)</c>, producing a <see cref="ThreeKeyDictionary{K1,K2,K3,V}"/> whose axis
+        /// order is the mirror image of this one.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is a <b>copy</b>, not a view: a new, independent, fully-typed dictionary is built by
+        /// replaying every entry in <b>O(n)</b>. It therefore deviates from the family's other
+        /// <c>AsReverse</c> members (<see cref="MultiDictionary{TKey,TValue}.AsReverse()"/> and
+        /// <see cref="BiDictionary{TLeft,TRight}.AsReverse()"/>, which hand back a zero-copy live
+        /// view). A live view is not expressible here: <see cref="ThreeKeyDictionary{K1,K2,K3,V}"/> is
+        /// a concrete, non-virtual class rather than an interface implementation, so a view could only
+        /// be exposed as a thin <c>IReadOnlyDictionary</c>, discarding the per-axis projection surface
+        /// (<see cref="GetByFirstKey"/> / <see cref="GetBySecondKey"/> / <see cref="GetByThirdKey"/>)
+        /// that is this type's point. The copy keeps the whole strongly-typed surface usable.
+        /// </para>
+        /// <para>
+        /// The copy is self-contained: mutating either dictionary afterwards does not affect the
+        /// other. The per-axis comparers travel with the axes - the reversed axes keep
+        /// <see cref="Comparer3"/>, <see cref="Comparer2"/> and <see cref="Comparer1"/> in that order -
+        /// so equality behaves exactly as it did before the reversal.
+        /// </para>
+        /// <para>
+        /// The payoff is that the original third axis becomes the <em>first</em> axis of the result.
+        /// The underlying trie resolves the first axis by prefix walk, so
+        /// <c>map.AsReverse().GetByFirstKey(k3)</c> answers the same question as
+        /// <see cref="GetByThirdKey"/>, but from a structure indexed that way. The middle axis is
+        /// unchanged by the reversal.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var map = new ThreeKeyDictionary&lt;int, string, string, decimal&gt;();
+        /// map[1, "USD", "2026Q1"] = 1.00m;
+        /// map[2, "USD", "2026Q1"] = 1.05m;
+        ///
+        /// ThreeKeyDictionary&lt;string, string, int, decimal&gt; byQuarter = map.AsReverse();
+        /// byQuarter["2026Q1", "USD", 1];             // 1.00
+        /// byQuarter.GetByFirstKey("2026Q1").Count;   // 2 - the original third-axis slice
+        /// </code>
+        /// </example>
+        public ThreeKeyDictionary<K3, K2, K1, V> AsReverse()
+        {
+            var reversed = new ThreeKeyDictionary<K3, K2, K1, V>(Comparer3, Comparer2, Comparer1);
+            foreach (var entry in Entries)
+            {
+                reversed.Add(entry.Key3, entry.Key2, entry.Key1, entry.Value);
+            }
+
+            return reversed;
+        }
+
+        /// <summary>
         /// Returns a live read-only view of the dictionary: enumeration reflects subsequent
         /// changes to the owning dictionary. Mutating members are not exposed.
         /// </summary>
