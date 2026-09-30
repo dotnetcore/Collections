@@ -293,6 +293,7 @@ BenchmarkDotNet.Artifacts/
 
 # WorkBuddy 工作区元数据（含日志/记忆，禁止提交）
 .workbuddy/
+.workbuddy-ai/
 
 # ZCode 会话工作目录（禁止提交）
 .zcode/
