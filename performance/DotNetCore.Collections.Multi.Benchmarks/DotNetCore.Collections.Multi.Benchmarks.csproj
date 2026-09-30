@@ -7,9 +7,11 @@
          the existing (BCL-referenced) sweeps run on; the arms for this axis are compiled only
          into the Framework target. Both targets build from this one project - no second project. -->
     <TargetFrameworks>net8.0;net461</TargetFrameworks>
-    <!-- The existing benchmark files use syntax newer than the net461 default (7.3); pinning the
-         language version keeps one source set compiling for both targets. -->
-    <LangVersion>latest</LangVersion>
+    <!-- The existing benchmark files use syntax newer than the net461 default (7.3), so the
+         Framework leg has to be lifted. Deliberately scoped to net461: net8.0 keeps the language
+         version it already had before this project went multi-target, so the F6-26 sweep's
+         compilation is left exactly as it was. -->
+    <LangVersion Condition="'$(TargetFramework)' == 'net461'">latest</LangVersion>
     <IsPackable>false</IsPackable>
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
