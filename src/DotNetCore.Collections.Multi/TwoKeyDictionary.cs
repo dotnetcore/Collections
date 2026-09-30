@@ -216,6 +216,31 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Gets every stored value, flattened across the key space. Each (k1, k2) pair is a single
+        /// entry, so this yields exactly <see cref="Count"/> values; the key components are
+        /// dropped.
+        /// </summary>
+        /// <remarks>
+        /// Mirrors <see cref="MultiDictionary{TKey,TValue}.Values"/> and
+        /// <see cref="MultiKeyDictionary{TKey,TValue}.Values"/>, which flatten the same way.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// foreach (decimal rate in map.Values) { }
+        /// </code>
+        /// </example>
+        public IEnumerable<V> Values
+        {
+            get
+            {
+                foreach (var entry in _trie)
+                {
+                    yield return entry.Value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the value stored under the (k1, k2) pair. Reading a missing pair raises
         /// <see cref="KeyNotFoundException"/>; writing overwrites any previous value.
         /// </summary>
@@ -341,6 +366,35 @@ namespace DotNetCore.Collections.Multi
         {
             return TryGetValue(key1, key2, out var existing)
                 && EqualityComparer<V>.Default.Equals(existing, value);
+        }
+
+        /// <summary>
+        /// Determines whether any entry holds the specified value, under any (k1, k2) pair.
+        /// </summary>
+        /// <remarks>
+        /// <b>O(n)</b> — a full scan of the entries. Unlike
+        /// <see cref="MultiDictionary{TKey,TValue}.ContainsValue(TValue)"/>, which answers in O(1)
+        /// from a backwards index, this type keeps no value-side index: the reverse index it does
+        /// maintain is keyed by <typeparamref name="K2"/>, not by the value. Value equality is
+        /// <see cref="EqualityComparer{T}.Default"/>, the same notion <see cref="Contains"/> uses,
+        /// and a <c>null</c> value is an ordinary value.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// bool has = map.ContainsValue(1.00m);
+        /// </code>
+        /// </example>
+        public bool ContainsValue(V value)
+        {
+            foreach (var entry in _trie)
+            {
+                if (EqualityComparer<V>.Default.Equals(entry.Value, value))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         // ------------------------------------------------------------------

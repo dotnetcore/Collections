@@ -472,13 +472,16 @@ prefix: a trie over `(region, country, city)`-style keys of any arity.
 **`TwoKeyDictionary<K1, K2, V>`** — the same idea with exactly two components **of different
 types**, with a typed indexer instead of a `TKey[]`. Its second axis is queried through a maintained
 reverse index (`K2` &#8594; set of `K1`), so `GetBySecondKey` / `CountOfSecondKey` /
-`ContainsSecondKey` / `RemoveBySecondKey` visit only the requested slice.
+`ContainsSecondKey` / `RemoveBySecondKey` visit only the requested slice. `Values` flattens every
+stored value and `ContainsValue` reports whether any entry holds a given value — the latter as a
+full scan, because the reverse index is keyed by `K2` and not by the value.
 
 **`ThreeKeyDictionary<K1, K2, K3, V>`** — the same idea with exactly three differently typed
 components. The first axis is a prefix, so its slice (`GetByFirstKey` / `CountOfFirstKey` /
 `RemoveByFirstKey`) is a trie walk; the second and third axes are deliberately **not** backed by an
 index and scan O(n). Use `MultiKeyDictionary<TKey, TValue>` when an axis other than the first must be
-queried hard, with the key order putting that axis first.
+queried hard, with the key order putting that axis first. It carries the same `Values` /
+`ContainsValue` pair as `TwoKeyDictionary<K1, K2, V>`, with the same O(n) cost on `ContainsValue`.
 
 **`MultiKeyMultiDictionary<TKey, TValue>`** — the composite key of a trie *and* several values per
 complete key: the combination of `MultiKeyDictionary<TKey, TValue>` (N components &#8594; 1 value)

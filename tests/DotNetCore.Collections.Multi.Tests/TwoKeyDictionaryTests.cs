@@ -896,5 +896,128 @@ namespace DotNetCore.Collections.Multi.Tests
             map[string.Empty, "b"].ShouldBe(1);
             map.CountOfFirstKey(string.Empty).ShouldBe(1);
         }
+
+        // ------------------------------------------------------------------
+        // Values / ContainsValue (F6-39)
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void Values_YieldsOneValuePerEntry()
+        {
+            var map = new TwoKeyDictionary<int, string, decimal>
+            {
+                [1, "USD"] = 1.00m,
+                [1, "EUR"] = 0.92m,
+                [2, "USD"] = 1.05m
+            };
+
+            map.Values.ShouldBe(new[] { 1.00m, 0.92m, 1.05m }, ignoreOrder: true);
+        }
+
+        [Fact]
+        public void Values_CountMatchesCount()
+        {
+            var map = new TwoKeyDictionary<int, string, int>();
+            map.Add(1, "a", 1);
+            map.Add(1, "b", 2);
+            map.Add(2, "a", 3);
+
+            map.Values.Count().ShouldBe(map.Count);
+        }
+
+        [Fact]
+        public void Values_Empty_IsEmpty()
+        {
+            var map = new TwoKeyDictionary<int, string, decimal>();
+
+            map.Values.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void Values_RepeatsAValueStoredUnderSeveralPairs()
+        {
+            // Flattening, not de-duplication: MultiDictionary.Values behaves the same way.
+            var map = new TwoKeyDictionary<int, string, int>
+            {
+                [1, "a"] = 7,
+                [2, "b"] = 7
+            };
+
+            map.Values.Count().ShouldBe(2);
+            map.Values.ShouldAllBe(v => v == 7);
+        }
+
+        [Fact]
+        public void Values_IsLive()
+        {
+            var map = new TwoKeyDictionary<int, string, int> { [1, "a"] = 1 };
+
+            var values = map.Values;
+            map.Add(2, "b", 2);
+
+            values.ShouldBe(new[] { 1, 2 }, ignoreOrder: true);
+        }
+
+        [Fact]
+        public void ContainsValue_FindsAValueUnderAnyPair()
+        {
+            var map = new TwoKeyDictionary<int, string, decimal>
+            {
+                [1, "USD"] = 1.00m,
+                [1, "EUR"] = 0.92m
+            };
+
+            map.ContainsValue(0.92m).ShouldBeTrue();
+            map.ContainsValue(1.00m).ShouldBeTrue();
+            map.ContainsValue(9.99m).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void ContainsValue_Empty_IsFalse()
+        {
+            var map = new TwoKeyDictionary<int, string, decimal>();
+
+            map.ContainsValue(1.00m).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void ContainsValue_NullValue_IsAnOrdinaryValue()
+        {
+            var map = new TwoKeyDictionary<int, string, string> { [1, "a"] = null };
+
+            map.ContainsValue(null).ShouldBeTrue();
+            map.ContainsValue("x").ShouldBeFalse();
+        }
+
+        [Fact]
+        public void ContainsValue_AgreesWithContainsOnTheOwningPair()
+        {
+            var map = new TwoKeyDictionary<int, string, int> { [1, "a"] = 42 };
+
+            map.ContainsValue(42).ShouldBeTrue();
+            map.Contains(1, "a", 42).ShouldBeTrue();
+            map.Contains(2, "b", 42).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void ContainsValue_AfterRemove_StopsFinding()
+        {
+            var map = new TwoKeyDictionary<int, string, int> { [1, "a"] = 42 };
+
+            map.Remove(1, "a");
+
+            map.ContainsValue(42).ShouldBeFalse();
+            map.Values.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ContainsValue_AfterClear_IsFalse()
+        {
+            var map = new TwoKeyDictionary<int, string, int> { [1, "a"] = 42 };
+
+            map.Clear();
+
+            map.ContainsValue(42).ShouldBeFalse();
+        }
     }
 }

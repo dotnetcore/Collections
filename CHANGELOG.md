@@ -4,6 +4,33 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [Unreleased]
+
+### Added
+
+- **`TwoKeyDictionary<K1, K2, V>` and `ThreeKeyDictionary<K1, K2, K3, V>` gained `Values` and
+  `ContainsValue(value)`.** `Values` flattens every stored value — one per entry, the key components
+  dropped — matching the `Values` the other dictionary types in this package already expose;
+  `ContainsValue` reports whether any entry holds a given value, under any key combination.
+  `ContainsValue` is a full scan (O(n)): neither type keeps a value-side index, since the reverse
+  index `TwoKeyDictionary` does maintain is keyed by `K2`, not by the value. Where an O(1) value
+  lookup is required, keep using `MultiDictionary<TKey, TValue>.ContainsValue`.
+
+### Changed
+
+None. No packaged behaviour, target framework, dependency or package content changed.
+
+### Fixed
+
+None. No packaged defect was addressed.
+
+### Breaking
+
+- **None.** Every change is a pure addition: no member was removed, renamed or re-signed, and no
+  existing behaviour changed. `ConcurrentMultiList<T>.ToDictionary()` inherits the
+  `InvalidOperationException` that `MultiList<T>.ToDictionary()` raises for a `null` element;
+  `EntrySet()` is the `null`-safe alternative on both.
+
 ## [6.7.0] - 2026-09-30
 
 This release ships no package changes, and says so rather than dressing it up. The 6.7 version
