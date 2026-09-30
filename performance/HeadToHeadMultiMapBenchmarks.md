@@ -98,3 +98,44 @@ the runs. The four mean-over-mean ratios were 2.73x / 2.12x / 1.99x / 2.05x on t
 against 3.11x / 2.80x / 1.98x / 1.99x on the second, in table order. The two `Remove` rows
 reproduce to within 0.01x; the `Add` rows move more, and `Add` at 4096 keys is the least stable of
 the four cells — it is the one to re-measure before quoting.
+
+## Not comparable, not measured
+
+Stated rather than left blank, so that nothing above reads as more than it is.
+
+| Item | Status | Why, or how to close it |
+| --- | --- | --- |
+| the read side (key lookup, per-key count, iteration) | **not comparable** | the reference has no such surface at all, so there is nothing to pair up. This is not a gap in the measurement |
+| `Add` as a like-for-like operation | **not comparable** | the multiplicity difference set out above. The table gives a conservative per-*call* figure; per *insertion* the reference is about twice as far ahead again. A truly like-for-like arm would have to make this repository insert two copies on every second call, which changes the operation being measured, so it was not written |
+| the reference's behaviour on an absent pair | **not measurable** | it throws, so there is no stable path to time. The arm removes only present pairs instead |
+| the cause of the 64-key allocation gap | **not located in code** | the effect is consistent with inner storage that grows as repeated adds land on one key, but the reference's storage layer was not read to confirm it. Closing this means decompiling that layer and checking its growth policy |
+| sizes above 4096 keys | **not measured** | the remove arm scales safely to any size at or above the loop length; the add arm has no contract limit at all |
+| a second machine, and a longer job | **not done** | this is one machine under `ShortRun`, with iteration times of 20–90 µs against a recommended floor of 100 ms. The absolute figures need a longer job before they are quoted anywhere |
+
+One sentence to carry along with any use of these numbers: **the four cells say what each side costs
+for its own behaviour, not how two implementations of the same operation compare.**
+
+## Reproducing
+
+```
+# build the Framework target (building both targets also regression-checks net8.0)
+dotnet build performance/DotNetCore.Collections.Multi.Benchmarks -c Release
+
+# start the net461 host directly - do NOT use `dotnet run --`, because the MSBuild
+# serialisation switches would land in BenchmarkDotNet's own argument list
+./performance/DotNetCore.Collections.Multi.Benchmarks/bin/Release/net461/DotNetCore.Collections.Multi.Benchmarks.exe --filter "*HeadToHead_MultiMap*"
+```
+
+Two environment problems will stop the run before it starts, and both are worth knowing about:
+
+1. **Environment entries that differ only by case.** On .NET Framework,
+   `ProcessStartInfo.EnvironmentVariables` is a case-insensitive dictionary, so BenchmarkDotNet
+   fails to launch its child process — `System.ArgumentException: ... "HTTP_PROXY" ...
+   "http_proxy"` — when the environment carries both spellings of one name. The usual offenders are
+   the proxy variables. Keep one spelling of each and drop the other before starting the host.
+2. **Missing Windows environment variables.** BenchmarkDotNet restores and compiles a project of its
+   own, so running the executable without `SYSTEMROOT` / `WINDIR` / `PROGRAMFILES` / `APPDATA`
+   present fails with `NuGet.targets(...): error : Value cannot be null. (Parameter 'path1')`.
+
+BenchmarkDotNet writes `csv` / `html` / `github.md` reports into `BenchmarkDotNet.Artifacts/`, which
+is not version controlled.
