@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <!-- F6-34: the DC-side head-to-head needs a .NET Framework target because the reference
+    <!-- F6-34: the second head-to-head axis needs a .NET Framework target because its reference
          implementation ships a net461 asset only. net8.0 stays the default target and is what
-         the existing (BCL-referenced) sweeps run on; the DC arms are compiled only into the
-         Framework target. Both targets build from this one project - no second project. -->
+         the existing (BCL-referenced) sweeps run on; the arms for this axis are compiled only
+         into the Framework target. Both targets build from this one project - no second project. -->
     <TargetFrameworks>net8.0;net461</TargetFrameworks>
     <!-- The existing benchmark files use syntax newer than the net461 default (7.3); pinning the
          language version keeps one source set compiling for both targets. -->
@@ -24,7 +24,7 @@
     <PackageReference Include="Kaos.Collections" Version="4.1.0" />
   </ItemGroup>
 
-  <!-- F6-34: the DC-side reference implementation ships a net461 asset only, so it can only be
+  <!-- F6-34: this axis's reference implementation ships a net461 asset only, so it can only be
        referenced from the Framework target. It is a benchmark-only dependency - nothing under
        src/ references it. -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">

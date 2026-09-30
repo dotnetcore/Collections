@@ -6,16 +6,22 @@ using DotNetCore.Collections.Multi;
 
 namespace DotNetCore.Collections.Multi.Benchmarks
 {
-    // F6-34: the DC-side head-to-head. F6-26 put this repository's ordered types next to a
+    // F6-34: the second head-to-head axis. F6-26 put this repository's ordered types next to a
     // reference implementation that ships a netstandard1.0 asset, so it could run inside the
-    // net8.0 harness. The DC-side reference is different: it ships a net461 asset only, so this
-    // file is compiled into the Framework target of this project and is excluded from net8.0.
-    // That is why the whole file sits behind #if NETFRAMEWORK.
+    // net8.0 harness. The reference on this axis is different: it ships a net461 asset only, so
+    // this file is compiled into the Framework target of this project and is excluded from
+    // net8.0. That is why the whole file sits behind #if NETFRAMEWORK.
+    //
+    // Identifiers here deliberately do not repeat the reference package's own name or any
+    // abbreviation of it. The package name survives only where it cannot be avoided - the
+    // project reference and the using directive - and those two files are the same approved
+    // exception the F6-26 file already relies on. Everything that reaches a reader of the
+    // desensitized summary (class names, the filter, this file's name) stays neutral.
     //
     // HOW TO RUN IT
     //
     //   dotnet build performance/DotNetCore.Collections.Multi.Benchmarks -c Release -f net461
-    //   ./performance/DotNetCore.Collections.Multi.Benchmarks/bin/Release/net461/DotNetCore.Collections.Multi.Benchmarks.exe --filter "*DcMultiMap*"
+    //   ./performance/DotNetCore.Collections.Multi.Benchmarks/bin/Release/net461/DotNetCore.Collections.Multi.Benchmarks.exe --filter "*HeadToHead_MultiMap*"
     //
     // The benchmark host itself then runs on the installed .NET Framework runtime, which is the
     // only runtime that can load the reference assembly.
@@ -57,7 +63,7 @@ namespace DotNetCore.Collections.Multi.Benchmarks
     /// </summary>
     [ShortRunJob]
     [MemoryDiagnoser]
-    public class HeadToHead_DcMultiMap_Add
+    public class HeadToHead_MultiMap_Add
     {
         private const int Ops = 1024;
 
@@ -112,7 +118,7 @@ namespace DotNetCore.Collections.Multi.Benchmarks
     /// </summary>
     [ShortRunJob]
     [MemoryDiagnoser]
-    public class HeadToHead_DcMultiMap_Remove
+    public class HeadToHead_MultiMap_Remove
     {
         private const int Ops = 1024;
 
