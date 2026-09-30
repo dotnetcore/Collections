@@ -2,7 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <!-- F6-34: the DC-side head-to-head needs a .NET Framework target because the reference
+         implementation ships a net461 asset only. net8.0 stays the default target and is what
+         the existing (BCL-referenced) sweeps run on; the DC arms are compiled only into the
+         Framework target. Both targets build from this one project - no second project. -->
+    <TargetFrameworks>net8.0;net461</TargetFrameworks>
+    <!-- The existing benchmark files use syntax newer than the net461 default (7.3); pinning the
+         language version keeps one source set compiling for both targets. -->
+    <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
@@ -15,6 +22,17 @@
          netstandard1.0 assets; this net8.0 harness resolves the netstandard1.0 one. It is a
          benchmark-only dependency - nothing under src/ references it. -->
     <PackageReference Include="Kaos.Collections" Version="4.1.0" />
+  </ItemGroup>
+
+  <!-- F6-34: the DC-side reference implementation ships a net461 asset only, so it can only be
+       referenced from the Framework target. It is a benchmark-only dependency - nothing under
+       src/ references it. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <PackageReference Include="Dangr.Collections" Version="3.1.0" />
+    <!-- SpanBag<T> is compiled into the package only on netstandard2.1 / net6.0+ (it needs an
+         in-box Span<T>; see src/DotNetCore.Collections.Multi/SpanBag.cs), so its benchmark cannot
+         exist on the Framework target either. -->
+    <Compile Remove="SpanBagBenchmarks.cs" />
   </ItemGroup>
 
   <ItemGroup>
