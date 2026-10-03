@@ -597,6 +597,51 @@ bag has one global state its operations compare against. For read-mostly workloa
 `EntrySet()`, `DistinctItems()`, `ToList()`, `ToArray()` and `ToDictionary()` — each taken from a
 snapshot, so the result is immune to concurrent writes.
 
+### Comparing collections
+
+**`CollectionDifference<TKey, TValue>`** — what changed between two collections? `left.Difference(right)`
+splits the keys into four disjoint partitions: `OnlyInLeft`, `OnlyInRight`, `InCommon` (present on
+both sides with an equal value) and `Differing` (present on both with a different value, mapped to its
+`(Left, Right)` pair); `AreEqual` is the shortcut for "nothing changed". It is a **snapshot** taken at
+the call, not a live view — this library keeps its collection algebra to read-only views, snapshots
+and in-place forms, and does not ship writable through-views. A `null` key can not be represented (the
+partitions are dictionaries) and is rejected with `ArgumentException` rather than silently dropped,
+the same policy as `MultiList<T>.ToDictionary()`.
+
+The comparison reads two ways. Two **multisets** are compared by copy count, so the result says which
+elements were added, removed, or changed multiplicity:
+
+```c#
+var left = new MultiList<string>();
+left.Add("a", 3);
+left.Add("b");
+var right = new MultiList<string>();
+right.Add("a", 2);
+right.Add("c");
+
+var diff = left.Difference(right);
+diff.OnlyInLeft["b"];    // 1      — only on the left
+diff.OnlyInRight["c"];   // 1      — only on the right
+diff.Differing["a"];     // (3, 2) — on both, count changed
+diff.AreEqual;           // false
+```
+
+Two **dictionaries** are compared by mapped value instead — the same four partitions then answer
+"which keys were added, removed, or changed value". The overload also accepts a
+`MultiDictionary<TKey, TValue>` (or any `IReadOnlyDictionary`), whose per-key value collection is the
+value being compared. Both overloads take a key comparer, and the dictionary one a value comparer, so
+key identity and value equality are the caller's to define:
+
+```c#
+var before = new Dictionary<string, int> { ["a"] = 1, ["b"] = 2 };
+var after  = new Dictionary<string, int> { ["a"] = 1, ["b"] = 9, ["c"] = 3 };
+
+var diff = before.Difference(after);
+diff.InCommon["a"];      // 1
+diff.Differing["b"];     // (2, 9)
+diff.OnlyInRight["c"];   // 3
+```
+
 ### Conventions
 
 - **Set vs. multiset arguments.** The per-key operations of `MultiDictionary<TKey, TValue>` treat

@@ -18,6 +18,20 @@ repository ships the same version (see `build/version.props`).
   deliberately a standalone type rather than an `IMultiSet<T>` implementation, because that contract
   states that `AddRange` order does not affect the result — which is false for a first-in-first-out
   bounded bag, where the earliest elements are the ones evicted.
+- **`CollectionDifference<TKey, TValue>` and the `Difference` extension methods — a four-way
+  comparison of two bags or two dictionaries.** `left.Difference(right)` returns an immutable
+  snapshot split into four disjoint partitions: `OnlyInLeft`, `OnlyInRight`, `InCommon` (present on
+  both sides with an equal value) and `Differing` (present on both with a different value, mapped to
+  its `(Left, Right)` pair), with `AreEqual` as the "nothing changed" shortcut. Two multisets are
+  compared by copy count, so the result answers which elements were added, removed, or changed
+  multiplicity; two `IReadOnlyDictionary<TKey, TValue>` instances are compared by mapped value, so it
+  answers which keys were added, removed, or changed value — a multimap satisfies that overload with
+  its per-key value collection as the value. Both overloads accept a key comparer, and the dictionary
+  one a value comparer, so key identity and value equality stay the caller's to define.
+  `CollectionDifference<TKey, TValue>.Of` is the underlying factory for any key/value sequences. The
+  result is a snapshot taken at the call, never a live view — this library does not ship writable
+  through-views. A `null` key can not be represented (the partitions are dictionaries) and is
+  rejected with `ArgumentException` rather than silently dropped, the same policy as `ToDictionary()`.
 
 ## [6.8.0] - 2026-10-03
 
