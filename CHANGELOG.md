@@ -4,6 +4,21 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [Unreleased]
+
+### Added
+
+- **`BoundedBag<T>` — a bag whose total number of copies is capped.** The sliding-window member of
+  the bag family: it holds at most a fixed `Capacity` copies and, when a new copy would exceed it,
+  silently evicts the **oldest** copy, so the bag always describes the most recent additions. Adding
+  never fails (`Add` returns `void` — there is no overflow to report). Storage is a single ring
+  buffer of one slot per copy, so `Add` and eviction are O(1); the lookup and projection members
+  (`Contains`, `CountOf`, `DistinctCount`, `EntrySet`, …) scan the bounded window, which is the
+  whole point of the type. `null` is a first-class element, as in `MultiList<T>`. It is
+  deliberately a standalone type rather than an `IMultiSet<T>` implementation, because that contract
+  states that `AddRange` order does not affect the result — which is false for a first-in-first-out
+  bounded bag, where the earliest elements are the ones evicted.
+
 ## [6.8.0] - 2026-10-03
 
 ### Added

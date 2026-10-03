@@ -76,8 +76,9 @@ rather than as something you add on top:
   nine ORM integrations that make paging one call on the source you already have.
 - **Specializations for the cases the general type gets wrong.** `PackedBag<T>` (a dense value-type
   histogram, no hash table), `SpanBag<T>` (stack-only, zero heap), `FrequencyPriorityBag<T>`
-  (most-frequent-first, Top-K), and `Deque<T>` (both ends O(1) amortized, zero allocation) — the
-  base class library ships no deque at all.
+  (most-frequent-first, Top-K), `BoundedBag<T>` (a capped sliding window, oldest copy evicted
+  first), and `Deque<T>` (both ends O(1) amortized, zero allocation) — the base class library ships
+  no deque at all.
 - **One code path across the whole framework matrix** — `net451` through `net10.0`, with nullable
   reference annotations and XML documentation on every public member.
 
@@ -351,6 +352,7 @@ repeat*, never by name similarity.
 | `PackedBag<T>` | elements, packed histogram | 1 value-type element &#8594; N copies, dense struct array |
 | `SpanBag<T>` | elements, stack-only | 1 element &#8594; N copies, zero allocation, method-local |
 | `FrequencyPriorityBag<T>` | elements, by frequency | 1 element &#8594; N copies, most-frequent-first |
+| `BoundedBag<T>` | elements, capped | at most N copies in total, oldest copy evicted first |
 | `MultiDictionary<TKey, TValue>` | values | 1 key &#8594; N values |
 | `OrderedMultiDictionary<TKey, TValue>` | values, ordered | 1 key &#8594; N values, sorted |
 | `MultiKeyDictionary<TKey, TValue>` | key components | N components &#8594; 1 value |
@@ -373,6 +375,8 @@ The quick decision list:
   (netstandard2.1 / net6.0+);
 - elements repeat and the question is "what is most frequent?" or "give me the Top-K" &#8594;
   `FrequencyPriorityBag<T>`;
+- elements repeat but only the most recent N matter (a bounded sliding window) &#8594;
+  `BoundedBag<T>`;
 - values repeat under one key &#8594; `MultiDictionary<TKey, TValue>`;
 - values repeat under one key, both axes sorted &#8594; `OrderedMultiDictionary<TKey, TValue>`;
 - key components combine, one value per complete key &#8594; `MultiKeyDictionary<TKey, TValue>` (or
@@ -449,6 +453,16 @@ deterministic FIFO-flavoured rule). Bag semantics mirror `MultiList<T>` — coun
 `Remove` returns the copies remaining, `null` is a first-class element. Measured against re-sorting
 a `MultiList<int>` (512 adds, 32 distinct): repeated Top-1 queries ~3.2x faster with ~2.9x less
 garbage; a build-once-query-once workload lands at parity, where sorting once is just as good.
+
+**`BoundedBag<T>`** — the bag with a ceiling: it holds at most `Capacity` copies in total and, once
+full, evicts the **oldest** copy to admit a new one, so it always describes the most recent window
+of additions. Adding can not fail, which is why `Add` returns `void` — there is no overflow to
+report. Storage is a single ring buffer with one slot per copy, so `Add` and eviction are O(1);
+lookups (`Contains`, `CountOf`, `DistinctCount`) and the projections (`EntrySet`, `DistinctItems`)
+scan the window, which is bounded by `Capacity` and is the point of the type. Removal takes the
+oldest copy of an element first, keeping the window's order; `null` is a first-class element. It is
+a standalone bag rather than an `IMultiSet<T>` implementation on purpose: that contract states that
+`AddRange` order does not affect the result, which is false once eviction depends on it.
 
 ### Multimaps
 
