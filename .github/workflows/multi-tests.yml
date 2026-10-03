@@ -1,5 +1,10 @@
 name: Multi.Tests
 
+# `paths` is kept identical between `push` and `pull_request`, and always lists
+# `build/**`: every src project imports build/common.props, which in turn pulls in
+# build/version.props, build/package.props and build/misc.props, so a change under
+# build/ changes what this job builds. Leaving it out would let a props-only change
+# silently skip this workflow.
 on:
   push:
     branches: [ dev, master ]
@@ -7,19 +12,27 @@ on:
       - 'src/DotNetCore.Collections.Multi/**'
       - 'tests/DotNetCore.Collections.Multi.Tests/**'
       - 'tests/DotNetCore.Collections.Multi.NetFxTests/**'
+      - 'performance/DotNetCore.Collections.Multi.Benchmarks/**'
+      - 'build/**'
       - '.github/workflows/multi-tests.yml'
   pull_request:
     paths:
       - 'src/DotNetCore.Collections.Multi/**'
       - 'tests/DotNetCore.Collections.Multi.Tests/**'
       - 'tests/DotNetCore.Collections.Multi.NetFxTests/**'
+      - 'performance/DotNetCore.Collections.Multi.Benchmarks/**'
+      - 'build/**'
+      - '.github/workflows/multi-tests.yml'
+
+# Declared at the workflow level, matching paginable-tests.yml, so both workflows
+# share one shape instead of each job re-declaring the same two variables.
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
 
 jobs:
   test:
     runs-on: windows-latest
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      DOTNET_NOLOGO: 1
     steps:
       - uses: actions/checkout@v4
         with:

@@ -1,5 +1,10 @@
 name: Paginable.Tests
 
+# `paths` is kept identical between `push` and `pull_request`, and always lists
+# `build/**`: every src project imports build/common.props, which in turn pulls in
+# build/version.props, build/package.props and build/misc.props, so a change under
+# build/ changes what these jobs build. `build/common.props` alone was too narrow --
+# a version/package/misc-only change would have silently skipped this workflow.
 on:
   push:
     branches: [ dev, master ]
@@ -7,12 +12,14 @@ on:
       - 'src/DotNetCore.Collections.Paginable*/**'
       - 'tests/DotNetCore.Collections.Paginable.*/**'
       - 'performance/DotNetCore.Collections.Paginable.Benchmarks/**'
-      - 'build/common.props'
+      - 'build/**'
       - '.github/workflows/paginable-tests.yml'
   pull_request:
     paths:
       - 'src/DotNetCore.Collections.Paginable*/**'
       - 'tests/DotNetCore.Collections.Paginable.*/**'
+      - 'performance/DotNetCore.Collections.Paginable.Benchmarks/**'
+      - 'build/**'
       - '.github/workflows/paginable-tests.yml'
 
 env:
