@@ -13,16 +13,17 @@ modules.
 | **Multi** | `DotNetCore.Collections.Multi` | Multiset, multimap, composite-key and thread-safe/immutable collection types. |
 
 See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
-**6.7.1** release: the first patch release here, and a small one by design. It closes four
-consistency gaps in the `Multi` package — the `Values` / `ContainsValue` members the two- and
-three-key dictionaries were missing, the read-only projections `ConcurrentMultiList<T>` lacked,
-`AsReverse()` on the two- and three-key dictionaries, and `AsReverse()` plus
-`ToSerializableModel()` / `FromModel()` across the rest of the map family. The last of those is the
-one worth a look: `AsReverse()` now carries the semantics each type can actually honour — a live,
-zero-cost view on `ImmutableMultiDictionary<TKey, TValue>`, a snapshot on
-`ConcurrentMultiDictionary<TKey, TValue>`, and an ordered copy on `OrderedMultiDictionary<TKey,
-TValue>` — and `BiDictionary<TLeft, TRight>` gets its own `BiDictionaryModel<TLeft, TRight>` rather
-than being forced into the multimap shape. Everything is an addition: nothing was removed, renamed
+**6.8.0** release: a small `Multi` release that closes the last gaps in the family's per-entry
+projection and adds a one-call way to build a multimap. `TwoKeyDictionary<K1, K2, V>` and
+`ThreeKeyDictionary<K1, K2, K3, V>` now expose their per-entry projection as `EntrySet()`, the name
+every other type in the family already used; their old `Entries` property still compiles and returns
+the same sequence, but it is now obsolete. The two composite-key types that had no projection at
+all — `MultiKeyDictionary<TKey, TValue>` and `MultiKeyMultiDictionary<TKey, TValue>` — gained one
+too, yielding `(TKey[] Key, TValue Value)` pairs. The new `MultiDictionaryExtensions` adds
+`IndexBy`, `UniqueIndexBy` and `AsMultiDictionary`, so a multimap can be built from an existing
+sequence or map instead of one `Add` at a time; each returns an independent copy rather than a live
+view. The `AsReverse()` naming review ended in no rename — the four shapes it takes across the map
+family are documented rather than renamed. Everything is an addition: nothing was removed, renamed
 or re-signed, so there is no **Breaking** change in this release.
 
 ## Contents
@@ -892,7 +893,7 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 
 Publishing is automated by the GitHub Actions `Release` workflow
 (`.github/workflows/release.yml`); no local tooling is involved. It runs on a version-tag push —
-`6.7.1` or `v6.7.1` — and can also be started manually through `workflow_dispatch`:
+`6.8.0` or `v6.8.0` — and can also be started manually through `workflow_dispatch`:
 
 1. **Pack** — all 11 projects are packed in Release configuration into `nuget_pub` on a
    `windows-latest` runner, with the full git history fetched so SourceLink can attach sources to
@@ -921,7 +922,7 @@ The policy owner must own all 11 `DotNetCore.Collections.*` packages. See
 
 Versions are driven by `build/version.props`, which is the single source of truth for every
 package — bump the version there and all 11 packages follow. Tag the commit with the matching
-version (`6.7.1` or `v6.7.1`) to trigger the automated publish; see [Publishing](#publishing) for
+version (`6.8.0` or `v6.8.0`) to trigger the automated publish; see [Publishing](#publishing) for
 what the release workflow does and the one-time nuget.org policy it requires.
 
 ## License
