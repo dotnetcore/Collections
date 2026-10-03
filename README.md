@@ -467,6 +467,14 @@ removal costing O(log n) worst case on both axes. It also has `AsReverse()` (an 
 view — see "One-to-one and inverted") and round-trips through `ToSerializableModel()` /
 `FromModel()`.
 
+**Building a multimap from an existing source.** `MultiDictionaryExtensions` adds three extension
+entry points for when the data already exists as a sequence or a dictionary: `IndexBy(keySelector)`
+groups a sequence into a `MultiDictionary<TKey, TSource>` keeping duplicates, `UniqueIndexBy(keySelector)`
+indexes it into a `BiDictionary<TKey, TSource>` and throws when a key repeats, and
+`AsMultiDictionary()` adapts an `IReadOnlyDictionary<TKey, TValue>` into a `MultiDictionary` whose
+every key owns exactly one value. Each returns an independent copy — later changes to the source are
+not observed — so the result can be mutated freely.
+
 ### Composite keys
 
 **`MultiKeyDictionary<TKey, TValue>`** — the key is **composite** and you query it by a *partial*

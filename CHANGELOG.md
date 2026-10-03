@@ -8,6 +8,15 @@ repository ships the same version (see `build/version.props`).
 
 ### Added
 
+- **`MultiDictionaryExtensions` adds three entry points for building a multimap from an existing
+  source.** `IndexBy(keySelector)` groups a sequence into a `MultiDictionary<TKey, TSource>`, keeping
+  duplicates (list semantics); `UniqueIndexBy(keySelector)` indexes a sequence into a
+  `BiDictionary<TKey, TSource>` and raises `ArgumentException` when a key repeats;
+  `AsMultiDictionary()` adapts an `IReadOnlyDictionary<TKey, TValue>` into a
+  `MultiDictionary<TKey, TValue>` whose every key owns exactly one value, carrying the key comparer
+  over when the source is a `Dictionary<TKey, TValue>`. Each returns an independent copy, never a
+  live view, so the result can be mutated without affecting the source. Before this, the multimap
+  types could only be filled one `Add` at a time.
 - **`MultiKeyDictionary<TKey, TValue>` and `MultiKeyMultiDictionary<TKey, TValue>` gained
   `EntrySet()`.** Both were the only composite-key types without a per-entry projection. Each yields
   `(TKey[] Key, TValue Value)` pairs — the whole key sequence together with its value, the same
