@@ -212,7 +212,7 @@ namespace DotNetCore.Collections.Multi.Tests
 
             public string Label { get; }
 
-            public override bool Equals(object? obj)
+            public override bool Equals(object obj)
             {
                 return obj is Row other && other.Label == Label;
             }
