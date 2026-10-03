@@ -414,11 +414,25 @@ namespace DotNetCore.Collections.Multi.Tests
 
             var reversed = map.AsReverse();
 
-            reversed.Entries
+            reversed.EntrySet()
                 .Select(e => (e.Key1, e.Key2, e.Key3, e.Value))
                 .ShouldBe(
                     new[] { (10, "a", 1, 100), (20, "b", 2, 200) },
                     ignoreOrder: true);
+        }
+
+        [Fact]
+        public void Entries_ObsoleteAlias_AgreesWithEntrySet()
+        {
+            var map = new ThreeKeyDictionary<int, string, int, int>();
+            map.Add(1, "a", 10, 100);
+            map.Add(2, "b", 20, 200);
+
+#pragma warning disable CS0618 // Entries is the deprecated alias under test.
+            var alias = map.Entries.ToList();
+#pragma warning restore CS0618
+
+            alias.ShouldBe(map.EntrySet().ToList());
         }
     }
 }

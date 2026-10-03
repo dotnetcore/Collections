@@ -202,18 +202,36 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
-        /// Gets every stored (k1, k2, value) entry.
+        /// Enumerates every stored (k1, k2, value) entry.
         /// </summary>
-        public IEnumerable<(K1 Key1, K2 Key2, V Value)> Entries
+        /// <remarks>
+        /// This is the family-consistent spelling of the per-entry projection: every other type in
+        /// this package that exposes one spells it <c>EntrySet()</c>, a method rather than a
+        /// property. <see cref="Entries"/> is retained as an obsolete alias so existing code keeps
+        /// compiling, but new code should call <c>EntrySet()</c>.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// foreach (var (k1, k2, value) in map.EntrySet()) { }
+        /// </code>
+        /// </example>
+        public IEnumerable<(K1 Key1, K2 Key2, V Value)> EntrySet()
         {
-            get
+            foreach (var entry in _trie)
             {
-                foreach (var entry in _trie)
-                {
-                    yield return (Axis1(entry.Key), Axis2(entry.Key), entry.Value);
-                }
+                yield return (Axis1(entry.Key), Axis2(entry.Key), entry.Value);
             }
         }
+
+        /// <summary>
+        /// Gets every stored (k1, k2, value) entry.
+        /// </summary>
+        /// <remarks>
+        /// Obsolete alias for <see cref="EntrySet()"/>, kept so existing code keeps compiling. The
+        /// rest of the family spells this projection <c>EntrySet()</c>; use that instead.
+        /// </remarks>
+        [Obsolete("Use EntrySet() instead. The rest of the family exposes this projection as the method EntrySet().")]
+        public IEnumerable<(K1 Key1, K2 Key2, V Value)> Entries => EntrySet();
 
         /// <summary>
         /// Gets every stored value, flattened across the key space. Each (k1, k2) pair is a single
@@ -651,7 +669,7 @@ namespace DotNetCore.Collections.Multi
         public TwoKeyDictionary<K1, K2, V> Clone()
         {
             var clone = new TwoKeyDictionary<K1, K2, V>(Comparer1, Comparer2);
-            foreach (var entry in Entries)
+            foreach (var entry in EntrySet())
             {
                 clone.Add(entry.Key1, entry.Key2, entry.Value);
             }
@@ -703,7 +721,7 @@ namespace DotNetCore.Collections.Multi
         public TwoKeyDictionary<K2, K1, V> AsReverse()
         {
             var reversed = new TwoKeyDictionary<K2, K1, V>(Comparer2, Comparer1);
-            foreach (var entry in Entries)
+            foreach (var entry in EntrySet())
             {
                 reversed.Add(entry.Key2, entry.Key1, entry.Value);
             }
@@ -737,7 +755,7 @@ namespace DotNetCore.Collections.Multi
         public IReadOnlyDictionary<(K1 Key1, K2 Key2), V> ToDictionary()
         {
             var dictionary = new Dictionary<(K1, K2), V>();
-            foreach (var entry in Entries)
+            foreach (var entry in EntrySet())
             {
                 dictionary.Add((entry.Key1, entry.Key2), entry.Value);
             }
@@ -790,7 +808,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public IEnumerator<(K1 Key1, K2 Key2, V Value)> GetEnumerator()
         {
-            return Entries.GetEnumerator();
+            return EntrySet().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -810,7 +828,7 @@ namespace DotNetCore.Collections.Multi
         public override string ToString()
         {
             var parts = new List<string>();
-            foreach (var entry in Entries)
+            foreach (var entry in EntrySet())
             {
                 parts.Add($"({entry.Key1},{entry.Key2}):{entry.Value}");
             }

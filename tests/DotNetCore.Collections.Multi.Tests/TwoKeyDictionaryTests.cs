@@ -785,12 +785,12 @@ namespace DotNetCore.Collections.Multi.Tests
         }
 
         [Fact]
-        public void Entries_YieldsTuplesWithBothKeysTyped()
+        public void EntrySet_YieldsTuplesWithBothKeysTyped()
         {
             var map = new TwoKeyDictionary<int, string, decimal>();
             map.Add(1, "USD", 1.00m);
 
-            var entry = map.Entries.Single();
+            var entry = map.EntrySet().Single();
 
             entry.Key1.ShouldBe(1);
             entry.Key2.ShouldBe("USD");
@@ -1174,11 +1174,27 @@ namespace DotNetCore.Collections.Multi.Tests
 
             var reversed = map.AsReverse();
 
-            reversed.Entries
+            reversed.EntrySet()
                 .Select(e => (e.Key1, e.Key2, e.Value))
                 .ShouldBe(
                     new[] { ("a", 1, 10), ("b", 2, 20) },
                     ignoreOrder: true);
+        }
+
+        [Fact]
+        public void Entries_ObsoleteAlias_AgreesWithEntrySet()
+        {
+            var map = new TwoKeyDictionary<int, string, decimal>
+            {
+                [1, "USD"] = 1.00m,
+                [2, "EUR"] = 0.92m
+            };
+
+#pragma warning disable CS0618 // Entries is the deprecated alias under test.
+            var alias = map.Entries.ToList();
+#pragma warning restore CS0618
+
+            alias.ShouldBe(map.EntrySet().ToList());
         }
     }
 }

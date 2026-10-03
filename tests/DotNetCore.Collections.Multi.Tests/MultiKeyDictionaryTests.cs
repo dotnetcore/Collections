@@ -1018,5 +1018,43 @@ namespace DotNetCore.Collections.Multi.Tests
             map.Remove(new string[0]).ShouldBeTrue();
             map.Count.ShouldBe(0);
         }
+
+        // ------------------------------------------------------------------
+        // EntrySet
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void EntrySet_YieldsTheSameSequenceAsEnumeration()
+        {
+            var map = new MultiKeyDictionary<string, int>();
+            map.Add(new[] { "eu", "de" }, 1);
+            map.Add(new[] { "eu", "fr" }, 2);
+
+            var projected = map.EntrySet().Select(e => (string.Join("|", e.Key), e.Value)).ToList();
+            var enumerated = map.Select(e => (string.Join("|", e.Key), e.Value)).ToList();
+
+            projected.ShouldBe(new[] { ("eu|de", 1), ("eu|fr", 2) }, ignoreOrder: true);
+            projected.ShouldBe(enumerated);
+        }
+
+        [Fact]
+        public void EntrySet_YieldsAFreshKeyArrayPerEntry()
+        {
+            var map = new MultiKeyDictionary<string, int>();
+            map.Add(new[] { "a" }, 1);
+
+            var entry = map.EntrySet().Single();
+            entry.Key[0] = "mutated";
+
+            map.ContainsKey(new[] { "a" }).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void EntrySet_EmptyMap_YieldsNothing()
+        {
+            var map = new MultiKeyDictionary<string, int>();
+
+            map.EntrySet().ShouldBeEmpty();
+        }
     }
 }

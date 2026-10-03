@@ -580,6 +580,13 @@ snapshot, so the result is immune to concurrent writes.
   `MultiKeyMultiDictionary<TKey, TValue>` also allows `null` values;
   `BiDictionary<TLeft, TRight>` accepts `null` on both sides; `ReverseMultiDictionary<V, K>` mirrors
   its source map inverted.
+- **The per-entry projection is `EntrySet()` across the family.** Every type in this package that
+  exposes one spells it the same way: the multisets and bags enumerate `(item, copies)` pairs, the
+  ordered multimap enumerates `(key, values)` pairs, and the composite-key dictionaries — including
+  `MultiKeyDictionary<TKey, TValue>` and `MultiKeyMultiDictionary<TKey, TValue>` — enumerate the full
+  key together with its value. `TwoKeyDictionary<K1, K2, V>` and `ThreeKeyDictionary<K1, K2, K3, V>`
+  also keep the older `Entries` property as an **obsolete** alias, so code written against it keeps
+  compiling while new code calls `EntrySet()`.
 - **None of these types is thread-safe** — use the `Concurrent*` or `Immutable*` counterparts for
   that guarantee.
 

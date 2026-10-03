@@ -594,6 +594,26 @@ namespace DotNetCore.Collections.Multi
         /// Enumerates every (key, value) entry in depth-first order. Each yielded key is a fresh
         /// array of the full key sequence; mutating it does not affect the map.
         /// </summary>
+        /// <remarks>
+        /// This is the family-consistent spelling of the per-entry projection, shared with the
+        /// multiset and dictionary types in this package. The key is the whole key sequence, so the
+        /// tuple is <c>(TKey[] Key, TValue Value)</c> - the same shape <see cref="GetEnumerator"/>
+        /// yields.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// foreach (var (key, value) in map.EntrySet()) { }
+        /// </code>
+        /// </example>
+        public IEnumerable<(TKey[] Key, TValue Value)> EntrySet()
+        {
+            return Enumerate(_root, -1, EmptyKey);
+        }
+
+        /// <summary>
+        /// Enumerates every (key, value) entry in depth-first order. Each yielded key is a fresh
+        /// array of the full key sequence; mutating it does not affect the map.
+        /// </summary>
         /// <example>
         /// <code>
         /// foreach (var (key, value) in map) { }
@@ -601,7 +621,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public IEnumerator<(TKey[] Key, TValue Value)> GetEnumerator()
         {
-            return Enumerate(_root, -1, EmptyKey).GetEnumerator();
+            return EntrySet().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

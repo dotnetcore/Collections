@@ -4,6 +4,39 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [Unreleased]
+
+### Added
+
+- **`MultiKeyDictionary<TKey, TValue>` and `MultiKeyMultiDictionary<TKey, TValue>` gained
+  `EntrySet()`.** Both were the only composite-key types without a per-entry projection. Each yields
+  `(TKey[] Key, TValue Value)` pairs — the whole key sequence together with its value, the same
+  sequence the type's own enumeration yields; `MultiKeyMultiDictionary<TKey, TValue>` flattens one
+  pair per stored value, so a key holding several values contributes several pairs. Use
+  `GetByPrefix` or `ToDictionary()` where the grouped, one-entry-per-key shape is wanted instead.
+
+### Changed
+
+- **The per-entry projection is now spelled `EntrySet()` across the whole `Multi` family.**
+  `TwoKeyDictionary<K1, K2, V>` and `ThreeKeyDictionary<K1, K2, K3, V>` gained an `EntrySet()` method
+  returning exactly what their `Entries` property returned, so every type that exposes the projection
+  now names it the same way. `Entries` on both types is **obsolete**: it still compiles and returns
+  the same sequence, but it now raises a compiler deprecation warning. Callers should switch to
+  `EntrySet()`.
+
+### Fixed
+
+None. No packaged defect was addressed.
+
+### Breaking
+
+- **None.** Every change is a pure addition: no member was removed, renamed or re-signed, and no
+  existing behaviour changed. `Entries` on `TwoKeyDictionary<K1, K2, V>` and
+  `ThreeKeyDictionary<K1, K2, K3, V>` is marked obsolete but remains fully functional, so existing
+  code keeps compiling and running unchanged. The only observable difference is the CS0618
+  deprecation warning a deliberate deprecation is meant to raise; a project that treats warnings as
+  errors can either suppress it or rename the call to `EntrySet()`.
+
 ## [6.7.1] - 2026-10-01
 
 The first patch release in this repository's history. The 6.7 window is closed, and this is a

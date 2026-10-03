@@ -877,12 +877,19 @@ namespace DotNetCore.Collections.Multi
         /// stored value. Each yielded key is a fresh array of the full key sequence; mutating it
         /// does not affect the map.
         /// </summary>
+        /// <remarks>
+        /// This is the family-consistent spelling of the per-entry projection, shared with the
+        /// multiset and dictionary types in this package. The flattening matches
+        /// <see cref="GetEnumerator"/>: one pair per stored value, not one per key. For a grouped
+        /// projection — one entry per key, carrying all of its values — use
+        /// <see cref="GetByPrefix(TKey[], bool)"/> or <see cref="ToDictionary()"/>.
+        /// </remarks>
         /// <example>
         /// <code>
-        /// foreach (var (key, value) in map) { }
+        /// foreach (var (key, value) in map.EntrySet()) { }
         /// </code>
         /// </example>
-        public IEnumerator<(TKey[] Key, TValue Value)> GetEnumerator()
+        public IEnumerable<(TKey[] Key, TValue Value)> EntrySet()
         {
             foreach (var pair in _trie)
             {
@@ -891,6 +898,21 @@ namespace DotNetCore.Collections.Multi
                     yield return (pair.Key, value);
                 }
             }
+        }
+
+        /// <summary>
+        /// Enumerates the map as flat (key, value) pairs in depth-first key order — one entry per
+        /// stored value. Each yielded key is a fresh array of the full key sequence; mutating it
+        /// does not affect the map.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// foreach (var (key, value) in map) { }
+        /// </code>
+        /// </example>
+        public IEnumerator<(TKey[] Key, TValue Value)> GetEnumerator()
+        {
+            return EntrySet().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

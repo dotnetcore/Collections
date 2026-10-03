@@ -965,5 +965,38 @@ namespace DotNetCore.Collections.Multi.Tests
                 }
             }
         }
+
+        // ------------------------------------------------------------------
+        // EntrySet
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void EntrySet_IsFlatOnePairPerStoredValue()
+        {
+            var map = new MultiKeyMultiDictionary<string, int>();
+            map.Add(new[] { "eu", "de" }, 1);
+            map.Add(new[] { "eu", "de" }, 2);
+            map.Add(new[] { "eu", "fr" }, 3);
+
+            var projected = map.EntrySet().Select(e => (string.Join("|", e.Key), e.Value)).ToList();
+
+            projected.Count.ShouldBe(3);
+            projected.ShouldBe(
+                new[] { ("eu|de", 1), ("eu|de", 2), ("eu|fr", 3) },
+                ignoreOrder: true);
+        }
+
+        [Fact]
+        public void EntrySet_AgreesWithEnumeration()
+        {
+            var map = new MultiKeyMultiDictionary<string, int>();
+            map.Add(new[] { "a", "b" }, 1);
+            map.Add(new[] { "a", "b" }, 2);
+
+            var projected = map.EntrySet().Select(e => (string.Join("|", e.Key), e.Value)).ToList();
+            var enumerated = map.Select(e => (string.Join("|", e.Key), e.Value)).ToList();
+
+            projected.ShouldBe(enumerated);
+        }
     }
 }
