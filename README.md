@@ -541,6 +541,22 @@ which keys count as the same key — the same objection that made it refuse a `T
 Its comparers travel with the axes and its `ToSerializableModel()` reuses the multimap model, which
 is safe here precisely because that model keys on a `List`.
 
+**`AsReverse()` is one name with four shapes**, and the return type — not the name — is the contract:
+
+| Type | `AsReverse()` returns | Cost |
+| --- | --- | --- |
+| `MultiDictionary<TKey, TValue>`, `BiDictionary<TLeft, TRight>`, `ImmutableMultiDictionary<TKey, TValue>` | live read-only view | zero-copy |
+| `ConcurrentMultiDictionary<TKey, TValue>` | snapshot | O(n) |
+| `OrderedMultiDictionary<TKey, TValue>` | ordered copy | O(n) |
+| `TwoKeyDictionary<K1, K2, V>`, `ThreeKeyDictionary<K1, K2, K3, V>` | independent copy | O(n) |
+
+The name is shared because the operation is the same — swap the two axes — and each type returns the
+shape it can honestly honour: a live view where the state is already indexed and stable, a snapshot
+where a view would go stale under concurrent writers, and a copy where the type is a concrete class
+(a view could only be a thin `IReadOnlyDictionary` that drops the per-axis projections) or where the
+key identity is an `IComparer` with no hash codes to hand to a hash-based reverse. Read the return
+type before assuming liveness.
+
 ### Immutable and thread-safe
 
 **`ImmutableMultiList<T>`** / **`ImmutableMultiDictionary<TKey, TValue>`** — the immutable

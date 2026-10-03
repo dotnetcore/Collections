@@ -812,6 +812,21 @@ namespace DotNetCore.Collections.Multi
         /// </summary>
         /// <remarks>
         /// <para>
+        /// <b>One name, several shapes.</b> The family deliberately keeps the single name
+        /// <c>AsReverse()</c> for "swap the two axes" and lets the <em>return type</em> carry the
+        /// difference in cost and liveness: this type, <see cref="BiDictionary{TLeft,TRight}"/> and
+        /// <see cref="ImmutableMultiDictionary{TKey,TValue}"/> return a zero-copy <b>live view</b>
+        /// (an <c>IReadOnlyDictionary</c>, so no writable surface is exposed);
+        /// <see cref="ConcurrentMultiDictionary{TKey,TValue}"/> returns a <b>snapshot</b>, because a
+        /// view over a sharded, concurrently-mutated map would either go stale or have to rebuild
+        /// itself on every read; <see cref="OrderedMultiDictionary{TKey,TValue}"/> returns an
+        /// <b>ordered copy</b>, because its key identity is an <c>IComparer</c> and therefore offers
+        /// no hash codes to a hash-based reverse; and <see cref="TwoKeyDictionary{K1,K2,V}"/> /
+        /// <see cref="ThreeKeyDictionary{K1,K2,K3,V}"/> return a fully-typed <b>copy</b>, because a
+        /// view could only be a thin <c>IReadOnlyDictionary</c> that would drop their per-axis
+        /// projections. Read the return type before assuming liveness.
+        /// </para>
+        /// <para>
         /// The view is served from the backwards index this map already maintains for
         /// <see cref="ContainsValue(TValue)"/> (plus the dedicated <c>null</c>-value bucket), so
         /// building it costs nothing and every read runs in O(1). It is the <b>live</b> half of
