@@ -53,6 +53,20 @@ repository ships the same version (see `build/version.props`).
   later change. The copy is shallow in the same sense as `Clone()` — element references are shared,
   copy counts and inner value collections are independent; use `ImmutableMultiList<T>` /
   `ImmutableMultiDictionary<TKey, TValue>` when the copy itself must be immutable.
+- **Bag statistics — `Mode()`, `Median()` and `Entropy()` on any `IMultiSet<T>`.** Three extension
+  methods that summarise a bag as a frequency distribution. `Mode()` returns *every* element tied for
+  the highest copy count, because a multiset can be multimodal and a single winner is not always
+  meaningful (an empty bag yields an empty list). `Median()` takes an `IComparer<T>` and returns the
+  **upper median copy** — the single middle copy for an odd total, the larger of the two middle copies
+  for an even one — always an element of the bag and never an interpolated value, since a multiset
+  need not be numeric; an empty bag has no median and throws. `Entropy()` returns the Shannon entropy
+  of the copy-count distribution in bits (`-Σ p·log2(p)`), so a bag of one distinct element scores
+  `0`, a bag spreading its copies evenly over *d* elements scores `log2(d)`, and an empty bag scores
+  `0`. All three read the bag through `EntrySet()` — the distinct elements with their copy counts — so
+  they never expand the copies and work on every bag implementation; `Median()` orders the *distinct*
+  elements once and walks their counts, O(d log d) for *d* distinct elements however many copies each
+  holds. The counts are plain `int`, so there is no generic-math dependency and the helpers hold on
+  every target framework, `net451` included.
 
 ## [6.8.0] - 2026-10-03
 

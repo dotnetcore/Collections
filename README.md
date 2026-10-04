@@ -676,6 +676,35 @@ it has no positions, and one call can move an element by more than one copy. The
 self-contained — no `System.ObjectModel` dependency — so it behaves identically on every target
 framework, and subscribing costs nothing until a handler is attached.
 
+### Bag statistics
+
+**`Mode()` / `Median()` / `Entropy()`** — three extension methods that summarise a bag as a frequency
+distribution, on any `IMultiSet<T>`:
+
+```c#
+var bag = new MultiList<string>();
+bag.Add("a", 3);
+bag.Add("b", 3);
+bag.Add("c", 1);
+
+bag.Mode();                             // ["a", "b"] — every element tied for the most copies
+bag.Median(StringComparer.Ordinal);     // "b" — the upper middle copy under that order
+bag.Entropy();                          // ≈ 1.449 bits
+```
+
+`Mode()` returns *all* tied elements (a multiset can be multimodal, so a single winner is not always
+meaningful); an empty bag yields an empty list. `Median()` takes an `IComparer<T>` and returns the
+**upper median copy** — the single middle copy for an odd total, the larger of the two middle copies
+for an even one — always an element of the bag, never an interpolated value, because a multiset need
+not be numeric; an empty bag has no median and throws. `Entropy()` returns the Shannon entropy of the
+copy-count distribution in **bits** (`-Σ p·log2(p)`): a bag of one distinct element scores `0`, a bag
+spreading its copies evenly over *d* elements scores `log2(d)`, and an empty bag scores `0`.
+
+All three read through `EntrySet()` — the distinct elements with their copy counts — so they never
+expand the copies and work on every bag implementation; `Median()` orders the *distinct* elements once
+and walks their counts, O(d log d) for *d* distinct elements however many copies each holds. They need
+no generic-math support (the counts are plain `int`), so they hold on every target framework.
+
 ### Conventions
 
 - **Set vs. multiset arguments.** The per-key operations of `MultiDictionary<TKey, TValue>` treat
