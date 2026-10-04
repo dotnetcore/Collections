@@ -126,6 +126,42 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Raised after the map changes: values added under a key, values removed, a whole key
+        /// dropped, or the map cleared. The event names the key, how many of its values moved and the
+        /// resulting value count; see <see cref="CollectionChangedEventArgs{TKey}"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The event is raised once per mutation, after the map has reached its new, consistent state
+        /// (caches and backwards index included), so a handler that reads the map back sees the change
+        /// it was told about. A bulk member that is implemented as a sequence of single-value
+        /// mutations - <see cref="AddRange"/>, <see cref="RemoveRange"/> and the per-key set
+        /// operations <see cref="UnionWith"/>, <see cref="IntersectionWith"/>, <see cref="ExceptWith"/>
+        /// and <see cref="SymmetricExceptWith"/> - therefore raises one event per value it touches
+        /// rather than one event for the whole call.
+        /// </para>
+        /// <para>
+        /// The payload reports the affected <em>key</em> and how many of its values changed, not the
+        /// individual values; read the key's current values back through the indexer when they are
+        /// needed. Dropping a key is reported as a removal for that key with a resulting count of
+        /// zero, which is how "the key is gone" is expressed.
+        /// </para>
+        /// <para>
+        /// Subscribing costs nothing until a handler is attached: with no subscriber the raise is a
+        /// single null test on the mutation path. The event is raised synchronously on the calling
+        /// thread; a handler that re-enters and mutates the map is subject to the usual rules for a
+        /// type that is not thread-safe. <see cref="Clear"/> raises
+        /// <see cref="CollectionChangeType.Reset"/> only when the map was not already empty.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// map.CollectionChanged += (sender, e) =&gt; Console.WriteLine(e);
+        /// </code>
+        /// </example>
+        public event EventHandler<CollectionChangedEventArgs<TKey>>? CollectionChanged;
+
+        /// <summary>
         /// Gets the comparer used to determine key equality.
         /// </summary>
         public IEqualityComparer<TKey> Comparer => _comparer;
@@ -250,6 +286,14 @@ namespace DotNetCore.Collections.Multi
                 {
                     IndexAddValue(value, key);
                 }
+            }
+
+            // A deduplicating inner collection can silently refuse the value (after == before), in
+            // which case nothing changed and nothing is reported. For a fresh key, before is zero,
+            // so this is exactly "the key came into being holding at least one value".
+            if (after > before)
+            {
+                OnChanged(CollectionChangeType.Add, key, after - before, after);
             }
         }
 
@@ -603,10 +647,19 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public void Clear()
         {
+            if (_dict.Count == 0)
+            {
+                // Already empty: nothing changes, so nothing is reported. The "no empty inner
+                // collection" invariant makes _dict.Count the exact test for "no keys, no values".
+                return;
+            }
+
             _dict.Clear();
             _totalValueCount = 0;
             _valueIndex.Clear();
             _nullValueKeys = null;
+
+            OnChanged(CollectionChangeType.Reset, default!, 0, 0);
         }
 
         /// <summary>
@@ -988,13 +1041,20 @@ namespace DotNetCore.Collections.Multi
                 return false;
             }
 
-            _totalValueCount -= collection.Count;
+            var removed = collection.Count;
+            _totalValueCount -= removed;
             foreach (var value in collection)
             {
                 IndexRemoveValue(value, key);
             }
 
-            return _dict.Remove(key);
+            if (!_dict.Remove(key))
+            {
+                return false;
+            }
+
+            OnChanged(CollectionChangeType.Remove, key, removed, 0);
+            return true;
         }
 
         /// <summary>
@@ -1024,6 +1084,9 @@ namespace DotNetCore.Collections.Multi
                 _dict.Remove(key);
             }
 
+            // collection.Count is the key's value count after the removal (zero when the key was
+            // just dropped), which is exactly what the notification reports as the resulting count.
+            OnChanged(CollectionChangeType.Remove, key, 1, collection.Count);
             return true;
         }
 
@@ -1080,6 +1143,20 @@ namespace DotNetCore.Collections.Multi
             if (keys.Count == 0)
             {
                 _valueIndex.Remove(value);
+            }
+        }
+
+        /// <summary>
+        /// Raises <see cref="CollectionChanged"/> for a change under <paramref name="key"/>. The
+        /// handler list is read into a local first, so a handler that subscribes or unsubscribes
+        /// while the event is being raised does not affect the handlers already being notified.
+        /// </summary>
+        private void OnChanged(CollectionChangeType changeType, TKey key, int count, int newCount)
+        {
+            var handler = CollectionChanged;
+            if (handler != null)
+            {
+                handler(this, new CollectionChangedEventArgs<TKey>(changeType, key, count, newCount));
             }
         }
 

@@ -32,6 +32,17 @@ repository ships the same version (see `build/version.props`).
   result is a snapshot taken at the call, never a live view — this library does not ship writable
   through-views. A `null` key can not be represented (the partitions are dictionaries) and is
   rejected with `ArgumentException` rather than silently dropped, the same policy as `ToDictionary()`.
+- **`CollectionChanged` — a self-authored change notification on `MultiList<T>` and
+  `MultiDictionary<TKey, TValue>`.** Every mutation that actually changes the collection raises one
+  event naming the element (for a bag) or the key (for a multimap), how many copies or values moved,
+  and the resulting count; `CollectionChangeType` distinguishes `Add`, `Remove` and `Reset` (a clear).
+  The event is raised after the collection has reached its new, consistent state, so a handler that
+  reads the collection back sees the change it was told about. It is deliberately **not** the
+  framework's `INotifyCollectionChanged`: that contract is index-oriented, while a multiset has no
+  positions and can move an element by more than one copy in a single call — neither of which a
+  positional notification can express. The notification is self-contained (no `System.ObjectModel`
+  dependency), so it behaves identically on every target framework, and subscribing costs nothing
+  until a handler is attached.
 
 ## [6.8.0] - 2026-10-03
 

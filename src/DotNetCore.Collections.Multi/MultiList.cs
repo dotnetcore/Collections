@@ -119,6 +119,39 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Raised after the multiset changes: copies added, copies removed, or the whole multiset
+        /// cleared. The event names the element, how many copies moved and the resulting copy count;
+        /// see <see cref="CollectionChangedEventArgs{TKey}"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The event is raised once per mutation, after the multiset has reached its new, consistent
+        /// state, so a handler that reads the multiset back sees the change it was told about. A bulk
+        /// member that is implemented as a sequence of single-element mutations - <see cref="AddRange"/>,
+        /// and the set operations <see cref="UnionWith"/>, <see cref="IntersectionWith"/>,
+        /// <see cref="ExceptWith"/> and <see cref="SymmetricExceptWith"/> - therefore raises one event
+        /// per element it touches rather than one event for the whole call.
+        /// </para>
+        /// <para>
+        /// Subscribing costs nothing until a handler is attached: with no subscriber the raise is a
+        /// single null test on the mutation path. The event is raised synchronously on the calling
+        /// thread, while the mutation is still in progress from the caller's point of view; a handler
+        /// that re-enters and mutates the multiset is subject to the usual rules for a type that is
+        /// not thread-safe.
+        /// </para>
+        /// <para>
+        /// <see cref="Clear"/> raises <see cref="CollectionChangeType.Reset"/> only when the multiset
+        /// was not already empty, so a no-op clear stays silent.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// bag.CollectionChanged += (sender, e) =&gt; Console.WriteLine(e);
+        /// </code>
+        /// </example>
+        public event EventHandler<CollectionChangedEventArgs<T>>? CollectionChanged;
+
+        /// <summary>
         /// Gets the comparer used to determine element equality.
         /// </summary>
         public IEqualityComparer<T> Comparer => _comparer;
@@ -169,13 +202,19 @@ namespace DotNetCore.Collections.Multi
             }
 
             TotalCount += times;
+            int newCount;
             if (item == null)
             {
                 _nullCount += times;
-                return;
+                newCount = _nullCount;
+            }
+            else
+            {
+                newCount = (_counts.TryGetValue(item, out var current) ? current : 0) + times;
+                _counts[item] = newCount;
             }
 
-            _counts[item] = (_counts.TryGetValue(item, out var current) ? current : 0) + times;
+            OnChanged(CollectionChangeType.Add, item, times, newCount);
         }
 
         /// <summary>
@@ -316,6 +355,7 @@ namespace DotNetCore.Collections.Multi
             }
 
             TotalCount -= removed;
+            OnChanged(CollectionChangeType.Remove, item, removed, remaining);
             return remaining;
         }
 
@@ -346,6 +386,7 @@ namespace DotNetCore.Collections.Multi
             }
 
             TotalCount -= current;
+            OnChanged(CollectionChangeType.Remove, item, current, 0);
             return true;
         }
 
@@ -360,9 +401,19 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public void Clear()
         {
+            if (TotalCount == 0)
+            {
+                // Already empty: nothing changes, so nothing is reported. TotalCount is zero only
+                // when both the count table and the null bucket are empty (a stored count is always
+                // positive), so this is an exact test for "already empty".
+                return;
+            }
+
             _counts.Clear();
             _nullCount = 0;
             TotalCount = 0;
+
+            OnChanged(CollectionChangeType.Reset, default!, 0, 0);
         }
 
         /// <summary>
@@ -683,6 +734,20 @@ namespace DotNetCore.Collections.Multi
         private static int CountInTable(Dictionary<T, int> counts, T key)
         {
             return counts.TryGetValue(key, out var count) ? count : 0;
+        }
+
+        /// <summary>
+        /// Raises <see cref="CollectionChanged"/> for a change to <paramref name="item"/>. The
+        /// handler list is read into a local first, so a handler that subscribes or unsubscribes
+        /// while the event is being raised does not affect the handlers already being notified.
+        /// </summary>
+        private void OnChanged(CollectionChangeType changeType, T item, int count, int newCount)
+        {
+            var handler = CollectionChanged;
+            if (handler != null)
+            {
+                handler(this, new CollectionChangedEventArgs<T>(changeType, item, count, newCount));
+            }
         }
 
         /// <summary>

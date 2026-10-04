@@ -642,6 +642,37 @@ diff.Differing["b"];     // (2, 9)
 diff.OnlyInRight["c"];   // 3
 ```
 
+### Change notification
+
+**`CollectionChanged`** — both core types report their own mutations, so a view or a cache built on
+top of one can stay in step without polling. Every mutation that actually changes the collection
+raises the event once, naming the element (for a bag) or the key (for a multimap), how many copies or
+values moved, and the resulting count; `CollectionChangeType` is `Add`, `Remove` or `Reset` (a clear):
+
+```c#
+var bag = new MultiList<string>();
+bag.CollectionChanged += (sender, e) => Console.WriteLine(e);
+
+bag.Add("apple", 3);   // Add apple x3 -> 3
+bag.Remove("apple");   // Remove apple x1 -> 2
+bag.Clear();           // Reset
+```
+
+The event is raised *after* the collection has reached its new, consistent state, so a handler that
+reads it back sees the change it was told about. A bulk member that is really a sequence of
+single-element mutations — `AddRange`, and the set operations — raises one event per element it
+touches rather than one for the whole call, and a call that changes nothing (removing an absent
+element, adding a value a deduplicating multimap already holds, clearing an empty collection) stays
+silent. For a multimap the payload reports the affected **key** and how many of its values changed,
+not the individual values; read the key's current values back through the indexer when they are
+needed.
+
+This is deliberately not the framework's `INotifyCollectionChanged`. That contract is
+index-oriented (`Add` / `Remove` / `Move` / `Replace` at a position), which a multiset cannot honour:
+it has no positions, and one call can move an element by more than one copy. The notification is
+self-contained — no `System.ObjectModel` dependency — so it behaves identically on every target
+framework, and subscribing costs nothing until a handler is attached.
+
 ### Conventions
 
 - **Set vs. multiset arguments.** The per-key operations of `MultiDictionary<TKey, TValue>` treat
