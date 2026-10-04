@@ -43,6 +43,16 @@ repository ships the same version (see `build/version.props`).
   positional notification can express. The notification is self-contained (no `System.ObjectModel`
   dependency), so it behaves identically on every target framework, and subscribing costs nothing
   until a handler is attached.
+- **`Snapshot()` on `MultiList<T>` and `MultiDictionary<TKey, TValue>` — the independent copy, under
+  the name the rest of the family already uses.** Both types could produce an independent copy
+  through `Clone()`, and the concurrent types expose exactly that operation as `Snapshot()`
+  (`ConcurrentMultiList<T>.Snapshot()` returns a `MultiList<T>` built from `Clone()`). The two core
+  types now spell it the same way, so the family reads consistently, and the member documents the case
+  it exists for: enumerating a collection while it is still being mutated. Enumerating the live
+  instance is not modification-safe, but a snapshot is detached, so the enumeration can not observe a
+  later change. The copy is shallow in the same sense as `Clone()` — element references are shared,
+  copy counts and inner value collections are independent; use `ImmutableMultiList<T>` /
+  `ImmutableMultiDictionary<TKey, TValue>` when the copy itself must be immutable.
 
 ## [6.8.0] - 2026-10-03
 

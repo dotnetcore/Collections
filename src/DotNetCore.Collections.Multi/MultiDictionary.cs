@@ -729,6 +729,38 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Takes a snapshot of the map: an independent copy that later changes to this instance do
+        /// not affect, so it can be enumerated while the original is still being mutated.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is the same operation as <see cref="Clone"/> under the name the rest of the family
+        /// uses: <see cref="ConcurrentMultiDictionary{TKey,TValue}.Snapshot"/> returns exactly a
+        /// <see cref="MultiDictionary{TKey,TValue}"/>, so exposing the same name here makes the
+        /// family read consistently. The outer dictionary and every inner value collection are
+        /// independent copies, exactly as in <see cref="Clone"/>.
+        /// </para>
+        /// <para>
+        /// Use it when the map has to be enumerated while it may still be mutated: enumerating the
+        /// live instance is not modification-safe, but the snapshot is detached, so the enumeration
+        /// can not observe a later change. When the copy itself must be immutable rather than merely
+        /// independent, use <see cref="ImmutableMultiDictionary{TKey,TValue}"/>.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// foreach (var pair in map.Snapshot())
+        /// {
+        ///     map.Add("more", 1);   // safe: the snapshot is detached
+        /// }
+        /// </code>
+        /// </example>
+        public MultiDictionary<TKey, TValue> Snapshot()
+        {
+            return Clone();
+        }
+
+        /// <summary>
         /// Exports the map as a snapshot dictionary from key to its value collection. The
         /// outer dictionary is independent of the map; the inner collections are shared
         /// (live views of the values stored for each key).

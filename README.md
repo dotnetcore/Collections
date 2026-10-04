@@ -399,7 +399,8 @@ The following sections describe each family.
 set operations (`UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith`), subset and
 superset judgments, `Overlaps` / `IsDisjointFrom`, multiset structural equality (`Equals` /
 `GetHashCode`, via `IEquatable<MultiList<T>>`), copy-expanded enumeration, and an injectable
-`IEqualityComparer<T>`.
+`IEqualityComparer<T>`. `Clone()` and `Snapshot()` return an independent copy — the same operation
+under both names — so the bag can be enumerated while the original is still being mutated.
 
 **`OrderedMultiList<T>`** — the same bag semantics, plus an order. It is backed by an
 order-statistic B+ tree instead of a hash table, so add / lookup / remove cost O(log n) **worst
@@ -472,7 +473,9 @@ view), the per-key value-set operations `UnionWith` / `IntersectionWith` / `Exce
 `SymmetricExceptWith`, the batch pair `AddRange` / `RemoveRange`, per-key counting via
 `ValueCount(key)` (alongside `TotalValueCount`), and a configurable inner-collection factory.
 `ContainsValue(value)` and `TotalValueCount` are answered in O(1) from two caches kept in step on
-the write path — neither ever scans the inner collections.
+the write path — neither ever scans the inner collections. `Clone()` and `Snapshot()` return an
+independent copy, inner value collections included, so the map can be enumerated while the original
+is still being mutated.
 
 **`OrderedMultiDictionary<TKey, TValue>`** — the ordered counterpart. The same per-key value-set
 operations, the same "no value-less key" invariant, and the same `IReadOnlyDictionary` /

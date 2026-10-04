@@ -511,6 +511,39 @@ namespace DotNetCore.Collections.Multi
         }
 
         /// <summary>
+        /// Takes a snapshot of the multiset: an independent copy that later changes to this instance
+        /// do not affect, so it can be enumerated while the original is still being mutated.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is the same operation as <see cref="Clone"/> under the name the rest of the family
+        /// uses: the concurrent types spell the independent copy <c>Snapshot()</c> - and
+        /// <see cref="ConcurrentMultiList{T}.Snapshot"/> returns exactly a <see cref="MultiList{T}"/>,
+        /// built from <see cref="Clone"/> - so exposing the same name here makes the family read
+        /// consistently. Element references are shared and copy counts are independent, exactly as in
+        /// <see cref="Clone"/>.
+        /// </para>
+        /// <para>
+        /// Use it when the multiset has to be enumerated while it may still be mutated: enumerating
+        /// the live instance is not modification-safe, but the snapshot is detached, so the
+        /// enumeration can not observe a later change. When the copy itself must be immutable rather
+        /// than merely independent, use <see cref="ImmutableMultiList{T}"/>.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// foreach (var item in bag.Snapshot())
+        /// {
+        ///     bag.Add("more");   // safe: the snapshot is detached
+        /// }
+        /// </code>
+        /// </example>
+        public MultiList<T> Snapshot()
+        {
+            return Clone();
+        }
+
+        /// <summary>
         /// Exports the multiset as a snapshot dictionary of element to copy count. The returned
         /// dictionary is independent of the multiset. Throws
         /// <see cref="InvalidOperationException"/> when the multiset contains a <c>null</c>
@@ -679,7 +712,7 @@ namespace DotNetCore.Collections.Multi
         // Multiset operations
         // ------------------------------------------------------------------
 
-        private MultiList<T> Snapshot(IEnumerable<T> other)
+        private MultiList<T> Materialize(IEnumerable<T> other)
         {
             if (other == null)
             {
@@ -695,7 +728,7 @@ namespace DotNetCore.Collections.Multi
         /// multiset whose element comparer is equivalent to this one - reading it directly can not
         /// change the result, because re-materialising would only re-hash each element under the
         /// same notion of equality - and <c>null</c> when the caller has to fall back to
-        /// <see cref="Snapshot(IEnumerable{T})"/>.
+        /// <see cref="Materialize(IEnumerable{T})"/>.
         /// </summary>
         /// <remarks>
         /// This is where chained multiset operations stop paying for a copy of their argument: the
@@ -834,7 +867,7 @@ namespace DotNetCore.Collections.Multi
                 return;
             }
 
-            UnionWithBag(Snapshot(other));
+            UnionWithBag(Materialize(other));
         }
 
         /// <summary>
@@ -855,7 +888,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public void IntersectionWith(IEnumerable<T> other)
         {
-            var otherBag = AsInPlaceArgument(other) ?? Snapshot(other);
+            var otherBag = AsInPlaceArgument(other) ?? Materialize(other);
             var scratch = Scratch();
             try
             {
@@ -899,7 +932,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public void ExceptWith(IEnumerable<T> other)
         {
-            var otherBag = AsInPlaceArgument(other) ?? Snapshot(other);
+            var otherBag = AsInPlaceArgument(other) ?? Materialize(other);
             var scratch = Scratch();
             try
             {
@@ -942,7 +975,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public void SymmetricExceptWith(IEnumerable<T> other)
         {
-            var otherBag = AsInPlaceArgument(other) ?? Snapshot(other);
+            var otherBag = AsInPlaceArgument(other) ?? Materialize(other);
             var scratch = Scratch();
             try
             {
@@ -992,7 +1025,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool IsSubsetOf(IEnumerable<T> other)
         {
-            return IsSubsetOfBag(AsInPlaceArgument(other) ?? Snapshot(other));
+            return IsSubsetOfBag(AsInPlaceArgument(other) ?? Materialize(other));
         }
 
         /// <summary>
@@ -1010,7 +1043,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool IsSupersetOf(IEnumerable<T> other)
         {
-            return IsSupersetOfBag(AsInPlaceArgument(other) ?? Snapshot(other));
+            return IsSupersetOfBag(AsInPlaceArgument(other) ?? Materialize(other));
         }
 
         /// <summary>
@@ -1028,7 +1061,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool IsProperSubsetOf(IEnumerable<T> other)
         {
-            var otherBag = AsInPlaceArgument(other) ?? Snapshot(other);
+            var otherBag = AsInPlaceArgument(other) ?? Materialize(other);
             return IsSubsetOfBag(otherBag) && TotalCount != otherBag.TotalCount;
         }
 
@@ -1047,7 +1080,7 @@ namespace DotNetCore.Collections.Multi
         /// </example>
         public bool IsProperSupersetOf(IEnumerable<T> other)
         {
-            var otherBag = AsInPlaceArgument(other) ?? Snapshot(other);
+            var otherBag = AsInPlaceArgument(other) ?? Materialize(other);
             return IsSupersetOfBag(otherBag) && TotalCount != otherBag.TotalCount;
         }
 
