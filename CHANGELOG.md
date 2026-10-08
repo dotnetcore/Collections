@@ -4,7 +4,7 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
-## [Unreleased]
+## [6.9.0] - 2026-10-08
 
 ### Added
 
@@ -67,6 +67,43 @@ repository ships the same version (see `build/version.props`).
   elements once and walks their counts, O(d log d) for *d* distinct elements however many copies each
   holds. The counts are plain `int`, so there is no generic-math dependency and the helpers hold on
   every target framework, `net451` included.
+
+### Changed
+
+None. No existing member changed its signature, its behaviour or its documented contract.
+
+### Fixed
+
+None. No packaged defect was addressed.
+
+### Breaking
+
+- **None.** Every change in this release is a pure addition — no member was removed, renamed or
+  re-signed, and no existing behaviour changed. The evidence, each item checked against the previous
+  release (`6.8.0`):
+  1. **Packaging, target-framework and dependency surface are untouched.**
+     `git diff 6.8.0..HEAD -- '*.csproj' 'build/*'` is empty, so no project, target-framework list or
+     package reference moved.
+  2. **Nothing was deleted or renamed in the library sources.**
+     `git diff 6.8.0..HEAD --diff-filter=D --name-only -- src/` and the same with `--diff-filter=R`
+     both return nothing.
+  3. **Every source change is an addition.** The source diff is six new files —
+     `BoundedBag.cs`, `CollectionChangeType.cs`, `CollectionChangedEventArgs.cs`,
+     `CollectionDifference.cs`, `CollectionDifferenceExtensions.cs` and
+     `MultiSetStatisticsExtensions.cs` — plus `MultiList.cs` and `MultiDictionary.cs`, whose only
+     removed lines are bodies refactored in place.
+  4. **No public member line was removed.** No `-` line in the source diff declares a public member;
+     the one rename (`MultiList<T>`'s private `Snapshot(IEnumerable<T>)` helper, now `Materialize`,
+     plus its eight call sites) is entirely private.
+  5. **The integration packages are untouched.** No `src/DotNetCore.Collections.Paginable*` file
+     appears in the diff at all, so every Paginable public signature is unchanged. The single
+     `Paginable`-named file in the diff is the test workflow, not a package.
+  6. **No behaviour changed.** The refactored bodies in `MultiList<T>` and
+     `MultiDictionary<TKey, TValue>` perform the same assignments as before, with the early return
+     restructured into a branch so the new event can carry the resulting count; and the new
+     `CollectionChanged` event does nothing at all until a handler is attached.
+
+  Existing code therefore keeps compiling and running unchanged, and no upgrade step is required.
 
 ## [6.8.0] - 2026-10-03
 

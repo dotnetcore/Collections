@@ -13,18 +13,23 @@ modules.
 | **Multi** | `DotNetCore.Collections.Multi` | Multiset, multimap, composite-key and thread-safe/immutable collection types. |
 
 See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
-**6.8.0** release: a small `Multi` release that closes the last gaps in the family's per-entry
-projection and adds a one-call way to build a multimap. `TwoKeyDictionary<K1, K2, V>` and
-`ThreeKeyDictionary<K1, K2, K3, V>` now expose their per-entry projection as `EntrySet()`, the name
-every other type in the family already used; their old `Entries` property still compiles and returns
-the same sequence, but it is now obsolete. The two composite-key types that had no projection at
-all — `MultiKeyDictionary<TKey, TValue>` and `MultiKeyMultiDictionary<TKey, TValue>` — gained one
-too, yielding `(TKey[] Key, TValue Value)` pairs. The new `MultiDictionaryExtensions` adds
-`IndexBy`, `UniqueIndexBy` and `AsMultiDictionary`, so a multimap can be built from an existing
-sequence or map instead of one `Add` at a time; each returns an independent copy rather than a live
-view. The `AsReverse()` naming review ended in no rename — the four shapes it takes across the map
-family are documented rather than renamed. Everything is an addition: nothing was removed, renamed
-or re-signed, so there is no **Breaking** change in this release.
+**6.9.0** release: the `Multi` family becomes observable, comparable and summarisable.
+`MultiList<T>` and `MultiDictionary<TKey, TValue>` now raise a `CollectionChanged` event on every
+mutation that actually changes the collection, naming the element or key, how many copies or values
+moved, and the resulting count — a self-authored notification rather than the framework's
+`INotifyCollectionChanged`, because that contract is index-oriented while a multiset has no
+positions and can move an element by more than one copy in a single call. Both types also spell the
+independent copy `Snapshot()`, the name the concurrent types already used. The new
+`CollectionDifference<TKey, TValue>` and the two `Difference` extension methods compare two bags or
+two dictionaries in one call and split the answer into four disjoint partitions — only-in-left,
+only-in-right, in-common and differing — so "what changed between these two?" stops being a
+hand-written loop. `BoundedBag<T>` joins the bag family as a sliding window: a fixed total number of
+copies, with the oldest copy evicted when a new one would exceed the cap. `Mode()`, `Median()` and
+`Entropy()` extend any `IMultiSet<T>` with the three summaries a frequency distribution usually
+needs, reading through `EntrySet()` so they never expand the copies. On the engineering side, both
+test workflows now share one set of trigger paths, closing a gap where a change under `build/` could
+silently skip CI. Everything is an addition: nothing was removed, renamed or re-signed, so there is
+no **Breaking** change in this release.
 
 ## Contents
 
@@ -1015,7 +1020,7 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 
 Publishing is automated by the GitHub Actions `Release` workflow
 (`.github/workflows/release.yml`); no local tooling is involved. It runs on a version-tag push —
-`6.8.0` or `v6.8.0` — and can also be started manually through `workflow_dispatch`:
+`6.9.0` or `v6.9.0` — and can also be started manually through `workflow_dispatch`:
 
 1. **Pack** — all 11 projects are packed in Release configuration into `nuget_pub` on a
    `windows-latest` runner, with the full git history fetched so SourceLink can attach sources to
@@ -1044,7 +1049,7 @@ The policy owner must own all 11 `DotNetCore.Collections.*` packages. See
 
 Versions are driven by `build/version.props`, which is the single source of truth for every
 package — bump the version there and all 11 packages follow. Tag the commit with the matching
-version (`6.8.0` or `v6.8.0`) to trigger the automated publish; see [Publishing](#publishing) for
+version (`6.9.0` or `v6.9.0`) to trigger the automated publish; see [Publishing](#publishing) for
 what the release workflow does and the one-time nuget.org policy it requires.
 
 ## License
