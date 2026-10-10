@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- F7-04: the Gate has to be measured on two generations, because the engine's value
+         proposition is not the same on both. On .NET Framework every System.Linq operator walks
+         its source through an interface enumerator, so a value-type enumerator is a structural
+         win; on modern .NET the BCL iterator is devirtualised at the call site and the fight is
+         much tighter. net8.0 is the default target and is where the headline Gate number is
+         taken from.
+
+         net451 deliberately is NOT a target: BenchmarkDotNet 0.14.0 ships net6.0 / net8.0 /
+         netstandard2.0 assets only, and netstandard2.0 cannot be consumed below net461 on .NET
+         Framework. net461 is therefore the lowest hostable generation, and it is a faithful
+         stand-in for net451 here because both sit in Path 3 (polyfill) of the compile-time gate
+         in src/DotNetCore.Collections/Internal/EngineSymbols.cs - i.e. HasIntrinsicSpan is false
+         for both - so the code path being measured is the same one net451 would run. -->
+    <TargetFrameworks>net8.0;net461</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <!-- Same suppression the engine project carries, for the same reason: the System.Memory /
+         System.Buffers / System.Numerics.Vectors / Unsafe polyfill packages that Path 3 of
+         EngineSymbols needs declare no net461 asset and warn about it. The combination is a
+         deliberate, validated configuration here - the F7-02 framework probe runs green on
+         net451 / net461 / net47 / net48 with exactly these packages. -->
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DotNetCore.Collections\DotNetCore.Collections.csproj" />
+  </ItemGroup>
+
+</Project>

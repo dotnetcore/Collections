@@ -65,6 +65,7 @@ namespace DotNetCore.Collections.FrameworkProbe
             CheckOperatorsWithoutSpans(failures);
             CheckShortCircuitWithoutSpans(failures);
             CheckMaterialisationWithoutSpans(failures);
+            CheckAllocationPerWalk(failures);
 
             foreach (var failure in failures)
             {
@@ -702,6 +703,165 @@ namespace DotNetCore.Collections.FrameworkProbe
                 ArrayPool<int>.Shared.Return(lazyBuffer);
             }
         }
+
+        /// <summary>
+        /// F7-04: how many bytes one walk allocates on this generation.
+        /// </summary>
+        /// <remarks>
+        /// BenchmarkDotNet cannot answer this here. Its netstandard2.0 build - the one the 4.x
+        /// generations load - has no <c>GC.GetAllocatedBytesForCurrentThread</c>, so its
+        /// <c>MemoryDiagnoser</c> falls back to <c>AppDomain.MonitoringTotalAllocatedMemorySize</c>,
+        /// a process-wide cumulative counter. That counter carries a floor of tens of kilobytes per
+        /// measured iteration, and the net461 leg reports the engine's arms at 67..133 B/op purely
+        /// because the floor is divided by each iteration's operation count - the same arms read
+        /// 0 B/op on net8.0, where the per-thread counter exists. The column can rank the arms; it
+        /// cannot report an absolute.
+        ///
+        /// So the measurement is taken here instead, on the generation itself. The floor is not
+        /// assumed away: a plain indexed walk over the same source is measured alongside, so the
+        /// reading is the engine's number next to the floor's, and the assertion is the one that is
+        /// true whichever way the floor falls - the engine must not allocate more than the
+        /// framework's own <c>Where(...).Select(...)</c> over the same data.
+        /// </remarks>
+        private static void CheckAllocationPerWalk(List<string> failures)
+        {
+            const int sourceCount = 1000;
+            const int walks = 20000;
+
+            var source = new int[sourceCount];
+            for (var index = 0; index < sourceCount; index++)
+            {
+                source[index] = index;
+            }
+
+            Func<int, bool> predicate = IsEven;
+            Func<int, int> selector = Increment;
+
+            if (!TryEnableAllocationMonitoring())
+            {
+                Console.WriteLine("allocation-per-walk: not measurable on this generation (monitoring unavailable), skipped");
+                return;
+            }
+
+            // Warm every path so the measured regions see fully JITed code and pay no first-call cost.
+            for (var index = 0; index < 64; index++)
+            {
+                Sink += PlainWalk(source, predicate);
+                Sink += FusedWalk(source, predicate, selector);
+                Sink += FrameworkFusedWalk(source, predicate, selector);
+            }
+
+            var floor = AllocatedPerWalk(walks, () => PlainWalk(source, predicate));
+            var engine = AllocatedPerWalk(walks, () => FusedWalk(source, predicate, selector));
+            var framework = AllocatedPerWalk(walks, () => FrameworkFusedWalk(source, predicate, selector));
+
+            Console.WriteLine(
+                "allocation-per-walk: floor=" + floor + " B, engine=" + engine + " B, framework=Where().Select()=" + framework + " B");
+
+            if (engine > framework)
+            {
+                failures.Add(
+                    "allocation-engine-vs-framework: the engine allocated " + engine + " B per walk but the framework's chain allocated " + framework + " B");
+            }
+
+            // If the framework's chain does not show up above the plain walk, the counter is not
+            // sensitive enough for the comparison above to mean anything - a silent pass would then
+            // be a false one.
+            if (framework <= floor)
+            {
+                failures.Add(
+                    "allocation-sensitivity: the framework's chain reported " + framework + " B per walk, no more than the plain walk's " + floor + " B, so this measurement cannot see an allocation at all");
+            }
+        }
+
+        /// <summary>
+        /// Turns on the app domain's allocation counter, or reports that this host does not offer it.
+        /// </summary>
+        /// <returns><see langword="true"/> when the counter can be read.</returns>
+        private static bool TryEnableAllocationMonitoring()
+        {
+            try
+            {
+                if (!AppDomain.MonitoringIsEnabled)
+                {
+                    AppDomain.MonitoringIsEnabled = true;
+                }
+
+                // Read once, so a host that accepts the flag but not the counter fails here instead
+                // of inside a measurement.
+                GC.KeepAlive(AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>Runs a walk many times and reports the bytes each one allocated.</summary>
+        private static long AllocatedPerWalk(int walks, Func<long> walk)
+        {
+            var before = AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize;
+            long sink = 0;
+            for (var index = 0; index < walks; index++)
+            {
+                sink += walk();
+            }
+
+            var allocated = AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize - before;
+            Sink += sink;
+            return allocated / walks;
+        }
+
+        /// <summary>An indexed walk with no iteration and no operators: the floor's own reference.</summary>
+        private static long PlainWalk(int[] source, Func<int, bool> predicate)
+        {
+            long total = 0;
+            for (var index = 0; index < source.Length; index++)
+            {
+                if (predicate(source[index]))
+                {
+                    total += source[index];
+                }
+            }
+
+            return total;
+        }
+
+        /// <summary>The engine's fused walk, the shape the Gate is read from.</summary>
+        private static long FusedWalk(int[] source, Func<int, bool> predicate, Func<int, int> selector)
+        {
+            long total = 0;
+            foreach (var value in source.ToValueEnumerable().WhereSelect(predicate, selector))
+            {
+                total += value;
+            }
+
+            return total;
+        }
+
+        /// <summary>
+        /// The framework's own chain over the same data. Called through <c>System.Linq</c> by its
+        /// full name rather than by importing the namespace, so the probe never puts the two
+        /// extension surfaces in the same scope.
+        /// </summary>
+        private static long FrameworkFusedWalk(int[] source, Func<int, bool> predicate, Func<int, int> selector)
+        {
+            long total = 0;
+            foreach (var value in System.Linq.Enumerable.Select(System.Linq.Enumerable.Where(source, predicate), selector))
+            {
+                total += value;
+            }
+
+            return total;
+        }
+
+        private static bool IsEven(int value) => (value & 1) == 0;
+
+        private static int Increment(int value) => value + 1;
+
+        /// <summary>Kept so no walk can be discarded as dead code.</summary>
+        private static long Sink;
 
         /// <summary>An iterator block: a sequence that can only answer by being walked.</summary>
         private static IEnumerable<int> LazySequence(int count)

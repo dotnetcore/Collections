@@ -75,6 +75,12 @@
              self-checking console app that compares ListLayoutAccessor against reflection, and it
              needs the internal accessor to do so. -->
         <InternalsVisibleTo Include="DotNetCore.Collections.FrameworkProbe" />
+        <!-- F7-04: the Go/No-Go baseline suite has to measure the operators, and F7-03 deliberately
+             kept them off the public API until F7-07 settles the namespace and the overload
+             resolution. This grant is therefore temporary by design: once F7-07 publishes the
+             operator surface, the benchmark arms move to the public entry points and this line
+             should go with it. -->
+        <InternalsVisibleTo Include="DotNetCore.Collections.Benchmarks" />
     </ItemGroup>
 
 </Project>
