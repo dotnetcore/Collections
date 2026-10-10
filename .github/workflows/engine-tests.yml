@@ -1,0 +1,99 @@
+name: Engine.Tests
+
+# F7-07: the engine's namespace / overload-resolution guard rail, plus the 11-TFM build.
+#
+# `paths` is kept identical between `push` and `pull_request` and always lists `build/**`, for the
+# same reason multi-tests.yml documents: every src project imports build/common.props, which pulls
+# in build/version.props, build/package.props and build/misc.props, so a props-only change still
+# changes what this job builds.
+on:
+  push:
+    branches: [ dev, master ]
+    paths:
+      - 'src/DotNetCore.Collections/**'
+      - 'tests/DotNetCore.Collections.Tests/**'
+      - 'tests/DotNetCore.Collections.FrameworkProbe/**'
+      - 'sample/Sample.Engine/**'
+      - 'scripts/Check-EngineNamespace.ps1'
+      - 'build/**'
+      - '.github/workflows/engine-tests.yml'
+  pull_request:
+    paths:
+      - 'src/DotNetCore.Collections/**'
+      - 'tests/DotNetCore.Collections.Tests/**'
+      - 'tests/DotNetCore.Collections.FrameworkProbe/**'
+      - 'sample/Sample.Engine/**'
+      - 'scripts/Check-EngineNamespace.ps1'
+      - 'build/**'
+      - '.github/workflows/engine-tests.yml'
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  engine:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # SourceLink needs full history for deterministic build
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Namespace governance (F7-07)
+        # The source-level half of the R7-05 guard. Nothing under src/DotNetCore.Collections may
+        # declare a namespace outside DotNetCore.Collections: declaring an extension method under
+        # System.Linq is the one way the engine could inject itself into the BCL's own namespace and
+        # hand a consumer CS0121 from a plain `using System.Linq;`. A source scan rather than a
+        # reflection test, so declarations the current TFM compiles away are still seen.
+        # The API-level half runs in the Test step below (NamespaceGovernanceTests).
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Check-EngineNamespace.ps1
+
+      - name: Build (11 TFMs)
+        run: dotnet build src/DotNetCore.Collections/DotNetCore.Collections.csproj -c Release
+
+      - name: Build the overload-resolution sample and the framework probe
+        # Built once here and executed below, rather than with `dotnet run`: the probe targets the
+        # four .NET Framework generations, which `dotnet exec` cannot host, so the pair is run the
+        # same way in both cases — build, then launch the artefact.
+        run: |
+          dotnet build sample/Sample.Engine/Sample.Engine.csproj -c Release
+          dotnet build tests/DotNetCore.Collections.FrameworkProbe/DotNetCore.Collections.FrameworkProbe.csproj -c Release
+
+      - name: Overload resolution, no BCL twin (F7-07)
+        # net8.0 is the last target where System.Linq.Enumerable has no Index at all (.NET 9 added
+        # it), so the engine's Index is the only candidate and the dual `using` is trivially safe.
+        run: dotnet exec sample/Sample.Engine/bin/Release/net8.0/Sample.Engine.dll
+
+      - name: Overload resolution, BCL twin present (F7-07)
+        # net10.0 is where the twin exists. The same file must still compile — the engine's Index is
+        # declared on the exact receiver type while the BCL's needs an interface conversion, and the
+        # better conversion wins — and a bare T[] must still bind to the BCL's, because the engine
+        # declares no conversion from T[] to its wrapper.
+        run: dotnet exec sample/Sample.Engine/bin/Release/net10.0/Sample.Engine.dll
+
+      - name: Test
+        run: dotnet test tests/DotNetCore.Collections.Tests/DotNetCore.Collections.Tests.csproj -c Release
+
+      - name: Framework probe, net451 / net461 / net47 / net48
+        # The four .NET Framework generations the xunit stack cannot reach (Microsoft.NET.Test.Sdk
+        # needs net462 or newer), yet the list arm rests on the field layout of List<T> on exactly
+        # those generations. Runs all four rather than stopping at the first failure, so one CI run
+        # reports the whole generation matrix.
+        shell: pwsh
+        run: |
+          $failed = @()
+          foreach ($tfm in @('net451', 'net461', 'net47', 'net48')) {
+            $probe = "tests/DotNetCore.Collections.FrameworkProbe/bin/Release/$tfm/DotNetCore.Collections.FrameworkProbe.exe"
+            Write-Host "--- probe $tfm ---"
+            & $probe
+            if ($LASTEXITCODE -ne 0) { $failed += $tfm }
+          }
+          if ($failed.Count -gt 0) {
+            Write-Host "probe failed on: $($failed -join ', ')"
+            exit 1
+          }

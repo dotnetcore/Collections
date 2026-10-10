@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- F7-07: two arms, on purpose. System.Linq.Enumerable gained Index in .NET 9, so net8.0 is
+         the last target where the BCL has no twin of the engine's Index at all, while net10.0 is
+         where the twin exists and the engine nevertheless has to win the call outright. Compiling
+         the same file for both proves the source stays unambiguous on either side of that line. -->
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>8.0</LangVersion>
+    <IsPackable>false</IsPackable>
+    <!-- This is a verification sample, not a library: it is proved by running it, so none of the
+         packaging / SourceLink / XML-documentation machinery of build/common.props applies. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DotNetCore.Collections\DotNetCore.Collections.csproj" />
+  </ItemGroup>
+
+</Project>
