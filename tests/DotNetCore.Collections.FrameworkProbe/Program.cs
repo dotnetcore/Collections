@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Reflection;
 using DotNetCore.Collections;
@@ -7,12 +8,20 @@ using DotNetCore.Collections.Internal;
 namespace DotNetCore.Collections.FrameworkProbe
 {
     /// <summary>
-    /// F7-02: verifies at runtime, on each .NET Framework generation the package targets, that the
-    /// list arm reads <c>List&lt;T&gt;._items</c> from the offset it assumes. The check is anchored
-    /// on reflection: the array reached through <c>Unsafe.As&lt;List&lt;T&gt;, ListLayout&lt;T&gt;&gt;</c>
-    /// has to be the very same instance reflection returns for the private field, on every
-    /// generation. A moved field would instead hand back a different array and the probe would exit
-    /// non-zero.
+    /// F7-02 and F7-03: verifies at runtime, on each .NET Framework generation the package targets,
+    /// the parts of the engine that are decided by the target rather than by the source.
+    ///
+    /// F7-02: the list arm reads <c>List&lt;T&gt;._items</c> from the offset it assumes. The check is
+    /// anchored on reflection: the array reached through
+    /// <c>Unsafe.As&lt;List&lt;T&gt;, ListLayout&lt;T&gt;&gt;</c> has to be the very same instance
+    /// reflection returns for the private field, on every generation. A moved field would instead
+    /// hand back a different array and the probe would exit non-zero.
+    ///
+    /// F7-03: the three-hook protocol and everything built on it. These targets are the only ones
+    /// that compile the span hooks out, so they are the only place where the Count + polyfill path
+    /// is the *only* path - the operators, the short-circuit terminals and the pooling terminals all
+    /// have to work here without ever seeing a Span. The probe also pins the shape of the surface
+    /// itself: exactly one hook is declared on this generation.
     ///
     /// The four generations of the 4.x line cannot be reached by the xunit stack
     /// (Microsoft.NET.Test.Sdk needs net462 or newer), which is why this is a console app rather
@@ -51,6 +60,11 @@ namespace DotNetCore.Collections.FrameworkProbe
             CheckFallbackArm(failures);
             CheckDispatchFollowsTheStaticType(failures);
             CheckEnumeratorContract(failures);
+            CheckHookSurfaceOnThisGeneration(failures);
+            CheckCountHookOnThisGeneration(failures);
+            CheckOperatorsWithoutSpans(failures);
+            CheckShortCircuitWithoutSpans(failures);
+            CheckMaterialisationWithoutSpans(failures);
 
             foreach (var failure in failures)
             {
@@ -364,6 +378,337 @@ namespace DotNetCore.Collections.FrameworkProbe
             catch (InvalidOperationException)
             {
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// F7-03: the span-shaped hooks are gated to <c>NETCOREAPP3_0_OR_GREATER</c>, so on the .NET
+        /// Framework generations the protocol has to consist of the count hook alone. Reflecting on
+        /// the interface turns that compile-time decision into a per-generation assertion.
+        /// </summary>
+        private static void CheckHookSurfaceOnThisGeneration(List<string> failures)
+        {
+            var declared = typeof(IValueEnumerableHooks<int>)
+                .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+            if (declared.Length != 1)
+            {
+                failures.Add("hook-surface: IValueEnumerableHooks<int> declares " + declared.Length + " method(s) on " + Target + ", expected exactly the count hook");
+                return;
+            }
+
+            if (declared[0].Name != "TryGetNonEnumeratedCount")
+            {
+                failures.Add("hook-surface: the one declared hook is " + declared[0].Name + ", expected TryGetNonEnumeratedCount");
+            }
+        }
+
+        /// <summary>
+        /// The count hook is the one the paging layer rests on, so it has to answer on every
+        /// generation, and it has to stay honest about the sequences that cannot answer.
+        /// </summary>
+        private static void CheckCountHookOnThisGeneration(List<string> failures)
+        {
+            var array = new int[5];
+            for (var index = 0; index < array.Length; index++)
+            {
+                array[index] = index;
+            }
+
+            ExpectCount(failures, "count-hook-array", (IValueEnumerableHooks<int>)array.ToValueEnumerable(), 5);
+
+            var list = new List<int>(64);
+            for (var index = 0; index < 3; index++)
+            {
+                list.Add(index);
+            }
+
+            ExpectCount(failures, "count-hook-list-spare-capacity", (IValueEnumerableHooks<int>)list.ToValueEnumerable(), 3);
+
+            var queue = new Queue<int>();
+            for (var index = 0; index < 4; index++)
+            {
+                queue.Enqueue(index);
+            }
+
+            // Queue<T> is deliberately NOT the fixture here: it exposes a count but implements
+            // neither ICollection<T> nor (on .NET Framework) IReadOnlyCollection<T>, so the honest
+            // answer for it is "declined". HashSet<T> is the contract that really does promise an
+            // O(1) count, and it is neither an array nor a List<T>, so it reaches the fallback arm's
+            // run-time probe.
+            var set = new HashSet<int>();
+            for (var index = 0; index < 5; index++)
+            {
+                set.Add(index);
+            }
+
+            ExpectCount(failures, "count-hook-fallback-collection", (IValueEnumerableHooks<int>)((IEnumerable<int>)set).ToValueEnumerable(), 5);
+
+            var lazy = (IValueEnumerableHooks<int>)LazySequence(4).ToValueEnumerable();
+            if (lazy.TryGetNonEnumeratedCount(out var lazyCount))
+            {
+                failures.Add("count-hook-lazy: an iterator answered the count hook with " + lazyCount + ", which it cannot know");
+            }
+        }
+
+        private static void ExpectCount(List<string> failures, string name, IValueEnumerableHooks<int> hooks, int expected)
+        {
+            if (!hooks.TryGetNonEnumeratedCount(out var count))
+            {
+                failures.Add(name + ": the count hook was declined, but the sequence is countable");
+                return;
+            }
+
+            if (count != expected)
+            {
+                failures.Add(name + ": the count hook reported " + count + ", expected " + expected);
+            }
+        }
+
+        /// <summary>
+        /// F7-03: the operators have to behave the same on the generations where the span hooks do
+        /// not exist, because there the enumerator walk is the only path they have. The expectations
+        /// are written out by hand rather than against an oracle, so this check cannot agree with a
+        /// bug the oracle shares.
+        /// </summary>
+        private static void CheckOperatorsWithoutSpans(List<string> failures)
+        {
+            var array = new int[10];
+            for (var index = 0; index < array.Length; index++)
+            {
+                array[index] = index + 1;
+            }
+
+            var fused = new List<int>();
+            foreach (var value in array.ToValueEnumerable().WhereSelect(value => (value & 1) == 0, value => value * 10))
+            {
+                fused.Add(value);
+            }
+
+            if (fused.Count != 5 || fused[0] != 20 || fused[2] != 60 || fused[4] != 100)
+            {
+                failures.Add("operator-fused-array: the fused pass over 1..10 did not produce 20/40/60/80/100");
+            }
+
+            var filtered = new List<int>();
+            foreach (var value in array.ToValueEnumerable().Where(value => value > 7))
+            {
+                filtered.Add(value);
+            }
+
+            if (filtered.Count != 3 || filtered[0] != 8 || filtered[2] != 10)
+            {
+                failures.Add("operator-where-array: Where(value > 7) over 1..10 did not produce 8/9/10");
+            }
+
+            var projected = new List<int>();
+            foreach (var value in array.ToValueEnumerable().Select(value => value + 100))
+            {
+                projected.Add(value);
+            }
+
+            if (projected.Count != 10 || projected[0] != 101 || projected[9] != 110)
+            {
+                failures.Add("operator-select-array: Select(value + 100) over 1..10 did not produce 101..110");
+            }
+
+            // The fallback arm goes through the source's own enumerator, which is the path with the
+            // least help from the engine.
+            var fromLazy = new List<int>();
+            foreach (var value in LazySequence(6).ToValueEnumerable().WhereSelect(value => value > 2, value => value * 2))
+            {
+                fromLazy.Add(value);
+            }
+
+            if (fromLazy.Count != 3 || fromLazy[0] != 6 || fromLazy[1] != 8 || fromLazy[2] != 10)
+            {
+                failures.Add("operator-fused-lazy: the fused pass over 0..5 did not produce 6/8/10");
+            }
+        }
+
+        /// <summary>
+        /// F7-03: the short-circuit terminals on the generations without span hooks, where every one
+        /// of them takes the enumerator path.
+        /// </summary>
+        private static void CheckShortCircuitWithoutSpans(List<string> failures)
+        {
+            var array = new int[10];
+            for (var index = 0; index < array.Length; index++)
+            {
+                array[index] = index + 1;
+            }
+
+            if (!array.ToValueEnumerable().Any(value => value == 10))
+            {
+                failures.Add("short-circuit-any-array: a present element was not found");
+            }
+
+            if (array.ToValueEnumerable().Any(value => value == 99))
+            {
+                failures.Add("short-circuit-any-array: an absent element was reported present");
+            }
+
+            if (array.ToValueEnumerable().First(value => value > 3) != 4)
+            {
+                failures.Add("short-circuit-first-array: the first element greater than 3 was not 4");
+            }
+
+            if (!array.ToValueEnumerable().Contains(7) || array.ToValueEnumerable().Contains(42))
+            {
+                failures.Add("short-circuit-contains-array: the containment answer is wrong");
+            }
+
+            if (array.ToValueEnumerable().ElementAt(3) != 4)
+            {
+                failures.Add("short-circuit-elementat-array: the element at index 3 was not 4");
+            }
+
+            var list = new List<int>(32);
+            for (var index = 0; index < 10; index++)
+            {
+                list.Add(index + 1);
+            }
+
+            if (list.ToValueEnumerable().ElementAt(9) != 10 || !list.ToValueEnumerable().Contains(1))
+            {
+                failures.Add("short-circuit-list: the indexed or containment answer is wrong");
+            }
+
+            var queue = new Queue<int>();
+            for (var index = 0; index < 10; index++)
+            {
+                queue.Enqueue(index + 1);
+            }
+
+            IEnumerable<int> fallback = queue;
+            if (!fallback.ToValueEnumerable().Any(value => value == 10))
+            {
+                failures.Add("short-circuit-any-fallback: a present element was not found");
+            }
+
+            if (fallback.ToValueEnumerable().First(value => value > 3) != 4)
+            {
+                failures.Add("short-circuit-first-fallback: the first element greater than 3 was not 4");
+            }
+
+            if (fallback.ToValueEnumerable().ElementAt(3) != 4)
+            {
+                failures.Add("short-circuit-elementat-fallback: the element at index 3 was not 4");
+            }
+
+            if (LazySequence(10).ToValueEnumerable().ElementAt(4) != 4)
+            {
+                failures.Add("short-circuit-elementat-lazy: the element at index 4 was not 4");
+            }
+
+            var threwOnRange = false;
+            try
+            {
+                array.ToValueEnumerable().ElementAt(10);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                threwOnRange = true;
+            }
+
+            if (!threwOnRange)
+            {
+                failures.Add("short-circuit-elementat-array: an out-of-range index did not throw");
+            }
+
+            var threwOnEmptyMatch = false;
+            try
+            {
+                array.ToValueEnumerable().First(value => value == 99);
+            }
+            catch (InvalidOperationException)
+            {
+                threwOnEmptyMatch = true;
+            }
+
+            if (!threwOnEmptyMatch)
+            {
+                failures.Add("short-circuit-first-array: a matchless First did not throw");
+            }
+        }
+
+        /// <summary>
+        /// F7-03: materialisation has to work without the copy hook, since on this generation the
+        /// count hook is the only one that answers.
+        /// </summary>
+        private static void CheckMaterialisationWithoutSpans(List<string> failures)
+        {
+            var array = new int[10];
+            for (var index = 0; index < array.Length; index++)
+            {
+                array[index] = index + 1;
+            }
+
+            using (var pooled = array.ToValueEnumerable().ToPooledList())
+            {
+                if (pooled.Count != 10)
+                {
+                    failures.Add("materialise-list-array: the pooled list holds " + pooled.Count + " elements");
+                }
+                else if (pooled[0] != 1 || pooled[9] != 10)
+                {
+                    failures.Add("materialise-list-array: an element of the pooled list is wrong");
+                }
+                else if (pooled.AsSpan().Length != 10 || pooled.ToArray().Length != 10)
+                {
+                    failures.Add("materialise-list-array: the exposed block is the wrong length");
+                }
+            }
+
+            using (var pooled = LazySequence(7).ToValueEnumerable().ToPooledList())
+            {
+                if (pooled.Count != 7)
+                {
+                    failures.Add("materialise-list-lazy: the pooled list holds " + pooled.Count + " elements");
+                }
+            }
+
+            var buffer = array.ToValueEnumerable().ToArrayPool(out var length);
+            try
+            {
+                if (length != 10)
+                {
+                    failures.Add("materialise-array-array: the reported length is " + length);
+                }
+                else if (buffer.Length < 10)
+                {
+                    failures.Add("materialise-array-array: the rented buffer is shorter than the sequence");
+                }
+                else if (buffer[0] != 1 || buffer[9] != 10)
+                {
+                    failures.Add("materialise-array-array: an element of the rented buffer is wrong");
+                }
+            }
+            finally
+            {
+                ArrayPool<int>.Shared.Return(buffer);
+            }
+
+            var lazyBuffer = LazySequence(7).ToValueEnumerable().ToArrayPool(out var lazyLength);
+            try
+            {
+                if (lazyLength != 7)
+                {
+                    failures.Add("materialise-array-lazy: the reported length is " + lazyLength + ", expected 7");
+                }
+            }
+            finally
+            {
+                ArrayPool<int>.Shared.Return(lazyBuffer);
+            }
+        }
+
+        /// <summary>An iterator block: a sequence that can only answer by being walked.</summary>
+        private static IEnumerable<int> LazySequence(int count)
+        {
+            for (var index = 0; index < count; index++)
+            {
+                yield return index;
             }
         }
 

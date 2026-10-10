@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using DotNetCore.Collections.Internal;
 
 namespace DotNetCore.Collections
 {
@@ -10,7 +11,7 @@ namespace DotNetCore.Collections
     /// reference, so creating the wrapper copies nothing.
     /// </summary>
     /// <typeparam name="T">The type of the elements of the list.</typeparam>
-    public readonly struct ReadOnlyListValueEnumerable<T> : IValueEnumerable<T, ReadOnlyListValueEnumerator<T>>
+    public readonly struct ReadOnlyListValueEnumerable<T> : IValueEnumerable<T, ReadOnlyListValueEnumerator<T>>, IValueEnumerableHooks<T>
     {
         private readonly IReadOnlyList<T> _source;
 
@@ -29,6 +30,65 @@ namespace DotNetCore.Collections
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        // F7-03: the interface states only that the sequence can be indexed, so the count hook is
+        // always answerable while the two contiguous hooks are not - unless the object behind the
+        // interface happens to be an array or a List<T>, which is the common case when a paging
+        // caller hands over its own storage. That run-time probe is the cheap half of the
+        // "virtual singleton dispatch" idea: it costs one type test and removes a per-element
+        // interface call from every bulk path.
+
+        bool IValueEnumerableHooks<T>.TryGetNonEnumeratedCount(out int count)
+        {
+            count = _source.Count;
+            return true;
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        bool IValueEnumerableHooks<T>.TryGetSpan(out ReadOnlySpan<T> span) => TryGetSpanCore(out span);
+
+        bool IValueEnumerableHooks<T>.TryCopyTo(Span<T> destination, int offset)
+        {
+            if (!TryGetSpanCore(out var span))
+            {
+                return false;
+            }
+
+            if ((uint)offset > (uint)destination.Length)
+            {
+                return false;
+            }
+
+            if (destination.Length - offset < span.Length)
+            {
+                return false;
+            }
+
+            span.CopyTo(destination.Slice(offset));
+            return true;
+        }
+
+        // Reached directly by both hooks above; kept separate so the run-time probe runs once and
+        // never goes through an interface reference (which would box this struct).
+        private bool TryGetSpanCore(out ReadOnlySpan<T> span)
+        {
+            var source = _source;
+            if (source is T[] array)
+            {
+                span = array;
+                return true;
+            }
+
+            if (source is List<T> list)
+            {
+                span = ListLayoutAccessor.AsReadOnlySpan(list);
+                return true;
+            }
+
+            span = default;
+            return false;
+        }
+#endif
     }
 
     /// <summary>
@@ -99,9 +159,12 @@ namespace DotNetCore.Collections
         }
 
         /// <summary>Sets the enumerator to its initial position, before the first element.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _index = -1;
 
-        /// <summary>Does nothing: the enumerator owns no resources; the source does.</summary>
+        /// <summary>Does nothing: the enumerator owns no resources; the source does. The call is
+        /// kept so that a consumer's <see langword="foreach"/> can inline it away.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
         }

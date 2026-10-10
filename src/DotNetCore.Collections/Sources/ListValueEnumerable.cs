@@ -11,7 +11,7 @@ namespace DotNetCore.Collections
     /// so creating the wrapper copies nothing.
     /// </summary>
     /// <typeparam name="T">The type of the elements of the list.</typeparam>
-    public readonly struct ListValueEnumerable<T> : IValueEnumerable<T, ListValueEnumerator<T>>
+    public readonly struct ListValueEnumerable<T> : IValueEnumerable<T, ListValueEnumerator<T>>, IValueEnumerableHooks<T>
     {
         private readonly List<T> _source;
 
@@ -30,6 +30,41 @@ namespace DotNetCore.Collections
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        // F7-03: the count hook reads the list's own Count (a direct field read); the span and
+        // copy hooks are built over the backing array. The span stops at Count, never at the
+        // capacity, so spare capacity never leaks into a bulk path.
+
+        bool IValueEnumerableHooks<T>.TryGetNonEnumeratedCount(out int count)
+        {
+            count = _source.Count;
+            return true;
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        bool IValueEnumerableHooks<T>.TryGetSpan(out ReadOnlySpan<T> span)
+        {
+            span = ListLayoutAccessor.AsReadOnlySpan(_source);
+            return true;
+        }
+
+        bool IValueEnumerableHooks<T>.TryCopyTo(Span<T> destination, int offset)
+        {
+            var source = ListLayoutAccessor.AsReadOnlySpan(_source);
+            if ((uint)offset > (uint)destination.Length)
+            {
+                return false;
+            }
+
+            if (destination.Length - offset < source.Length)
+            {
+                return false;
+            }
+
+            source.CopyTo(destination.Slice(offset));
+            return true;
+        }
+#endif
     }
 
     /// <summary>
@@ -102,9 +137,12 @@ namespace DotNetCore.Collections
         }
 
         /// <summary>Sets the enumerator to its initial position, before the first element.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _index = -1;
 
-        /// <summary>Does nothing: a list enumerator owns no resources.</summary>
+        /// <summary>Does nothing: a list enumerator owns no resources. The call is kept so that a
+        /// consumer's <see langword="foreach"/> can inline it away.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
         }

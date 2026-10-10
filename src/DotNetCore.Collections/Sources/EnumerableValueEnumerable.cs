@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using DotNetCore.Collections.Internal;
 
 namespace DotNetCore.Collections
 {
@@ -12,7 +13,7 @@ namespace DotNetCore.Collections
     /// walk over it still avoid any additional one.
     /// </summary>
     /// <typeparam name="T">The type of the elements of the sequence.</typeparam>
-    public readonly struct EnumerableValueEnumerable<T> : IValueEnumerable<T, EnumerableValueEnumerator<T>>
+    public readonly struct EnumerableValueEnumerable<T> : IValueEnumerable<T, EnumerableValueEnumerator<T>>, IValueEnumerableHooks<T>
     {
         private readonly IEnumerable<T> _source;
 
@@ -31,6 +32,78 @@ namespace DotNetCore.Collections
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        // F7-03: the static type carries no shape information, but the object behind it usually
+        // does. The hooks below probe the run-time type once per call, which is the cheap half of
+        // the "virtual singleton dispatch" idea: an IEnumerable<T> that really is a T[] or a
+        // List<T> still reaches the bulk paths, and only a genuinely lazy sequence walks.
+
+        bool IValueEnumerableHooks<T>.TryGetNonEnumeratedCount(out int count)
+        {
+            if (_source is ICollection<T> collection)
+            {
+                count = collection.Count;
+                return true;
+            }
+
+            // IReadOnlyCollection<T> is the other contract that promises an O(1) count. It catches
+            // the collections that expose a count but no mutating interface - Queue<T> and
+            // Stack<T> on the modern runtimes, for instance. On .NET Framework those two do not
+            // implement it, so the answer genuinely differs between platforms: the hook reports
+            // what the platform guarantees, and the walk is the fallback when it does not.
+            if (_source is IReadOnlyCollection<T> readOnlyCollection)
+            {
+                count = readOnlyCollection.Count;
+                return true;
+            }
+
+            count = 0;
+            return false;
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        bool IValueEnumerableHooks<T>.TryGetSpan(out ReadOnlySpan<T> span) => TryGetSpanCore(out span);
+
+        bool IValueEnumerableHooks<T>.TryCopyTo(Span<T> destination, int offset)
+        {
+            if (!TryGetSpanCore(out var span))
+            {
+                return false;
+            }
+
+            if ((uint)offset > (uint)destination.Length)
+            {
+                return false;
+            }
+
+            if (destination.Length - offset < span.Length)
+            {
+                return false;
+            }
+
+            span.CopyTo(destination.Slice(offset));
+            return true;
+        }
+
+        private bool TryGetSpanCore(out ReadOnlySpan<T> span)
+        {
+            var source = _source;
+            if (source is T[] array)
+            {
+                span = array;
+                return true;
+            }
+
+            if (source is List<T> list)
+            {
+                span = ListLayoutAccessor.AsReadOnlySpan(list);
+                return true;
+            }
+
+            span = default;
+            return false;
+        }
+#endif
     }
 
     /// <summary>
@@ -75,9 +148,11 @@ namespace DotNetCore.Collections
         /// supports it.</summary>
         /// <exception cref="NotSupportedException">The underlying enumerator does not support
         /// being reset.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _enumerator.Reset();
 
         /// <summary>Releases the underlying enumerator.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose() => _enumerator.Dispose();
     }
 }

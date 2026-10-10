@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using DotNetCore.Collections.Internal;
 
 namespace DotNetCore.Collections
 {
@@ -10,7 +11,7 @@ namespace DotNetCore.Collections
     /// reference, so creating the wrapper copies nothing.
     /// </summary>
     /// <typeparam name="T">The type of the elements of the array.</typeparam>
-    public readonly struct ArrayValueEnumerable<T> : IValueEnumerable<T, ArrayValueEnumerator<T>>
+    public readonly struct ArrayValueEnumerable<T> : IValueEnumerable<T, ArrayValueEnumerator<T>>, IValueEnumerableHooks<T>
     {
         private readonly T[] _source;
 
@@ -29,6 +30,40 @@ namespace DotNetCore.Collections
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        // F7-03: an array answers every hook. Its length is the element count, it is already one
+        // contiguous block, and that block can be copied in a single step.
+
+        bool IValueEnumerableHooks<T>.TryGetNonEnumeratedCount(out int count)
+        {
+            count = _source.Length;
+            return true;
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        bool IValueEnumerableHooks<T>.TryGetSpan(out ReadOnlySpan<T> span)
+        {
+            span = _source;
+            return true;
+        }
+
+        bool IValueEnumerableHooks<T>.TryCopyTo(Span<T> destination, int offset)
+        {
+            var source = _source;
+            if ((uint)offset > (uint)destination.Length)
+            {
+                return false;
+            }
+
+            if (destination.Length - offset < source.Length)
+            {
+                return false;
+            }
+
+            new ReadOnlySpan<T>(source).CopyTo(destination.Slice(offset));
+            return true;
+        }
+#endif
     }
 
     /// <summary>
@@ -89,9 +124,12 @@ namespace DotNetCore.Collections
         }
 
         /// <summary>Sets the enumerator to its initial position, before the first element.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _index = -1;
 
-        /// <summary>Does nothing: an array enumerator owns no resources.</summary>
+        /// <summary>Does nothing: an array enumerator owns no resources. The call is kept so that a
+        /// consumer's <see langword="foreach"/> can inline it away.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
         }
