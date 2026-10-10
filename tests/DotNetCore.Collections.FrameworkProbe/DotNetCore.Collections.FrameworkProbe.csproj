@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- F7-02: the field-layout assumption behind the list arm must hold on every .NET Framework
+         generation the package targets, not just on the modern runtime. A xunit project cannot
+         reach the 4.5.1 / 4.6.1 targets (Microsoft.NET.Test.Sdk needs net462 or newer), so the
+         four Framework generations are exercised by a self-checking console app that exits
+         non-zero on the first disagreement. -->
+    <TargetFrameworks>net451;net461;net47;net48</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>DotNetCore.Collections.FrameworkProbe</AssemblyName>
+    <!-- The probe consumes the same polyfill packages the product ships on net461 (System.Memory /
+         System.Buffers / System.Runtime.CompilerServices.Unsafe), whose buildTransitive targets warn
+         that 4.6.1 predates the version picked for the net461 group. The product itself suppresses
+         that warning on the same grounds (see src/DotNetCore.Collections/DotNetCore.Collections.csproj),
+         and the probe must not add a warning family the product does not already have. -->
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <!-- The probe is verified by running it, not by packing it, so none of the packaging,
+         SourceLink or XML-documentation machinery of build/common.props applies. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DotNetCore.Collections\DotNetCore.Collections.csproj" />
+  </ItemGroup>
+
+</Project>

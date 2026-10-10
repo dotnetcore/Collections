@@ -23,8 +23,12 @@
         <Description>High-performance LINQ engine with value-type enumerators and zero-allocation hot paths for .NET.</Description>
     </PropertyGroup>
 
-    <!-- F7-01: polyfill packages for TFMs lacking in-box Span / ArrayPool / Unsafe.
-         netstandard2.1 and net6.0+ ship these types in-box and must NOT take these references.
+    <!-- F7-01 + F7-02: polyfill packages for TFMs lacking in-box Span / ArrayPool / Unsafe.
+         netstandard2.1 ships Span / Memory / ArrayPool in-box and net6.0+ ships all of them,
+         so those two generations must NOT take the System.Memory / System.Buffers references.
+
+         Unsafe is the one exception: it only reaches the BCL in-box with .NET Core 3.0 / .NET 5+,
+         so netstandard2.1 needs the package as well (F7-02 is the first code to call Unsafe.As).
 
          Version notes:
          - System.Memory 4.6.3 targets net462+ / netstandard2.0+; it has NO net451 build.
@@ -47,6 +51,11 @@
         <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
     </ItemGroup>
 
+    <!-- netstandard2.1 has Span / Memory / ArrayPool in-box but not Unsafe. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
+    </ItemGroup>
+
     <!-- net451: SourceLink's transitive requirements (System.Memory >= 4.6.3, System.Buffers >= 4.6.1)
          cannot be met on net451 (neither version has a net451 build). Suppress NU1605 for this TFM only. -->
     <PropertyGroup Condition="'$(TargetFramework)' == 'net451'">
@@ -60,6 +69,12 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="DotNetCore.Collections.Tests" />
+        <!-- F7-02: the four .NET Framework generations the package targets cannot be reached by
+             the xunit stack (Microsoft.NET.Test.Sdk needs net462 or newer), yet the list arm rests
+             on the field layout of List<T> on exactly those generations. The probe is therefore a
+             self-checking console app that compares ListLayoutAccessor against reflection, and it
+             needs the internal accessor to do so. -->
+        <InternalsVisibleTo Include="DotNetCore.Collections.FrameworkProbe" />
     </ItemGroup>
 
 </Project>
