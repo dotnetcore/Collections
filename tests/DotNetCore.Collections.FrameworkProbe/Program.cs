@@ -63,6 +63,7 @@ namespace DotNetCore.Collections.FrameworkProbe
             CheckHookSurfaceOnThisGeneration(failures);
             CheckCountHookOnThisGeneration(failures);
             CheckOperatorsWithoutSpans(failures);
+            CheckFirstOperatorBatch(failures);
             CheckShortCircuitWithoutSpans(failures);
             CheckMaterialisationWithoutSpans(failures);
             CheckAllocationPerWalk(failures);
@@ -528,6 +529,151 @@ namespace DotNetCore.Collections.FrameworkProbe
         }
 
         /// <summary>
+        /// F7-05: the first batch of the public operator surface - <c>Index</c>, <c>ForEach</c>,
+        /// <c>TagFirstLast</c>, <c>Pairwise</c> and <c>Scan</c> - on the generations where the span
+        /// hooks do not exist.
+        /// </summary>
+        /// <remarks>
+        /// These generations are the only ones where the operators cannot reach a contiguous path at
+        /// all, so they are the only place where the enumerator walk is the operator's entire
+        /// implementation. The expectations are written out by hand, for the same reason the rest of
+        /// this probe states them by hand: an oracle the library also supplies could agree with a bug.
+        /// The array arm and the lazy fallback arm are both exercised, because the fallback arm goes
+        /// through the source's own enumerator and has the least help from the engine.
+        /// </remarks>
+        private static void CheckFirstOperatorBatch(List<string> failures)
+        {
+            var array = new int[5];
+            for (var index = 0; index < array.Length; index++)
+            {
+                array[index] = index + 1;
+            }
+
+            // Index: 1..5 paired with 0..4.
+            var indexed = new List<int>();
+            foreach (var pair in array.ToValueEnumerable().Index())
+            {
+                indexed.Add(pair.Index * 10 + pair.Item);
+            }
+
+            if (indexed.Count != 5 || indexed[0] != 1 || indexed[4] != 45)
+            {
+                failures.Add("operator-batch-index-array: Index over 1..5 did not produce (0,1)..(4,5)");
+            }
+
+            // ForEach: the action runs once per element, in order, and the indexed overload counts.
+            var visited = new List<int>();
+            array.ToValueEnumerable().ForEach(value => visited.Add(value));
+            if (visited.Count != 5 || visited[0] != 1 || visited[4] != 5)
+            {
+                failures.Add("operator-batch-foreach-array: ForEach over 1..5 did not visit 1/2/3/4/5 in order");
+            }
+
+            var positionSum = 0;
+            array.ToValueEnumerable().ForEach((value, position) => positionSum += position);
+            if (positionSum != 10)
+            {
+                failures.Add("operator-batch-foreach-indexed-array: the positions passed to ForEach over 1..5 did not sum to 0+1+2+3+4");
+            }
+
+            // TagFirstLast: only the ends are tagged.
+            var tagged = new List<int>();
+            foreach (var tag in array.ToValueEnumerable().TagFirstLast((value, first, last) => value * 100 + (first ? 10 : 0) + (last ? 1 : 0)))
+            {
+                tagged.Add(tag);
+            }
+
+            if (tagged.Count != 5 || tagged[0] != 110 || tagged[1] != 200 || tagged[4] != 501)
+            {
+                failures.Add("operator-batch-tagfirstlast-array: TagFirstLast over 1..5 did not tag only the ends");
+            }
+
+            var one = new int[1];
+            one[0] = 9;
+
+            var singleTag = 0;
+            foreach (var tag in one.ToValueEnumerable().TagFirstLast((value, first, last) => (first ? 10 : 0) + (last ? 1 : 0)))
+            {
+                singleTag = tag;
+            }
+
+            if (singleTag != 11)
+            {
+                failures.Add("operator-batch-tagfirstlast-single: a one-element source was not tagged as both first and last");
+            }
+
+            // Pairwise: 1+2, 2+3, 3+4, 4+5.
+            var pairs = new List<int>();
+            foreach (var value in array.ToValueEnumerable().Pairwise((previous, current) => previous + current))
+            {
+                pairs.Add(value);
+            }
+
+            if (pairs.Count != 4 || pairs[0] != 3 || pairs[3] != 9)
+            {
+                failures.Add("operator-batch-pairwise-array: Pairwise over 1..5 did not produce 3/5/7/9");
+            }
+
+            // Scan: inclusive prefix sums 1, 3, 6, 10, 15; with a seed, 0 first.
+            var scanned = new List<int>();
+            foreach (var value in array.ToValueEnumerable().Scan((accumulator, current) => accumulator + current))
+            {
+                scanned.Add(value);
+            }
+
+            if (scanned.Count != 5 || scanned[0] != 1 || scanned[4] != 15)
+            {
+                failures.Add("operator-batch-scan-array: Scan over 1..5 did not produce 1/3/6/10/15");
+            }
+
+            var seeded = new List<int>();
+            foreach (var value in array.ToValueEnumerable().Scan(0, (accumulator, current) => accumulator + current))
+            {
+                seeded.Add(value);
+            }
+
+            if (seeded.Count != 6 || seeded[0] != 0 || seeded[5] != 15)
+            {
+                failures.Add("operator-batch-scan-seeded-array: a seeded Scan over 1..5 did not start at 0 and end at 15");
+            }
+
+            var emptySeeded = new List<int>();
+            foreach (var value in LazySequence(0).ToValueEnumerable().Scan(42, (accumulator, current) => accumulator + current))
+            {
+                emptySeeded.Add(value);
+            }
+
+            if (emptySeeded.Count != 1 || emptySeeded[0] != 42)
+            {
+                failures.Add("operator-batch-scan-seeded-empty: a seeded Scan over an empty source did not yield the seed alone");
+            }
+
+            // The same batch over the fallback arm, where every walk goes through the lazy source's
+            // own enumerator.
+            var lazy = new List<int>();
+            foreach (var pair in LazySequence(3).ToValueEnumerable().Index())
+            {
+                lazy.Add(pair.Index);
+            }
+
+            if (lazy.Count != 3 || lazy[0] != 0 || lazy[2] != 2)
+            {
+                failures.Add("operator-batch-index-lazy: Index over a lazy 0..2 did not produce positions 0/1/2");
+            }
+
+            var lazyScan = new List<int>();
+            foreach (var value in LazySequence(4).ToValueEnumerable().Scan((accumulator, current) => accumulator + current))
+            {
+                lazyScan.Add(value);
+            }
+
+            if (lazyScan.Count != 4 || lazyScan[0] != 0 || lazyScan[3] != 6)
+            {
+                failures.Add("operator-batch-scan-lazy: Scan over a lazy 0..3 did not produce 0/1/3/6");
+            }
+        }
+
+        /// <summary>
         /// F7-03: the short-circuit terminals on the generations without span hooks, where every one
         /// of them takes the enumerator path.
         /// </summary>
@@ -749,19 +895,32 @@ namespace DotNetCore.Collections.FrameworkProbe
                 Sink += PlainWalk(source, predicate);
                 Sink += FusedWalk(source, predicate, selector);
                 Sink += FrameworkFusedWalk(source, predicate, selector);
+                Sink += BatchWalk(source);
             }
 
             var floor = AllocatedPerWalk(walks, () => PlainWalk(source, predicate));
             var engine = AllocatedPerWalk(walks, () => FusedWalk(source, predicate, selector));
             var framework = AllocatedPerWalk(walks, () => FrameworkFusedWalk(source, predicate, selector));
+            var batch = AllocatedPerWalk(walks, () => BatchWalk(source));
 
             Console.WriteLine(
-                "allocation-per-walk: floor=" + floor + " B, engine=" + engine + " B, framework=Where().Select()=" + framework + " B");
+                "allocation-per-walk: floor=" + floor + " B, engine=" + engine + " B, framework=Where().Select()=" + framework + " B, operator-batch=" + batch + " B");
 
             if (engine > framework)
             {
                 failures.Add(
                     "allocation-engine-vs-framework: the engine allocated " + engine + " B per walk but the framework's chain allocated " + framework + " B");
+            }
+
+            // F7-05: the first operator batch has no framework counterpart on these generations -
+            // TagFirstLast, Pairwise and Scan do not exist in System.Linq at all - so the reference it
+            // is measured against is the plain indexed walk, which allocates nothing. What holds the
+            // measurement accountable is the sensitivity guard below, which fails when the counter
+            // cannot see an allocation at all.
+            if (batch > floor)
+            {
+                failures.Add(
+                    "allocation-operator-batch: the first operator batch allocated " + batch + " B per walk, more than the plain indexed walk's " + floor + " B");
             }
 
             // If the framework's chain does not show up above the plain walk, the counter is not
@@ -859,6 +1018,61 @@ namespace DotNetCore.Collections.FrameworkProbe
         private static bool IsEven(int value) => (value & 1) == 0;
 
         private static int Increment(int value) => value + 1;
+
+        /// <summary>
+        /// F7-05: one walk that carries the whole first operator batch over the same source, so the
+        /// allocation measurement covers the operators as a group. The delegates are held in fields
+        /// rather than written inline: a delegate created at the call site is the caller's allocation,
+        /// and measuring it would hide what the operators themselves do.
+        /// </summary>
+        private static long BatchWalk(int[] source)
+        {
+            long total = 0;
+
+            foreach (var pair in source.ToValueEnumerable().Index())
+            {
+                total += pair.Index + pair.Item;
+            }
+
+            foreach (var value in source.ToValueEnumerable().TagFirstLast(TagSelector))
+            {
+                total += value;
+            }
+
+            foreach (var value in source.ToValueEnumerable().Pairwise(PairFolder))
+            {
+                total += value;
+            }
+
+            foreach (var value in source.ToValueEnumerable().Scan(Folder))
+            {
+                total += value;
+            }
+
+            foreach (var value in source.ToValueEnumerable().Scan(0, Folder))
+            {
+                total += value;
+            }
+
+            BatchSink = 0;
+            source.ToValueEnumerable().ForEach(BatchAccumulate);
+            total += BatchSink;
+
+            return total;
+        }
+
+        private static readonly Func<int, bool, bool, int> TagSelector = (value, first, last) => value;
+
+        private static readonly Func<int, int, int> PairFolder = (previous, current) => previous + current;
+
+        private static readonly Func<int, int, int> Folder = (accumulator, current) => accumulator + current;
+
+        private static readonly Action<int> BatchAccumulate = Accumulate;
+
+        private static void Accumulate(int value) => BatchSink += value;
+
+        /// <summary>Kept so the <c>ForEach</c> arm of the batch cannot be discarded as dead code.</summary>
+        private static long BatchSink;
 
         /// <summary>Kept so no walk can be discarded as dead code.</summary>
         private static long Sink;

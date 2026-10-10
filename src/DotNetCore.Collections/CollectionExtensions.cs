@@ -6,7 +6,12 @@ namespace DotNetCore.Collections
     /// Provides high-performance LINQ extension methods with value-type enumerators
     /// and zero-allocation hot paths.
     /// </summary>
-    public static class CollectionExtensions
+    /// <remarks>
+    /// This file holds the four entry points that wrap a source without copying it. The operator
+    /// surface is the other half of the same class and lives in <c>Operators/CollectionExtensions.cs</c>,
+    /// so that adding an operator never means editing the wrappers.
+    /// </remarks>
+    public static partial class CollectionExtensions
     {
         /// <summary>Wraps an array in a value-type enumerable.</summary>
         /// <typeparam name="T">The element type of the array.</typeparam>

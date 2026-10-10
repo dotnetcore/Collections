@@ -214,6 +214,96 @@ namespace DotNetCore.Collections.Internal
             throw new ArgumentOutOfRangeException(nameof(index));
         }
 
+        /// <summary>Immediately runs <paramref name="action"/> on every element of the sequence.</summary>
+        /// <typeparam name="TSource">The value enumerable being walked.</typeparam>
+        /// <typeparam name="TEnumerator">The value-type enumerator of <typeparamref name="TSource"/>.</typeparam>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <param name="source">The sequence to walk.</param>
+        /// <param name="action">The action to run on each element.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="action"/> is <see langword="null"/>.</exception>
+        /// <remarks>
+        /// A terminal, not an operator: it returns nothing, and it walks the whole sequence even if
+        /// the action throws only on the last element's behalf. The span path exists because the
+        /// action is the whole cost of the walk - skipping the enumerator's own bookkeeping is worth
+        /// having when the source is already contiguous.
+        /// </remarks>
+        internal static void ForEach<TSource, TEnumerator, T>(TSource source, Action<T> action)
+            where TSource : struct, IValueEnumerable<T, TEnumerator>, IValueEnumerableHooks<T>
+            where TEnumerator : struct, IEnumerator<T>
+        {
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+#if NETCOREAPP3_0_OR_GREATER
+            if (source.TryGetSpan(out var span))
+            {
+                for (var i = 0; i < span.Length; i++)
+                {
+                    action(span[i]);
+                }
+
+                return;
+            }
+#endif
+
+            using (var enumerator = source.GetEnumerator())
+            {
+                while (enumerator.MoveNext())
+                {
+                    action(enumerator.Current);
+                }
+            }
+        }
+
+        /// <summary>Immediately runs <paramref name="action"/> on every element, passing the
+        /// zero-based position as well.</summary>
+        /// <typeparam name="TSource">The value enumerable being walked.</typeparam>
+        /// <typeparam name="TEnumerator">The value-type enumerator of <typeparamref name="TSource"/>.</typeparam>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <param name="source">The sequence to walk.</param>
+        /// <param name="action">The action to run on each element; its second argument is the
+        /// zero-based position of the element.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="action"/> is <see langword="null"/>.</exception>
+        /// <remarks>
+        /// The counter is deliberately not wrapped in <see langword="checked"/>: <c>ForEach</c> hands
+        /// the position to a caller's action rather than producing an indexed element, so there is no
+        /// sequence whose indices have to stay valid and no <see cref="OverflowException"/> contract
+        /// to keep. Use <c>Index</c> when the position has to become part of the sequence.
+        /// </remarks>
+        internal static void ForEachIndexed<TSource, TEnumerator, T>(TSource source, Action<T, int> action)
+            where TSource : struct, IValueEnumerable<T, TEnumerator>, IValueEnumerableHooks<T>
+            where TEnumerator : struct, IEnumerator<T>
+        {
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+#if NETCOREAPP3_0_OR_GREATER
+            if (source.TryGetSpan(out var span))
+            {
+                for (var i = 0; i < span.Length; i++)
+                {
+                    action(span[i], i);
+                }
+
+                return;
+            }
+#endif
+
+            using (var enumerator = source.GetEnumerator())
+            {
+                var index = 0;
+                while (enumerator.MoveNext())
+                {
+                    action(enumerator.Current, index);
+                    index++;
+                }
+            }
+        }
+
         /// <summary>Copies the whole sequence into a buffer that is rented from the shared pool.</summary>
         /// <typeparam name="TSource">The value enumerable being copied.</typeparam>
         /// <typeparam name="TEnumerator">The value-type enumerator of <typeparamref name="TSource"/>.</typeparam>
