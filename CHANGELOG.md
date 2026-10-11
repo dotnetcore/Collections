@@ -4,6 +4,89 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [7.1.0] - 2026-10-11
+
+### Added
+
+- **A new package — `DotNetCore.Collections`, a LINQ engine built on value-type enumerators.** The
+  package is additive: `Paginable` and `Multi` are untouched and neither references it. It exists to
+  give the two things the base class library's `Enumerable` cannot — an enumerator that is a plain
+  `struct` rather than a `ref struct` (so it can be a type argument and can cross an `await` on every
+  target, `net451` included), and hot paths that allocate nothing. The engine ships the same eleven
+  target frameworks as the rest of the repository, `net451` through `net10.0`, from one C# 8 code
+  path, with the older generations served by polyfill packages (`System.Memory`, `System.Buffers`,
+  `System.Runtime.CompilerServices.Unsafe`, `System.ValueTuple`) that are referenced only where the
+  framework does not already ship the type. Nothing in a public signature names a type the oldest
+  target lacks, so referencing the package never forces a consumer onto a newer framework.
+- **`ToValueEnumerable()` — four entry points, one per source shape.** An overload for `T[]`, one
+  for `List<T>`, one for `IReadOnlyList<T>` and one for any `IEnumerable<T>`; the most specific
+  overload wins, so a `List<T>` takes the list arm rather than the enumerable arm. The wrappers are
+  lazy and hold a reference to the source, so nothing is enumerated until the result is walked, and
+  each also implements `IEnumerable<T>`, so a wrapped source can still be handed to any API that
+  expects a sequence. `ValueEnumerable.From<T>()` is the same four entry points as plain static
+  methods, for callers who would rather not import an extension. The four wrapper types
+  (`ArrayValueEnumerable<T>`, `ListValueEnumerable<T>`, `ReadOnlyListValueEnumerable<T>`,
+  `EnumerableValueEnumerable<T>`) implement `IValueEnumerable<out T, out TEnumerator>`, which is
+  `IEnumerable<T>` plus a `GetEnumerator()` that returns the value-type enumerator instead of the
+  boxed interface.
+- **Five operators — `Index`, `ForEach`, `TagFirstLast`, `Pairwise` and `Scan`.** Each is declared
+  once per source arm, so the enumerator stays a value type through the whole pipeline. `Index`
+  pairs every element with its zero-based position as `(int Index, T Item)`, matching the shape
+  `System.Linq.Enumerable.Index` gained in .NET 9, and counts with `checked` arithmetic so a
+  sequence longer than `int.MaxValue` raises `OverflowException` rather than wrapping. `ForEach`
+  runs an action per element eagerly, with a second overload that also passes the position.
+  `TagFirstLast` hands the selector two extra flags — whether the element is the first and whether
+  it is the last — so a single-element source tags its one element as both. `Pairwise` hands the
+  selector the previous and the current element, so *n* elements yield *n*−1 results and a
+  single-element source yields none. `Scan` is the running aggregate in the two shapes the name
+  implies: without a seed it emits the first element and then one value per element (as long as the
+  source), and with a seed it emits the seed first and then one value per element (one longer than
+  the source).
+- **The engine's hot paths were measured before they were trusted, and the numbers are the
+  release's premise.** `Where` / `Select` / `WhereSelect` were benchmarked against `System.Linq`
+  with `BenchmarkDotNet` over `int[]` and `List<int>`, on both the in-box `Span` path (`net8.0`) and
+  the polyfill path (`net461`, the stand-in for `net451`): `WhereSelect` came out **6.0 %** and
+  **13.0 %** faster on `net8.0`, and **18.0 %** and **29.0 %** faster on the polyfill path.
+  Allocation on the hot paths is **0 bytes per walk** on both paths — measured with
+  `GC.GetAllocatedBytesForCurrentThread` where the runtime can report it, and with a
+  noise-floor-corrected counter on the .NET Framework generations where it cannot. The project's own
+  go/no-go gate (if the win is under 10 % on both sources, stop chasing zero-allocation) was not
+  triggered, so the engine keeps its zero-allocation target.
+- **The engine's namespace and overload resolution are guarded in CI.** A consumer that writes
+  `using System.Linq;` next to `using DotNetCore.Collections;` must not get CS0121, and importing the
+  engine must not change what their existing `Enumerable` code binds to. Two halves enforce that: a
+  source scan that fails if any file under `src/DotNetCore.Collections` declares a namespace outside
+  the engine root, and reflection assertions over the built assembly (nothing under `System.Linq`,
+  every public type and extension method under the engine namespace, and any extension method
+  sharing a name with `Enumerable` taking an engine-owned receiver). A compiled sample proves both
+  facts on `net8.0` — the last target where the BCL has no `Index` at all — and on `net10.0`, where
+  the twin exists, the engine still wins the call and a bare `T[]` still binds to the BCL.
+
+### Changed
+
+- **The release workflow now packs twelve packages instead of eleven.** `DotNetCore.Collections`
+  joins the pack list, so the NuGet trusted-publishing policy must name the new package as well. The
+  engine's own CI workflow verifies the pack, including the `.snupkg` symbol package.
+
+### Fixed
+
+- None. No packaged defect was addressed.
+
+### Breaking
+
+- **None.** This release is a pure addition on every axis:
+  1. **The new package is new; the existing packages are untouched.** No file under
+     `src/DotNetCore.Collections.Multi` or `src/DotNetCore.Collections.Paginable*` appears in the
+     diff at all, so every `Paginable` and `Multi` public signature is exactly what it was.
+  2. **No `Paginable` or `Multi` dependency changed.** Neither package references the engine, so
+     neither package's dependency graph moved.
+  3. **The engine adds a namespace, it does not take one over.** Its public surface is rooted at
+     `DotNetCore.Collections` and it injects nothing into `System.Linq` — the property the CI guard
+     above exists to keep true — so adding `using DotNetCore.Collections;` to existing code cannot
+     change what that code binds to.
+
+  Existing code therefore keeps compiling and running unchanged, and no upgrade step is required.
+
 ## [6.9.0] - 2026-10-08
 
 ### Added

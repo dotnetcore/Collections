@@ -4,32 +4,27 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/dotnetcore/CAP/master/LICENSE.txt)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdotnetcore%2FCollections?ref=badge_shield)
 
-NCC Collections is a set of collection-based extensions and tools, shipped as two independent
+NCC Collections is a set of collection-based extensions and tools, shipped as three independent
 modules.
 
 | Module | Package | What it does |
 | --- | --- | --- |
 | **Paginable** | `DotNetCore.Collections.Paginable` + 9 ORM integrations | Turns any `IEnumerable<T>` / `IQueryable<T>` into paged results, with keyset (cursor) paging and async support. |
 | **Multi** | `DotNetCore.Collections.Multi` | Multiset, multimap, composite-key and thread-safe/immutable collection types. |
+| **Engine** | `DotNetCore.Collections` | A LINQ engine built on value-type enumerators: zero-allocation hot paths, one code path across `net451` – `net10.0`. |
 
 See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
-**6.9.0** release: the `Multi` family becomes observable, comparable and summarisable.
-`MultiList<T>` and `MultiDictionary<TKey, TValue>` now raise a `CollectionChanged` event on every
-mutation that actually changes the collection, naming the element or key, how many copies or values
-moved, and the resulting count — a self-authored notification rather than the framework's
-`INotifyCollectionChanged`, because that contract is index-oriented while a multiset has no
-positions and can move an element by more than one copy in a single call. Both types also spell the
-independent copy `Snapshot()`, the name the concurrent types already used. The new
-`CollectionDifference<TKey, TValue>` and the two `Difference` extension methods compare two bags or
-two dictionaries in one call and split the answer into four disjoint partitions — only-in-left,
-only-in-right, in-common and differing — so "what changed between these two?" stops being a
-hand-written loop. `BoundedBag<T>` joins the bag family as a sliding window: a fixed total number of
-copies, with the oldest copy evicted when a new one would exceed the cap. `Mode()`, `Median()` and
-`Entropy()` extend any `IMultiSet<T>` with the three summaries a frequency distribution usually
-needs, reading through `EntrySet()` so they never expand the copies. On the engineering side, both
-test workflows now share one set of trigger paths, closing a gap where a change under `build/` could
-silently skip CI. Everything is an addition: nothing was removed, renamed or re-signed, so there is
-no **Breaking** change in this release.
+**7.1.0** release: a new package, `DotNetCore.Collections` — a LINQ engine built on value-type
+enumerators. Its enumerator is a plain `struct` rather than a `ref struct`, so it can be a type
+argument and can cross an `await` on every target framework from `net451` to `net10.0`, and its hot
+paths allocate nothing: `WhereSelect` measured 6.0 % and 13.0 % faster than `System.Linq` on `net8.0`,
+and 18.0 % and 29.0 % faster on the polyfill path, at **0 bytes per walk**. `ToValueEnumerable()`
+wraps an array, a `List<T>`, an `IReadOnlyList<T>` or any `IEnumerable<T>` without copying it, and
+five operators — `Index`, `ForEach`, `TagFirstLast`, `Pairwise` and `Scan` — are declared once per
+source arm so the enumerator stays a value type end to end. The package is additive: `Paginable`
+and `Multi` are untouched, and importing the engine cannot change what existing `System.Linq` code
+binds to — a property the build verifies rather than assumes. There is no **Breaking** change in
+this release.
 
 ## Contents
 
@@ -38,6 +33,7 @@ no **Breaking** change in this release.
 - [NuGet Packages](#nuget-packages)
 - [Paginable](#paginable)
 - [Multi](#multi)
+- [Engine](#engine)
 - [Building and testing](#building-and-testing)
 - [Releasing](#releasing)
 - [License](#license)
@@ -123,6 +119,7 @@ deliberately does **not** provide and how to choose between the hash path and th
 
 | Package Name | Version | Downloads |
 | --- | --- | --- |
+| [DotNetCore.Collections](https://www.nuget.org/packages/DotNetCore.Collections/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.svg) |
 | [DotNetCore.Collections.Paginable](https://www.nuget.org/packages/DotNetCore.Collections.Paginable/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.svg) |
 | [DotNetCore.Collections.Multi](https://www.nuget.org/packages/DotNetCore.Collections.Multi/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Multi.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Multi.svg) |
 | [DotNetCore.Collections.Paginable.Chloe](https://www.nuget.org/packages/DotNetCore.Collections.Paginable.Chloe/) | ![](https://img.shields.io/nuget/v/DotNetCore.Collections.Paginable.Chloe.svg) | ![](https://img.shields.io/nuget/dt/DotNetCore.Collections.Paginable.Chloe.svg) |
@@ -996,6 +993,66 @@ through reflection in a loop cannot overflow the stack while it is being reporte
 
 - [Sample.Multi](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Multi/Program.cs)
 
+## Engine
+
+`DotNetCore.Collections` is a LINQ engine built on value-type enumerators: it wraps a source without
+copying it and keeps the enumerator a value type through the whole pipeline, so a hot-path query
+allocates nothing. It is independent of the other two modules — neither `Paginable` nor `Multi`
+depends on it.
+
+### Installation
+
+```
+Install-Package DotNetCore.Collections
+```
+
+### Quick start
+
+Wrap a source with `ToValueEnumerable()` and chain from there:
+
+```c#
+var source = new[] { 1, 2, 3, 4 };
+
+var runningTotals = source.ToValueEnumerable().Scan((total, value) => total + value); // 1, 3, 6, 10
+var withPositions = source.ToValueEnumerable().Index();                               // (0,1), (1,2), ...
+var adjacent      = source.ToValueEnumerable().Pairwise((a, b) => a + b);             // 3, 5, 7
+```
+
+The engine and the BCL compose in one expression, and importing the engine does not change what
+existing `System.Linq` code binds to:
+
+```c#
+var result = Enumerable.Range(1, 6)
+    .Where(value => value % 2 == 0)                 // System.Linq
+    .ToArray()
+    .ToValueEnumerable()                            // engine
+    .Scan((total, value) => total + value)          // engine
+    .ToArray();                                     // System.Linq again -> 2, 6, 12
+```
+
+### Operators
+
+| Operator | What it does |
+| --- | --- |
+| `Index` | Pairs each element with its zero-based position as `(int Index, T Item)`. |
+| `ForEach` | Runs an action per element eagerly; a second overload also passes the position. |
+| `TagFirstLast` | Hands the selector two flags: whether the element is the first and whether it is the last. |
+| `Pairwise` | Hands the selector the previous and the current element — *n* elements yield *n*−1 results. |
+| `Scan` | The running aggregate, seedless (as long as the source) or seeded (one longer). |
+
+### Target frameworks
+
+The engine ships the same eleven frameworks as the rest of the repository — `net451` through
+`net10.0`, from one C# 8 code path. On the older generations a handful of in-box types are supplied
+by polyfill packages (`System.Memory`, `System.Buffers`, `System.Runtime.CompilerServices.Unsafe`,
+`System.ValueTuple`), referenced only where the framework does not already ship the type. No public
+signature names a type the oldest target lacks, so referencing the package never forces a consumer
+onto a newer framework.
+
+### Examples
+
+- [Sample.Engine](https://github.com/dotnetcore/Collections/blob/dev/sample/Sample.Engine/Program.cs)
+
 ## Building and testing
 
 ```bash
@@ -1015,14 +1072,15 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 
 - `paginable-tests.yml` — builds all 11 TFMs, verifies packing (including `.snupkg`), then runs the unit tests and the SQL Server integration tests.
 - `multi-tests.yml` — builds, packs and tests `DotNetCore.Collections.Multi`.
+- `engine-tests.yml` — runs the namespace guard, builds and packs all 11 TFMs, compiles and runs the overload-resolution sample on `net8.0` and `net10.0`, runs the engine unit tests, and runs the .NET Framework probes.
 
 ### Publishing
 
 Publishing is automated by the GitHub Actions `Release` workflow
 (`.github/workflows/release.yml`); no local tooling is involved. It runs on a version-tag push —
-`6.9.0` or `v6.9.0` — and can also be started manually through `workflow_dispatch`:
+`7.1.0` or `v7.1.0` — and can also be started manually through `workflow_dispatch`:
 
-1. **Pack** — all 11 projects are packed in Release configuration into `nuget_pub` on a
+1. **Pack** — all 12 projects are packed in Release configuration into `nuget_pub` on a
    `windows-latest` runner, with the full git history fetched so SourceLink can attach sources to
    the deterministic build.
 2. **Authenticate** — the workflow uses NuGet **trusted publishing (OIDC)** instead of a stored API
@@ -1042,14 +1100,14 @@ nuget.org, configured outside the repository:
 | Environment | *(empty)* |
 | Secret | `NUGET_USERNAME` — the nuget.org profile name, not the e-mail |
 
-The policy owner must own all 11 `DotNetCore.Collections.*` packages. See
+The policy owner must own all 12 `DotNetCore.Collections.*` packages. See
 [Releasing](#releasing) for how the version being published is chosen.
 
 ## Releasing
 
 Versions are driven by `build/version.props`, which is the single source of truth for every
-package — bump the version there and all 11 packages follow. Tag the commit with the matching
-version (`6.9.0` or `v6.9.0`) to trigger the automated publish; see [Publishing](#publishing) for
+package — bump the version there and all 12 packages follow. Tag the commit with the matching
+version (`7.1.0` or `v7.1.0`) to trigger the automated publish; see [Publishing](#publishing) for
 what the release workflow does and the one-time nuget.org policy it requires.
 
 ## License
