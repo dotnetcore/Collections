@@ -1,50 +1,47 @@
 # Sample.SerializationEntry
 
-> **Paginable 侧无独立序列化 API（负结果）+ 正确重建路径** — `PageMetadata` + `Paginable.CreatePage`（对应 feature F58，`DotNetCore.Collections.Paginable`）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **No standalone serialization API on the Paginable side (negative result) + the correct rebuild path** — `PageMetadata` + `Paginable.CreatePage` (feature F58, `DotNetCore.Collections.Paginable`).
 
-DOC_CATALOG 曾把 F58 标为「序列化入口（Paginable 侧若无则合并 F10）」。核实结论是**负结果**：Paginable 核心
-与 9 个适配器**都没有** `ToSerializableModel` / `FromModel` 一类显式序列化模型——那是 **Multi** 的 API
-（`MultiListModel<T>` / `MultiDictionaryModel<TKey,TValue>`，见 F10）。这个 sample 演示「查过、确认没有」的
-负结果，并给出跨进程传一页的**正确路径**：投影 `items` + 三元组元数据（`CurrentPageNumber` / `PageSize` /
-`TotalMemberCount`），对端用 `Paginable.CreatePage` 重建 `IPage<T>`，全局编号与整源分页完全一致。
+## What this sample demonstrates
 
-## 什么时候用
+DOC_CATALOG once labeled F58 as "serialization entry (merge F10 if there is none on the Paginable side)". The verified conclusion is a **negative result**: the Paginable core and the 9 adapters **all lack** an explicit serialization model such as `ToSerializableModel` / `FromModel` — that is **Multi**'s API (`MultiListModel<T>` / `MultiDictionaryModel<TKey,TValue>`, see F10). This sample demonstrates the negative result of "we looked and confirmed there is none", and gives the **correct path** for sending a page across processes: project `items` + the triple metadata (`CurrentPageNumber` / `PageSize` / `TotalMemberCount`), and have the other side rebuild `IPage<T>` with `Paginable.CreatePage`, where the global numbering matches whole-source pagination exactly.
 
-- 需要把一页数据跨进程 / 跨服务传输 → 序列化 `items` + 三个整数，对端 `CreatePage` 重建。
-- 需要序列化分页导航信息 → 序列化 `PageMetadata` 的公共属性。
-- 需要 Multi 集合的显式序列化 → 去 F10（`Sample.ExplicitSerialization`）。
-- 不该用：直接序列化 `IPage` / `IPaginable` 对象——它们不是序列化契约。
+## When to use it
 
-## 如何运行
+- When you need to transfer a page of data across processes / services → serialize `items` + three integers and rebuild with `CreatePage` on the other side.
+- When you need to serialize pagination navigation info → serialize the public properties of `PageMetadata`.
+- When you need explicit serialization of Multi collections → go to F10 (`Sample.ExplicitSerialization`).
+- Should not use: serializing `IPage` / `IPaginable` objects directly — they are not a serialization contract.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.SerializationEntry
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 0 | 服务端整源分页 | `IEnumerable<T>.GetPage(pageNumber, pageSize)` |
-| 1 | 负结果：无 `ToSerializableModel` | 说明（正确路径指向 F10 / 片段 API） |
-| 2 | `PageMetadata` 属性快照 | `IPage.GetMetadata()` |
-| 3 | 投影 DTO → 重建 | `IPage<T>.ToOriginalItems()` / `Paginable.CreatePage(items, pageNumber, pageSize, totalMemberCount)` |
-| 4 | 元数据往返 | `PageFragmentInfo.FromMetadata` / `ToMetadata` |
-| 5 | 为什么不直接序列化页对象 | `IPage` / `IPaginable` 非序列化契约 |
+| 0 | Server-side whole-source pagination | `IEnumerable<T>.GetPage(pageNumber, pageSize)` |
+| 1 | Negative result: no `ToSerializableModel` | explanation (the correct path points to F10 / the fragment API) |
+| 2 | `PageMetadata` property snapshot | `IPage.GetMetadata()` |
+| 3 | Project DTO → rebuild | `IPage<T>.ToOriginalItems()` / `Paginable.CreatePage(items, pageNumber, pageSize, totalMemberCount)` |
+| 4 | Metadata round trip | `PageFragmentInfo.FromMetadata` / `ToMetadata` |
+| 5 | Why not serialize the page object directly | `IPage` / `IPaginable` are not serialization contracts |
 
-## 关键 API
+## Key APIs
 
-- `PageMetadata` — 普通 get-only 属性快照（`TotalPageCount` / `RealPageCount` / `TotalMemberCount` / `PageSize` /
-  `CurrentPageNumber` / `CurrentPageSize` / `HasPrevious` / `HasNext`），`ToString` 可读，可被任意序列化器处理。
-- `Paginable.CreatePage<T>(IEnumerable<T> fragment, int pageNumber, int pageSize, int totalMemberCount)` — 从已切片片段重建页。
-- `PageFragmentInfo.FromMetadata(PageMetadata)` / `ToMetadata()` — 片段元数据往返。
-- `IPage<T>.ToOriginalItems()` — 把页成员投影回原始元素序列。
+- `PageMetadata` — a plain get-only property snapshot (`TotalPageCount` / `RealPageCount` / `TotalMemberCount` / `PageSize` / `CurrentPageNumber` / `CurrentPageSize` / `HasPrevious` / `HasNext`), with a readable `ToString`, processable by any serializer.
+- `Paginable.CreatePage<T>(IEnumerable<T> fragment, int pageNumber, int pageSize, int totalMemberCount)` — rebuilds a page from an already-sliced fragment.
+- `PageFragmentInfo.FromMetadata(PageMetadata)` / `ToMetadata()` — fragment metadata round trip.
+- `IPage<T>.ToOriginalItems()` — projects the page members back to the original element sequence.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **不要调用不存在的** `Paginable.ToSerializableModel()`——那是 Multi 的（F10）。
-- **`IPage` / `IPaginable` 实现不是序列化契约**——投影成 DTO，勿直接序列化页对象。
-- **`CreatePage` 不重新切片**：片段被当作该页的确切内容；喂给 `GetPage` 会二次跳过。
-- **Multi 序列化模型不是 Paginable 的**；负结果篇防止 API 幻觉。
+- **Do not call the non-existent** `Paginable.ToSerializableModel()` — that belongs to Multi (F10).
+- **`IPage` / `IPaginable` implementations are not serialization contracts** — project into a DTO and do not serialize the page object directly.
+- **`CreatePage` does not re-slice**: the fragment is treated as the exact contents of that page; feeding it to `GetPage` would skip a second time.
+- **Multi's serialization model is not Paginable's**; this negative-result piece guards against API hallucination.
