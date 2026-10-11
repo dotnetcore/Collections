@@ -1,200 +1,219 @@
 # DotNetCore.Collections — Samples
 
-本目录收录 `DotNetCore.Collections` 家族每个**能力（feature）**的独立可运行示例。
-**一个 feature 一个控制台项目**：每个 `Sample.<Focus>/` 自带 `Program.cs`（含丰富中文注释）、
-`README.md`（讲清本 sample 的侧重点）与 `.csproj`。
+> **English** | [中文](README.zh-CN.md)
 
-- 覆盖范围：`DotNetCore.Collections`（7.1.0 新增的 LINQ 值类型引擎）、
-  `DotNetCore.Collections.Multi`、`DotNetCore.Collections.Paginable`，
-  以及逐包 ORM 适配器面——**截止到 7.1.0 版本（含）**的全部 feature（F01–F58 + 6.7–7.1 新增）。
-- 目标框架：绝大多数为 `net8.0`；`Sample.ValueEnumerable` / `Sample.MultiTfmSurface` 为多目标 `net8.0;net10.0`。
-- 每个 sample 直接 `ProjectReference` 仓库 `src/` 下的对应工程，因此**始终针对当前工作树构建**。
+This directory collects an independent, runnable sample for every **feature** in the
+`DotNetCore.Collections` family.
+**One feature, one console project**: each `Sample.<Focus>/` ships its own `Program.cs`
+(richly commented), a `README.md` (explaining what the sample focuses on), and a `.csproj`.
 
-## 如何运行
+- Coverage: `DotNetCore.Collections` (the LINQ value-type engine added in 7.1.0),
+  `DotNetCore.Collections.Multi`, `DotNetCore.Collections.Paginable`,
+  plus the per-package ORM adapter surface — **every feature up to and including 7.1.0**
+  (F01–F58 plus the 6.7–7.1 additions).
+- Target framework: mostly `net8.0`; `Sample.ValueEnumerable` / `Sample.MultiTfmSurface`
+  are multi-targeted as `net8.0;net10.0`.
+- Every sample `ProjectReference`s the matching project under the repository `src/`,
+  so it **always builds against the current working tree**.
+
+## How to run
 
 ```bash
-# 任选一个（工作目录 = 仓库根）：
+# Pick any one (working directory = repository root):
 dotnet run --project sample/Sample.MultiSet
 dotnet run --project sample/Sample.KeysetPagination
-dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # 多目标需指定 TFM
+dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # multi-target needs an explicit TFM
 ```
 
-> 这些 sample **有意不加入 `DotNetCore.Collections.sln`**，以免影响仓库的发布门禁基线
-> （解决方案级的「0 错 / 警告集」读数）。它们各自独立、可直接 `dotnet run`，也可按需自行加入解决方案。
-> 既有的 5 个 sample（`Sample` / `Sample.Ef` / `Sample.EfCore` / `Sample.Engine` / `Sample.Multi`）**保持原样**，见文末。
+> These samples are **intentionally kept out of `DotNetCore.Collections.sln`** so they do not
+> disturb the repository's release-gate baseline (the solution-level "0 errors / warning set"
+> reading). Each one is standalone and can be run directly with `dotnet run`, or added to the
+> solution on demand.
+> The five pre-existing samples (`Sample` / `Sample.Ef` / `Sample.EfCore` / `Sample.Engine` /
+> `Sample.Multi`) are **left untouched** — see the end of this document.
 
 ---
 
-## 一、`DotNetCore.Collections.Multi` — 多重集合 / 多重映射 / 多键 / 袋
+## 1. `DotNetCore.Collections.Multi` — multisets / multimaps / multi-keys / bags
 
-> 一包三正交「multi」类型：`MultiList<T>` 乘**元素**、`MultiDictionary<TKey,TValue>` 乘**键下的值**、
-> `MultiKeyDictionary` 乘**键分量**。选型问「什么允许重复」，而不是按名字相似度。
+> One package, three orthogonal "multi" types: `MultiList<T>` multiplies **elements**,
+> `MultiDictionary<TKey,TValue>` multiplies the **values under a key**, and
+> `MultiKeyDictionary` multiplies the **key components**. Choose by asking "what is allowed to
+> repeat", not by name similarity.
 
-### 基础多重集合与多重映射
+### Basic multisets and multimaps
 
-| Sample | Feature | 侧重点 / 演示的能力 |
+| Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [MultiSet](Sample.MultiSet) | F01 | `MultiList<T>` 无序 bag：副本计数语义、`Count`=副本数（非不同元素数）、并/交/差按副本数运算、副本展开枚举 |
-| [MultiMap](Sample.MultiMap) | F02 | `MultiDictionary<TKey,TValue>` 多重映射：`Count`=键数、`Values` 是**扁平**序列（非按键分组）、缺键返回空集合 |
-| [StructuralEquality](Sample.StructuralEquality) | F03 | 多重集合**结构相等**：副本数参与 `Equals`/`GetHashCode`，与枚举顺序无关，可安全进 `HashSet` |
-| [MultiMapBatchDelete](Sample.MultiMapBatchDelete) | F04 | `RemoveRange`（每个不同值删**一次**出现）与 `ExceptWith`（删**全部**出现）的对照 |
-| [ExplicitSerialization](Sample.ExplicitSerialization) | F10（+6.7.1） | 显式序列化模型：`ToSerializableModel`/`FromModel` 往返，模型是快照、比较器不进模型；6.7.1 扩展至全家桶 |
-| [MultiMapDualCache](Sample.MultiMapDualCache) | F11 | 双缓存：`TotalValueCount` / `ContainsValue` 的 O(1) 成本模型，对使用方透明 |
-| [SetOpsZeroAlloc](Sample.SetOpsZeroAlloc) | F12 | 集合运算**零分配**：参数是同比较器 `MultiList<T>` 时就地读、暂存区复用；数组参数仍会物化 |
-| [MultiDictionaryExtensions](Sample.MultiDictionaryExtensions) | 6.8.0 | 从既有源构建多重映射：`IndexBy` / `UniqueIndexBy` / `AsMultiDictionary` |
+| [MultiSet](Sample.MultiSet) | F01 | `MultiList<T>` unordered bag: copy-count semantics, `Count` = number of copies (not distinct elements), union/intersect/difference computed on copy counts, copy-expanded enumeration |
+| [MultiMap](Sample.MultiMap) | F02 | `MultiDictionary<TKey,TValue>` multimap: `Count` = key count, `Values` is a **flattened** sequence (not grouped by key), a missing key returns an empty collection |
+| [StructuralEquality](Sample.StructuralEquality) | F03 | Multiset **structural equality**: copy counts participate in `Equals`/`GetHashCode`, independent of enumeration order, safe to put in a `HashSet` |
+| [MultiMapBatchDelete](Sample.MultiMapBatchDelete) | F04 | Contrast between `RemoveRange` (removes **one** occurrence per distinct value) and `ExceptWith` (removes **all** occurrences) |
+| [ExplicitSerialization](Sample.ExplicitSerialization) | F10 (+6.7.1) | Explicit serialization model: `ToSerializableModel`/`FromModel` round-trip, the model is a snapshot, comparers are not serialized; extended to the whole family in 6.7.1 |
+| [MultiMapDualCache](Sample.MultiMapDualCache) | F11 | Dual caching: the O(1) cost model behind `TotalValueCount` / `ContainsValue`, transparent to callers |
+| [SetOpsZeroAlloc](Sample.SetOpsZeroAlloc) | F12 | **Zero-allocation** set operations: reads in place and reuses scratch space when the argument is a same-comparer `MultiList<T>`; array arguments still materialize |
+| [MultiDictionaryExtensions](Sample.MultiDictionaryExtensions) | 6.8.0 | Build a multimap from an existing source: `IndexBy` / `UniqueIndexBy` / `AsMultiDictionary` |
 
-### 有序集合与有序映射
+### Ordered sets and ordered maps
 
-| Sample | Feature | 侧重点 / 演示的能力 |
+| Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [OrderedMultiSet](Sample.OrderedMultiSet) | F05 | `OrderedMultiList<T>` 有序 bag：升序枚举、比较器同时定义**顺序与同一性**、O(log n) 增删 |
-| [OrderedAccessRange](Sample.OrderedAccessRange) | F06 | 极值（`GetFirst`/`GetLast`）与区间（`GetRange`）查询，边界语义随注入的 `IComparer<T>` |
-| [OrderStatisticTree](Sample.OrderStatisticTree) | F07 | 顺序统计 B+ 树引擎（internal）：经 `OrderedMultiList<T>` 观察名次读 O(log n) 与不变式 |
-| [OrderedMultiMap](Sample.OrderedMultiMap) | F08 | `OrderedMultiDictionary<TKey,TValue>`：键升序 × 键下值升序，名次读针对展开序列 |
-| [SecondaryReverseIndex](Sample.SecondaryReverseIndex) | F09 | `TwoKeyDictionary` 第二轴反向索引：`GetBySecondKey`/`CountOfSecondKey` 不扫全表 |
+| [OrderedMultiSet](Sample.OrderedMultiSet) | F05 | `OrderedMultiList<T>` ordered bag: ascending enumeration, the comparer defines both **order and identity**, O(log n) add/remove |
+| [OrderedAccessRange](Sample.OrderedAccessRange) | F06 | Extremes (`GetFirst`/`GetLast`) and range (`GetRange`) queries, with boundary semantics following the injected `IComparer<T>` |
+| [OrderStatisticTree](Sample.OrderStatisticTree) | F07 | The order-statistic B+ tree engine (internal): observe O(log n) rank reads and the invariants through `OrderedMultiList<T>` |
+| [OrderedMultiMap](Sample.OrderedMultiMap) | F08 | `OrderedMultiDictionary<TKey,TValue>`: keys ascending × values under a key ascending, with rank reads against the flattened sequence |
+| [SecondaryReverseIndex](Sample.SecondaryReverseIndex) | F09 | `TwoKeyDictionary` second-axis reverse index: `GetBySecondKey`/`CountOfSecondKey` without scanning the whole table |
 
-### 多键 / 双射 / 反向索引
+### Multi-keys / bijection / reverse indexes
 
-| Sample | Feature | 侧重点 / 演示的能力 |
+| Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [TwoKeyDictionary](Sample.TwoKeyDictionary) | F29（+6.7.1/6.8） | 两键复合字典：二维索引器 + 双轴切片；6.7.1 `Values`/`ContainsValue`/`AsReverse`，6.8 `EntrySet()` |
-| [ThreeKeyDictionary](Sample.ThreeKeyDictionary) | F15（+6.7.1/6.8） | 三键复合字典：三元组索引器；**只有第一轴是前缀**，第二/三轴靠扫描 |
-| [BiDictionary](Sample.BiDictionary) | F16 | 严格**双射**字典：右侧冲突不静默覆盖、`Add` 抛 / `TryAdd` 返 false、双向 O(1) |
-| [ReverseMultiDictionary](Sample.ReverseMultiDictionary) | F17（+6.7.1） | `ReverseMultiDictionary<V,K>` 倒排**快照**（构造即拷出）；6.7.1 `AsReverse` 全家桶 |
-| [LiveReverseView](Sample.LiveReverseView) | F18 | `MultiDictionary.AsReverse()` **活**反查视图：零拷贝，源 `Add` 后视图立即可见 |
-| [MultiKeyMultiDictionary](Sample.MultiKeyMultiDictionary) | F20（+6.8） | 复合键多重映射：同质分量键 + 一键多值 + 前缀计数；6.8 `EntrySet()` |
+| [TwoKeyDictionary](Sample.TwoKeyDictionary) | F29 (+6.7.1/6.8) | Two-key composite dictionary: two-dimensional indexer plus dual-axis slicing; 6.7.1 `Values`/`ContainsValue`/`AsReverse`, 6.8 `EntrySet()` |
+| [ThreeKeyDictionary](Sample.ThreeKeyDictionary) | F15 (+6.7.1/6.8) | Three-key composite dictionary: triple indexer; **only the first axis is a prefix**, the second/third axes fall back to scanning |
+| [BiDictionary](Sample.BiDictionary) | F16 | Strict **bijective** dictionary: a right-side conflict never silently overwrites, `Add` throws / `TryAdd` returns false, O(1) both ways |
+| [ReverseMultiDictionary](Sample.ReverseMultiDictionary) | F17 (+6.7.1) | `ReverseMultiDictionary<V,K>` inverted **snapshot** (copied out at construction); 6.7.1 `AsReverse` family |
+| [LiveReverseView](Sample.LiveReverseView) | F18 | `MultiDictionary.AsReverse()` as a **live** reverse lookup view: zero-copy, the view is visible immediately after the source `Add` |
+| [MultiKeyMultiDictionary](Sample.MultiKeyMultiDictionary) | F20 (+6.8) | Composite-key multimap: homogeneous component key + one-key-many-values + prefix counting; 6.8 `EntrySet()` |
 
-### 变体与视图
+### Variants and views
 
-| Sample | Feature | 侧重点 / 演示的能力 |
+| Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [ImmutableVariants](Sample.ImmutableVariants) | F13 | `ImmutableMultiList<T>` / `ImmutableMultiDictionary`：突变返回新实例，Builder 批量写 |
-| [ConcurrentVariants](Sample.ConcurrentVariants) | F14（+6.7.1） | 线程安全变体：`ConcurrentMultiList` 单锁线性化、`ConcurrentMultiDictionary` 分片；6.7.1 只读投影取自 `Snapshot()` |
-| [ReadOnlyCollectionView](Sample.ReadOnlyCollectionView) | F19 | 跨 TFM 只读值视图：net451 上 `HashSet` 裸转 `IReadOnlyCollection` 会抛，包装后不抛，且是**活视图** |
+| [ImmutableVariants](Sample.ImmutableVariants) | F13 | `ImmutableMultiList<T>` / `ImmutableMultiDictionary`: mutations return new instances, the Builder does batch writes |
+| [ConcurrentVariants](Sample.ConcurrentVariants) | F14 (+6.7.1) | Thread-safe variants: `ConcurrentMultiList` with single-lock linearization, `ConcurrentMultiDictionary` sharded; 6.7.1 read-only projections come from `Snapshot()` |
+| [ReadOnlyCollectionView](Sample.ReadOnlyCollectionView) | F19 | Cross-TFM read-only value view: on net451 a bare `HashSet`→`IReadOnlyCollection` cast throws, the wrapper does not, and it is a **live view** |
 
-### 袋家族（多重集合的特化）
+### The bag family (specialized multisets)
 
-| Sample | Feature | 侧重点 / 演示的能力 |
+| Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [PackedBag](Sample.PackedBag) | F21 | `PackedBag<T>` 密集数组直方图：`where T : struct`、无装箱、小值域（≤16）更快 |
-| [SpanBag](Sample.SpanBag) | F22 | `SpanBag<T>` 栈上零堆袋：借用 `stackalloc` 存储、`ref struct` 生命周期由编译器强制 |
-| [FrequencyPriorityBag](Sample.FrequencyPriorityBag) | F23 | `FrequencyPriorityBag<T>`：`PeekMost`/`PopMost` 连弹得降频序列，Top-K 的天然形状 |
-| [BoundedBag](Sample.BoundedBag) | 6.9.0 | 定容滑动窗口袋：超容**静默淘汰最旧**副本，`Add` 返回 `void`（无溢出可报） |
-| [BagStatistics](Sample.BagStatistics) | 6.9.0 | `IMultiSet<T>` 上的 `Mode()` / `Median()` / `Entropy()`：频次分布摘要，经 `EntrySet()` 读 |
+| [PackedBag](Sample.PackedBag) | F21 | `PackedBag<T>` dense-array histogram: `where T : struct`, no boxing, faster for a small value domain (≤16) |
+| [SpanBag](Sample.SpanBag) | F22 | `SpanBag<T>` zero-heap bag on the stack: borrows `stackalloc` storage, `ref struct` lifetime enforced by the compiler |
+| [FrequencyPriorityBag](Sample.FrequencyPriorityBag) | F23 | `FrequencyPriorityBag<T>`: repeated `PeekMost`/`PopMost` yields a descending-frequency sequence, the natural shape for Top-K |
+| [BoundedBag](Sample.BoundedBag) | 6.9.0 | Fixed-capacity sliding-window bag: over capacity it **silently evicts the oldest** copy, `Add` returns `void` (nothing to report on overflow) |
+| [BagStatistics](Sample.BagStatistics) | 6.9.0 | `Mode()` / `Median()` / `Entropy()` on `IMultiSet<T>`: frequency-distribution summaries, read via `EntrySet()` |
 
-### 集合工具与序列化增强
+### Collection utilities and serialization enhancements
 
-| Sample | Feature | 侧重点 / 演示的能力 |
+| Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [PositionalRead](Sample.PositionalRead) | F24 | 名次与分位读：`GetByRank`/`GetRank`/`GetMedian`/`GetQuantile`/`TotalValueCount`（列表 + 映射） |
-| [ListFaces](Sample.ListFaces) | F25 | `OrderedMultiList<T>` 的 `IList<T>`/`IReadOnlyList<T>` 面：索引器 setter 与 `Insert` 被收窄 |
-| [TypeReadableName](Sample.TypeReadableName) | F26 | `Type.ToReadableString()` / `TypeNameFormat`：去命名空间、保留形状、深度上限折叠 |
-| [SharedInterfaces](Sample.SharedInterfaces) | F27 | `IMultiSet<T>` / `IMultiDictionary<TKey,TValue>` / `IBiMap`：面向行为的共享抽象与 `Count` 双语义 |
-| [Deque](Sample.Deque) | F28 | `Deque<T>` 环状缓冲双端队列：两端 O(1) 摊还、位置 O(1) 读、滑动窗口 |
-| [CollectionDifference](Sample.CollectionDifference) | 6.9.0 | 四路差异比较：`OnlyInLeft`/`OnlyInRight`/`InCommon`/`Differing` + `AreEqual`（bag 按副本数、字典按值） |
-| [CollectionChanged](Sample.CollectionChanged) | 6.9.0 | 自建变更通知：`MultiList`/`MultiDictionary` 的 `CollectionChanged` 事件（`Add`/`Remove`/`Reset`） |
-| [Snapshot](Sample.Snapshot) | 6.9.0 | `Snapshot()` 独立副本：为「边改边枚举」提供脱离快照，与 `Clone()` 同名异形 |
+| [PositionalRead](Sample.PositionalRead) | F24 | Rank and quantile reads: `GetByRank`/`GetRank`/`GetMedian`/`GetQuantile`/`TotalValueCount` (lists + maps) |
+| [ListFaces](Sample.ListFaces) | F25 | The `IList<T>`/`IReadOnlyList<T>` faces of `OrderedMultiList<T>`: the indexer setter and `Insert` are narrowed |
+| [TypeReadableName](Sample.TypeReadableName) | F26 | `Type.ToReadableString()` / `TypeNameFormat`: drop the namespace, keep the shape, fold past a depth limit |
+| [SharedInterfaces](Sample.SharedInterfaces) | F27 | `IMultiSet<T>` / `IMultiDictionary<TKey,TValue>` / `IBiMap`: behavior-oriented shared abstractions and the dual meaning of `Count` |
+| [Deque](Sample.Deque) | F28 | `Deque<T>` ring-buffer double-ended queue: O(1) amortized at both ends, O(1) positional read, sliding windows |
+| [CollectionDifference](Sample.CollectionDifference) | 6.9.0 | Four-way difference comparison: `OnlyInLeft`/`OnlyInRight`/`InCommon`/`Differing` + `AreEqual` (bags by copy count, dictionaries by value) |
+| [CollectionChanged](Sample.CollectionChanged) | 6.9.0 | Home-grown change notifications: the `CollectionChanged` event on `MultiList`/`MultiDictionary` (`Add`/`Remove`/`Reset`) |
+| [Snapshot](Sample.Snapshot) | 6.9.0 | `Snapshot()` as an independent copy: a detached snapshot for "enumerate while mutating", a namesake of a different shape from `Clone()` |
 
 ---
 
-## 二、`DotNetCore.Collections.Paginable` — 分页
+## 2. `DotNetCore.Collections.Paginable` — pagination
 
-> 动词分工：`ToPaginable` 建集合、`GetPage` 从**全源**切一页、`ToPage`/`CreatePage` 装配**已切好的片段**。
+> Division of verbs: `ToPaginable` builds a collection, `GetPage` slices one page from the
+> **full source**, and `ToPage`/`CreatePage` assemble an **already-sliced fragment**.
 
-### 核心分页
+### Core pagination
 
-| Sample | Feature | 侧重点 / 演示的能力 |
+| Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [KeysetPagination](Sample.KeysetPagination) | F30 | 键集（seek）分页：锚点续页闭环、降序、`BuildKeysetQuery` 的「多取 1 条由调用方裁掉」契约 |
-| [AsyncPaging](Sample.AsyncPaging) | F31 | 内存源的 `*Async` 是**同步完成**的「异步形状」，与真 I/O 异步语义不同 |
-| [FragmentPage](Sample.FragmentPage) | F32 | 片段建页：`CreatePage`/`ToPage` 对**已切好的**片段绝不再 `Skip/Take`；`PageFragmentInfo` 元数据往返 |
-| [StrictFragmentCheck](Sample.StrictFragmentCheck) | F33 | `PageCreationOptions.Lenient`（容忍短片段）vs `Strict`（视为 bug 抛 `ArgumentException`） |
-| [SinglePageSet](Sample.SinglePageSet) | F34 | 单页集合：集合层 `PageCount` 恒 1，页层保留全源编号（**有意分叉**） |
-| [AsyncFragmentEntry](Sample.AsyncFragmentEntry) | F35 | `Paginable.CreatePageAsync` 是片段建页的 async 对偶：**同步完成**、令牌不观察 |
-| [PageMetadata](Sample.PageMetadata) | F36 | 页元数据快照、调用方输入元数据、两者共用的派生源（`PageMetaInfo.Calculate`） |
-| [PaginableSettings](Sample.PaginableSettings) | F37 | 全局配置两个旋钮（`DefaultPageSize` / `MaxMemberItems`）：赋值即校验、原子换快照 |
-| [LimitedMembers](Sample.LimitedMembers) | F38 | 成员上限与**开区间**：全局 `MaxMemberItems` + 调用级 `limitedMemberCount` 封顶 |
-| [EnumerablePageMaterialize](Sample.EnumerablePageMaterialize) | F39 | `EnumerablePage<T>` 单次 `Skip/Take` 物化：深页不再 O(skip²) |
+| [KeysetPagination](Sample.KeysetPagination) | F30 | Keyset (seek) pagination: anchor-driven continuation loop, descending order, and the "fetch one extra row for the caller to trim" contract of `BuildKeysetQuery` |
+| [AsyncPaging](Sample.AsyncPaging) | F31 | The `*Async` methods on in-memory sources are a **synchronously completed** "async shape", semantically different from true I/O async |
+| [FragmentPage](Sample.FragmentPage) | F32 | Building a page from a fragment: `CreatePage`/`ToPage` never re-apply `Skip/Take` to an **already-sliced** fragment; `PageFragmentInfo` metadata round-trip |
+| [StrictFragmentCheck](Sample.StrictFragmentCheck) | F33 | `PageCreationOptions.Lenient` (tolerates a short fragment) vs `Strict` (treats it as a bug and throws `ArgumentException`) |
+| [SinglePageSet](Sample.SinglePageSet) | F34 | Single-page set: the collection layer's `PageCount` is always 1, while the page layer keeps full-source numbering (**an intentional fork**) |
+| [AsyncFragmentEntry](Sample.AsyncFragmentEntry) | F35 | `Paginable.CreatePageAsync` is the async dual of fragment page-building: **synchronously completed**, the token is not observed |
+| [PageMetadata](Sample.PageMetadata) | F36 | Page metadata snapshot, caller-supplied input metadata, and the derivation source shared by both (`PageMetaInfo.Calculate`) |
+| [PaginableSettings](Sample.PaginableSettings) | F37 | The two global configuration knobs (`DefaultPageSize` / `MaxMemberItems`): validated on assignment, swapped atomically as a snapshot |
+| [LimitedMembers](Sample.LimitedMembers) | F38 | Member caps and the **open interval**: global `MaxMemberItems` plus a call-level `limitedMemberCount` ceiling |
+| [EnumerablePageMaterialize](Sample.EnumerablePageMaterialize) | F39 | Single `Skip/Take` materialization for `EnumerablePage<T>`: deep pages are no longer O(skip²) |
 
-### 契约 / 平台 / 工具
+### Contracts / platforms / utilities
 
-| Sample | Feature | 侧重点 / 演示的能力 |
+| Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [ExceptionTypeUnify](Sample.ExceptionTypeUnify) | F40 | 越界异常统一为 `ArgumentOutOfRangeException` 并带 `ParamName`（6.2.0 破坏性变更，含旧类型反例） |
-| [NullableAnnotations](Sample.NullableAnnotations) | F41 | 公开 API 的 NRT 空性契约：`T?` / `string?` 是**编译期**承诺，不替代运行时 null 检查 |
-| [KeysetAnchorNullability](Sample.KeysetAnchorNullability) | F42 | 键集锚点可空化：可空键直接作锚点，`null` 表示「无锚点」= 第一页 |
-| [LowGenNullableShims](Sample.LowGenNullableShims) | F43 | 低代际 TFM 的可空属性垫片（internal）：net451 等也能读到注解，使用方无感 |
-| [CancellationTokenForwarding](Sample.CancellationTokenForwarding) | F44 | 取消令牌的三类语义：**下传**（EF/FreeSql）/ **库边界**（SqlSugar 6.6）/ **不观察**（内存 Async） |
-| [SolidPageExtensionsSurface](Sample.SolidPageExtensionsSurface) | F45 | 扩展方法入口面：`ToPaginable`/`GetPage`/`*Async`；**同名跨 10 个包**的 CS0104 消歧 |
-| [PageMemberWrapping](Sample.PageMemberWrapping) | F46 | 页成员包装：`PageMember<T>`（struct）的 `Value`/`Offset`/`ItemNumber` 与跨页全局编号 |
-| [PaginableCalc](Sample.PaginableCalc) | F47 | `PaginableCalc`：成员上限裁剪与页数换算的单一事实源（`Internal` 命名空间但 public） |
-| [QueryEntryState](Sample.QueryEntryState) | F48 | `IQueryEntryState<T>` 协变契约：把「一页元素从哪来」抽象出来供延迟取值 |
-| [EmptyAndSinglePage](Sample.EmptyAndSinglePage) | F49 | `EmptyPage<T>`（无结果不返回 null）与 `PaginableSinglePage<T>` 的分层语义 |
+| [ExceptionTypeUnify](Sample.ExceptionTypeUnify) | F40 | Out-of-range exceptions unified as `ArgumentOutOfRangeException` carrying `ParamName` (a 6.2.0 breaking change, with counterexamples for the old types) |
+| [NullableAnnotations](Sample.NullableAnnotations) | F41 | The NRT nullability contract of public APIs: `T?` / `string?` is a **compile-time** promise, not a replacement for runtime null checks |
+| [KeysetAnchorNullability](Sample.KeysetAnchorNullability) | F42 | Nullable keyset anchors: a nullable key can serve directly as an anchor, where `null` means "no anchor" = the first page |
+| [LowGenNullableShims](Sample.LowGenNullableShims) | F43 | Nullable-attribute shims for low-generation TFMs (internal): net451 and friends can read the annotations too, invisibly to callers |
+| [CancellationTokenForwarding](Sample.CancellationTokenForwarding) | F44 | The three semantics of cancellation tokens: **forwarded** (EF/FreeSql) / **library boundary** (SqlSugar 6.6) / **not observed** (in-memory async) |
+| [SolidPageExtensionsSurface](Sample.SolidPageExtensionsSurface) | F45 | The extension-method entry surface: `ToPaginable`/`GetPage`/`*Async`; CS0104 disambiguation for the **same name across 10 packages** |
+| [PageMemberWrapping](Sample.PageMemberWrapping) | F46 | Page member wrapping: `PageMember<T>` (a struct) with `Value`/`Offset`/`ItemNumber` and cross-page global numbering |
+| [PaginableCalc](Sample.PaginableCalc) | F47 | `PaginableCalc`: the single source of truth for member-cap trimming and page-count conversion (in the `Internal` namespace but public) |
+| [QueryEntryState](Sample.QueryEntryState) | F48 | The covariant `IQueryEntryState<T>` contract: abstracting "where a page's elements come from" for deferred evaluation |
+| [EmptyAndSinglePage](Sample.EmptyAndSinglePage) | F49 | The layered semantics of `EmptyPage<T>` (no results never returns null) and `PaginableSinglePage<T>` |
 
 ---
 
-## 三、ORM 适配器 / 平台
+## 3. ORM adapters / platforms
 
-> 9 个适配器**动词同构**（`ToPaginable` / `GetPage`），但**入口类型名逐包不同、不可跨包类推**；
-> 且各包 `SolidPageExtensions` 同名不同程序集。凡提到该类型必须写全限定名或包名。
+> The 9 adapters are **verb-isomorphic** (`ToPaginable` / `GetPage`), but the **entry type names
+> differ per package and cannot be inferred across packages**; moreover, each package's
+> `SolidPageExtensions` is a different assembly with the same name. Whenever that type is
+> mentioned, use the fully qualified name or the package name.
 
-| Sample | Feature | 侧重点 / 演示的能力 |
+| Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [OrmAdapterMatrix](Sample.OrmAdapterMatrix) | F50 | 9 个适配器的同构矩阵与入口名对照；说明哪些包没有独立的 `Query`/`Page` 对 |
-| [EfCoreAdapter](Sample.EfCoreAdapter) | F51 | EF Core **真异步**（`CountAsync`/`ToListAsync`）+ 键集异步；用 InMemory 提供程序端到端跑一次 |
-| [FreeSqlAdapter](Sample.FreeSqlAdapter) | F52 | FreeSql 入口面与独有 `includeNestedMembers`；`PaginableFreeSqlQuery<T>` / `FreeSqlPage<T>` |
-| [SqlSugarAdapter](Sample.SqlSugarAdapter) | F53 | SqlSugar 入口面与 6.6.0 **取消令牌边界**（已取消令牌在打库前抛 `OperationCanceledException`） |
-| [SqlKataAdapter](Sample.SqlKataAdapter) | F54 | SqlKata 源类型**非泛型** `Query`：必须显式写 `ToPaginable<Product>(...)` / `GetPage<Product>(...)` |
-| [OtherOrmAdapters](Sample.OtherOrmAdapters) | F55 | Chloe / DosOrm / NHibernate 三包入口名对照与独有重载（`additionalQueryFunc`、`NhCorePage<T>`） |
-| [SourceGenerator](Sample.SourceGenerator) | F56 | `[SolidPageExtensionsFor]` 属性声明与生成物形状（analyzer，不随消费者包发布） |
-| [MultiTfmSurface](Sample.MultiTfmSurface) | F57 | 11 TFM 矩阵与**逐包子集差异**：EF Core 仅 net6+、Chloe/Dos/NHibernate 无 net451、SqlSugar 无 ns2.0 |
+| [OrmAdapterMatrix](Sample.OrmAdapterMatrix) | F50 | The isomorphic matrix of the 9 adapters and the entry-name cross-reference; notes which packages lack a standalone `Query`/`Page` pair |
+| [EfCoreAdapter](Sample.EfCoreAdapter) | F51 | EF Core **true async** (`CountAsync`/`ToListAsync`) plus async keyset; run end-to-end once with the InMemory provider |
+| [FreeSqlAdapter](Sample.FreeSqlAdapter) | F52 | The FreeSql entry surface and its unique `includeNestedMembers`; `PaginableFreeSqlQuery<T>` / `FreeSqlPage<T>` |
+| [SqlSugarAdapter](Sample.SqlSugarAdapter) | F53 | The SqlSugar entry surface and the 6.6.0 **cancellation-token boundary** (an already-canceled token throws `OperationCanceledException` before hitting the database) |
+| [SqlKataAdapter](Sample.SqlKataAdapter) | F54 | SqlKata's source type is a **non-generic** `Query`: you must write `ToPaginable<Product>(...)` / `GetPage<Product>(...)` explicitly |
+| [OtherOrmAdapters](Sample.OtherOrmAdapters) | F55 | Entry-name cross-reference for the Chloe / DosOrm / NHibernate packages and their unique overloads (`additionalQueryFunc`, `NhCorePage<T>`) |
+| [SourceGenerator](Sample.SourceGenerator) | F56 | The `[SolidPageExtensionsFor]` attribute declaration and the shape of what it generates (an analyzer, not shipped with the consumer package) |
+| [MultiTfmSurface](Sample.MultiTfmSurface) | F57 | The 11-TFM matrix and the **per-package subset differences**: EF Core is net6+ only, Chloe/Dos/NHibernate have no net451, SqlSugar has no ns2.0 |
 
 ---
 
-## 四、`DotNetCore.Collections` — 7.1.0 新增 LINQ 值类型引擎
+## 4. `DotNetCore.Collections` — the LINQ value-type engine added in 7.1.0
 
-| Sample | Feature | 侧重点 / 演示的能力 |
+| Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [ValueEnumerable](Sample.ValueEnumerable) | 7.1.0 | `ToValueEnumerable()` 四入口（`T[]`/`List<T>`/`IReadOnlyList<T>`/`IEnumerable<T>`）+ 五算子（`Index`/`ForEach`/`TagFirstLast`/`Pairwise`/`Scan`）+ 与 `System.Linq` 共存的命名空间治理 |
-| [SerializationEntry](Sample.SerializationEntry) | F58 | **负结果**：Paginable 侧**没有** `ToSerializableModel`；正确路径 = `PageMetadata` + `Paginable.CreatePage` 重建 |
+| [ValueEnumerable](Sample.ValueEnumerable) | 7.1.0 | The four `ToValueEnumerable()` entries (`T[]`/`List<T>`/`IReadOnlyList<T>`/`IEnumerable<T>`) plus five operators (`Index`/`ForEach`/`TagFirstLast`/`Pairwise`/`Scan`), and namespace governance for coexisting with `System.Linq` |
+| [SerializationEntry](Sample.SerializationEntry) | F58 | A **negative result**: there is **no** `ToSerializableModel` on the Paginable side; the correct path is `PageMetadata` + `Paginable.CreatePage` to rebuild |
 
 ---
 
-## 五、按主题速查
+## 5. Quick lookup by theme
 
-| 主题 | 相关 sample |
+| Theme | Related samples |
 | :--- | :--- |
-| **副本计数语义（最高危口径）** | MultiSet、MultiMap、SharedInterfaces、OrderedMultiSet |
-| **有序 / 名次 / 区间** | OrderedMultiSet、OrderedAccessRange、OrderStatisticTree、OrderedMultiMap、PositionalRead、ListFaces |
-| **多键 / 双射 / 反向索引** | TwoKeyDictionary、ThreeKeyDictionary、BiDictionary、ReverseMultiDictionary、LiveReverseView、MultiKeyMultiDictionary、SecondaryReverseIndex |
-| **变体（不可变 / 并发）** | ImmutableVariants、ConcurrentVariants、ReadOnlyCollectionView |
-| **袋家族** | PackedBag、SpanBag、FrequencyPriorityBag、BoundedBag、BagStatistics |
-| **集合运算与差异** | SetOpsZeroAlloc、CollectionDifference、StructuralEquality |
-| **序列化 / 快照 / 通知** | ExplicitSerialization、Snapshot、CollectionChanged、SerializationEntry |
-| **分页核心** | KeysetPagination、AsyncPaging、FragmentPage、SinglePageSet、EnumerablePageMaterialize、PageMetadata |
-| **分页契约 / 配置** | PaginableSettings、LimitedMembers、PaginableCalc、ExceptionTypeUnify、NullableAnnotations、KeysetAnchorNullability、QueryEntryState、EmptyAndSinglePage |
-| **适配器 / 平台** | OrmAdapterMatrix、EfCoreAdapter、FreeSqlAdapter、SqlSugarAdapter、SqlKataAdapter、OtherOrmAdapters、SourceGenerator、MultiTfmSurface、SolidPageExtensionsSurface |
-| **引擎（7.1.0）** | ValueEnumerable |
+| **Copy-count semantics (the highest-risk contract)** | MultiSet, MultiMap, SharedInterfaces, OrderedMultiSet |
+| **Ordering / rank / range** | OrderedMultiSet, OrderedAccessRange, OrderStatisticTree, OrderedMultiMap, PositionalRead, ListFaces |
+| **Multi-key / bijection / reverse index** | TwoKeyDictionary, ThreeKeyDictionary, BiDictionary, ReverseMultiDictionary, LiveReverseView, MultiKeyMultiDictionary, SecondaryReverseIndex |
+| **Variants (immutable / concurrent)** | ImmutableVariants, ConcurrentVariants, ReadOnlyCollectionView |
+| **The bag family** | PackedBag, SpanBag, FrequencyPriorityBag, BoundedBag, BagStatistics |
+| **Set operations and differences** | SetOpsZeroAlloc, CollectionDifference, StructuralEquality |
+| **Serialization / snapshot / notifications** | ExplicitSerialization, Snapshot, CollectionChanged, SerializationEntry |
+| **Pagination core** | KeysetPagination, AsyncPaging, FragmentPage, SinglePageSet, EnumerablePageMaterialize, PageMetadata |
+| **Pagination contracts / configuration** | PaginableSettings, LimitedMembers, PaginableCalc, ExceptionTypeUnify, NullableAnnotations, KeysetAnchorNullability, QueryEntryState, EmptyAndSinglePage |
+| **Adapters / platforms** | OrmAdapterMatrix, EfCoreAdapter, FreeSqlAdapter, SqlSugarAdapter, SqlKataAdapter, OtherOrmAdapters, SourceGenerator, MultiTfmSurface, SolidPageExtensionsSurface |
+| **Engine (7.1.0)** | ValueEnumerable |
 
 ---
 
-## 六、既有示例（未改动，保留原样）
+## 6. Existing samples (untouched, kept as-is)
 
-| Sample | 说明 |
+| Sample | Description |
 | :--- | :--- |
-| [Sample](Sample) | 早期 Paginable 基础示例（`net8.0`，引用 `PaginableCollections` 3.3.0） |
-| [Sample.Ef](Sample.Ef) | EntityFramework（EF6）适配器示例 |
-| [Sample.EfCore](Sample.EfCore) | EF Core 适配器示例 |
-| [Sample.Multi](Sample.Multi) | Multi 包基础示例 |
-| [Sample.Engine](Sample.Engine) | 7.1.0 引擎「双 `using`」命名空间治理验证（工作项 F7-07），多目标 `net8.0;net10.0` |
+| [Sample](Sample) | Early Paginable basics sample (`net8.0`, references `PaginableCollections` 3.3.0) |
+| [Sample.Ef](Sample.Ef) | EntityFramework (EF6) adapter sample |
+| [Sample.EfCore](Sample.EfCore) | EF Core adapter sample |
+| [Sample.Multi](Sample.Multi) | Multi package basics sample |
+| [Sample.Engine](Sample.Engine) | 7.1.0 engine "dual `using`" namespace-governance verification (work item F7-07), multi-targeted `net8.0;net10.0` |
 
 ---
 
-## 七、约定
+## 7. Conventions
 
-- **一个 feature 一个项目**：`Sample.<Focus>/` 只聚焦一篇 feature 文档或一条 CHANGELOG 条目。
-- **注释讲语义**：例如「`Count` 是副本数不是不同元素数」「`Values` 是扁平序列」，而不是复述代码。
-- **输出确定性**：不依赖哈希枚举顺序；涉及无序集合处先 `OrderBy` 再打印。
-- **不编造 API**：示例只使用 `reports/features/` 与 `CHANGELOG.md` 里确有的公开 API；
-  与文档措辞冲突处以 `src/` 源码为准（部分 feature 文档的示例存在少量幻觉，已在对应 sample 中按源码修正）。
-- **错误写法以注释呈现**（`// ❌ 错误写法：…`），不写入会编译失败的代码。
+- **One feature, one project**: `Sample.<Focus>/` focuses on a single feature document or a
+  single CHANGELOG entry.
+- **Comments explain semantics**: e.g. "`Count` is the number of copies, not the number of
+  distinct elements" or "`Values` is a flattened sequence" — not a restatement of the code.
+- **Deterministic output**: never rely on hash enumeration order; where an unordered collection
+  is involved, `OrderBy` first, then print.
+- **No invented APIs**: samples use only public APIs that genuinely exist in
+  `reports/features/` and `CHANGELOG.md`; where the wording of a document conflicts, `src/`
+  source wins (a few feature documents had small hallucinations in their examples, corrected
+  against source in the corresponding sample).
+- **Wrong usage is shown in comments** (`// ❌ Wrong: …`), never as code that fails to compile.
