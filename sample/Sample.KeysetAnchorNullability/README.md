@@ -1,41 +1,43 @@
 # Sample.KeysetAnchorNullability
 
-> **键集分页锚点参数可空化** — `lastKey` 锚点与键类型可空性一致：可空键可直接当锚点，`null` 表示「无锚点」（对应 feature F42，`DotNetCore.Collections.Paginable` / `…EntityFrameworkCore`，6.3.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Nullable keyset pagination anchor parameter** — the `lastKey` anchor is consistent with the nullability of the key type: a nullable key can be used directly as an anchor, and `null` means "no anchor" (feature F42, `DotNetCore.Collections.Paginable` / `…EntityFrameworkCore`, 6.3.0).
 
-键集（seek）分页的 `lastKey` 锚点参数在 6.3.0 做了可空化。此前 NRT 工程在「键类型本身可空」或「首页无锚点传 null」的合法调用上会误报。本示例用可空排序键（`string?`）走查：第一页（无锚点）、续页（锚点 = 上页 `LastMember` 的键）、以及最容易误解的一点——**`null` 锚点等于「无锚点」（从头开始），不是「键值等于 null 的位置」**。
+## What this sample demonstrates
 
-## 什么时候用
+The `lastKey` anchor parameter of keyset (seek) pagination became nullable in 6.3.0. Previously, NRT-enabled projects raised false positives on legal calls where "the key type is itself nullable" or "the first page passes null as no anchor". This sample walks through a nullable sort key (`string?`): the first page (no anchor), the continuation page (anchor = the key of the previous page's `LastMember`), and the most easily misunderstood point — **a `null` anchor means "no anchor" (start from the beginning), not "the position where the key value equals null"**.
 
-- 排序键本身可空（如 `string?`、可空外键），需要把它直接当锚点。
-- 统一「首页 / 续页」调用点：首页传 `null` 或 `GetFirstPageByKeyset`，续页传上页末键。
-- 不该用：把 `null` 当某个真实键去定位。
+## When to use it
 
-## 如何运行
+- The sort key is itself nullable (such as `string?`, a nullable foreign key) and you need to use it directly as an anchor.
+- Unifying "first page / continuation page" call sites: the first page passes `null` or uses `GetFirstPageByKeyset`, the continuation page passes the previous page's last key.
+- Not for: using `null` to locate some real key.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.KeysetAnchorNullability
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 第一页（无锚点） | `KeysetPageExtensions.GetFirstPageByKeyset<T, TKey>(...)` |
-| 2 | 续页：锚点 = 上页末键（`string?`） | `KeysetPage<T>.LastMember` / `GetPageByKeyset<T, TKey>(...)` |
-| 3 | `null` 锚点 = 无锚点 = 从头 | `GetPageByKeyset<T, TKey>(..., TKey lastKey, ...)` |
-| 4 | 翻到底 `HasNext=false` | `KeysetPage<T>.HasNext` |
+| 1 | First page (no anchor) | `KeysetPageExtensions.GetFirstPageByKeyset<T, TKey>(...)` |
+| 2 | Continuation page: anchor = previous page's last key (`string?`) | `KeysetPage<T>.LastMember` / `GetPageByKeyset<T, TKey>(...)` |
+| 3 | `null` anchor = no anchor = from the beginning | `GetPageByKeyset<T, TKey>(..., TKey lastKey, ...)` |
+| 4 | Reaching the end, `HasNext=false` | `KeysetPage<T>.HasNext` |
 
-## 关键 API
+## Key APIs
 
-- `KeysetPageExtensions.GetFirstPageByKeyset<T, TKey>(this IEnumerable<T>, Func<T, TKey>, int pageSize, bool descending = false)` — 首页，无锚点。
-- `KeysetPageExtensions.GetPageByKeyset<T, TKey>(this IEnumerable<T>, Func<T, TKey>, TKey lastKey, int pageSize, bool descending = false)` — 续页，锚点为 `TKey`；键类型可空时可直接传 `null`。
-- `KeysetPage<T>.LastMember` — 返回 `T?`；空页返回 `default`，喂回下页前需判空。
+- `KeysetPageExtensions.GetFirstPageByKeyset<T, TKey>(this IEnumerable<T>, Func<T, TKey>, int pageSize, bool descending = false)` — the first page, no anchor.
+- `KeysetPageExtensions.GetPageByKeyset<T, TKey>(this IEnumerable<T>, Func<T, TKey>, TKey lastKey, int pageSize, bool descending = false)` — the continuation page, with an anchor of `TKey`; when the key type is nullable you can pass `null` directly.
+- `KeysetPage<T>.LastMember` — returns `T?`; an empty page returns `default`, so a null check is needed before feeding it to the next page.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **`null` 锚点是「无锚点」，不是「键值为 null」。** 若排序键本身可存 `null`，语义由查询提供方定义。
-- **非破坏升级**，与 F41 同批；运行时「有锚点 / 无锚点」分支不变。
-- **键集页不带总页数**（无 `COUNT(*)`、无 `OFFSET`），与偏移分页 `IPage<T>` 不同（见 F30）。
-- `IQueryable<T>` 源有 `Expression<Func<T, TKey>>` 重载；本示例用内存 `IEnumerable<T>` 的 `Func` 重载。
+- **A `null` anchor is "no anchor", not "a key value of null".** If the sort key itself can store `null`, the semantics are defined by the query provider.
+- **Non-breaking upgrade**, shipped together with F41; the runtime "anchored / not anchored" branch is unchanged.
+- **A keyset page carries no total page count** (no `COUNT(*)`, no `OFFSET`), unlike offset pagination `IPage<T>` (see F30).
+- An `IQueryable<T>` source has an `Expression<Func<T, TKey>>` overload; this sample uses the in-memory `IEnumerable<T>` `Func` overload.

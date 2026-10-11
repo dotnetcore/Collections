@@ -1,42 +1,44 @@
 # Sample.NullableAnnotations
 
-> **公开 API 可空引用类型标注（NRT）** — 编译期空性契约：`T?` / `string?` 告诉调用方「这里可为 null」（对应 feature F41，全包，6.3.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Public API nullable reference type annotations (NRT)** — the compile-time nullability contract: `T?` / `string?` tell the caller "this can be null" (feature F41, all packages, 6.3.0).
 
-6.3.0 起公开 API 携带 NRT 标注，覆盖 Multi、Paginable 与各适配器包。这不是行为变更，而是**编译期契约**。本示例用可运行代码讲清四件事：可空参数为 `null` 时回退到默认实现（默认比较器）；库中真实存在的可空契约（`int? limitedMemberCount`、`KeysetPage<T>.LastMember` 的 `T?`）；以及最易误解的一点——**注解不产生运行时检查**，边界仍由库自己抛 `ArgumentNullException`。
+## What this sample demonstrates
 
-## 什么时候用
+Since 6.3.0 the public APIs carry NRT annotations, covering Multi, Paginable, and the adapter packages. This is not a behavior change but a **compile-time contract**. This sample uses runnable code to explain four things clearly: a nullable parameter falling back to the default implementation when `null` (the default comparer); the nullable contracts that really exist in the library (`int? limitedMemberCount`, the `T?` of `KeysetPage<T>.LastMember`); and the most easily misunderstood point — **annotations do not produce runtime checks**, the boundaries still throw `ArgumentNullException` from the library itself.
 
-- 新代码开启 `#nullable enable`，希望得到准确空性警告（消 CS86xx）。
-- 旧代码关闭 NRT：升级**无感**，无需改代码。
-- 设计「可空参数 → 回退默认」的 API 时，用 `T?` 表达合法传 `null`。
-- 不该用：把标注当运行时检查（NRT 不产生 `null` 检查）。
+## When to use it
 
-## 如何运行
+- New code that enables `#nullable enable` and wants accurate nullability warnings (silencing CS86xx).
+- Old code with NRT disabled: the upgrade is **transparent**, no code changes needed.
+- Designing an API with "nullable parameter -> fall back to default" and using `T?` to express that passing `null` is legal.
+- Not for: treating annotations as runtime checks (NRT does not produce `null` checks).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.NullableAnnotations
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 可空参数 `IComparer<Order>?` 传 `null` 回退默认比较器 | 本地 `SortBy(..., IComparer<Order>?)` |
-| 2 | 库中真实可空契约 `int?`（`null` = 不限） | `SolidPageExtensions.ToPaginable<T>(..., int? limitedMemberCount)` |
-| 3 | 可空返回 `T?` 需判空 | `KeysetPage<T>.LastMember` |
-| 4 | 注解 ≠ 运行时检查，边界仍抛 | `PaginableSettingsManager.UpdateSettings(...)` |
+| 1 | Nullable parameter `IComparer<Order>?` passed `null` falls back to the default comparer | local `SortBy(..., IComparer<Order>?)` |
+| 2 | A real nullable contract in the library, `int?` (`null` = unlimited) | `SolidPageExtensions.ToPaginable<T>(..., int? limitedMemberCount)` |
+| 3 | A nullable return `T?` needs a null check | `KeysetPage<T>.LastMember` |
+| 4 | Annotations != runtime checks; the boundary still throws | `PaginableSettingsManager.UpdateSettings(...)` |
 
-## 关键 API
+## Key APIs
 
-- `SolidPageExtensions.ToPaginable<T>(this IEnumerable<T>, int pageSize, int? limitedMemberCount = null)` — `int?` 可空值类型参数，`null` 表示不限成员数。
-- `KeysetPage<T>.LastMember` — 返回 `T?`；页为空时返回 `default`（引用类型为 `null`）。
-- `PaginableSettingsManager.UpdateSettings(PaginableSettings)` — 参数为非空标注，运行时仍显式抛 `ArgumentNullException`。
+- `SolidPageExtensions.ToPaginable<T>(this IEnumerable<T>, int pageSize, int? limitedMemberCount = null)` — an `int?` nullable value-type parameter; `null` means unlimited members.
+- `KeysetPage<T>.LastMember` — returns `T?`; returns `default` when the page is empty (a reference type yields `null`).
+- `PaginableSettingsManager.UpdateSettings(PaginableSettings)` — the parameter is non-null annotated, yet at runtime it still explicitly throws `ArgumentNullException`.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **标注非运行时检查**：不会替你抛 `ArgumentNullException`；边界仍要自己防 NRE。
-- **升级无需改代码**：仅需知晓新标注，按新标注消警告即可。
-- **低代际 TFM**：注解元数据靠内部垫片提供（见 F43）。
-- **本示例只引用核心包**；文档示例中的 `MultiList<T>` 可空比较器属 Multi 侧，约定一致（`IEqualityComparer<T>?` → `EqualityComparer<T>.Default`），此处以本地 `SortBy` 演示同一模式。
+- **Annotations are not runtime checks**: they will not throw `ArgumentNullException` for you; at the boundary you still guard against NREs yourself.
+- **Upgrading needs no code changes**: you only need to be aware of the new annotations and clear warnings accordingly.
+- **Low-generation TFMs**: the annotation metadata is supplied by an internal shim (see F43).
+- **This sample references only the core package**; the `MultiList<T>` nullable comparer in the doc example belongs to the Multi side, with the same convention (`IEqualityComparer<T>?` -> `EqualityComparer<T>.Default`); here a local `SortBy` demonstrates the same pattern.

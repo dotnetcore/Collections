@@ -1,40 +1,42 @@
 # Sample.PaginableCalc
 
-> **分页计算工具 `PaginableCalc`** — 成员数上限裁剪与页数换算的单一事实源（对应 feature F47，`DotNetCore.Collections.Paginable`，6.0.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **The pagination calculation utility `PaginableCalc`** — the single source of truth for member-count capping and page-count conversion (feature F47, `DotNetCore.Collections.Paginable`, 6.0.0).
 
-`PaginableCalc` 是分页计算的**单一事实源**，由核心工厂与所有 ORM 适配器 coll-factory 共享，避免各处手算漂移。它位于 `DotNetCore.Collections.Paginable.Internal` 命名空间，但类型是 `public static class`，可被适配器与测试直接调用。本示例走查两个成员：`GetRealMemberCount`（有效上限且更小时取 min，`null` 表示不限）与 `GetRealPageCount`（`ceil(members / pageSize)`，末页不满也算一页），并与 `ToPaginable(limitedMemberCount: ...)` 的结果互相印证。
+## What this sample demonstrates
 
-## 什么时候用
+`PaginableCalc` is the **single source of truth** for pagination calculations, shared by the core factory and all ORM adapters' coll-factories to avoid manual drift. It lives in the `DotNetCore.Collections.Paginable.Internal` namespace, but the type is a `public static class` that adapters and tests can call directly. This sample walks through two members: `GetRealMemberCount` (take the min when there is an effective cap and it is smaller; `null` means unlimited) and `GetRealPageCount` (`ceil(members / pageSize)`, counting a partially-filled last page as a page), and cross-checks them against the result of `ToPaginable(limitedMemberCount: ...)`.
 
-- 自定义执行器 / 适配器开发：直接调用同一套算法算成员数与页数。
-- 想与库内部口径保持一致（避免不同 ORM 末页语义不一致）。
-- 不该用：替代业务分页逻辑——它只覆盖成员数 / 页数换算。
+## When to use it
 
-## 如何运行
+- Developing a custom executor / adapter: call the same algorithm directly to compute the member count and page count.
+- Wanting to stay consistent with the library's internal convention (avoiding inconsistent last-page semantics across ORMs).
+- Not for: replacing business paging logic — it only covers member-count / page-count conversion.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.PaginableCalc
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 成员数上限裁剪（`null` = 不限） | `PaginableCalc.GetRealMemberCount(int?, int)` |
-| 2 | 页数换算（向上取整） | `PaginableCalc.GetRealPageCount(int, int)` |
-| 3 | 与 `ToPaginable` 的 `limitedMemberCount` 对照 | `SolidPageExtensions.ToPaginable<T>(..., int? limitedMemberCount)` |
+| 1 | Member-count capping (`null` = unlimited) | `PaginableCalc.GetRealMemberCount(int?, int)` |
+| 2 | Page-count conversion (round up) | `PaginableCalc.GetRealPageCount(int, int)` |
+| 3 | Cross-check with `ToPaginable`'s `limitedMemberCount` | `SolidPageExtensions.ToPaginable<T>(..., int? limitedMemberCount)` |
 
-## 关键 API
+## Key APIs
 
-- `PaginableCalc.GetRealMemberCount(int? limitedMemberCount, int count)` — 有效上限且小于源计数时取上限，否则取源计数。
-- `PaginableCalc.GetRealPageCount(int realMemberCount, int pageSize)` — `ceil(members / pageSize)`，末页不满也算一页。
-- `PaginableSetBase<T>.LimitedMemberCount` / `.MemberCount` / `.PageCount` — 与 `PaginableCalc` 复算结果一致。
+- `PaginableCalc.GetRealMemberCount(int? limitedMemberCount, int count)` — takes the cap when it is effective and smaller than the source count, otherwise the source count.
+- `PaginableCalc.GetRealPageCount(int realMemberCount, int pageSize)` — `ceil(members / pageSize)`, counting a partially-filled last page as a page.
+- `PaginableSetBase<T>.LimitedMemberCount` / `.MemberCount` / `.PageCount` — consistent with `PaginableCalc`'s recomputed results.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **在 `Internal` 命名空间但是 public**：可调用，但视为实现工具，勿当业务 API。
-- **`GetRealPageCount` 不校验 `pageSize > 0`**：由工厂校验配套，调用方保证。
-- **与 F38 `MaxMemberItems` 配套**：超过上限的结果集被拒绝或裁剪，裁剪走 `GetRealMemberCount`。
-- 各适配器手算页数会导致末页语义不一致——统一走 `PaginableCalc`。
+- **In the `Internal` namespace but public**: callable, but treat it as an implementation utility, not a business API.
+- **`GetRealPageCount` does not validate `pageSize > 0`**: the factory validates alongside it; the caller must guarantee it.
+- **Paired with F38 `MaxMemberItems`**: a result set exceeding the cap is rejected or trimmed, and trimming goes through `GetRealMemberCount`.
+- Each adapter computing the page count by hand leads to inconsistent last-page semantics — go through `PaginableCalc` uniformly.

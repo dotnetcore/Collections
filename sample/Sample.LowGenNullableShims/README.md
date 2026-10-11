@@ -1,40 +1,42 @@
 # Sample.LowGenNullableShims
 
-> **低代际 TFM 的可空属性垫片** — net451 等目标没有可空注解属性类型，由内部 polyfill 补上，使全 TFM 单源、注解完整（对应 feature F43，全包低 TFM 资产，6.3.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Nullability attribute shims for low-generation TFMs** — targets such as net451 have no nullable annotation attribute types, so an internal polyfill supplies them, keeping a single source across all TFMs with complete annotations (feature F43, low-TFM assets of all packages, 6.3.0).
 
-低代际 TFM（`net451` / `net461` / `net47` / `net48` / `netstandard2.0`）的参考程序集没有 `NullableAttribute` / `NullableContextAttribute`，直接写 `T?` 会丢注解元数据。6.3.0 引入**内部垫片**（`build/NullabilityAttributes.cs`），仅在这些目标编入，`netstandard2.1` 与 `net6.0+` 用运行时自带类型。本示例从**使用方视角**证明：垫片无感——可空参数照常可用，公开 API 的空性注解元数据仍可被反射读到，且公开类型面里没有任何垫片类型泄漏。
+## What this sample demonstrates
 
-## 什么时候用
+The reference assemblies of low-generation TFMs (`net451` / `net461` / `net47` / `net48` / `netstandard2.0`) have no `NullableAttribute` / `NullableContextAttribute`, so writing `T?` directly loses the annotation metadata. 6.3.0 introduces **internal shims** (`build/NullabilityAttributes.cs`), compiled in only for these targets, while `netstandard2.1` and `net6.0+` use the types built into the runtime. This sample proves, from a **consumer's point of view**, that the shims are transparent: nullable parameters keep working, the nullability annotation metadata of the public APIs is still readable via reflection, and no shim type leaks into the public type surface.
 
-- 库要同时支持 `net451` 与 `net8`：垫片让同一份带 `T?` 的源码在全 TFM 编译通过。
-- 消费方在 `net462` + NRT 工程：也能正确读到空性标注。
-- 不该用：把垫片当运行时判空（垫片不是检查）。
+## When to use it
 
-## 如何运行
+- A library must support both `net451` and `net8`: the shims let the same `T?`-bearing source compile across all TFMs.
+- A consumer on a `net462` + NRT project: it can also read the nullability annotations correctly.
+- Not for: treating the shim as a runtime null check (a shim is not a check).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.LowGenNullableShims
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 使用方视角：`int?` 可空参数照常可用 | `SolidPageExtensions.ToPaginable<T>(..., int? limitedMemberCount)` |
-| 2 | 空性注解元数据可被反射读到 | `NullabilityInfoContext` / `KeysetPage<T>.LastMember` / `PaginableSettingsManager.UpdateSettings` |
-| 3 | 垫片无公开类型（internal，不泄漏） | `Assembly.GetExportedTypes()` |
+| 1 | Consumer's view: the `int?` nullable parameter works as usual | `SolidPageExtensions.ToPaginable<T>(..., int? limitedMemberCount)` |
+| 2 | The nullability annotation metadata is readable via reflection | `NullabilityInfoContext` / `KeysetPage<T>.LastMember` / `PaginableSettingsManager.UpdateSettings` |
+| 3 | The shim has no public types (internal, no leakage) | `Assembly.GetExportedTypes()` |
 
-## 关键 API
+## Key APIs
 
-- `build/NullabilityAttributes.cs` — 内部垫片：`NullableAttribute` / `NullableContextAttribute` / `NullablePublicOnlyAttribute`（**internal，非公开 API**）。
-- `SolidPageExtensions.ToPaginable<T>(this IEnumerable<T>, int pageSize, int? limitedMemberCount = null)` — 使用方直接受益的可空契约示例。
-- `System.Reflection.NullabilityInfoContext` — 读取编译期写入的空性注解元数据（.NET 6+）。
+- `build/NullabilityAttributes.cs` — the internal shims: `NullableAttribute` / `NullableContextAttribute` / `NullablePublicOnlyAttribute` (**internal, not public API**).
+- `SolidPageExtensions.ToPaginable<T>(this IEnumerable<T>, int pageSize, int? limitedMemberCount = null)` — an example of a nullable contract the consumer benefits from directly.
+- `System.Reflection.NullabilityInfoContext` — reads the nullability annotation metadata written at compile time (.NET 6+).
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **垫片是内部实现**：不要写进公开 API 文档当类型（找不到 / internal）。
-- **与 F41 配套**：F41 是「公开 API 补 NRT 标注」，F43 是「低 TFM 让这份标注有属性类型可编」。
-- **不替代 null 检查**：垫片只是让注解元数据可编可读。
-- 本 sample 的 net8 资产**不编入**垫片，故第 3 步查不到定义，属预期（运行时自带同名类型）。
+- **The shims are an internal implementation detail**: do not write them into public API docs as types (they cannot be found / are internal).
+- **Paired with F41**: F41 is "add NRT annotations to the public APIs", F43 is "make that annotation have an attribute type to compile against on low TFMs".
+- **Does not replace null checks**: the shims only make the annotation metadata compilable and readable.
+- This sample's net8 asset does **not** compile in the shims, so step 3 cannot find the definition, which is expected (the runtime ships types of the same name).

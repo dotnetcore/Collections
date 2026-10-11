@@ -1,43 +1,45 @@
 # Sample.EmptyAndSinglePage
 
-> **空页与单页集合** — `EmptyPage<T>`（无结果不返回 null）与 `PaginableSinglePage<T>`（一页包成集合，`PageCount` 恒为 1）（对应 feature F49，`DotNetCore.Collections.Paginable`，6.2.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Empty page and single-page set** — `EmptyPage<T>` (no results does not return null) and `PaginableSinglePage<T>` (one page wrapped as a set, `PageCount` always 1) (feature F49, `DotNetCore.Collections.Paginable`, 6.2.0).
 
-两个「边界页」类型。`EmptyPage<T>` 是空结果页：查询无结果时返回它而非 `null`，固定 `pageNumber: 1`、`pageSize: 0`、`totalMemberCount: 0`。`PaginableSinglePage<T>` 把**已经存在**的一页包成 `IPaginable<T>`，供「签名要集合、手头只有一页」的调用方使用（缓存页、gRPC 的 `items + totalCount`）。关键在**元数据分层**：集合层 `PageCount` 恒为 1、`MemberCount` 是源总数；页层保留全局编号（12 页中的第 3 页仍是 3/12）。
+## What this sample demonstrates
 
-## 什么时候用
+Two "boundary page" types. `EmptyPage<T>` is the empty-result page: when a query returns no results, return it instead of `null`, with fixed `pageNumber: 1`, `pageSize: 0`, `totalMemberCount: 0`. `PaginableSinglePage<T>` wraps an **already existing** page as an `IPaginable<T>`, for callers whose "signature wants a set but they only have one page" (a cached page, gRPC's `items + totalCount`). The key point is **metadata layering**: at the set level `PageCount` is always 1 and `MemberCount` is the source total; at the page level the global numbering is preserved (page 3 of 12 is still 3/12).
 
-- 查询 0 行：统一返回 `EmptyPage<T>`，下游可安全枚举。
-- 只有一页数据但 API 要 `IPaginable<T>`：用 `Paginable.CreateSinglePageSet`，不伪造其余页。
-- 不该用：假装有多页（`PageCount` 刻意恒为 1）。
+## When to use it
 
-## 如何运行
+- A query returns 0 rows: uniformly return `EmptyPage<T>` so downstream can enumerate safely.
+- Only one page of data but the API wants an `IPaginable<T>`: use `Paginable.CreateSinglePageSet`, without faking the other pages.
+- Not for: pretending there are multiple pages (`PageCount` is deliberately always 1).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.EmptyAndSinglePage
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 空页：无结果不是 null | `new EmptyPage<T>()` / `Paginable.CreateEmptyPage<T>()` |
-| 2 | 单页集合：集合层 `PageCount` 恒为 1 | `Paginable.CreateSinglePageSet<T>(...)` / `PaginableSinglePage<T>.PageCount` |
-| 3 | `GetPage(2)` 越界 | `PaginableSinglePage<T>.GetPage(int)` → `ArgumentOutOfRangeException` |
-| 4 | `PageFragmentInfo` 入口 + 分层陷阱 | `PageFragmentInfo` / `PaginableSinglePage<T>.MemberCount` |
+| 1 | Empty page: no results is not null | `new EmptyPage<T>()` / `Paginable.CreateEmptyPage<T>()` |
+| 2 | Single-page set: set-level `PageCount` is always 1 | `Paginable.CreateSinglePageSet<T>(...)` / `PaginableSinglePage<T>.PageCount` |
+| 3 | `GetPage(2)` is out of range | `PaginableSinglePage<T>.GetPage(int)` → `ArgumentOutOfRangeException` |
+| 4 | The `PageFragmentInfo` entry + the layering pitfall | `PageFragmentInfo` / `PaginableSinglePage<T>.MemberCount` |
 
-## 关键 API
+## Key APIs
 
-- `EmptyPage<T> : EnumerablePage<T>` — 构造为 `Enumerable.Empty<T>()`、`pageNumber: 1`、`pageSize: 0`、`totalMemberCount: 0`。
-- `Paginable.CreateEmptyPage<T>()` — 空页工厂入口。
-- `Paginable.CreateSinglePageSet<T>(IEnumerable<T> fragment, int pageNumber, int pageSize, int totalMemberCount)` — 单页集合工厂（返回具体类型 `PaginableSinglePage<T>`）。
-- `Paginable.CreateSinglePageSet<T>(IEnumerable<T> fragment, PageFragmentInfo metadata)` — 用元数据对象的入口。
-- `PaginableSinglePage<T>.PageCount` / `.MemberCount` / `.GetPage(int)` — 集合层与页层语义。
+- `EmptyPage<T> : EnumerablePage<T>` — constructed as `Enumerable.Empty<T>()`, `pageNumber: 1`, `pageSize: 0`, `totalMemberCount: 0`.
+- `Paginable.CreateEmptyPage<T>()` — the empty-page factory entry.
+- `Paginable.CreateSinglePageSet<T>(IEnumerable<T> fragment, int pageNumber, int pageSize, int totalMemberCount)` — the single-page set factory (returns the concrete type `PaginableSinglePage<T>`).
+- `Paginable.CreateSinglePageSet<T>(IEnumerable<T> fragment, PageFragmentInfo metadata)` — the entry taking a metadata object.
+- `PaginableSinglePage<T>.PageCount` / `.MemberCount` / `.GetPage(int)` — set-level and page-level semantics.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **`PaginableSinglePage.PageCount` 恒为 1**：不是页的 `TotalPageCount`；源总页数读 `GetPage(1).TotalPageCount`。
-- **`GetPage` 只接受 1**：集合物理上只有一页，`GetPage(2)` 抛 `ArgumentOutOfRangeException`。
-- **`EmptyPage` 的 `PageSize` 是 0**；其 `TotalPageCount` 报告为 1。
-- **单页集合不重切片**：传入的片段即页内容。
+- **`PaginableSinglePage.PageCount` is always 1**: it is not the page's `TotalPageCount`; read the source total page count via `GetPage(1).TotalPageCount`.
+- **`GetPage` only accepts 1**: the set physically has one page, so `GetPage(2)` throws `ArgumentOutOfRangeException`.
+- **`EmptyPage`'s `PageSize` is 0**; its `TotalPageCount` is reported as 1.
+- **A single-page set does not re-slice**: the passed fragment is the page content.
