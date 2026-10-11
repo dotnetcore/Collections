@@ -1,47 +1,45 @@
 # Sample.SqlSugarAdapter
 
-> **SqlSugar 适配器入口面与取消令牌边界** — `SolidPageExtensions` + `PaginableSqlSugarQuery<T>` + `SqlSugarPage<T>`（对应 feature F53，`DotNetCore.Collections.Paginable.SqlSugar`，2.x）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **SqlSugar adapter entry surface and cancellation-token boundary** — `SolidPageExtensions` + `PaginableSqlSugarQuery<T>` + `SqlSugarPage<T>` (feature F53, `DotNetCore.Collections.Paginable.SqlSugar`, 2.x).
 
-SqlSugar 适配器把分页动词接到 `SqlSugar.ISugarQueryable<T>`。这个 sample 是**包支撑的说明型**示例：引用
-**真实的 SqlSugar 适配器包**，用反射从真实程序集读出入口类型与 `SolidPageExtensions` 的公开动词签名，并
-重点讲清 **6.6.0 F6-38** 的取消令牌边界——已取消令牌在**第一次数据库往返前**抛 `OperationCanceledException`，
-而中段取消仍取决于 SqlSugar 版本（其 `CountAsync` / `ToPageListAsync` 无令牌重载）。示例不连数据库；
-最后用核心 `Paginable.CreatePage` 造一个真实页，证明页对象复用核心契约 `IPage<T>`。
+## What this sample demonstrates
 
-## 什么时候用
+The SqlSugar adapter wires the pagination verbs into `SqlSugar.ISugarQueryable<T>`. This sample is a **package-backed explanatory** example: it references the **real SqlSugar adapter package**, uses reflection to read the entry types and the public verb signatures of `SolidPageExtensions` from the real assembly, and focuses on clarifying the cancellation-token boundary of **6.6.0 F6-38** — an already-cancelled token throws `OperationCanceledException` **before the first database round trip**, while mid-flight cancellation still depends on the SqlSugar version (its `CountAsync` / `ToPageListAsync` have no token overloads). The sample does not connect to a database; at the end it uses the core `Paginable.CreatePage` to build a real page, proving the page object reuses the core contract `IPage<T>`.
 
-- 确认 SqlSugar 应用的入口类型名与动词。
-- Web 场景需要请求取消在首轮生效（6.6+）。
-- 不该用：需要中段取消保证 → 取决于 SqlSugar 版本 / 提供方；EF Core 栈 → 见 `Sample.EfCoreAdapter`。
+## When to use it
 
-## 如何运行
+- Confirm the entry type names and verbs of a SqlSugar application.
+- Web scenarios that need request cancellation to take effect on the first round trip (6.6+).
+- Should not use: when you need a mid-flight cancellation guarantee → it depends on the SqlSugar version / provider; EF Core stack → see `Sample.EfCoreAdapter`.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.SqlSugarAdapter
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 真实适配器程序集与入口类型 | `PaginableSqlSugarQuery<T>` / `SqlSugarPage<T>` / `SolidPageExtensions`（反射） |
-| 2 | 真实公开动词签名 | `ToPaginable` / `GetPage` / `*Async`（反射） |
-| 3 | 取消令牌边界（F6-38） | `GetPageAsync(1, 20, ct)` 在首轮往返前抛 `OperationCanceledException` |
-| 4 | 共享核心契约 | `Paginable.CreatePage` → `IPage<T>` / `IPageMember<T>` |
-| 5 | TFM 与为什么不真正执行 | 无 ns2.0；`SqlSugarHelper` 打库 |
+| 1 | Real adapter assembly and entry types | `PaginableSqlSugarQuery<T>` / `SqlSugarPage<T>` / `SolidPageExtensions` (reflection) |
+| 2 | Real public verb signatures | `ToPaginable` / `GetPage` / `*Async` (reflection) |
+| 3 | Cancellation-token boundary (F6-38) | `GetPageAsync(1, 20, ct)` throws `OperationCanceledException` before the first round trip |
+| 4 | Shared core contract | `Paginable.CreatePage` → `IPage<T>` / `IPageMember<T>` |
+| 5 | TFM and why it is not really executed | no ns2.0; `SqlSugarHelper` hits the database |
 
-## 关键 API
+## Key APIs
 
-- `DotNetCore.Collections.Paginable.SolidPageExtensions`（**SqlSugar 包**）— 接收者 `SqlSugar.ISugarQueryable<T>`（参数名 `query`）。
-- `PaginableSqlSugarQuery<T>`（分页集合）、`SqlSugarPage<T>`（页）。
-- 动词：`ToPaginable` / `ToPaginableAsync` / `GetPage` / `GetPageAsync`。
-- 核心契约：`IPage<T>` / `IPageMember<T>`（`Value` / `Offset` / `ItemNumber`）。
+- `DotNetCore.Collections.Paginable.SolidPageExtensions` (**SqlSugar package**) — receiver `SqlSugar.ISugarQueryable<T>` (parameter name `query`).
+- `PaginableSqlSugarQuery<T>` (paginable collection), `SqlSugarPage<T>` (page).
+- Verbs: `ToPaginable` / `ToPaginableAsync` / `GetPage` / `GetPageAsync`.
+- Core contracts: `IPage<T>` / `IPageMember<T>` (`Value` / `Offset` / `ItemNumber`).
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **升级 6.5→6.6 可能新抛 `OperationCanceledException`**（F6-38 修复，不是回归）。
-- **中段取消不承诺**：SqlSugar 5.1.3 的 `CountAsync` / `ToPageListAsync` 无令牌重载。
-- **无 netstandard2.0**；net4* 用 `sqlSugar`，其它用 `sqlSugarCore`。
-- **同名 `SolidPageExtensions`**（U27）；越界抛 `ArgumentOutOfRangeException`。
+- **Upgrading 6.5→6.6 may newly throw `OperationCanceledException`** (the F6-38 fix, not a regression).
+- **Mid-flight cancellation is not promised**: SqlSugar 5.1.3's `CountAsync` / `ToPageListAsync` have no token overloads.
+- **No netstandard2.0**; net4* uses `sqlSugar`, others use `sqlSugarCore`.
+- **Same-named `SolidPageExtensions`** (U27); out of range throws `ArgumentOutOfRangeException`.

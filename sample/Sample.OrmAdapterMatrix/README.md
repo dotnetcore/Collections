@@ -1,47 +1,44 @@
 # Sample.OrmAdapterMatrix
 
-> **ORM 适配器同构矩阵** — 9 个 ORM 集成包的公开面与入口名对照（对应 feature F50，`DotNetCore.Collections.Paginable.*`，2.x–6.6 逐包引入）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **ORM adapter isomorphic matrix** — a cross-reference of the public surfaces and entry-point names of the 9 ORM integration packages (feature F50, `DotNetCore.Collections.Paginable.*`, introduced package by package across 2.x–6.6).
 
-九个适配器包把**同一套分页动词**接到不同 ORM，但**入口类型名逐包不同**。这个 sample 用一张对照表把
-「包 → 分页集合类型 → 页类型 → 备注」逐行打印出来，并单独讲清三处最容易被「类推」坑到的例外：
-NHibernate 的 `NhCorePage<T>`、EF/EF Core/FreeSql.DbContext 只有 `SolidPageExtensions`、SqlKata 的非泛型 `Query`。
-它是**说明型**示例：只引用分页核心包，不引入任何 ORM 包，因此不会有还原 / 连接数据库的风险。
+## What this sample demonstrates
 
-## 什么时候用
+The nine adapter packages wire **the same set of pagination verbs** into different ORMs, but **the entry type names differ from package to package**. This sample prints a cross-reference table row by row — "package → paginable collection type → page type → note" — and separately spells out the three exceptions that are most easily tripped up by "analogy": NHibernate's `NhCorePage<T>`, the fact that EF/EF Core/FreeSql.DbContext only have `SolidPageExtensions`, and SqlKata's non-generic `Query`. It is an **explanatory** sample: it references only the pagination core package and pulls in no ORM package, so there is no restore/connect-to-database risk.
 
-- 选型：确认你的 ORM 对应哪个 NuGet 包、入口类型叫什么。
-- 写文档 / 测试时核对入口名，避免杜撰 `PaginableEfCoreQuery<T>` 之类不存在的类型。
-- 审计：对照异步、取消、TFM 的逐包差异（见 F44 / F57）。
-- 不该用：想直接跑一次分页 → 见 `Sample.EfCoreAdapter`（真异步）或 `Sample.SerializationEntry`（片段重建）。
+## When to use it
 
-## 如何运行
+- Selection: confirm which NuGet package corresponds to your ORM and what the entry type is called.
+- When writing docs/tests, verify entry names to avoid inventing types such as `PaginableEfCoreQuery<T>` that do not exist.
+- Auditing: compare per-package differences in async, cancellation, and TFM (see F44 / F57).
+- Should not use: when you want to actually run pagination once → see `Sample.EfCoreAdapter` (true async) or `Sample.SerializationEntry` (fragment rebuild).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.OrmAdapterMatrix
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 九包入口名对照矩阵 | 各包 `PaginableXxxQuery<T>` / `XxxPage<T>`（字符串对照） |
-| 2 | 统一动词 | `ToPaginable` / `GetPage` / `*Async`（接收者类型逐包不同） |
-| 3 | 命名规律与三处例外 | NHibernate `NhCorePage<T>`、EF 无独立 Query/Page、SqlKata 显式 `<T>` |
-| 4 | 同名消歧 | 10 处同名 `SolidPageExtensions`，需全限定名或别名 |
+| 1 | Nine-package entry-name cross-reference matrix | Each package's `PaginableXxxQuery<T>` / `XxxPage<T>` (string cross-reference) |
+| 2 | Unified verbs | `ToPaginable` / `GetPage` / `*Async` (receiver type differs per package) |
+| 3 | Naming rule and three exceptions | NHibernate `NhCorePage<T>`, EF has no standalone Query/Page, SqlKata explicit `<T>` |
+| 4 | Same-name disambiguation | 10 same-named `SolidPageExtensions`, need full qualification or alias |
 
-## 关键 API
+## Key APIs
 
-- 核心契约（所有适配器共享）：`IPage`、`IPage<T>`、`IPaginable`、`IPaginable<T>`。
-- 逐包入口类型名（**不可跨包类推**）：`PaginableFreeSqlQuery<T>` / `FreeSqlPage<T>`、`PaginableSqlSugarQuery<T>` /
-  `SqlSugarPage<T>`、`PaginableSqlKataQuery<T>` / `SqlKataPage<T>`、`PaginableChloeQuery<T>` / `ChloePage<T>`、
-  `PaginableDosQuery<T>` / `DosPage<T>`、`PaginableNhCoreQuery<T>` / `NhCorePage<T>`。
-- EF / EF Core / FreeSql.DbContext：**只有** `SolidPageExtensions`；EF Core 另有 `KeysetPageAsyncExtensions`。
+- Core contracts (shared by all adapters): `IPage`, `IPage<T>`, `IPaginable`, `IPaginable<T>`.
+- Per-package entry type names (**must not be extrapolated across packages**): `PaginableFreeSqlQuery<T>` / `FreeSqlPage<T>`, `PaginableSqlSugarQuery<T>` / `SqlSugarPage<T>`, `PaginableSqlKataQuery<T>` / `SqlKataPage<T>`, `PaginableChloeQuery<T>` / `ChloePage<T>`, `PaginableDosQuery<T>` / `DosPage<T>`, `PaginableNhCoreQuery<T>` / `NhCorePage<T>`.
+- EF / EF Core / FreeSql.DbContext: **only** `SolidPageExtensions`; EF Core additionally has `KeysetPageAsyncExtensions`.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **入口名逐包不同**，查矩阵，不要按命名规律硬造类型。
-- **`NhCorePage<T>`** 不是 `NHibernatePage<T>`；查询集合是 `PaginableNhCoreQuery<T>`。
-- **`SolidPageExtensions` 10 处同名**：凡提及必带包名 / 命名空间，混用两包会 CS0104（U27）。
-- **SqlKata 源类型非泛型**：`ToPaginable<T>` / `GetPage<T>` 必须显式写元素类型。
+- **Entry names differ from package to package**; consult the matrix, do not fabricate types by following a naming rule.
+- **`NhCorePage<T>`** is not `NHibernatePage<T>`; the paginable collection is `PaginableNhCoreQuery<T>`.
+- **`SolidPageExtensions` is same-named in 10 places**: any mention must carry the package name / namespace; mixing two packages causes CS0104 (U27).
+- **SqlKata's source type is non-generic**: `ToPaginable<T>` / `GetPage<T>` must spell out the element type explicitly.

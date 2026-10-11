@@ -1,48 +1,45 @@
 # Sample.OtherOrmAdapters
 
-> **Chloe / DosOrm / NHibernate 三包入口名对照** — 类型名逐包不同、独有重载与约束（对应 feature F55，`DotNetCore.Collections.Paginable.Chloe` / `.DosOrm` / `.NHibernate`，2.x 线）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Chloe / DosOrm / NHibernate three-package entry-name cross-reference** — type names differ per package, unique overloads and constraints (feature F55, `DotNetCore.Collections.Paginable.Chloe` / `.DosOrm` / `.NHibernate`, the 2.x line).
 
-这三个适配器的公开面**命名不完全对称**：Chloe 是 `PaginableChloeQuery<T>` / `ChloePage<T>`，DosOrm 是
-`PaginableDosQuery<T>` / `DosPage<T>`，而 NHibernate 的页类型是 **`NhCorePage<T>`**（不是 `NHibernatePage<T>`）。
-这个 sample 用一张对照表打印三包的入口名、源类型与独有重载，并讲清两处易错点：`additionalQueryFunc`
-（Chloe / Dos 的查询变换钩子）与 DosOrm 的 `where T : Entity` 约束。它是**说明型**示例：只引用分页核心包，
-不引入任何 ORM 包，因此没有还原 / 连库风险。
+## What this sample demonstrates
 
-## 什么时候用
+The public surfaces of these three adapters are **not fully symmetric in naming**: Chloe is `PaginableChloeQuery<T>` / `ChloePage<T>`, DosOrm is `PaginableDosQuery<T>` / `DosPage<T>`, while NHibernate's page type is **`NhCorePage<T>`** (not `NHibernatePage<T>`). This sample uses a cross-reference table to print the entry names, source types, and unique overloads of the three packages, and clarifies two error-prone points: `additionalQueryFunc` (the query-transform hook of Chloe / Dos) and DosOrm's `where T : Entity` constraint. It is an **explanatory** example: it references only the pagination core package and pulls in no ORM package, so there is no restore/connect-to-database risk.
 
-- 选型：确认 Chloe / Dos.ORM / NHibernate 各自的包与入口类型名。
-- 需要「取页前追加排序」→ `additionalQueryFunc`（Chloe / Dos）。
-- NHibernate 想直接从 `ISession` 建集合 → `session.ToPaginable<T>(...)`。
-- 不该用：EF Core → 见 `Sample.EfCoreAdapter`。
+## When to use it
 
-## 如何运行
+- Selection: confirm the package and entry type names of Chloe / Dos.ORM / NHibernate.
+- When you need to "append sorting before fetching a page" → `additionalQueryFunc` (Chloe / Dos).
+- NHibernate: when you want to build a collection directly from `ISession` → `session.ToPaginable<T>(...)`.
+- Should not use: EF Core → see `Sample.EfCoreAdapter`.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.OtherOrmAdapters
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 三包入口名对照表 | `PaginableChloeQuery<T>` / `PaginableDosQuery<T>` / `PaginableNhCoreQuery<T>`（字符串对照） |
-| 2 | 独有重载与约束 | `additionalQueryFunc`；`ISession` 重载；`where T : Entity` |
-| 3 | 命名规律与例外 | NHibernate `NhCorePage<T>`（非 `NHibernatePage<T>`） |
-| 4 | 共享核心契约 | `Paginable.CreatePage` → `IPage<T>` / `IPageMember<T>` |
-| 5 | 同名消歧与 TFM | 10 处同名 `SolidPageExtensions`；三包无 net451 |
+| 1 | Three-package entry-name cross-reference table | `PaginableChloeQuery<T>` / `PaginableDosQuery<T>` / `PaginableNhCoreQuery<T>` (string cross-reference) |
+| 2 | Unique overloads and constraints | `additionalQueryFunc`; `ISession` overload; `where T : Entity` |
+| 3 | Naming rule and exception | NHibernate `NhCorePage<T>` (not `NHibernatePage<T>`) |
+| 4 | Shared core contract | `Paginable.CreatePage` → `IPage<T>` / `IPageMember<T>` |
+| 5 | Same-name disambiguation and TFM | 10 same-named `SolidPageExtensions`; the three packages have no net451 |
 
-## 关键 API
+## Key APIs
 
-- `DotNetCore.Collections.Paginable.SolidPageExtensions`（**各包**）— 接收者分别 `Chloe.IQuery<T>` / `Dos.ORM.FromSection<T>` / `IQueryOver<T>`。
-- 入口类型名（**不可跨包类推**）：`PaginableChloeQuery<T>` / `ChloePage<T>`、`PaginableDosQuery<T>` / `DosPage<T>`、
-  `PaginableNhCoreQuery<T>` / `NhCorePage<T>`。
-- `additionalQueryFunc`：`Func<IQuery<T>, IQuery<T>>`（Dos 为 `FromSection<T>`），取页前追加查询变换。
+- `DotNetCore.Collections.Paginable.SolidPageExtensions` (**each package**) — receivers `Chloe.IQuery<T>` / `Dos.ORM.FromSection<T>` / `IQueryOver<T>` respectively.
+- Entry type names (**must not be extrapolated across packages**): `PaginableChloeQuery<T>` / `ChloePage<T>`, `PaginableDosQuery<T>` / `DosPage<T>`, `PaginableNhCoreQuery<T>` / `NhCorePage<T>`.
+- `additionalQueryFunc`: `Func<IQuery<T>, IQuery<T>>` (`FromSection<T>` for Dos), appends a query transform before fetching a page.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **类型名逐包不同**，不可写 `PaginableEfCoreQuery` 之类类比。
-- **`NhCorePage<T>` 特殊命名**：不是 `NHibernatePage<T>`。
-- **Dos 的 `Entity` 约束**：不能把任意 DTO 直接 `ToPaginable`。
-- **`additionalQueryFunc` 可空**，不要在其中做副作用；三包 TFM **无 net451**（F57）。
+- **Type names differ per package**; do not write analogies such as `PaginableEfCoreQuery`.
+- **`NhCorePage<T>` has a special name**: it is not `NHibernatePage<T>`.
+- **Dos's `Entity` constraint**: you cannot `ToPaginable` an arbitrary DTO directly.
+- **`additionalQueryFunc` may be null**; do not perform side effects inside it; the three packages' TFM **has no net451** (F57).

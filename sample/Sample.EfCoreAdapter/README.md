@@ -1,51 +1,48 @@
 # Sample.EfCoreAdapter
 
-> **EF Core 适配器：真异步分页** — `SolidPageExtensions`（EntityFrameworkCore）+ 键集异步入口（对应 feature F51，`DotNetCore.Collections.Paginable.EntityFrameworkCore`，6.0.0–6.5.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **EF Core adapter: true async pagination** — `SolidPageExtensions` (EntityFrameworkCore) + keyset async entry point (feature F51, `DotNetCore.Collections.Paginable.EntityFrameworkCore`, 6.0.0–6.5.0).
 
-EF Core 适配器把分页动词接到 `IQueryable<T>` / `DbSet<T>`。它和核心包最大的区别是**真异步**：
-`GetPageAsync` / `ToPaginableAsync` 经 provider 原生的 `CountAsync` / `ToListAsync` 真正 `await` I/O，
-而不是核心包对 `IEnumerable` 的「形状异步」（`Task.FromResult`，同步完成、不观察令牌）。本 sample 用
-EF Core **InMemory** 提供程序建一个内存 `DbContext`，端到端跑一次异步分页，并展示 `DbSet<T>` 直接入口、
-末页边界、越界异常与同名扩展类消歧。页结果复用核心契约 `IPage<T>`。
+## What this sample demonstrates
 
-## 什么时候用
+The EF Core adapter wires the pagination verbs into `IQueryable<T>` / `DbSet<T>`. Its biggest difference from the core package is **true async**: `GetPageAsync` / `ToPaginableAsync` genuinely `await` I/O via the provider's native `CountAsync` / `ToListAsync`, rather than the core package's "shape async" over `IEnumerable` (`Task.FromResult`, completes synchronously, does not observe the token). This sample builds an in-memory `DbContext` with the EF Core **InMemory** provider, runs a full end-to-end async pagination, and demonstrates the direct `DbSet<T>` entry point, the last-page boundary, the out-of-range exception, and same-name extension class disambiguation. Page results reuse the core contract `IPage<T>`.
 
-- ASP.NET Core + EF Core 的标准分页路径，且需要真异步 / 取消令牌下传（F44）。
-- 需要键集异步 → 另有 `KeysetPageAsyncExtensions`（F31），是 EF Core 独有。
-- 不该用：同步控制台小工具 → 核心包 `IEnumerable` 入口即可（F45）。
+## When to use it
 
-## 如何运行
+- The standard pagination path for ASP.NET Core + EF Core, when you need true async / cancellation token forwarding (F44).
+- When you need keyset async → there is also `KeysetPageAsyncExtensions` (F31), unique to EF Core.
+- Should not use: for a synchronous console utility → the core package's `IEnumerable` entry point suffices (F45).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.EfCoreAdapter
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 0 | 内存 `DbContext`（InMemory 提供程序） | `DbContextOptionsBuilder.UseInMemoryDatabase` / `DbSet<T>` |
-| 1 | 真异步取页 | `IQueryable<T>.GetPageAsync(pageNumber, pageSize)` |
-| 2 | 真异步建集合后多次取页 | `IQueryable<T>.ToPaginableAsync()` / `PaginableSetBase<T>.GetPage` |
-| 3 | `DbSet<T>` 直接入口（同步） | `DbSet<T>.GetPage(pageNumber, pageSize)` |
-| 4 | 真异步 vs 核心形状异步 | 说明 + `KeysetPageAsyncExtensions` |
-| 5 | 越界异常统一 | `GetPageAsync(99, 10)` 抛 `ArgumentOutOfRangeException` |
+| 0 | In-memory `DbContext` (InMemory provider) | `DbContextOptionsBuilder.UseInMemoryDatabase` / `DbSet<T>` |
+| 1 | True async page fetch | `IQueryable<T>.GetPageAsync(pageNumber, pageSize)` |
+| 2 | True async build a collection then fetch pages repeatedly | `IQueryable<T>.ToPaginableAsync()` / `PaginableSetBase<T>.GetPage` |
+| 3 | Direct `DbSet<T>` entry point (synchronous) | `DbSet<T>.GetPage(pageNumber, pageSize)` |
+| 4 | True async vs core shape async | explanation + `KeysetPageAsyncExtensions` |
+| 5 | Unified out-of-range exception | `GetPageAsync(99, 10)` throws `ArgumentOutOfRangeException` |
 
-## 关键 API
+## Key APIs
 
-- `DotNetCore.Collections.Paginable.SolidPageExtensions`（**EF Core 包**）— `ToPaginable` / `ToPaginableAsync` /
-  `GetPage` / `GetPageAsync`，接收者 `IQueryable<T>` 或 `DbSet<T>`。
-- `IQueryable<T>.GetPageAsync(int pageNumber, int pageSize, CancellationToken)` — 真异步，返回 `IPage<T>`。
-- `KeysetPageAsyncExtensions` — 键集异步，EF Core 独有。
-- 返回类型：核心契约 `IPage<T>`；元素是 `IPageMember<T>`（`Value` / `Offset` / `ItemNumber`，`ItemNumber` 为**全局**编号）。
+- `DotNetCore.Collections.Paginable.SolidPageExtensions` (**EF Core package**) — `ToPaginable` / `ToPaginableAsync` / `GetPage` / `GetPageAsync`, with a receiver of `IQueryable<T>` or `DbSet<T>`.
+- `IQueryable<T>.GetPageAsync(int pageNumber, int pageSize, CancellationToken)` — true async, returns `IPage<T>`.
+- `KeysetPageAsyncExtensions` — keyset async, unique to EF Core.
+- Return type: the core contract `IPage<T>`; elements are `IPageMember<T>` (`Value` / `Offset` / `ItemNumber`, where `ItemNumber` is the **global** number).
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **`SolidPageExtensions` 同名跨包**：同时 `using` 核心与 EF 命名空间会 CS0104；用扩展方法调用、全限定名或别名消歧。
-- **`ToPaginableAsync(pageSize: 10)` 会 CS0121**：核心包 `(IEnumerable<T>, int, …)` 与 EF 包 `(IQueryable<T>, int?, …)` 各胜一项，编译器判二义；无实参调用 `ToPaginableAsync()` 才唯一解析到 EF 包。
-- **真异步 ≠ 核心形状异步**：核心对 `IEnumerable` 的 `*Async` 同步完成且不观察令牌；不要混为一谈。
-- **键集异步在另一个扩展类** `KeysetPageAsyncExtensions`，不在 `SolidPageExtensions` 上。
-- **TFM 仅 net6+**：EF Core 包无 net451（F57）。
-- **越界抛 `ArgumentOutOfRangeException`**；空源返回空页（F40）。
+- **`SolidPageExtensions` is same-named across packages**: `using` both the core and EF namespaces causes CS0104; disambiguate by calling the extension method, with a fully-qualified name, or with an alias.
+- **`ToPaginableAsync(pageSize: 10)` causes CS0121**: the core package `(IEnumerable<T>, int, …)` and the EF package `(IQueryable<T>, int?, …)` each win on one dimension, so the compiler reports ambiguity; only the no-argument call `ToPaginableAsync()` uniquely resolves to the EF package.
+- **True async ≠ core shape async**: the core's `*Async` over `IEnumerable` completes synchronously and does not observe the token; do not conflate the two.
+- **Keyset async lives in another extension class** `KeysetPageAsyncExtensions`, not on `SolidPageExtensions`.
+- **TFM is net6+ only**: the EF Core package has no net451 (F57).
+- **Out of range throws `ArgumentOutOfRangeException`**; an empty source returns an empty page (F40).

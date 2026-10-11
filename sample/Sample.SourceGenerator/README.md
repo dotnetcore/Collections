@@ -1,46 +1,44 @@
 # Sample.SourceGenerator
 
-> **SolidPageExtensions 源生成器** — `[SolidPageExtensionsFor]` 属性声明与生成物形状（对应 feature F56，`DotNetCore.Collections.Paginable.SourceGenerators`，6.5.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **SolidPageExtensions source generator** — the `[SolidPageExtensionsFor]` attribute declaration and the shape of the generated output (feature F56, `DotNetCore.Collections.Paginable.SourceGenerators`, 6.5.0).
 
-6.5.0 起，**六个** ORM 适配器包（Chloe、DosOrm、FreeSql、SqlSugar、NHibernate、SqlKata）的分页扩展成员
-由 Roslyn 增量生成器写出，替代逐包手写一遍。这个 sample 讲解生成器的**属性声明形态**（`[SolidPageExtensionsFor]`
-的 7 个位置参数 + 关键开关）、**生成物形状**（`ToPaginable` / `ToPaginableAsync` / `GetPage` / `GetPageAsync`
-与类型级 XML）、以及 **net451 双轨**与**消费方可见性**。它是**说明型**示例：不引用生成器工程、不要求真跑生成器
-（生成器是 Analyzer，不随消费者包发布），只引用分页核心包。
+## What this sample demonstrates
 
-## 什么时候用
+Since 6.5.0, the pagination extension members of the **six** ORM adapter packages (Chloe, DosOrm, FreeSql, SqlSugar, NHibernate, SqlKata) are emitted by a Roslyn incremental generator, replacing a hand-written pass per package. This sample explains the generator's **attribute declaration form** (`[SolidPageExtensionsFor]`'s 7 positional parameters + key switches), the **shape of the generated output** (`ToPaginable` / `ToPaginableAsync` / `GetPage` / `GetPageAsync` plus type-level XML), as well as the **net451 dual-track** and **consumer visibility**. It is an **explanatory** example: it does not reference the generator project and does not require actually running the generator (the generator is an Analyzer and is not shipped with the consumer package); it references only the pagination core package.
 
-- 你是**库维护者**：新增一个 ORM 适配器时，只写属性声明 + Helper / Factory。
-- 排查「同一份签名为何六个包一致」：单一事实源防漂移。
-- 不该用：**消费者**——你只感知「扩展方法仍在」，看不到生成器类型，也不应引用 SourceGenerators 包。
+## When to use it
 
-## 如何运行
+- When you are a **library maintainer**: when adding a new ORM adapter, you only write the attribute declaration + the Helper / Factory.
+- When investigating "why the same signature is identical across six packages": a single source of truth prevents drift.
+- Should not use: as a **consumer** — you only perceive "the extension methods are still there", you do not see the generator types, and you should not reference the SourceGenerators package.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.SourceGenerator
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 属性声明形态 | `[SolidPageExtensionsFor(ormName, sourceTypeFullName, sourceParamName, pageTypeName, paginableTypeName, factoryTypeName, helperTypeName)]` |
-| 2 | 关键属性开关 | `GenericConstraint` / `HasAdditionalQueryFunc` / `HasIncludeNestedMembers` / `HasAsync` / `SourceTypeIsNonGeneric` / `ForwardAsyncCancellationToken` |
-| 3 | 生成物形状 | 生成 `ToPaginable` / `ToPaginableAsync` / `GetPage` / `GetPageAsync`；手写特例留在 partial |
-| 4 | net451 双轨 | FreeSql / SqlKata / SqlSugar 在 net451 保留 `#if NET451` 手写 |
-| 5 | 消费方可见性 | 无消费方 API 变化 ⇒ 无 Breaking |
+| 1 | Attribute declaration form | `[SolidPageExtensionsFor(ormName, sourceTypeFullName, sourceParamName, pageTypeName, paginableTypeName, factoryTypeName, helperTypeName)]` |
+| 2 | Key attribute switches | `GenericConstraint` / `HasAdditionalQueryFunc` / `HasIncludeNestedMembers` / `HasAsync` / `SourceTypeIsNonGeneric` / `ForwardAsyncCancellationToken` |
+| 3 | Shape of the generated output | generates `ToPaginable` / `ToPaginableAsync` / `GetPage` / `GetPageAsync`; hand-written special cases stay in partial |
+| 4 | net451 dual-track | FreeSql / SqlKata / SqlSugar keep the `#if NET451` hand-written members on net451 |
+| 5 | Consumer visibility | no consumer API change ⇒ no Breaking |
 
-## 关键 API
+## Key APIs
 
-- `DotNetCore.Collections.Paginable.SolidPageExtensionsForAttribute` — 生成器 post-init 注入的 **internal** 特性，挂 partial 类。
-- `DotNetCore.Collections.Paginable.SourceGenerators.SolidPageExtensionsGenerator` — `IIncrementalGenerator`。
-- 生成器工程以 `OutputItemType=Analyzer`、`ReferenceOutputAssembly=false` 接入适配器包，**不增加包依赖**。
+- `DotNetCore.Collections.Paginable.SolidPageExtensionsForAttribute` — an **internal** attribute injected by the generator's post-init, attached to the partial class.
+- `DotNetCore.Collections.Paginable.SourceGenerators.SolidPageExtensionsGenerator` — an `IIncrementalGenerator`.
+- The generator project is wired into the adapter packages with `OutputItemType=Analyzer`, `ReferenceOutputAssembly=false`, and **adds no package dependency**.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **消费者看不到生成器类型**；不要引用 SourceGenerators 包当运行库。
-- **net451 双轨**：改生成器属性时要同步 `#if NET451` 手写面，否则只测一个 TFM 会漏。
-- **手写特例仍存在**（NHibernate `ISession` 重载、SqlKata `GetPageAsync`），不要假设 100% 生成。
-- **EF6 / EF Core / FreeSql.DbContext 刻意未迁移**——它们委托 queryable 扩展，本来不是重复形状。
+- **Consumers cannot see the generator types**; do not reference the SourceGenerators package as a runtime library.
+- **net451 dual-track**: when changing generator attributes, sync the `#if NET451` hand-written surface, otherwise testing only one TFM will miss it.
+- **Hand-written special cases still exist** (NHibernate's `ISession` overload, SqlKata's `GetPageAsync`); do not assume it is 100% generated.
+- **EF6 / EF Core / FreeSql.DbContext are deliberately not migrated** — they delegate the queryable extensions and were never a duplicated shape to begin with.
