@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- 多目标：同一份源码在 net8.0 与 net10.0 两个分支都编译、都运行。 -->
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Sample.MultiTfmSurface</RootNamespace>
+    <AssemblyName>Sample.MultiTfmSurface</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Multi 包目标 11 TFM（net451→net10.0），这里只取现代两支做多目标演示。 -->
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Multi\DotNetCore.Collections.Multi.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Sample.SqlSugarAdapter</RootNamespace>
+    <AssemblyName>Sample.SqlSugarAdapter</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 包支撑说明型：引用**真实**的 SqlSugar 适配器包（本地缓存可还原，构建通过），
+         不连数据库——GetPage 会经 SqlSugarHelper 打库，故只做入口面反射 + 用法对照。 -->
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.SqlSugar\DotNetCore.Collections.Paginable.SqlSugar.csproj" />
+  </ItemGroup>
+
+</Project>

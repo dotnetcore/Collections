@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- 多目标：net8.0（BCL 尚无 Index）与 net10.0（BCL 已有 Index）两个分支都 build 通过。 -->
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Sample.ValueEnumerable</RootNamespace>
+    <AssemblyName>Sample.ValueEnumerable</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 7.1.0 新增的 LINQ 值类型引擎包。 -->
+    <ProjectReference Include="..\..\src\DotNetCore.Collections\DotNetCore.Collections.csproj" />
+  </ItemGroup>
+
+</Project>

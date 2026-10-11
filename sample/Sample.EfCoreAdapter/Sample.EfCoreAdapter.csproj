@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Sample.EfCoreAdapter</RootNamespace>
+    <AssemblyName>Sample.EfCoreAdapter</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 真实型 sample：EF Core 适配器包 + InMemory 提供程序，演示**真异步**分页。 -->
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.EntityFrameworkCore\DotNetCore.Collections.Paginable.EntityFrameworkCore.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.20" />
+  </ItemGroup>
+
+</Project>
