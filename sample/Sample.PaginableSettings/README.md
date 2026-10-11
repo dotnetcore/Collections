@@ -1,44 +1,46 @@
 # Sample.PaginableSettings
 
-> **分页配置与管理器** — 全局分页配置只有两个旋钮，赋值即校验、原子换快照（对应 feature F37，`DotNetCore.Collections.Paginable`，6.0.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Paging settings and manager** — the global paging configuration has only two knobs, validated on assignment and swapped in atomically (feature F37, `DotNetCore.Collections.Paginable`, 6.0.0).
 
-`PaginableSettings` 只有 `DefaultPageSize`（默认 `50`）与 `MaxMemberItems`（默认 `10_000_000`）两个旋钮。赋值即校验——非法值在 setter 抛 `ArgumentOutOfRangeException`，因此任何拿到手的实例都是合法态。`PaginableSettingsManager` 用 `volatile` 快照 + 引用赋值实现**原子换入**，`Settings` 读当前快照。本示例展示默认值、配置、单参 `GetPage(n)` 读 `DefaultPageSize`、setter 校验、`UpdateSettings(null)` 拒绝，以及运行结束还原默认。
+## What this sample demonstrates
 
-## 什么时候用
+`PaginableSettings` has only two knobs, `DefaultPageSize` (default `50`) and `MaxMemberItems` (default `10_000_000`). It is validated on assignment — an invalid value throws `ArgumentOutOfRangeException` in the setter, so any instance you obtain is always in a valid state. `PaginableSettingsManager` implements **atomic swap-in** with a `volatile` snapshot + reference assignment, and `Settings` reads the current snapshot. This sample shows the default values, configuration, the single-argument `GetPage(n)` reading `DefaultPageSize`, setter validation, rejection of `UpdateSettings(null)`, and restoring the defaults at the end.
 
-- 启动时设定全站默认页大小与最大结果规模。
-- 限制超大 `COUNT` 攻击面 → 收紧 `MaxMemberItems`。
-- 多租户 / 测试中替换快照。
-- 每请求不同页大小 → 显式传 `pageSize`，别改全局。
+## When to use it
 
-## 如何运行
+- Setting the site-wide default page size and maximum result size at startup.
+- Limiting the attack surface of huge `COUNT` → tightening `MaxMemberItems`.
+- Swapping the snapshot in multi-tenant / test scenarios.
+- Different page sizes per request → pass `pageSize` explicitly, do not change the global.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.PaginableSettings
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 默认值与原子换入 | `PaginableSettingsManager.Settings` / `UpdateSettings` |
-| 2 | 赋值即校验 | `PaginableSettings.DefaultPageSize` / `MaxMemberItems` setter |
-| 3 | `null` 被拒 | `UpdateSettings(null)` → `ArgumentNullException` |
-| 4 | 还原默认 | `UpdateSettings(new PaginableSettings())` |
+| 1 | Default values and atomic swap-in | `PaginableSettingsManager.Settings` / `UpdateSettings` |
+| 2 | Validation on assignment | `PaginableSettings.DefaultPageSize` / `MaxMemberItems` setter |
+| 3 | `null` is rejected | `UpdateSettings(null)` → `ArgumentNullException` |
+| 4 | Restore defaults | `UpdateSettings(new PaginableSettings())` |
 
-## 关键 API
+## Key APIs
 
-- `PaginableSettings.DefaultPageSize`（`int`，≥1，默认 50） / `MaxMemberItems`（`long`，≥1，默认 10_000_000）。
-- `PaginableSettingsManager.Settings` — 当前快照（volatile 读）。
-- `PaginableSettingsManager.UpdateSettings(PaginableSettings)` — 原子换入；`null` 抛 `ArgumentNullException`。
-- `SolidPageExtensions.GetPage<T>(enumerable, pageNumber)` — 单参入口使用 `DefaultPageSize`。
+- `PaginableSettings.DefaultPageSize` (`int`, ≥1, default 50) / `MaxMemberItems` (`long`, ≥1, default 10_000_000).
+- `PaginableSettingsManager.Settings` — the current snapshot (volatile read).
+- `PaginableSettingsManager.UpdateSettings(PaginableSettings)` — atomic swap-in; `null` throws `ArgumentNullException`.
+- `SolidPageExtensions.GetPage<T>(enumerable, pageNumber)` — the single-argument entry uses `DefaultPageSize`.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **属性 setter 校验**：`< 1` 即抛 `ArgumentOutOfRangeException`（`ParamName` 为 `value`）。
-- **`MaxMemberItems` 比较是 `>` 才拒**：默认 `10_000_000` 恰好允许（开区间，见 F38）。
-- **不是 `IOptions` / 非 DI**：静态管理器；测试要自行隔离（改回默认或串行）。
-- **运行中频繁 `UpdateSettings`** 可与正在构造的页交错——建议启动时一次定稿。
-- **Multi 族不读这些设置**。
+- **The property setter validates**: `< 1` throws `ArgumentOutOfRangeException` (`ParamName` is `value`).
+- **`MaxMemberItems` comparison rejects only when `>`**: the default `10_000_000` is exactly allowed (open interval, see F38).
+- **Not `IOptions` / not DI**: it is a static manager; tests must isolate themselves (restore defaults or run serially).
+- **Frequent `UpdateSettings` at runtime** can interleave with a page being constructed — finalize once at startup.
+- **The Multi family does not read these settings**.

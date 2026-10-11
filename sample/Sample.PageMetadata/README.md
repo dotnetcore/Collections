@@ -1,43 +1,45 @@
 # Sample.PageMetadata
 
-> **页面元数据与校验** — 页上的元数据快照、调用方输入元数据、以及两者共用的派生源（对应 feature F36，`DotNetCore.Collections.Paginable`，6.0–6.1）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Page metadata and validation** — the metadata snapshot on a page, the caller-input metadata, and the derivation source shared by both (feature F36, `DotNetCore.Collections.Paginable`, 6.0–6.1).
 
-页面元数据回答「这是第几页、共几页、前后有没有」。两个公开类型分工明确：`PageMetadata` 是页上的**快照**（可序列化、可断言、不随源变化），`PageFragmentInfo` 是调用方**输入**用的元数据（构造即校验）。二者通过 `FromMetadata` / `ToMetadata` 互转，且与页实例共用同一 `PageMetaInfo.Calculate` 派生源，导航字段不会漂移。本示例展示快照读取、`ToString` 摘要、往返一致性，以及空页 `TotalPageCount=1` / `RealPageCount=0` 的关键区别。
+## What this sample demonstrates
 
-## 什么时候用
+Page metadata answers "which page is this, how many pages are there, is there a previous/next". The two public types have clearly separated roles: `PageMetadata` is the **snapshot** on a page (serializable, assertable, unaffected by changes to the source), and `PageFragmentInfo` is the metadata used as caller **input** (validated on construction). The two convert through `FromMetadata` / `ToMetadata`, and share the same `PageMetaInfo.Calculate` derivation source as the page instance, so navigation fields never drift. This sample shows reading the snapshot, the `ToString` summary, round-trip consistency, and the key distinction of an empty page's `TotalPageCount=1` / `RealPageCount=0`.
 
-- API 返回 `{ items, page: {...} }` → `page.GetMetadata()`。
-- 断言重建页与原页一致 → `FromMetadata` / `ToMetadata`。
-- 日志打印分页状态 → `metadata.ToString()`。
-- 需要携带总数 / 总页数控件时。
+## When to use it
 
-## 如何运行
+- An API returns `{ items, page: {...} }` → `page.GetMetadata()`.
+- Asserting that a rebuilt page matches the original → `FromMetadata` / `ToMetadata`.
+- Logging the paging state → `metadata.ToString()`.
+- When you need a total-count / total-page control.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.PageMetadata
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 读页元数据快照 | `IPage.GetMetadata()` → `PageMetadata` |
-| 2 | 多行摘要 | `PageMetadata.ToString()` |
-| 3 | 片段元数据往返 | `PageFragmentInfo.FromMetadata` / `ToMetadata` |
-| 4 | 空页双计数 | `TotalPageCount` / `RealPageCount` |
+| 1 | Read the page metadata snapshot | `IPage.GetMetadata()` → `PageMetadata` |
+| 2 | Multi-line summary | `PageMetadata.ToString()` |
+| 3 | Fragment metadata round-trip | `PageFragmentInfo.FromMetadata` / `ToMetadata` |
+| 4 | Empty-page double counting | `TotalPageCount` / `RealPageCount` |
 
-## 关键 API
+## Key APIs
 
-- `PageMetadata.TotalPageCount` / `RealPageCount` / `TotalMemberCount` / `PageSize` / `CurrentPageSize` / `CurrentPageNumber` / `HasPrevious` / `HasNext`。
-- `PageFragmentInfo.FromMetadata(PageMetadata)` / `ToMetadata()`。
-- `Paginable.CreateEmptyPage<T>()` — 空页（无成员的一页）。
+- `PageMetadata.TotalPageCount` / `RealPageCount` / `TotalMemberCount` / `PageSize` / `CurrentPageSize` / `CurrentPageNumber` / `HasPrevious` / `HasNext`.
+- `PageFragmentInfo.FromMetadata(PageMetadata)` / `ToMetadata()`.
+- `Paginable.CreateEmptyPage<T>()` — an empty page (one page with no members).
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **`PageMetadata` 是快照**，不随源变化。
-- **空源 `TotalPageCount == 1`、`RealPageCount == 0`**：判「没有页」请用 `TotalMemberCount == 0` 或 `RealPageCount == 0`。
-- **`PageFragmentInfo` 构造即校验**：越界元数据抛 `ArgumentOutOfRangeException`（F40）。
-- **空页 `FromMetadata` 可能抛**（无可用 pageSize）。
-- **`CurrentPageSize` 在 Lenient 短片段下是元数据值**（F33）。
+- **`PageMetadata` is a snapshot**, unaffected by changes to the source.
+- **Empty source has `TotalPageCount == 1`, `RealPageCount == 0`**: to decide "there are no pages", use `TotalMemberCount == 0` or `RealPageCount == 0`.
+- **`PageFragmentInfo` is validated on construction**: out-of-range metadata throws `ArgumentOutOfRangeException` (F40).
+- **An empty page's `FromMetadata` may throw** (no usable pageSize).
+- **`CurrentPageSize` is the metadata value under a Lenient short fragment** (F33).

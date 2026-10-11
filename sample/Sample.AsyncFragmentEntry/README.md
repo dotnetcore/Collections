@@ -1,43 +1,45 @@
 # Sample.AsyncFragmentEntry
 
-> **异步片段入口** — `Paginable.CreatePageAsync` 是片段建页的 async 形状对偶，**同步完成**（对应 feature F35，`DotNetCore.Collections.Paginable`，6.2.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Async fragment entry** — `Paginable.CreatePageAsync` is the async-shape dual of fragment page building, **completing synchronously** (feature F35, `DotNetCore.Collections.Paginable`, 6.2.0).
 
-`Paginable.CreatePageAsync` 的四个重载与 `CreatePage` 一一对应（三元组 / `PageFragmentInfo`，均可带 `PageCreationOptions`），再加一个 `CancellationToken`。它**同步完成**：片段已在内存，没有可 await 的 I/O，用 `Task.FromResult` 包装，返回的 Task 已经完成；参数校验从调用本身同步抛出（不是 faulted task），`cancellationToken` 仅为签名对称、不被观察。本示例把它藏进一个 `Task<IPage<T>>` 服务方法，展示与真异步同形、Strict 校验、取消语义误解、同步抛错四个侧面。
+## What this sample demonstrates
 
-## 什么时候用
+`Paginable.CreatePageAsync`'s four overloads correspond one-to-one with `CreatePage` (triple / `PageFragmentInfo`, each optionally with `PageCreationOptions`), plus one `CancellationToken`. It **completes synchronously**: the fragment is already in memory, there is no I/O to await, it is wrapped by `Task.FromResult` and the returned Task is already completed; argument validation throws synchronously from the call itself (not as a faulted task), and `cancellationToken` is only for signature symmetry and is not observed. This sample hides it inside a `Task<IPage<T>>` service method, demonstrating four facets: same shape as true async, Strict validation, the cancellation-semantics misunderstanding, and synchronous throwing.
 
-- `async Task<IPage<T>>` 服务方法内有时走数据库、有时走缓存页 → 两边都 `await`。
-- 与 `GetPageAsync` 统一的 `await` 调用风格，减少 if/else 分叉。
-- 只是同步片段建页 → 直接 `CreatePage`，更诚实。
-- 期望取消中断建页 → 无 I/O；改用提供方异步 API。
+## When to use it
 
-## 如何运行
+- Inside an `async Task<IPage<T>>` service method that sometimes hits the database and sometimes a cached page → both sides `await`.
+- A unified `await` call style with `GetPageAsync`, reducing if/else branches.
+- For purely synchronous fragment page building → use `CreatePage` directly, which is more honest.
+- Expecting cancellation to interrupt page building → there is no I/O; switch to a provider async API.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.AsyncFragmentEntry
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 与真异步同一签名 | `Paginable.CreatePageAsync(fragment, pageNumber, pageSize, totalMemberCount, ct)` |
-| 2 | 严格校验重载 + Task 已完成 | `CreatePageAsync(..., options)` / `Task.IsCompleted` |
-| 3 | 已取消令牌不阻止成功 | `CreatePageAsync(..., CancellationToken)` |
-| 4 | 校验从调用本身同步抛出 | `ArgumentOutOfRangeException` |
+| 1 | Same signature as true async | `Paginable.CreatePageAsync(fragment, pageNumber, pageSize, totalMemberCount, ct)` |
+| 2 | Strict validation overload + Task already completed | `CreatePageAsync(..., options)` / `Task.IsCompleted` |
+| 3 | A cancelled token does not prevent success | `CreatePageAsync(..., CancellationToken)` |
+| 4 | Validation throws synchronously from the call itself | `ArgumentOutOfRangeException` |
 
-## 关键 API
+## Key APIs
 
-- `Paginable.CreatePageAsync<T>(fragment, pageNumber, pageSize, totalMemberCount, cancellationToken = default)`。
-- `Paginable.CreatePageAsync<T>(fragment, pageNumber, pageSize, totalMemberCount, options, cancellationToken = default)`。
-- `Paginable.CreatePageAsync<T>(fragment, PageFragmentInfo[, PageCreationOptions], cancellationToken = default)`。
-- `IPage<T>.CurrentPageNumber` / `CurrentPageSize` / `this[int].ItemNumber`。
+- `Paginable.CreatePageAsync<T>(fragment, pageNumber, pageSize, totalMemberCount, cancellationToken = default)`.
+- `Paginable.CreatePageAsync<T>(fragment, pageNumber, pageSize, totalMemberCount, options, cancellationToken = default)`.
+- `Paginable.CreatePageAsync<T>(fragment, PageFragmentInfo[, PageCreationOptions], cancellationToken = default)`.
+- `IPage<T>.CurrentPageNumber` / `CurrentPageSize` / `this[int].ItemNumber`.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **同步抛错**：不要写 `catch (AggregateException)` 去包校验失败；`ArgumentException` / `ArgumentOutOfRangeException` 从调用本身抛出。
-- **令牌不观察**：`Async` 后缀是形状，不是取消语义。
-- **无 `CreateSinglePageSetAsync`**：单页集合用同步工厂（F34）。
-- **重载集合 = `CreatePage` + `CancellationToken`**：含 options 变体，行为与同步 `CreatePage` 完全一致。
+- **Throws synchronously**: do not use `catch (AggregateException)` to wrap a validation failure; `ArgumentException` / `ArgumentOutOfRangeException` are thrown from the call itself.
+- **The token is not observed**: the `Async` suffix is a shape, not a cancellation semantic.
+- **There is no `CreateSinglePageSetAsync`**: use the synchronous factory for single-page sets (F34).
+- **The overload set = `CreatePage` + `CancellationToken`**: including the options variant, behavior is identical to the synchronous `CreatePage`.

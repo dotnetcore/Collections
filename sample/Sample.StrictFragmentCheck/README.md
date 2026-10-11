@@ -1,43 +1,45 @@
 # Sample.StrictFragmentCheck
 
-> **严格片段校验选项** — `PageCreationOptions.Lenient` / `Strict` 决定片段短于元数据时是容忍还是报错（对应 feature F33，`DotNetCore.Collections.Paginable`，6.2.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Strict fragment-check option** — `PageCreationOptions.Lenient` / `Strict` decides whether a fragment shorter than the metadata is tolerated or rejected (feature F33, `DotNetCore.Collections.Paginable`, 6.2.0).
 
-`PageCreationOptions` 只回答一个问题：当片段**比元数据说的少**时，建页该容忍还是报错？默认 `Lenient`（6.1 行为）容忍——覆盖 `COUNT(*)` 与 fetch 之间上游行被并发删除的场景，且 `CurrentPageSize` 仍报元数据值。`Strict` 把同样现象视为 bug（陈旧 total、切错查询、静默少行），抛 `ArgumentException` 点名 `fragment`。长片段（超页容量 / 超期望）在两种模式下都抛。本示例逐一演示这两条分派，并覆盖 `ToPage` / `CreateSinglePageSet`。
+## What this sample demonstrates
 
-## 什么时候用
+`PageCreationOptions` answers just one question: when a fragment is **shorter than the metadata says**, should page building tolerate it or throw? The default `Lenient` (the 6.1 behavior) tolerates it — covering the scenario where upstream rows are concurrently deleted between `COUNT(*)` and the fetch — and `CurrentPageSize` still reports the metadata value. `Strict` treats the same phenomenon as a bug (stale total, wrong query sliced, silently missing rows) and throws `ArgumentException` naming `fragment`. A long fragment (over page capacity / over the expected count) throws in both modes. This sample demonstrates both branches one by one, and covers `ToPage` / `CreateSinglePageSet`.
 
-- 用户列表、可能有并发删除 → `Lenient`（默认，无需改代码）。
-- 导出对账、金额核对、集成测试夹具 → `Strict`（钉死上游 COUNT 与查询一致性）。
-- 缓存页可能过期一两条 → `Lenient` 或先失效缓存。
+## When to use it
 
-## 如何运行
+- User lists with possible concurrent deletes → `Lenient` (the default, no code change needed).
+- Export reconciliation, amount checks, integration-test fixtures → `Strict` (pinning upstream COUNT and query consistency).
+- A cached page that may be one or two rows stale → `Lenient` or invalidate the cache first.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.StrictFragmentCheck
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 默认 Lenient 容忍短片段 | `Paginable.CreatePage(..., totalMemberCount)` |
-| 2 | Strict 拒绝短片段 | `Paginable.CreatePage(..., PageCreationOptions.Strict)` |
-| 3 | 扩展方法 / 单页集合同样支持 | `ToPage` / `CreateSinglePageSet` + options |
-| 4 | 长片段两种模式都抛 | `ArgumentException`（`fragment`） |
+| 1 | Default Lenient tolerates short fragments | `Paginable.CreatePage(..., totalMemberCount)` |
+| 2 | Strict rejects short fragments | `Paginable.CreatePage(..., PageCreationOptions.Strict)` |
+| 3 | Extension methods / single-page sets also support it | `ToPage` / `CreateSinglePageSet` + options |
+| 4 | A long fragment throws in both modes | `ArgumentException` (`fragment`) |
 
-## 关键 API
+## Key APIs
 
-- `PageCreationOptions.Lenient` / `PageCreationOptions.Strict` — 两个单例（无公共构造器，防第三态）。
-- `PageCreationOptions.IsStrict` — 是否开启短片段校验。
-- `Paginable.CreatePage<T>(fragment, pageNumber, pageSize, totalMemberCount, options)` — 带选项的片段建页。
-- `FragmentPageExtensions.ToPage<T>(fragment, pageNumber, pageSize, totalMemberCount, options)`。
+- `PageCreationOptions.Lenient` / `PageCreationOptions.Strict` — two singletons (no public constructor, preventing a third state).
+- `PageCreationOptions.IsStrict` — whether short-fragment checking is enabled.
+- `Paginable.CreatePage<T>(fragment, pageNumber, pageSize, totalMemberCount, options)` — fragment page building with options.
+- `FragmentPageExtensions.ToPage<T>(fragment, pageNumber, pageSize, totalMemberCount, options)`.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **默认是 `Lenient`**：升级 6.1 代码不必改。
-- **`Strict` 只加严「短片段」**：长片段本来就抛；异常是 `ArgumentException`（点名 `fragment`）。
-- **短片段下 `CurrentPageSize` 仍报元数据值**：不要用它推断实际枚举条数。
-- **`options` 无公共构造器**：只用 `Lenient` / `Strict` 两个单例；传 `null` 抛 `ArgumentNullException`。
-- **选项是每次调用的参数**，不是 `PaginableSettings` 的一部分。
+- **The default is `Lenient`**: upgrading 6.1 code requires no change.
+- **`Strict` only tightens "short fragments"**: long fragments already throw; the exception is `ArgumentException` (naming `fragment`).
+- **Under a short fragment, `CurrentPageSize` still reports the metadata value**: do not use it to infer the actual enumerated count.
+- **`options` has no public constructor**: use only the two singletons `Lenient` / `Strict`; passing `null` throws `ArgumentNullException`.
+- **The option is a per-call argument**, not part of `PaginableSettings`.

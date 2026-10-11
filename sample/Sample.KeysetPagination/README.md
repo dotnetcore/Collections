@@ -1,44 +1,46 @@
 # Sample.KeysetPagination
 
-> **键集分页（keyset / seek pagination）** — 用排序键锚点续页，不做 `OFFSET` 扫描也不做 `COUNT(*)` 回环（对应 feature F30，`DotNetCore.Collections.Paginable`，6.0.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Keyset (seek) pagination** — continue paging with a sort-key anchor, with no `OFFSET` scan and no `COUNT(*)` round-trip (feature F30, `DotNetCore.Collections.Paginable`, 6.0.0).
 
-`KeysetPageExtensions` 提供 `GetFirstPageByKeyset` / `GetPageByKeyset`：第一页不带锚点，之后每次把「上一页最后一键」喂回去，形成「第一页 → 下一页 → … → `HasNext == false`」的闭环。结果类型是具体的 `KeysetPage<T>`（**不是** `IPage<T>`），刻意不携带总页数 / 总成员数。本示例展示内存委托重载、`IQueryable` 表达式树路径、`PaginableKeyset.BuildKeysetQuery` 的「只组查询」契约，以及空源与非法 `pageSize` 的边界。
+## What this sample demonstrates
 
-## 什么时候用
+`KeysetPageExtensions` provides `GetFirstPageByKeyset` / `GetPageByKeyset`: the first page carries no anchor, and each subsequent call feeds back the "last key of the previous page", forming a loop of "first page → next page → … → `HasNext == false`". The result type is the concrete `KeysetPage<T>` (**not** `IPage<T>`), deliberately carrying no total page count / total member count. This sample shows the in-memory delegate overload, the `IQueryable` expression-tree path, the "compose only" contract of `PaginableKeyset.BuildKeysetQuery`, and the boundaries of an empty source and an invalid `pageSize`.
 
-- 无限滚动 / 消息流 / 活动流：只向前翻，不需要总页数。
-- 深分页导出、扫全表分批：成本与页深无关。
-- 游标分页 REST API：锚点即 cursor。
-- 不该用：需要「跳到第 N 页」或展示总条数 → 偏移分页 `GetPage` / `ToPaginable`。
+## When to use it
 
-## 如何运行
+- Infinite scroll / message feeds / activity streams: forward-only paging, no total page count needed.
+- Deep-pagination exports, scanning a whole table in batches: the cost is independent of page depth.
+- Cursor-based REST APIs: the anchor is the cursor.
+- Do not use for: needing "jump to page N" or displaying a total count → offset paging `GetPage` / `ToPaginable`.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.KeysetPagination
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 第一页 → 读 `LastMember` → 续页 → `HasNext` 结束 | `GetFirstPageByKeyset` / `GetPageByKeyset` / `LastMember` |
-| 2 | 内存委托重载与降序续页 | `IEnumerable<T>` 重载 + `descending: true` |
-| 3 | 只组查询、保留 `pageSize + 1` 探测行 | `PaginableKeyset.BuildKeysetQuery` |
-| 4 | 空源合法空页 / `pageSize` 校验 | `KeysetPage<T>.CurrentPageSize` / `ArgumentOutOfRangeException` |
+| 1 | First page → read `LastMember` → next page → end on `HasNext` | `GetFirstPageByKeyset` / `GetPageByKeyset` / `LastMember` |
+| 2 | In-memory delegate overload and descending continuation | `IEnumerable<T>` overload + `descending: true` |
+| 3 | Compose only, keeping the `pageSize + 1` probe row | `PaginableKeyset.BuildKeysetQuery` |
+| 4 | Valid empty page for an empty source / `pageSize` validation | `KeysetPage<T>.CurrentPageSize` / `ArgumentOutOfRangeException` |
 
-## 关键 API
+## Key APIs
 
-- `KeysetPageExtensions.GetFirstPageByKeyset<T,TKey>(keySelector, pageSize, descending = false)` — 第一页，无锚点。
-- `KeysetPageExtensions.GetPageByKeyset<T,TKey>(keySelector, lastKey, pageSize, descending = false)` — 锚点之后的下一页。
-- `PaginableKeyset.BuildKeysetQuery(source, keySelector, lastKey, pageSize, descending)` — 只组查询（`Where + OrderBy + Take(pageSize + 1)`），不物化。
-- `KeysetPage<T>.Members` / `PageSize` / `CurrentPageSize` / `HasNext` / `IsFirstPage` / `LastMember`（`T?`）。
+- `KeysetPageExtensions.GetFirstPageByKeyset<T,TKey>(keySelector, pageSize, descending = false)` — first page, no anchor.
+- `KeysetPageExtensions.GetPageByKeyset<T,TKey>(keySelector, lastKey, pageSize, descending = false)` — the next page after the anchor.
+- `PaginableKeyset.BuildKeysetQuery(source, keySelector, lastKey, pageSize, descending)` — composes only (`Where + OrderBy + Take(pageSize + 1)`), does not materialize.
+- `KeysetPage<T>.Members` / `PageSize` / `CurrentPageSize` / `HasNext` / `IsFirstPage` / `LastMember` (`T?`).
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **无总数、无页号、无 `IPage` 导航**：`KeysetPage<T>` 刻意不是 `IPage<T>`；页码控件请用偏移分页。
-- **`LastMember` 可能为 `default`**（空页为 `null`）：解引用前先判 `CurrentPageSize > 0`。
-- **排序键必须稳定且可比较**：`int` / `long` / `DateTime` / `decimal` / `DateTimeOffset` 等支持 `<` / `>` 的类型；键重复时需决胜键。
-- **`BuildKeysetQuery` 保留 `pageSize + 1` 条**：调用方需自行裁掉探测行；用 `GetFirstPageByKeyset` / `GetPageByKeyset` 则已裁好。
-- **越界 / 非法参数抛 `ArgumentOutOfRangeException`**（6.2.0 统一），不是 `IndexOutOfRangeException`。
+- **No total, no page number, no `IPage` navigation**: `KeysetPage<T>` is deliberately not `IPage<T>`; for a page-number control use offset paging.
+- **`LastMember` may be `default`** (`null` for an empty page): check `CurrentPageSize > 0` before dereferencing.
+- **The sort key must be stable and comparable**: types supporting `<` / `>` such as `int` / `long` / `DateTime` / `decimal` / `DateTimeOffset`; add a tie-breaker when keys duplicate.
+- **`BuildKeysetQuery` keeps `pageSize + 1` rows**: the caller must trim the probe row itself; `GetFirstPageByKeyset` / `GetPageByKeyset` already trim it.
+- **Out-of-range / invalid arguments throw `ArgumentOutOfRangeException`** (unified in 6.2.0), not `IndexOutOfRangeException`.

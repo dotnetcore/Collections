@@ -1,44 +1,46 @@
 # Sample.FragmentPage
 
-> **片段建页** — 从「已切好的一页 + 调用方自带元数据」装配 `IPage<T>`，片段绝不再被切片（对应 feature F32，`DotNetCore.Collections.Paginable`，6.1.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Fragment page building** — assemble an `IPage<T>` from "an already-sliced page + caller-supplied metadata", and the fragment is never sliced again (feature F32, `DotNetCore.Collections.Paginable`, 6.1.0).
 
-当数据来自手写 Dapper/ADO.NET（`OFFSET`/`FETCH`）结果、缓存页，或上游 HTTP/gRPC 返回的 `items` + `totalCount` 时，用 `Paginable.CreatePage` / `FragmentPageExtensions.ToPage` 直接装配页面。它把片段**当作该页的精确内容**，绝不再 `Skip/Take`——因此刻意与 `GetPage`（对全源切片）不同名。本示例展示三元组元数据建页、`PageFragmentInfo` 往返、与全源分页的对比，以及两个高频陷阱。
+## What this sample demonstrates
 
-## 什么时候用
+When data comes from a hand-written Dapper/ADO.NET (`OFFSET`/`FETCH`) result, a cached page, or an upstream HTTP/gRPC `items` + `totalCount`, use `Paginable.CreatePage` / `FragmentPageExtensions.ToPage` to assemble the page directly. It treats the fragment as **the exact content of that page** and never `Skip/Take` again — hence deliberately a different name from `GetPage` (which slices a full source). This sample shows triple-metadata page building, a `PageFragmentInfo` round-trip, a comparison with full-source paging, and two high-frequency pitfalls.
 
-- Dapper 已按 `offset/fetch` 取回 + 独立 `COUNT`。
-- HTTP / gRPC 转发上游的 `items` + `totalCount`。
-- 缓存的整页 JSON 反序列化后重建。
-- 不该用：只有全源 List → 用 `GetPage`（**不要**先手动 `Skip/Take` 再 `ToPage`）。
+## When to use it
 
-## 如何运行
+- Dapper has already fetched by `offset/fetch` plus a separate `COUNT`.
+- HTTP / gRPC forwards an upstream `items` + `totalCount`.
+- A cached full-page JSON is deserialized and rebuilt.
+- Do not use for: only having a full-source List → use `GetPage` (**do not** manually `Skip/Take` and then `ToPage`).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.FragmentPage
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 三元组元数据建页与扩展方法糖 | `Paginable.CreatePage` / `FragmentPageExtensions.ToPage` |
-| 2 | 元数据对象与往返 | `PageFragmentInfo` / `FromMetadata` / `ToMetadata` |
-| 3 | 同一数据两种入口（全源 vs 片段） | `GetPage` vs `ToPage` |
-| 4 | 长片段抛错、`total` 传片段长度的后果 | `ArgumentException` / `TotalPageCount` |
+| 1 | Triple-metadata page building and extension-method sugar | `Paginable.CreatePage` / `FragmentPageExtensions.ToPage` |
+| 2 | The metadata object and its round-trip | `PageFragmentInfo` / `FromMetadata` / `ToMetadata` |
+| 3 | Two entries on the same data (full source vs fragment) | `GetPage` vs `ToPage` |
+| 4 | A long fragment throws, consequences of passing the fragment length as `total` | `ArgumentException` / `TotalPageCount` |
 
-## 关键 API
+## Key APIs
 
-- `Paginable.CreatePage<T>(fragment, pageNumber, pageSize, totalMemberCount)` — 三元组元数据建页。
-- `Paginable.CreatePage<T>(fragment, PageFragmentInfo)` — 用已构造的元数据建页。
-- `FragmentPageExtensions.ToPage<T>(fragment, pageNumber, pageSize, totalMemberCount)` — 扩展方法糖。
-- `PageFragmentInfo.PageNumber` / `PageSize` / `TotalMemberCount` / `FromMetadata` / `ToMetadata`。
+- `Paginable.CreatePage<T>(fragment, pageNumber, pageSize, totalMemberCount)` — triple-metadata page building.
+- `Paginable.CreatePage<T>(fragment, PageFragmentInfo)` — page building with pre-built metadata.
+- `FragmentPageExtensions.ToPage<T>(fragment, pageNumber, pageSize, totalMemberCount)` — extension-method sugar.
+- `PageFragmentInfo.PageNumber` / `PageSize` / `TotalMemberCount` / `FromMetadata` / `ToMetadata`.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **`totalMemberCount` 是全源总数，不是片段长度**：传 `fragment.Count` 会让 `TotalPageCount` 恒为 1。
-- **片段比页容量长 → `ArgumentException`**；片段比元数据短 → 默认容忍（并发删除可接受，见 F33）。
-- **物化**：`CreatePage` 会把片段拷进 `List<T>`，防调用方事后改集合。
-- **不要对预切片片段调用 `GetPage`**：会静默二次 skip；用 `ToPage` / `CreatePage`。
-- **越界元数据抛 `ArgumentOutOfRangeException`**（F40 统一口径）。
+- **`totalMemberCount` is the full-source total, not the fragment length**: passing `fragment.Count` makes `TotalPageCount` always 1.
+- **A fragment longer than page capacity → `ArgumentException`**; a fragment shorter than the metadata → tolerated by default (concurrent deletes are acceptable, see F33).
+- **Materialization**: `CreatePage` copies the fragment into a `List<T>`, preventing the caller from mutating the collection afterwards.
+- **Do not call `GetPage` on a pre-sliced fragment**: it silently skips again; use `ToPage` / `CreatePage`.
+- **Out-of-range metadata throws `ArgumentOutOfRangeException`** (unified in F40).

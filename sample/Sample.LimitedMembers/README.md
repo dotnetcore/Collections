@@ -1,42 +1,44 @@
 # Sample.LimitedMembers
 
-> **成员上限与开区间** — 全局硬上限 `MaxMemberItems` 与调用级封顶 `limitedMemberCount`（对应 feature F38，`DotNetCore.Collections.Paginable`，6.0.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Member caps and open interval** — the global hard cap `MaxMemberItems` and the call-level cap `limitedMemberCount` (feature F38, `DotNetCore.Collections.Paginable`, 6.0.0).
 
-Paginable 有两层「限制有多少成员进入分页视野」的机制：全局硬上限 `MaxMemberItems`（默认 `10_000_000`，**恰好等于上限允许**——6.0.0 把闭区间改成开区间）与每次调用可选的 `limitedMemberCount`（封顶展示）。封顶计算集中在 `PaginableCalc`（在 `Internal` 命名空间但 `public static`，可单测）。本示例展示 `PaginableCalc` 的 `min` 语义与向上取整、`ToPaginable(..., limitedMemberCount)` 截断分页视野、limited 高于真实 COUNT 时的回退，以及 `MaxMemberItems` 开区间边界。
+## What this sample demonstrates
 
-## 什么时候用
+Paginable has two mechanisms for "limiting how many members enter the paging view": the global hard cap `MaxMemberItems` (default `10_000_000`, where **exactly equal to the cap is allowed** — 6.0.0 changed the closed interval to an open one) and the optional per-call `limitedMemberCount` (capping the displayed count). Cap calculation is centralized in `PaginableCalc` (in the `Internal` namespace but `public static`, unit-testable). This sample shows `PaginableCalc`'s `min` semantics and rounding up, `ToPaginable(..., limitedMemberCount)` truncating the paging view, the fallback when limited is above the real COUNT, and the `MaxMemberItems` open-interval boundary.
 
-- 后台列表限制最多 N 条可翻 → `ToPaginable(..., limitedMemberCount: 5000)`。
-- 全局防护非法巨量 total → 收紧 `MaxMemberItems`。
-- 数据量本身很小 → 不传 limited。
+## When to use it
 
-## 如何运行
+- A back-office list limits flipping to at most N rows → `ToPaginable(..., limitedMemberCount: 5000)`.
+- Global protection against an illegal huge total → tighten `MaxMemberItems`.
+- The data volume is inherently small → do not pass limited.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.LimitedMembers
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 封顶计算单点 | `PaginableCalc.GetRealMemberCount` / `GetRealPageCount` |
-| 2 | limited 截断分页视野 | `ToPaginable(pageSize, limitedMemberCount)` / `MemberCount` / `PageCount` |
-| 3 | limited 高于真实 COUNT | `MemberCount` / `PageCount`（取真实值） |
-| 4 | 全局硬上限开区间 | `PageFragmentInfo` 构造 / `LimitedMembersTypes` |
+| 1 | The single point of cap calculation | `PaginableCalc.GetRealMemberCount` / `GetRealPageCount` |
+| 2 | limited truncates the paging view | `ToPaginable(pageSize, limitedMemberCount)` / `MemberCount` / `PageCount` |
+| 3 | limited above the real COUNT | `MemberCount` / `PageCount` (takes the real values) |
+| 4 | Global hard cap open interval | `PageFragmentInfo` constructor / `LimitedMembersTypes` |
 
-## 关键 API
+## Key APIs
 
-- `PaginableCalc.GetRealMemberCount(int? limitedMemberCount, int count)` — `min` 语义，`null` 不限制。
-- `PaginableCalc.GetRealPageCount(int realMemberCount, int pageSize)` — 向上取整。
-- `SolidPageExtensions.ToPaginable<T>(enumerable, pageSize, limitedMemberCount)` — 调用级封顶。
-- `LimitedMembersTypes.Unlimited`（0） / `Customize`（1）。
+- `PaginableCalc.GetRealMemberCount(int? limitedMemberCount, int count)` — `min` semantics, `null` means no limit.
+- `PaginableCalc.GetRealPageCount(int realMemberCount, int pageSize)` — rounds up.
+- `SolidPageExtensions.ToPaginable<T>(enumerable, pageSize, limitedMemberCount)` — call-level capping.
+- `LimitedMembersTypes.Unlimited` (0) / `Customize` (1).
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **开区间**：`MaxMemberItems` **本身允许**；`> MaxMemberItems` 才抛 `ArgumentOutOfRangeException`。
-- **limited 是「展示封顶」不是过滤谓词**：它截断的是分页视野，不是 `WHERE`；`GetPage(3)` 仍是封顶后集合的第 3 页。
-- **`limitedMemberCount <= 0` 视为无效**（`IsValid` 只判非 `null`，工厂路径常用 `> 0` 判断）。
-- **`PaginableCalc` 在 `DotNetCore.Collections.Paginable.Internal`**，但是 `public static`，可单测。
+- **Open interval**: `MaxMemberItems` **itself is allowed**; only `> MaxMemberItems` throws `ArgumentOutOfRangeException`.
+- **limited is a "display cap", not a filter predicate**: it truncates the paging view, not a `WHERE`; `GetPage(3)` is still the 3rd page of the capped collection.
+- **`limitedMemberCount <= 0` is treated as invalid** (`IsValid` only checks non-`null`; the factory path usually checks `> 0`).
+- **`PaginableCalc` is in `DotNetCore.Collections.Paginable.Internal`**, but is `public static` and unit-testable.
