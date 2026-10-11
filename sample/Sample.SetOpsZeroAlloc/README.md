@@ -1,46 +1,50 @@
 # Sample.SetOpsZeroAlloc
 
-> **集合运算零分配** — 参数已是同比较器 `MultiList<T>` 时就地读 + 暂存区复用（F12，`DotNetCore.Collections.Multi`，6.2.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Zero-allocation set operations** — in-place reads plus a reused scratch area when the argument is already a same-comparer `MultiList<T>` (F12, `DotNetCore.Collections.Multi`, 6.2.0).
 
-`MultiList<T>` 的集合运算（`UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith` 与子集 / 超集判定）
-在参数**已是同比较器的 `MultiList<T>`** 时，就地读参数的计数表，不再物化第二个多重集合；目标状态写入跨调用复用的
-暂存列表。这个 sample 演示四种调用形态的**可观察语义**，并用注释标出「何时就地、何时物化」。
-零分配是参数侧的实现细节，无法在输出里稳定断言，故本示例不打印分配字节数。
+## What this sample demonstrates
 
-## 什么时候用
+`MultiList<T>`'s set operations (`UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith` and the subset /
+superset tests), when the argument is **already a same-comparer `MultiList<T>`**, read the argument's count table in
+place instead of materializing a second multiset; the target state is written into a scratch list reused across calls.
+This sample demonstrates the **observable semantics** of four call shapes, marking with comments "when it reads in
+place, when it materializes". Zero-allocation is an implementation detail on the argument side and cannot be asserted
+stably from the output, so this sample does not print allocation byte counts.
 
-- 高频 bag 集合运算：参数已是 bag 时去分配，热路径不再堆上拍皮球。
-- 链式 `a.Op(b)` 且 `b` 已是 bag：就地读，省下参数物化与迭代器分配。
-- 不该用：一次性低频运算 → 差异可忽略，用哪种写法都行。
+## When to use it
 
-## 如何运行
+- High-frequency bag set operations: skip allocation when the argument is already a bag, so the hot path no longer juggles on the heap.
+- Chained `a.Op(b)` where `b` is already a bag: read in place, saving the argument materialization and iterator allocation.
+- When not to use it: one-off low-frequency operations → the difference is negligible; either form will do.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.SetOpsZeroAlloc
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 同比较器 `MultiList` 参数就地读 | `UnionWith(IEnumerable<T>)` |
-| 2 | 数组参数会物化（结果相同） | `UnionWith`（对照写法） |
-| 3 | 比较器不同按接收方重物化 | `UnionWith`（比较器差异） |
-| 4 | 子集 / 超集判定直接走两表 | `IsSubsetOf` / `IsSupersetOf` / `IsProperSupersetOf` |
-| 5 | `UnionWith(self)` 恒等短路 | `UnionWith(self)` |
+| 1 | Same-comparer `MultiList` argument read in place | `UnionWith(IEnumerable<T>)` |
+| 2 | Array argument materializes (same result) | `UnionWith` (contrast form) |
+| 3 | Different comparer re-materializes by the receiver | `UnionWith` (comparer difference) |
+| 4 | Subset / superset tests go straight to the two tables | `IsSubsetOf` / `IsSupersetOf` / `IsProperSupersetOf` |
+| 5 | `UnionWith(self)` identity short-circuit | `UnionWith(self)` |
 
-## 关键 API
+## Key APIs
 
-- `MultiList<T>.UnionWith(IEnumerable<T>)` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith` — 多重集运算。
-- `MultiList<T>.IsSubsetOf(IEnumerable<T>)` / `IsSupersetOf` / `IsProperSubsetOf` / `IsProperSupersetOf` — 子集 / 超集判定。
-- `MultiList<T>.CountOf(T)` / `TotalCount` / `DistinctCount` — 用于观察运算结果。
+- `MultiList<T>.UnionWith(IEnumerable<T>)` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith` — multiset operations.
+- `MultiList<T>.IsSubsetOf(IEnumerable<T>)` / `IsSupersetOf` / `IsProperSubsetOf` / `IsProperSupersetOf` — subset / superset tests.
+- `MultiList<T>.CountOf(T)` / `TotalCount` / `DistinctCount` — used to observe the operation results.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **零分配仅当参数是同比较器 `MultiList<T>`**：传数组 / LINQ 序列会走 `Snapshot` 物化，仍有分配。
-- **比较器不同会物化**：语义要求用接收方比较器重解释参数，结果不变、成本回来。
-- **暂存区调用后清空**：不持有元素引用；非线程安全。
-- **`UnionWith(self)` 是恒等**：显式短路，避免边遍历边加导致副本翻倍。
-- **零分配只是实现细节**：不要把它写成对外契约，可观察语义与旧行为一致。
+- **Zero-allocation only when the argument is a same-comparer `MultiList<T>`**: passing an array / LINQ sequence goes through `Snapshot` materialization and still allocates.
+- **A different comparer materializes**: the semantics require re-interpreting the argument with the receiver's comparer, so the result is unchanged but the cost returns.
+- **The scratch area is cleared after the call**: it does not hold element references; not thread-safe.
+- **`UnionWith(self)` is the identity**: an explicit short-circuit avoids doubling copies by adding while iterating.
+- **Zero-allocation is only an implementation detail**: do not write it as a public contract; the observable semantics match the old behavior.

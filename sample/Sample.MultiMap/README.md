@@ -1,48 +1,52 @@
 # Sample.MultiMap
 
-> **多重映射 MultiDictionary&lt;TKey,TValue&gt;** — 一个键关联多个值（multimap）（F02，`DotNetCore.Collections.Multi`，6.0.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Multimap MultiDictionary&lt;TKey,TValue&gt;** — one key associated with multiple values (multimap) (F02, `DotNetCore.Collections.Multi`, 6.0.0).
 
-`MultiDictionary<TKey,TValue>` 把「一键多值」做成一等语义，单次增删查一对 `(key, value)` 为 O(1)。
-这个 sample 展示四个侧面：加值与计数读取、批量添加与按键集合运算、以及最容易被误解的 `Values` 语义。
-重点纠正两个高频误解——**`Count` 是键数不是值总数**、**`Values` 是扁平序列不是按键分组**。
+## What this sample demonstrates
 
-## 什么时候用
+`MultiDictionary<TKey,TValue>` makes "one key, many values" a first-class semantic, with a single add/remove/query
+of a `(key, value)` pair being O(1). This sample shows four facets: adding values and reading counts, batch adding
+with per-key set operations, and the most easily misunderstood `Values` semantics. It corrects two high-frequency
+misunderstandings — **`Count` is the number of keys, not the total number of values**, and **`Values` is a flat
+sequence, not grouped by key**.
 
-- 标签 / 分组 / 一对多索引：一键多值即一等语义，不必再包 `Dictionary<TKey, List<TValue>>`。
-- 缺键查询频繁：索引器缺键返回空集合，调用方少写 try/catch。
-- 需要 O(1) 的值存在性：`ContainsValue` 走反向索引（见 F11）。
-- 不该用：需要键有序 → `OrderedMultiDictionary<TKey,TValue>`（F08）；严格一对一 → `BiDictionary<TLeft,TRight>`（F16）；
-  复合键 → `MultiKeyDictionary` / `TwoKeyDictionary`（F20 / F29）。
+## When to use it
 
-## 如何运行
+- Tags / grouping / one-to-many indexes: one-key-many-values is first-class, so you no longer need to wrap a `Dictionary<TKey, List<TValue>>`.
+- Frequent missing-key queries: the indexer returns an empty collection for a missing key, so callers write less try/catch.
+- When you need O(1) value existence: `ContainsValue` uses a reverse index (see F11).
+- When not to use it: ordered keys → `OrderedMultiDictionary<TKey,TValue>` (F08); strict one-to-one → `BiDictionary<TLeft,TRight>` (F16);
+  composite keys → `MultiKeyDictionary` / `TwoKeyDictionary` (F20 / F29).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.MultiMap
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 加值、读计数、缺键友好 | `Add` / `Count` / `KeyCount` / `TotalValueCount` / `ValueCount` / 索引器 / `ContainsKey` |
-| 2 | 批量添加与按键集合运算 | `AddRange` / `UnionWith` / `RemoveRange` / `ExceptWith` / `Contains` |
-| 3 | `Values` 扁平序列 vs 按键分组 | `Values` / `ToDictionary()` |
+| 1 | Add values, read counts, missing-key friendliness | `Add` / `Count` / `KeyCount` / `TotalValueCount` / `ValueCount` / indexer / `ContainsKey` |
+| 2 | Batch adding and per-key set operations | `AddRange` / `UnionWith` / `RemoveRange` / `ExceptWith` / `Contains` |
+| 3 | `Values` flat sequence vs grouped by key | `Values` / `ToDictionary()` |
 
-## 关键 API
+## Key APIs
 
-- `MultiDictionary<TKey,TValue>.Add(TKey, TValue)` — 加一对；`null` 键抛 `ArgumentNullException`，`null` 值允许。
-- `Count` / `KeyCount` — 都是**键数**；`TotalValueCount` — 全部值数；`ValueCount(key)` — 该键的值数（缺键 0）。
-- `this[TKey]` — 该键的值集合；缺键返回空集合（永不 `null`、永不抛）。
-- `AddRange(key, values)` — 批量加值；`RemoveRange(key, values)` — 对参数去重后每个不同值删一次出现（返回是否删到）。
-- `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith` — 对某个键的值集合做 set 语义运算。
-- `Values` — **扁平**的全部值序列；`ToDictionary()` — 「键 -> 值集合」快照。
+- `MultiDictionary<TKey,TValue>.Add(TKey, TValue)` — add a pair; a `null` key throws `ArgumentNullException`, a `null` value is allowed.
+- `Count` / `KeyCount` — both are the **number of keys**; `TotalValueCount` — total number of values; `ValueCount(key)` — value count of that key (0 for a missing key).
+- `this[TKey]` — the value collection of that key; a missing key returns an empty collection (never `null`, never throws).
+- `AddRange(key, values)` — batch add values; `RemoveRange(key, values)` — after de-duplicating the argument, remove one occurrence of each distinct value (returns whether anything was removed).
+- `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith` — set-semantics operations on the value collection of a key.
+- `Values` — the **flat** sequence of all values; `ToDictionary()` — a "key -> value collection" snapshot.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **`Count` 是键数，不是值总数**：加了 3 个值、2 个键时 `Count == 2`，值总数用 `TotalValueCount`。
-- **缺键索引器返回空集合而非抛**：`map[key].Count` 为 0 不代表键存在，需区分时用 `ContainsKey` / `TryGetValue`。
-- **`Values` 是扁平序列**（`new` 隐藏了 `IReadOnlyDictionary.Values`）：`foreach` 得到的是单个值，按组请用 `ToDictionary()` / `AsLookup()`。
-- **无值之键不存在**：最后一个值被删后键自动消失，`KeyCount` 与 `TotalValueCount` 不会出现「空键」分歧。
-- **非线程安全**：并发请用 `ConcurrentMultiDictionary<TKey,TValue>`（F14）。
+- **`Count` is the number of keys, not the total number of values**: with 3 values and 2 keys, `Count == 2`; use `TotalValueCount` for the total.
+- **A missing-key indexer returns an empty collection rather than throwing**: `map[key].Count` being 0 does not mean the key exists; use `ContainsKey` / `TryGetValue` when you need to distinguish.
+- **`Values` is a flat sequence** (`new` hides `IReadOnlyDictionary.Values`): `foreach` yields a single value; for grouping use `ToDictionary()` / `AsLookup()`.
+- **A key without values does not exist**: once the last value is removed the key disappears automatically, so `KeyCount` and `TotalValueCount` never disagree about "empty keys".
+- **Not thread-safe**: for concurrency use `ConcurrentMultiDictionary<TKey,TValue>` (F14).

@@ -1,43 +1,47 @@
 # Sample.MultiMapBatchDelete
 
-> **多重映射批量删除** — `MultiDictionary<TKey,TValue>.RemoveRange` 按键批量删值（F04，`DotNetCore.Collections.Multi`，6.1.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Multimap batch delete** — `MultiDictionary<TKey,TValue>.RemoveRange` removes values by key in bulk (F04, `DotNetCore.Collections.Multi`, 6.1.0).
 
-`RemoveRange(TKey, IEnumerable<TValue>)` 是 `Remove(key, value)` 的批量形：对参数集合里**每个不同值**删掉键下一次出现。
-这个 sample 展示三个侧面：批量删值与返回值语义、参数的集合（去重）语义、以及与 `ExceptWith` 的对照。
-关键在于分清——`RemoveRange` 每个不同值只删**一次出现**，`ExceptWith` 才删掉匹配值的**全部出现**。
+## What this sample demonstrates
 
-## 什么时候用
+`RemoveRange(TKey, IEnumerable<TValue>)` is the bulk form of `Remove(key, value)`: for **each distinct value** in the
+argument collection it removes one occurrence under the key. This sample shows three facets: bulk deletion and its
+return-value semantics, the set (de-duplicating) semantics of the argument, and a contrast with `ExceptWith`. The key
+point is to distinguish them — `RemoveRange` removes only **one occurrence** per distinct value, whereas `ExceptWith`
+removes **all occurrences** of matching values.
 
-- 按标签 / 集合批量摘除一批值：一次调用删多个值，不必手写 `Remove` 循环。
-- 差集式清理：与 `ExceptWith` 配合。
-- 不该用：要删某值的全部出现 → `ExceptWith(key, values)`；要删整个键 → `Remove(key)`。
+## When to use it
 
-## 如何运行
+- Removing a batch of values by tag / set: one call removes several values, without hand-writing a `Remove` loop.
+- Set-difference-style cleanup: in combination with `ExceptWith`.
+- When not to use it: to remove all occurrences of a value → `ExceptWith(key, values)`; to remove an entire key → `Remove(key)`.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.MultiMapBatchDelete
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 批量删值、返回 `bool`、缺键空操作 | `RemoveRange(TKey, IEnumerable<TValue>)` |
-| 2 | 参数的集合（去重）语义 | `RemoveRange`（参数先去重） |
-| 3 | 与删全部出现对照 | `RemoveRange` vs `ExceptWith` |
+| 1 | Bulk delete values, `bool` return, missing-key no-op | `RemoveRange(TKey, IEnumerable<TValue>)` |
+| 2 | Set (de-duplicating) semantics of the argument | `RemoveRange` (argument de-duplicated first) |
+| 3 | Contrast with removing all occurrences | `RemoveRange` vs `ExceptWith` |
 
-## 关键 API
+## Key APIs
 
-- `MultiDictionary<TKey,TValue>.RemoveRange(TKey, IEnumerable<TValue>)` — 对参数去重后每个不同值删一次出现；返回是否至少删掉一个。
-- `MultiDictionary<TKey,TValue>.ExceptWith(TKey, IEnumerable<TValue>)` — 删掉匹配值的**全部**出现。
-- `MultiDictionary<TKey,TValue>.ValueCount(TKey)` — 该键当前的值数，用于验证删除效果。
+- `MultiDictionary<TKey,TValue>.RemoveRange(TKey, IEnumerable<TValue>)` — after de-duplicating the argument, remove one occurrence of each distinct value; returns whether at least one was removed.
+- `MultiDictionary<TKey,TValue>.ExceptWith(TKey, IEnumerable<TValue>)` — remove **all** occurrences of matching values.
+- `MultiDictionary<TKey,TValue>.ValueCount(TKey)` — the current value count of that key, used to verify the deletion.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **参数是集合语义**：参数里重复值不计两次，先 `DistinctValuesOf` 去重再逐个删。
-- **允许重复值时只删 1 份**：`allowDuplicateValues: true` 时同值 N 份只删 1 份；要删全部用 `ExceptWith`。
-- **命名为 `RemoveRange` 而非重载 `Remove`**：避免 `map.Remove(key, null)`（删存储的 `null` 值）产生 `CS0121` 歧义。
-- **缺键 / 空参数 / 全不匹配都是返回 `false` 的空操作**，且不抛异常。
-- **保持无空键不变式**：键下最后一个值被删后，键自动消失。
+- **The argument has set semantics**: duplicate values in the argument are not counted twice; it is first de-duplicated via `DistinctValuesOf`, then removed one by one.
+- **With duplicate values allowed, only 1 copy is removed**: when `allowDuplicateValues: true`, N copies of the same value lose only 1 copy; to remove them all use `ExceptWith`.
+- **Named `RemoveRange` rather than overloading `Remove`**: this avoids the `CS0121` ambiguity of `map.Remove(key, null)` (removing a stored `null` value).
+- **A missing key / empty argument / no matches are all no-ops that return `false`**, and they do not throw.
+- **The no-empty-key invariant is preserved**: once the last value under a key is removed, the key disappears automatically.

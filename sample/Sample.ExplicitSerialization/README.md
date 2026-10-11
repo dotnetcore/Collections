@@ -1,52 +1,55 @@
 # Sample.ExplicitSerialization
 
-> **显式序列化模型** — `MultiListModel<T>` / `MultiDictionaryModel<TKey,TValue>` 快照与重建（F10，`DotNetCore.Collections.Multi`，6.2.0；6.7.1 扩展至全家桶）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Explicit serialization models** — `MultiListModel<T>` / `MultiDictionaryModel<TKey,TValue>` snapshots and rebuild (F10, `DotNetCore.Collections.Multi`, 6.2.0; extended to the whole family in 6.7.1).
 
-Multi 家族提供**显式序列化模型**：`MultiListModel<T>`（不同元素 + 副本数两条平行列表）与
-`MultiDictionaryModel<TKey,TValue>`（键列表 + 每键值列表）。它们是普通可变 POCO——公开可设属性、无特性、
-无接口、无基类——**不强迫消费方使用任何序列化器**。这个 sample 展示：bag / multimap 的往返、
-模型可携带 `null`（`ToDictionary` 做不到）、`FromModel` 的严格校验，以及 6.7.1 的全家桶增强
-（`BiDictionary` 专用模型、`ReverseMultiDictionary` 复用 `MultiDictionaryModel`）。
+## What this sample demonstrates
 
-## 什么时候用
+The Multi family provides **explicit serialization models**: `MultiListModel<T>` (two parallel lists of distinct
+elements + copy counts) and `MultiDictionaryModel<TKey,TValue>` (a key list + a per-key value list). They are plain
+mutable POCOs — public settable properties, no attributes, no interfaces, no base classes — that **do not force
+consumers to use any serializer**. This sample shows: bag / multimap round-trips, models that can carry `null`
+(which `ToDictionary` cannot), the strict validation of `FromModel`, and the 6.7.1 whole-family enhancements
+(a `BiDictionary`-specific model, and `ReverseMultiDictionary` reusing `MultiDictionaryModel`).
 
-- 持久化 bag / multimap：形状稳定的 POCO，JSON / XML / 数据库行都可。
-- 跨进程序列化：库不绑任何序列化器，格式自选。
-- 需要携带 `null` 元素的往返：模型用平行列表，`null` 与普通元素一视同仁。
-- 不该用：只要内存快照 → `Clone` / `ToDictionary`；要自动 JSON 集成 → 自写转换器。
+## When to use it
 
-## 如何运行
+- Persisting a bag / multimap: a stable-shaped POCO works for JSON / XML / database rows.
+- Cross-process serialization: the library binds no serializer, so the format is your choice.
+- Round-trips that must carry `null` elements: the models use parallel lists, treating `null` like any other element.
+- When not to use it: if you only need an in-memory snapshot → `Clone` / `ToDictionary`; for automatic JSON integration → write your own converter.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.ExplicitSerialization
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | `MultiList` 快照与重建 | `ToSerializableModel()` / `MultiList<T>.FromModel` / `Items` / `Counts` |
-| 2 | `MultiDictionary` 快照与重建 | `ToSerializableModel()` / `FromModel` / `Keys` / `Values` |
-| 3 | 模型携带 `null` 元素 | `ToSerializableModel` / `ToDictionary`（对照抛异常） |
-| 4 | 畸形模型被拒绝 | `FromModel` 抛 `ArgumentException` |
-| 5 | 6.7.1 `BiDictionary` 专用模型 | `BiDictionaryModel.Lefts` / `Rights` / `AsReverse()` |
-| 6 | 6.7.1 `ReverseMultiDictionary` 复用模型 | `ToSerializableModel()` / `FromModel` |
+| 1 | `MultiList` snapshot and rebuild | `ToSerializableModel()` / `MultiList<T>.FromModel` / `Items` / `Counts` |
+| 2 | `MultiDictionary` snapshot and rebuild | `ToSerializableModel()` / `FromModel` / `Keys` / `Values` |
+| 3 | Model carries `null` elements | `ToSerializableModel` / `ToDictionary` (contrast: throws) |
+| 4 | Malformed model is rejected | `FromModel` throws `ArgumentException` |
+| 5 | 6.7.1 `BiDictionary`-specific model | `BiDictionaryModel.Lefts` / `Rights` / `AsReverse()` |
+| 6 | 6.7.1 `ReverseMultiDictionary` reuses the model | `ToSerializableModel()` / `FromModel` |
 
-## 关键 API
+## Key APIs
 
-- `MultiList<T>.ToSerializableModel()` / `MultiList<T>.FromModel(model, comparer = null)` — bag 的快照与重建。
-- `MultiDictionary<TKey,TValue>.ToSerializableModel()` / `FromModel(model, comparer = null, allowDuplicateValues = true)` — multimap 的快照与重建。
-- `MultiListModel<T>.Items` / `Counts` — 两条平行列表；`MultiDictionaryModel<TKey,TValue>.Keys` / `Values` — 键与每键值列表。
-- `BiDictionaryModel<TLeft,TRight>.Lefts` / `Rights` — 双射专用模型（6.7.1）。
-- `BiDictionary<TLeft,TRight>.ToSerializableModel()` / `FromModel` — 双射往返。
-- `ReverseMultiDictionary<V,K>.ToSerializableModel()` / `FromModel(model, comparer = null)` — 索引轴（值）扮演模型的 `Keys`（6.7.1）。
+- `MultiList<T>.ToSerializableModel()` / `MultiList<T>.FromModel(model, comparer = null)` — snapshot and rebuild of a bag.
+- `MultiDictionary<TKey,TValue>.ToSerializableModel()` / `FromModel(model, comparer = null, allowDuplicateValues = true)` — snapshot and rebuild of a multimap.
+- `MultiListModel<T>.Items` / `Counts` — two parallel lists; `MultiDictionaryModel<TKey,TValue>.Keys` / `Values` — keys and per-key value lists.
+- `BiDictionaryModel<TLeft,TRight>.Lefts` / `Rights` — the bijection-specific model (6.7.1).
+- `BiDictionary<TLeft,TRight>.ToSerializableModel()` / `FromModel` — bijection round-trip.
+- `ReverseMultiDictionary<V,K>.ToSerializableModel()` / `FromModel(model, comparer = null)` — the index axis (values) plays the model's `Keys` (6.7.1).
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **比较器不进模型**：`FromModel` 必须再传（或用默认）；重建后 `Contains` 行为可能变化。
-- **`FromModel` 校验严格**：列表 `null`、两列表长度不一致、副本数 ≤ 0、内层列表 `null` 都抛 `ArgumentException`。
-- **`ToDictionary` 含 `null` 元素时抛** `InvalidOperationException`（`null` 不能作字典键）；需要 `null` 用模型。
-- **模型是快照不是活视图**：`MultiDictionaryModel.Values` 的内层是独立拷贝。
-- **`ReverseMultiDictionary` 的存储键是 set**：重建时内层顺序不保留、重复键会塌缩。
+- **The comparer is not part of the model**: `FromModel` must be given it again (or use the default); after rebuilding, `Contains` behavior may change.
+- **`FromModel` validates strictly**: a `null` list, mismatched list lengths, a copy count ≤ 0, or a `null` inner list all throw `ArgumentException`.
+- **`ToDictionary` throws** `InvalidOperationException` when a `null` element is present (`null` cannot be a dictionary key); use the model when you need `null`.
+- **The model is a snapshot, not a live view**: the inner lists of `MultiDictionaryModel.Values` are independent copies.
+- **`ReverseMultiDictionary`'s stored keys form a set**: on rebuild the inner order is not preserved and duplicate keys collapse.

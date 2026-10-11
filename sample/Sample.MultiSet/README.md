@@ -1,49 +1,53 @@
 # Sample.MultiSet
 
-> **多重集合 MultiList&lt;T&gt;** — 无序 bag：允许重复元素，并为每个不同元素跟踪**副本数**（F01，`DotNetCore.Collections.Multi`，6.0.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Multiset MultiList&lt;T&gt;** — an unordered bag: it allows duplicate elements and tracks a **copy count** for each distinct element (F01, `DotNetCore.Collections.Multi`, 6.0.0).
 
-`MultiList<T>` 是本包的基础「多重集合」。它把「元素 → 副本数」做成一等语义，而不是让你拿 `List<T>`
-手写计数。这个 sample 展示四个侧面：计数读写、批量添加与副本展开枚举/导出、按多重集语义的集合运算、
-以及删除与参数校验。重点纠正一个高频误解——**`Count` 是副本数，不是不同元素数**。
+## What this sample demonstrates
 
-## 什么时候用
+`MultiList<T>` is this package's foundational "multiset". It makes "element → copy count" a first-class
+semantic, instead of leaving you to hand-roll counting with a `List<T>`. This sample shows four facets:
+reading/writing counts, batch adding with copy-expanded enumeration/export, set operations under multiset
+semantics, and removal with argument validation. It corrects one high-frequency misunderstanding —
+**`Count` is the copy count, not the number of distinct elements**.
 
-- 频次统计 / 直方图（值域较大），需要 O(1) 的单副本增删与查询。
-- 需要「展开后序列」（每个副本各出现一次）直接对接下游。
-- 需要按**副本数**做并 / 交 / 差的多重集运算。
-- 不该用：要有序输出 → `OrderedMultiList<T>`（F05）；小值域（≤16）直方图 → `PackedBag<T>`（F21）；
-  Top-K 高频查询 → `FrequencyPriorityBag<T>`（F23）。
+## When to use it
 
-## 如何运行
+- Frequency counting / histograms (large value domain) that need O(1) single-copy add/remove/query.
+- When you need an "expanded sequence" (each copy appears once) to feed downstream directly.
+- When you need union / intersection / difference multiset operations by **copy count**.
+- When not to use it: ordered output → `OrderedMultiList<T>` (F05); small-domain (≤16) histograms → `PackedBag<T>` (F21);
+  Top-K frequent queries → `FrequencyPriorityBag<T>` (F23).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.MultiSet
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 加副本、读副本数与总数 | `Add(T)` / `Add(T, times)` / `CountOf` / `TotalCount` / `DistinctCount` |
-| 2 | 批量添加、展开枚举与导出 | `AddRange` / `EntrySet()` / `ToArray()` / `ToList()` / `ToDictionary()` |
-| 3 | 多重集并 / 交 / 差 / 对称差 | `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith` |
-| 4 | 删除与非正份数校验 | `Remove(T, times)` / `Add(T, 0)` 抛 `ArgumentOutOfRangeException` |
+| 1 | Add copies, read copy count and total | `Add(T)` / `Add(T, times)` / `CountOf` / `TotalCount` / `DistinctCount` |
+| 2 | Batch add, expanded enumeration and export | `AddRange` / `EntrySet()` / `ToArray()` / `ToList()` / `ToDictionary()` |
+| 3 | Multiset union / intersection / difference / symmetric difference | `UnionWith` / `IntersectionWith` / `ExceptWith` / `SymmetricExceptWith` |
+| 4 | Removal and non-positive copy count validation | `Remove(T, times)` / `Add(T, 0)` throws `ArgumentOutOfRangeException` |
 
-## 关键 API
+## Key APIs
 
-- `MultiList<T>.Add(T item)` / `Add(T item, int times)` — 加 1 份 / 加多份；`times <= 0` 抛 `ArgumentOutOfRangeException`。
-- `CountOf(T)` — 该元素的副本数；`TotalCount` — 全部副本数；`DistinctCount` — 不同元素数。
-- `((IReadOnlyCollection<T>)bag).Count` — 等于 `TotalCount`（副本数）；`Count` 是显式接口实现，具体类型上要经接口读。
-- `EntrySet()` — `(元素, 副本数)` 投影，项数等于 `DistinctCount`。
-- `ToArray()` / `ToList()` — 展开全部副本；`ToDictionary()` — 导出「元素 → 副本数」快照。
-- `UnionWith` 取副本数 **max**、`IntersectionWith` 取 **min**、`ExceptWith` 相减、`SymmetricExceptWith` 取绝对差。
+- `MultiList<T>.Add(T item)` / `Add(T item, int times)` — add 1 copy / add multiple copies; `times <= 0` throws `ArgumentOutOfRangeException`.
+- `CountOf(T)` — the copy count of that element; `TotalCount` — total copies; `DistinctCount` — number of distinct elements.
+- `((IReadOnlyCollection<T>)bag).Count` — equals `TotalCount` (copy count); `Count` is an explicit interface implementation, so on the concrete type you must read it through the interface.
+- `EntrySet()` — a `(element, copy count)` projection; its item count equals `DistinctCount`.
+- `ToArray()` / `ToList()` — expand all copies; `ToDictionary()` — export an "element → copy count" snapshot.
+- `UnionWith` takes the **max** copy count, `IntersectionWith` takes the **min**, `ExceptWith` subtracts, `SymmetricExceptWith` takes the absolute difference.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **`Count` 不是不同元素数**：`bag.Count == TotalCount`（副本数）；要不同元素数用 `DistinctCount`。
-- **枚举顺序无契约**：哈希表枚举顺序是实现细节，不要依赖插入序或哈希序写断言。
-- **`UnionWith` 不加副本数**：`{x,x} ∪ {x}` 得 `{x,x}`（取 max），不是 `{x,x,x}`。
-- **`ToDictionary()` 遇 `null` 元素会抛** `InvalidOperationException`（`null` 不能作字典键）；需要携带 `null` 用 `ToSerializableModel`（F10）。
-- **非线程安全**：并发写会损坏内部计数表，请用 `ConcurrentMultiList<T>`（F14）。
+- **`Count` is not the number of distinct elements**: `bag.Count == TotalCount` (copy count); for the number of distinct elements use `DistinctCount`.
+- **Enumeration order has no contract**: hash-table enumeration order is an implementation detail; do not write assertions that depend on insertion or hash order.
+- **`UnionWith` does not add copy counts**: `{x,x} ∪ {x}` yields `{x,x}` (max), not `{x,x,x}`.
+- **`ToDictionary()` throws** `InvalidOperationException` on a `null` element (`null` cannot be a dictionary key); to carry `null`, use `ToSerializableModel` (F10).
+- **Not thread-safe**: concurrent writes will corrupt the internal count table; use `ConcurrentMultiList<T>` (F14).

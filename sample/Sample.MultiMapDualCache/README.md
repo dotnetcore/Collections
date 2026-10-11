@@ -1,44 +1,47 @@
 # Sample.MultiMapDualCache
 
-> **多重映射双缓存** — 值总数缓存 + 值反向索引（F11，`DotNetCore.Collections.Multi`，6.2.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Multimap dual cache** — a total-value-count cache + a value reverse index (F11, `DotNetCore.Collections.Multi`, 6.2.0).
 
-`MultiDictionary<TKey,TValue>` 内部维护两个缓存，把两类高频读从扫描变成 O(1)：
-`_totalValueCount` 缓存全部值总数（`TotalValueCount` 读 O(1)），`_valueIndex`（值 → 键集）反向索引
-让 `ContainsValue` 不再扫全表。这个 sample 展示三个侧面：O(1) 读的外显、`null` 值专用桶、
-以及缓存如何随公开突变 API 同步（含 `Clone` 走 `Add` 重建）。
+## What this sample demonstrates
 
-## 什么时候用
+`MultiDictionary<TKey,TValue>` maintains two caches internally, turning two kinds of high-frequency reads from scans
+into O(1): `_totalValueCount` caches the total number of values (`TotalValueCount` reads in O(1)), and `_valueIndex`
+(a value → key-set reverse index) lets `ContainsValue` stop scanning the whole table. This sample shows three facets:
+the externally visible O(1) reads, the dedicated bucket for `null` values, and how the caches stay in sync with the
+public mutation APIs (including `Clone` rebuilding via `Add`).
 
-- 频繁读值总数：`TotalValueCount` 为 O(1)，观测与断言不再付 O(键) 扫描。
-- 值存在性是热点：`ContainsValue` 为 O(1)，可进热路径。
-- 活反查视图就绪：`AsReverse` 直接读反向索引（见 F18）。
-- 不该用：只写不读总数 → 缓存是几乎可忽略的纯开销。
+## When to use it
 
-## 如何运行
+- Reading the total value count frequently: `TotalValueCount` is O(1), so observation and assertions no longer pay an O(keys) scan.
+- Value existence is a hot path: `ContainsValue` is O(1) and can go on the hot path.
+- A live reverse view is ready: `AsReverse` reads the reverse index directly (see F18).
+- When not to use it: if you only write and never read the total → the cache is nearly negligible pure overhead.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.MultiMapDualCache
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | O(1) 读值总数与值存在性 | `TotalValueCount` / `ContainsValue` / `ValueCount` |
-| 2 | `null` 值专用桶 | `Add(key, null)` / `ContainsValue(null)` |
-| 3 | 缓存随公开突变 API 同步 | `AddRange` / `Remove` / `Clone` |
+| 1 | O(1) reads of the total value count and value existence | `TotalValueCount` / `ContainsValue` / `ValueCount` |
+| 2 | Dedicated bucket for `null` values | `Add(key, null)` / `ContainsValue(null)` |
+| 3 | Caches stay in sync with public mutation APIs | `AddRange` / `Remove` / `Clone` |
 
-## 关键 API
+## Key APIs
 
-- `MultiDictionary<TKey,TValue>.TotalValueCount` — 全部值数，O(1) 缓存读。
-- `MultiDictionary<TKey,TValue>.ContainsValue(TValue)` — 值存在性，走反向索引 O(1)；`null` 走专用桶。
-- `MultiDictionary<TKey,TValue>.Clone()` — 经公开 `Add` 重建，自带一致的双缓存。
+- `MultiDictionary<TKey,TValue>.TotalValueCount` — the total number of values, an O(1) cached read.
+- `MultiDictionary<TKey,TValue>.ContainsValue(TValue)` — value existence via the reverse index in O(1); `null` goes to the dedicated bucket.
+- `MultiDictionary<TKey,TValue>.Clone()` — rebuilt through the public `Add`, carrying a consistent dual cache.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **缓存对使用方透明**：不要依赖「读总数会扫描」的旧行为；成本模型已变。
-- **值相等固定为 `EqualityComparer<TValue>.Default`**：反向索引与内层集合一致，不接受自定义值比较器。
-- **只用公开突变 API**：经自定义 `innerFactory` 拿到可变内层再改会破坏缓存一致性。
-- **写路径多两处簿记**：`Add` 加 delta、`RemoveOccurrence` 减 1、`RemoveKeyCore` 减整桶——纯写入负载略有成本。
+- **The cache is transparent to consumers**: do not rely on the old "reading the total scans" behavior; the cost model has changed.
+- **Value equality is fixed to `EqualityComparer<TValue>.Default`**: the reverse index is consistent with the inner collections, and a custom value comparer is not accepted.
+- **Use only the public mutation APIs**: obtaining a mutable inner collection through a custom `innerFactory` and then modifying it breaks cache consistency.
+- **The write path has two extra bookkeeping steps**: `Add` increments a delta, `RemoveOccurrence` decrements by 1, and `RemoveKeyCore` decrements a whole bucket — pure-write workloads pay a slight cost.
