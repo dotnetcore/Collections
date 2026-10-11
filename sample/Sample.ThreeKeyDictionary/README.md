@@ -1,44 +1,46 @@
 # Sample.ThreeKeyDictionary
 
-> **三键复合字典 ThreeKeyDictionary&lt;K1,K2,K3,V&gt;** — 键为三个异构分量的复合键字典（F15，`DotNetCore.Collections.Multi`，6.2.0；6.7.1 / 6.8.0 增强）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Three-key composite dictionary ThreeKeyDictionary&lt;K1,K2,K3,V&gt;** — a composite-key dictionary whose key is three heterogeneous components (F15, `DotNetCore.Collections.Multi`, 6.2.0; enhanced in 6.7.1 / 6.8.0).
 
-`ThreeKeyDictionary<K1,K2,K3,V>` 是 `MultiKeyDictionary`（arity 3）的薄人体工学包装：提供三元组索引器 `this[k1, k2, k3]` 与第一轴前缀查询。trie 按 `(K1,K2,K3)` 索引，因此**只有第一轴是前缀**（第二、三轴切片靠扫描，O(n)）。示例还展示 6.7.1 新增的 `Values` / `ContainsValue` / `AsReverse`，以及 6.8.0 新增的 `EntrySet()`。
+## What this sample demonstrates
 
-## 什么时候用
+`ThreeKeyDictionary<K1,K2,K3,V>` is a thin ergonomic wrapper over `MultiKeyDictionary` (arity 3): it provides a triple indexer `this[k1, k2, k3]` and first-axis prefix queries. The trie indexes by `(K1,K2,K3)`, so **only the first axis is a prefix** (second / third-axis slicing falls back to a scan, O(n)). The sample also shows the `Values` / `ContainsValue` / `AsReverse` added in 6.7.1 and the `EntrySet()` added in 6.8.0.
 
-- 三维配置 / 矩阵坐标，键为**异构**分量类型。
-- 需要**按第一维切片**（`GetByFirstKey`，前缀下降）。
-- 不该用：第二 / 三轴热点查询（换键序或用 `MultiKeyDictionary`）；一键多值（用 `MultiKeyMultiDictionary`）；同质键且在意装箱（直接用 `MultiKeyDictionary`）。
+## When to use it
 
-## 如何运行
+- Three-dimensional configuration / matrix coordinates whose key components are of **heterogeneous** types.
+- You need to **slice by the first dimension** (`GetByFirstKey`, a prefix descent).
+- Do not use it for: hot queries on the second / third axis (change key order or use `MultiKeyDictionary`); one key with multiple values (use `MultiKeyMultiDictionary`); homogeneous keys with boxing concerns (use `MultiKeyDictionary` directly).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.ThreeKeyDictionary
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 三键读写与第一轴切片 | `this[k1,k2,k3]` / `GetByFirstKey` / `CountOfFirstKey` / `ContainsFirstKey` |
-| 2 | 第二 / 三轴切片（扫描） | `GetBySecondKey` / `CountOfSecondKey` / `CountOfThirdKey` / `ContainsSecondKey` |
-| 3 | 6.7.1 增强 | `Values` / `ContainsValue` / `AsReverse` |
+| 1 | Three-key read/write and first-axis slicing | `this[k1,k2,k3]` / `GetByFirstKey` / `CountOfFirstKey` / `ContainsFirstKey` |
+| 2 | Second / third-axis slicing (scan) | `GetBySecondKey` / `CountOfSecondKey` / `CountOfThirdKey` / `ContainsSecondKey` |
+| 3 | 6.7.1 enhancements | `Values` / `ContainsValue` / `AsReverse` |
 | 4 | 6.8 EntrySet | `EntrySet()` |
 
-## 关键 API
+## Key APIs
 
-- `ThreeKeyDictionary<K1,K2,K3,V>.this[K1,K2,K3]` — 三元组索引器；读缺键抛 `KeyNotFoundException`，写覆盖。
-- `GetByFirstKey(K1)` / `CountOfFirstKey(K1)` / `ContainsFirstKey(K1)` — 第一轴前缀查询（子树下降）。
-- `GetBySecondKey` / `GetByThirdKey` / `CountOfSecondKey` / `CountOfThirdKey` — 第二 / 三轴切片（**扫描 O(n)**）。
-- `Values` — 6.7.1：值扁平序列（丢弃键分量）；`ContainsValue(V)` — 6.7.1：全扫描 O(n)。
-- `AsReverse()` — 6.7.1：轴反转拷贝 `ThreeKeyDictionary<K3,K2,K1,V>`；原第三轴成为第一轴。
-- `EntrySet()` — 6.8：`(K1,K2,K3,V)` 逐条投影（`Entries` 已过时）。
+- `ThreeKeyDictionary<K1,K2,K3,V>.this[K1,K2,K3]` — triple indexer; reading a missing key throws `KeyNotFoundException`, writing overwrites.
+- `GetByFirstKey(K1)` / `CountOfFirstKey(K1)` / `ContainsFirstKey(K1)` — first-axis prefix queries (subtree descent).
+- `GetBySecondKey` / `GetByThirdKey` / `CountOfSecondKey` / `CountOfThirdKey` — second / third-axis slicing (**scan, O(n)**).
+- `Values` — 6.7.1: a flat sequence of values (dropping key components); `ContainsValue(V)` — 6.7.1: full scan, O(n).
+- `AsReverse()` — 6.7.1: an axis-reversed copy `ThreeKeyDictionary<K3,K2,K1,V>`; the former third axis becomes the first.
+- `EntrySet()` — 6.8: a per-entry projection of `(K1,K2,K3,V)` (`Entries` is obsolete).
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **只有第一轴是前缀**：第二 / 三轴切片 O(n)，热路径别当索引查。
-- **分量装箱**：异构分量装箱进 `object` trie；同质键热点用 `MultiKeyDictionary`。
-- **`ContainsValue` 是全扫描**（O(n)）：本类型无值侧索引。
-- **`Entries` 已过时**（6.8 起）：仍可编译但产生 CS0618 警告，改用 `EntrySet()`。
+- **Only the first axis is a prefix**: second / third-axis slicing is O(n); do not treat it as an index on hot paths.
+- **Component boxing**: heterogeneous components are boxed into an `object` trie; for homogeneous-key hot spots use `MultiKeyDictionary`.
+- **`ContainsValue` is a full scan** (O(n)): this type has no value-side index.
+- **`Entries` is obsolete** (since 6.8): it still compiles but raises a CS0618 warning; use `EntrySet()` instead.

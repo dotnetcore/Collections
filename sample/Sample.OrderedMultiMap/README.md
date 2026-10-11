@@ -1,45 +1,47 @@
 # Sample.OrderedMultiMap
 
-> **有序多重映射 OrderedMultiDictionary&lt;TKey,TValue&gt;** — 键升序、键下值也升序的多重映射（F08，`DotNetCore.Collections.Multi`，6.2.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Ordered multimap OrderedMultiDictionary&lt;TKey,TValue&gt;** — a multimap with keys ascending and values within each key ascending (F08, `DotNetCore.Collections.Multi`, 6.2.0).
 
-`OrderedMultiDictionary<TKey,TValue>` 是 `MultiDictionary` 的有序对应物：键保持升序，每个键下的值也保持升序，单次增删查在两轴上最坏 O(log n)。它共享按键值集合语义（参数为 set、值可重复、内层清空即删键）。示例展示三个侧面：双轴有序枚举、`Count` 是键数而非值数的计数口径、以及针对「键升序 × 键下值升序」展开序列的名次读。
+## What this sample demonstrates
 
-## 什么时候用
+`OrderedMultiDictionary<TKey,TValue>` is the ordered counterpart of `MultiDictionary`: keys stay ascending and the values under each key stay ascending, with single add / remove / lookup on both axes worst-case O(log n). It shares the set-of-key-value semantics (parameter is a set, values may repeat, emptying the inner set deletes the key). The sample shows three facets: two-axis ordered enumeration, the counting convention where `Count` is the key count rather than the value count, and rank reads targeting the "keys ascending × values within a key ascending" expanded sequence.
 
-- 有序索引 / 字典序报表，需要可预测的键序与值序。
-- 全局值名次 / 分位（`GetByRank` / `GetMedian` / `GetQuantile`）。
-- 不该用：O(1) 热点键值查找 → `MultiDictionary`。
+## When to use it
 
-## 如何运行
+- Ordered indexes / lexicographic reports that need a predictable key order and value order.
+- Global value ranks / quantiles (`GetByRank` / `GetMedian` / `GetQuantile`).
+- Do not use it for: O(1) hot key-value lookups → `MultiDictionary`.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.OrderedMultiMap
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 双轴有序枚举 | `Add(TKey, TValue)` / `GetEnumerator` |
-| 2 | 计数口径（Count = 键数） | `Count` / `TotalValueCount` / `ValueCount(key)` / `Keys` / `Values` |
-| 3 | 名次读（针对展开序列） | `GetByRank` / `GetRank` / `GetMedian` |
-| 4 | 值查询与分组导出 | `Contains(key,value)` / `ContainsValue` / `EntrySet` |
+| 1 | Two-axis ordered enumeration | `Add(TKey, TValue)` / `GetEnumerator` |
+| 2 | Counting convention (Count = key count) | `Count` / `TotalValueCount` / `ValueCount(key)` / `Keys` / `Values` |
+| 3 | Rank reads (targeting the expanded sequence) | `GetByRank` / `GetRank` / `GetMedian` |
+| 4 | Value queries and grouped export | `Contains(key,value)` / `ContainsValue` / `EntrySet` |
 
-## 关键 API
+## Key APIs
 
-- `OrderedMultiDictionary<TKey,TValue>.Add(TKey, TValue)` — 加一对；两轴各一次下降，O(log n)。
-- `Count` / `KeyCount` — **键数**；`TotalValueCount` / `ValueCount(key)` — **值数**。
-- `Keys` — 键升序；`Values` — 扁平序列（键升序 × 键下值升序）。
-- `this[TKey]` — 该键下值升序的活序列；缺键返回空集合，不抛。
-- `GetByRank(int)` / `GetRank(TKey, TValue)` / `GetMedian()` / `GetQuantile(double)` — 针对展开序列的名次读。
-- `Contains(TKey, TValue)` — 某键下是否有该值；`ContainsValue(TValue)` — 任意键下是否有该值（全扫描 O(n)）。
-- `EntrySet()` — 「键 + 该键下全部值」的分组投影。
+- `OrderedMultiDictionary<TKey,TValue>.Add(TKey, TValue)` — adds a pair; one descent per axis, O(log n).
+- `Count` / `KeyCount` — the **key count**; `TotalValueCount` / `ValueCount(key)` — the **value count**.
+- `Keys` — keys ascending; `Values` — a flat sequence (keys ascending × values within a key ascending).
+- `this[TKey]` — a live sequence of the values under that key in ascending order; a missing key returns an empty collection without throwing.
+- `GetByRank(int)` / `GetRank(TKey, TValue)` / `GetMedian()` / `GetQuantile(double)` — rank reads targeting the expanded sequence.
+- `Contains(TKey, TValue)` — whether the value is under that key; `ContainsValue(TValue)` — whether the value is under any key (full scan, O(n)).
+- `EntrySet()` — a grouped projection of "key + all its values".
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **`Count` 是键数**，不是值数：值总数用 `TotalValueCount`。
-- **`Values` 是扁平序列**：跨键按键交错，不是全局值排序。
-- **`GetRank` 不是不同元素下标**：同值多份时名次指展开后的位置。
-- **缺键索引器返回空集合**，不抛；`Count` 与 `ContainsKey` 才能区分「缺键」与「空值」。
+- **`Count` is the key count**, not the value count: use `TotalValueCount` for the value total.
+- **`Values` is a flat sequence**: values are interleaved by key, not sorted globally.
+- **`GetRank` is not a distinct-element index**: when a value has multiple copies, the rank refers to the expanded position.
+- **A missing-key indexer returns an empty collection** without throwing; only `Count` and `ContainsKey` can distinguish "missing key" from "empty values".

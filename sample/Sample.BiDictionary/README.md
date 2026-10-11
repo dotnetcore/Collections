@@ -1,45 +1,47 @@
 # Sample.BiDictionary
 
-> **严格双射字典 BiDictionary&lt;TLeft,TRight&gt;** — 一对一映射，双向 O(1)（F16，`DotNetCore.Collections.Multi`，6.3.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Strict bijective dictionary BiDictionary&lt;TLeft,TRight&gt;** — one-to-one mapping, O(1) both ways (F16, `DotNetCore.Collections.Multi`, 6.3.0).
 
-`BiDictionary<TLeft,TRight>` 是**严格一对一（双射）字典**：每个 `TLeft` 恰绑一个 `TRight`，且没有 `TRight` 被两个 `TLeft` 共享，双向都是 O(1) 查找。它实现 `IReadOnlyDictionary<TLeft,TRight>`（正向）与 `IBiMap`（含反向成员）。示例展示双向查找、严格冲突处理（`Add` 抛 / `TryAdd` 返 false / 无覆盖 setter）、`AsReverse` 活视图，以及 null 左值在 `ToDictionary` 与序列化模型中的差异。
+## What this sample demonstrates
 
-## 什么时候用
+`BiDictionary<TLeft,TRight>` is a **strictly one-to-one (bijective) dictionary**: each `TLeft` is bound to exactly one `TRight`, and no `TRight` is shared by two `TLeft`s, with O(1) lookup both ways. It implements `IReadOnlyDictionary<TLeft,TRight>` (forward) and `IBiMap` (including reverse members). The sample shows bidirectional lookup, strict conflict handling (`Add` throws / `TryAdd` returns false / no overwriting setter), the `AsReverse` live view, and how a null left value differs between `ToDictionary` and the serialization model.
 
-- ID ↔ 显示名、编码 ↔ 枚举等**双向查**场景。
-- 需要双射约束**快速失败**，不希望静默丢绑定。
-- 不该用：一对多 → `MultiDictionary`；复合键 → `MultiKeyDictionary`。
+## When to use it
 
-## 如何运行
+- **Bidirectional lookup** scenarios such as ID ↔ display name, code ↔ enum.
+- You need the bijective constraint to **fail fast** rather than silently drop a binding.
+- Do not use it for: one-to-many → `MultiDictionary`; composite keys → `MultiKeyDictionary`.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.BiDictionary
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 双向查找 | `this[left]` / `GetLeft(right)` / `Count` |
-| 2 | 严格冲突处理 | `Add`（冲突抛）/ `TryAdd`（返 false）/ `Remove` / `RemoveRight` |
-| 3 | `AsReverse` 活视图 | `AsReverse()` |
-| 4 | null 左值与导出 | `ToDictionary` / `ToSerializableModel` / `FromModel` |
+| 1 | Bidirectional lookup | `this[left]` / `GetLeft(right)` / `Count` |
+| 2 | Strict conflict handling | `Add` (throws on conflict) / `TryAdd` (returns false) / `Remove` / `RemoveRight` |
+| 3 | `AsReverse` live view | `AsReverse()` |
+| 4 | Null left values and export | `ToDictionary` / `ToSerializableModel` / `FromModel` |
 
-## 关键 API
+## Key APIs
 
-- `BiDictionary<TLeft,TRight>.this[TLeft]` — 正向查右值；缺键抛 `KeyNotFoundException`。
-- `GetLeft(TRight)` / `TryGetLeft(TRight, out TLeft)` / `ContainsRight(TRight)` — 反向查。
-- `Add(TLeft, TRight)` — 左值已有、或右值已绑别的左值时抛 `ArgumentException`（**无静默覆盖**）。
-- `TryAdd(TLeft, TRight)` — 冲突返回 `false`，供判定而非捕获。
-- `Remove(TLeft)` / `RemoveRight(TRight)` — 显式解绑，之后才能重绑。
-- `AsReverse()` — 反向（右 → 左）的**活**只读视图。
-- `ToDictionary()` — 快照；**省略** null 左值条目。`ToSerializableModel()` / `FromModel` — 并行列表模型，**保留** null 左值。
+- `BiDictionary<TLeft,TRight>.this[TLeft]` — forward lookup of the right value; a missing key throws `KeyNotFoundException`.
+- `GetLeft(TRight)` / `TryGetLeft(TRight, out TLeft)` / `ContainsRight(TRight)` — reverse lookups.
+- `Add(TLeft, TRight)` — throws `ArgumentException` when the left value already exists or the right value is bound to another left value (**no silent overwrite**).
+- `TryAdd(TLeft, TRight)` — returns `false` on conflict, for branching instead of catching.
+- `Remove(TLeft)` / `RemoveRight(TRight)` — explicit unbinding, after which rebinding is possible.
+- `AsReverse()` — a **live** read-only reverse (right → left) view.
+- `ToDictionary()` — a snapshot; **omits** null-left entries. `ToSerializableModel()` / `FromModel` — a parallel-list model that **preserves** null-left entries.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **无覆盖 setter**：破坏既有绑定必须先显式 `Remove` / `RemoveRight`。
-- **`Add` 冲突抛 `ArgumentException`**：偏好判定用 `TryAdd`。
-- **`ToDictionary` 省略 null 左值条目**（null 不能作字典键）；要保留用 `ToSerializableModel`。
-- **`FromModel` 拒绝非双射**：左值重复或右值冲突都会抛 `ArgumentException`。
+- **No overwriting setter**: breaking an existing binding requires an explicit `Remove` / `RemoveRight`.
+- **`Add` throws `ArgumentException` on conflict**: prefer `TryAdd` when you want to branch.
+- **`ToDictionary` omits null-left entries** (null cannot be a dictionary key); use `ToSerializableModel` to preserve them.
+- **`FromModel` rejects non-bijections**: duplicate left values or conflicting right values both throw `ArgumentException`.

@@ -1,44 +1,46 @@
 # Sample.OrderedAccessRange
 
-> **有序访问与区间查询** — `OrderedMultiList` 的极值、区间与有序访问（F06，`DotNetCore.Collections.Multi`，6.2.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Ordered access and range queries** — extremes, ranges and ordered access on `OrderedMultiList` (F06, `DotNetCore.Collections.Multi`, 6.2.0).
 
-在全序之上，`OrderedMultiList<T>` 提供一组有序访问与区间查询：`GetFirst` / `GetLast` 取极值（O(log n)），`GetRange` 按元素区间切出升序的副本展开序列，且可独立控制两端开闭。这些能力都依赖底层顺序统计树的有序叶链，区间扫描不重新进入分支。示例同时展示 `OrderedMultiDictionary` 的**键升序、键下值升序**这一双轴有序语义。
+## What this sample demonstrates
 
-## 什么时候用
+On top of its total order, `OrderedMultiList<T>` provides a set of ordered access and range queries: `GetFirst` / `GetLast` take the extremes (O(log n)), and `GetRange` slices out an ascending copy-expanded sequence by element range, with each endpoint's inclusivity controlled independently. All of these rely on the ordered leaf chain of the underlying order-statistic tree, so a range scan does not re-enter branches. The sample also shows the two-axis ordered semantics of `OrderedMultiDictionary`: **keys ascending, values within each key ascending**.
 
-- 排行榜的 Top / Bottom，或任何「即取极值」的场景。
-- 分数段 / 字母段等**区间过滤**，不想做全量 `Where` + `OrderBy`。
-- 有序快照输出，直接对接报表 / 榜单。
-- 不该用：无序只需计数 → `MultiList`；需要降序枚举 → 反转结果或换比较器。
+## When to use it
 
-## 如何运行
+- Top / Bottom of a leaderboard, or any "grab the extreme immediately" scenario.
+- **Range filtering** such as score bands / letter bands, when you do not want a full `Where` + `OrderBy`.
+- Ordered snapshot output that feeds directly into reports / leaderboards.
+- Do not use it for: unordered counting only → `MultiList`; descending enumeration → reverse the result or swap the comparer.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.OrderedAccessRange
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 极值即取即用 | `GetFirst()` / `GetLast()` |
-| 2 | 闭区间与半开区间 | `GetRange(from, to)` / `GetRange(from, to, inclusiveFrom, inclusiveTo)` |
-| 3 | 空集合行为 | `GetFirst` 抛 `InvalidOperationException`；`GetRange` 返回空序列 |
-| 4 | 有序映射键序 / 值序 | `OrderedMultiDictionary.Keys` / 索引器 `this[key]` |
+| 1 | Extremes taken immediately | `GetFirst()` / `GetLast()` |
+| 2 | Closed and half-open ranges | `GetRange(from, to)` / `GetRange(from, to, inclusiveFrom, inclusiveTo)` |
+| 3 | Empty-collection behavior | `GetFirst` throws `InvalidOperationException`; `GetRange` returns an empty sequence |
+| 4 | Ordered map key order / value order | `OrderedMultiDictionary.Keys` / indexer `this[key]` |
 
-## 关键 API
+## Key APIs
 
-- `OrderedMultiList<T>.GetFirst()` / `GetLast()` — 最小 / 最大元素，O(log n)；空集合抛 `InvalidOperationException`。
-- `OrderedMultiList<T>.GetRange(T from, T to)` — 两端**闭**的区间，返回副本展开的升序序列。
-- `OrderedMultiList<T>.GetRange(T from, T to, bool inclusiveFrom, bool inclusiveTo)` — 独立控制两端开闭；`from` 排在 `to` 之后时返回空序列。
-- `OrderedMultiDictionary<TKey,TValue>.Keys` — 按键升序枚举。
-- `OrderedMultiDictionary<TKey,TValue>.this[TKey]` — 该键下值升序的活序列；缺键返回空集合。
+- `OrderedMultiList<T>.GetFirst()` / `GetLast()` — smallest / largest element, O(log n); an empty collection throws `InvalidOperationException`.
+- `OrderedMultiList<T>.GetRange(T from, T to)` — a **closed** range at both ends, returning an ascending copy-expanded sequence.
+- `OrderedMultiList<T>.GetRange(T from, T to, bool inclusiveFrom, bool inclusiveTo)` — controls each endpoint's inclusivity independently; returns an empty sequence when `from` sorts after `to`.
+- `OrderedMultiDictionary<TKey,TValue>.Keys` — enumerates keys in ascending order.
+- `OrderedMultiDictionary<TKey,TValue>.this[TKey]` — a live sequence of the values under that key in ascending order; a missing key returns an empty collection.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **区间边界由比较器定义**：换比较器即换边界语义，本类型不解释元素含义。
-- **极值在空集合上抛** `InvalidOperationException`：先判 `TotalCount` / `DistinctCount`。
-- **区间结果是副本展开**：长度按副本数计（`bean` 两份就产出两次）。
-- **有序映射的值序是「每键内」升序**，不是全局值排序；跨键的值按键交错。
+- **Range boundaries are defined by the comparer**: swapping the comparer swaps the boundary semantics; this type does not interpret element meaning.
+- **Extremes throw on an empty collection** (`InvalidOperationException`): check `TotalCount` / `DistinctCount` first.
+- **A range result is copy-expanded**: its length is counted in copies (`bean` with two copies is produced twice).
+- **An ordered map's value order is "within each key" ascending**, not a global value sort; values across keys are interleaved by key.

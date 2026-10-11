@@ -1,42 +1,44 @@
 # Sample.LiveReverseView
 
-> **多重映射活反查视图** — `MultiDictionary&lt;TKey,TValue&gt;.AsReverse()`（F18，`DotNetCore.Collections.Multi`，6.3.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Live reverse view of a multimap** — `MultiDictionary&lt;TKey,TValue&gt;.AsReverse()` (F18, `DotNetCore.Collections.Multi`, 6.3.0).
 
-`MultiDictionary<TKey,TValue>.AsReverse()` 返回**活的只读倒排视图**（`IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>>`）：值 → 持有它的键集合。查找与枚举反映源 map 的后续变化，且不暴露突变成员。视图直接读源已维护的反向索引（`_valueIndex` + null 值桶），构建零成本、每读 O(1)。它是两个倒排入口的**活半边**，与 `ReverseMultiDictionary` 快照（F17）任意时刻一致。
+## What this sample demonstrates
 
-## 什么时候用
+`MultiDictionary<TKey,TValue>.AsReverse()` returns a **live read-only inverted view** (`IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>>`): value → the set of keys holding it. Lookups and enumeration reflect later changes to the source map, and no mutating members are exposed. The view reads the reverse index the source already maintains (`_valueIndex` + the null-value bucket) directly, so it is zero-cost to build and O(1) per read. It is the **live half** of the two inverted-index entry points, consistent with the `ReverseMultiDictionary` snapshot (F17) at any moment.
 
-- UI / 服务内的**实时反查**：源一变视图即变，无需重建。
-- 需要零拷贝、只读安全地暴露倒排关系。
-- 不该用：导出 / 持久化（用 `ReverseMultiDictionary` 快照）；跨线程无锁读（需外部同步）。
+## When to use it
 
-## 如何运行
+- **Real-time reverse lookup** inside a UI / service: the view changes as soon as the source does, with no rebuild.
+- You need to expose the inverted relation zero-copy and read-only safely.
+- Do not use it for: export / persistence (use a `ReverseMultiDictionary` snapshot); lock-free reads across threads (external synchronization is needed).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.LiveReverseView
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 活视图随源变化 | `AsReverse()` / `this[value]` |
-| 2 | 缺值与折叠多重性 | `inverted[value]`（缺值空集合）/ 同键重复只列一次 |
-| 3 | 只读安全 | 静态类型 `IReadOnlyDictionary<...>` / `Count` |
-| 4 | null 值条目 | `ContainsKey(null)` / `this[null]` |
+| 1 | Live view changes with the source | `AsReverse()` / `this[value]` |
+| 2 | Missing values and collapsed multiplicity | `inverted[value]` (empty collection for a missing value) / the same key repeated is listed once |
+| 3 | Read-only safety | static type `IReadOnlyDictionary<...>` / `Count` |
+| 4 | Null-value entry | `ContainsKey(null)` / `this[null]` |
 
-## 关键 API
+## Key APIs
 
-- `MultiDictionary<TKey,TValue>.AsReverse()` — 活只读倒排视图；返回 `IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>>`。
-- `inverted[value]` — 持有该值的键集合；缺值返回空集合，不抛。
-- `inverted.Count` — 不同值数；枚举反映源后续变化。
-- 存储的 `null` 值作为**最后枚举**的 `null` 条目浮现。
+- `MultiDictionary<TKey,TValue>.AsReverse()` — a live read-only inverted view; returns `IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>>`.
+- `inverted[value]` — the set of keys holding that value; a missing value returns an empty collection without throwing.
+- `inverted.Count` — the distinct value count; enumeration reflects later source changes.
+- A stored `null` value surfaces as a `null` entry **enumerated last**.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **活视图，依赖源存活**：不要序列化它，也不要长期持有而源已弃。
-- **非线程安全**：视图暴露源内部、无同步；多线程读需外部加锁或改用不可变结构。
-- **折叠多重性**：同键存同值多次只列一次键。
-- **缺值空集合**：与 `MultiDictionary` 索引器一致，不抛。
+- **It is a live view that depends on the source surviving**: do not serialize it, and do not hold it long-term after the source is discarded.
+- **Not thread-safe**: the view exposes the source's internals without synchronization; multi-threaded reads need external locking or an immutable structure.
+- **Collapsed multiplicity**: storing the same value multiple times under one key lists the key only once.
+- **Empty collection for a missing value**: consistent with the `MultiDictionary` indexer, it does not throw.

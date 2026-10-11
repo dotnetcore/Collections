@@ -1,44 +1,46 @@
 # Sample.OrderStatisticTree
 
-> **顺序统计树引擎** — `OrderStatisticTree&lt;TKey,TPayload&gt;`（internal）经 `OrderedMultiList&lt;T&gt;` 观察（F07，`DotNetCore.Collections.Multi`，6.2.0 / 6.5.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Order-statistic tree engine** — `OrderStatisticTree&lt;TKey,TPayload&gt;` (internal), observed through `OrderedMultiList&lt;T&gt;` (F07, `DotNetCore.Collections.Multi`, 6.2.0 / 6.5.0).
 
-`OrderStatisticTree<TKey,TPayload>` 是有序 Multi 家族的存储引擎，把每个不同键映射到副本数并缓存子树副本总数，使「第 k 个副本」「某键的名次」成为**单次根到叶下降**。引擎是 `internal`，不对外暴露，因此本示例**只经 `OrderedMultiList<T>` 的可观察行为**演示：名次读（`GetByRank` / `GetRank`）、中位 / 分位（`GetMedian` / `GetQuantile`）、区间与不同元素视图。
+## What this sample demonstrates
 
-## 什么时候用
+`OrderStatisticTree<TKey,TPayload>` is the storage engine of the ordered Multi family: it maps each distinct key to a copy count and caches subtree copy totals, making "the k-th copy" and "the rank of a key" a **single root-to-leaf descent**. The engine is `internal` and not exposed, so this sample demonstrates **only through the observable behavior of `OrderedMultiList<T>`**: rank reads (`GetByRank` / `GetRank`), median / quantile (`GetMedian` / `GetQuantile`), ranges and the distinct-element view.
 
-- 需要 O(log n) 的**名次读**（第 k 个副本 / 某元素名次），而不想物化整条序列。
-- 需要中位 / 分位这类顺序统计量（见 F24）。
-- 本篇也面向需要理解有序 Multi 性能模型的读者；一般使用方直接用 F05 / F06 / F08 / F24 即可。
-- 不该用：直接引用引擎类型 —— 它是 `internal`，编译不过。
+## When to use it
 
-## 如何运行
+- You need an O(log n) **rank read** (the k-th copy / the rank of an element) without materializing the whole sequence.
+- You need order statistics such as median / quantile (see F24).
+- This article also targets readers who need to understand the performance model of ordered Multi; ordinary consumers can just use F05 / F06 / F08 / F24.
+- Do not use it for: referencing the engine type directly — it is `internal` and will not compile.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.OrderStatisticTree
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 名次读（O(log n)） | `GetByRank` / `GetRank` / `this[int]` / `IndexOf` |
-| 2 | 中位与分位 | `GetMedian` / `GetQuantile` |
-| 3 | 区间与不同元素视图 | `GetRange` / `DistinctItems` / `EntrySet` |
+| 1 | Rank reads (O(log n)) | `GetByRank` / `GetRank` / `this[int]` / `IndexOf` |
+| 2 | Median and quantile | `GetMedian` / `GetQuantile` |
+| 3 | Ranges and distinct-element view | `GetRange` / `DistinctItems` / `EntrySet` |
 
-## 关键 API
+## Key APIs
 
-- `OrderedMultiList<T>.GetByRank(int)` — 第 k 个**副本**（名次针对展开序列）；越界抛 `ArgumentOutOfRangeException`。
-- `OrderedMultiList<T>.GetRank(T)` — 元素首份副本的名次；不存在返回 `-1`。
-- `OrderedMultiList<T>.this[int]` / `IndexOf(T)` — 分别等价于 `GetByRank` / `GetRank`。
-- `OrderedMultiList<T>.GetMedian()` — 中位元素；偶数副本取**下中位**，空集合抛 `InvalidOperationException`。
-- `OrderedMultiList<T>.GetQuantile(double)` — 最近秩定义（`ceil(q × TotalCount) - 1`），永不插值。
-- `OrderedMultiList<T>.DistinctItems()` / `EntrySet()` — 不同元素 / 「元素 + 副本数」视图。
+- `OrderedMultiList<T>.GetByRank(int)` — the k-th **copy** (rank targets the expanded sequence); out of range throws `ArgumentOutOfRangeException`.
+- `OrderedMultiList<T>.GetRank(T)` — the rank of an element's first copy; returns `-1` when absent.
+- `OrderedMultiList<T>.this[int]` / `IndexOf(T)` — equivalent to `GetByRank` / `GetRank` respectively.
+- `OrderedMultiList<T>.GetMedian()` — the median element; for an even copy count it takes the **lower median**, and an empty collection throws `InvalidOperationException`.
+- `OrderedMultiList<T>.GetQuantile(double)` — nearest-rank definition (`ceil(q × TotalCount) - 1`), never interpolating.
+- `OrderedMultiList<T>.DistinctItems()` / `EntrySet()` — the distinct-element / "element + copy count" views.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **引擎是 `internal`**：文档 / 示例不要引用 `OrderStatisticTree` 作为公开 API（会编译不过）。
-- **名次针对副本展开序列**，不是不同元素下标：`GetByRank(0)` 是最小元素的**第一份副本**。
-- **6.5.0 前是红黑树**：引用旧文档时注意引擎差异（对外语义不变）。
-- **`GetQuantile` 不插值**：返回的永远是一个实际持有的元素，不会在两个元素之间取平均。
+- **The engine is `internal`**: docs / samples must not reference `OrderStatisticTree` as a public API (it will not compile).
+- **Ranks target the copy-expanded sequence**, not distinct-element indices: `GetByRank(0)` is the **first copy** of the smallest element.
+- **It was a red-black tree before 6.5.0**: be mindful of the engine difference when citing older docs (the external semantics are unchanged).
+- **`GetQuantile` does not interpolate**: it always returns an element actually held, never the average between two elements.

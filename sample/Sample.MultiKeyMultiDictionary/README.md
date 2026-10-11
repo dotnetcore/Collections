@@ -1,44 +1,46 @@
 # Sample.MultiKeyMultiDictionary
 
-> **复合键多重映射 MultiKeyMultiDictionary&lt;TKey,TValue&gt;** — 复合键 + 一键多值（F20，`DotNetCore.Collections.Multi`，6.4.0；6.8.0 增强）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Composite-key multimap MultiKeyMultiDictionary&lt;TKey,TValue&gt;** — composite key + one-key-many-values (F20, `DotNetCore.Collections.Multi`, 6.4.0; enhanced in 6.8.0).
 
-`MultiKeyMultiDictionary<TKey,TValue>` 的键是同质分量序列（`TKey[]`），每个完整键映射到**值集合**。它是 `MultiKeyDictionary`（N 分量 → 1 值）与 `MultiDictionary`（1 键 → N 值）的组合。存储是键分量上的 trie；每个完整键持可配置工厂建的值集合（默认 `List` 保留重复）。示例展示复合键多值的计数口径、**前缀投影**（trie 继承的能力），以及 6.8.0 新增的 `EntrySet()`。
+## What this sample demonstrates
 
-## 什么时候用
+The key of `MultiKeyMultiDictionary<TKey,TValue>` is a sequence of homogeneous components (`TKey[]`), and each full key maps to a **value set**. It is the combination of `MultiKeyDictionary` (N components → 1 value) and `MultiDictionary` (1 key → N values). Storage is a trie over the key components; each full key holds a value set built by a configurable factory (a `List` by default, preserving duplicates). The sample shows the counting convention of composite-key multi-values, **prefix projection** (a capability inherited from the trie), and the `EntrySet()` added in 6.8.0.
 
-- 层次路径 + 多标签（复合键 + 一键多值）。
-- 需要**前缀查询 / 前缀删除**（`GetByPrefix` / `RemovePrefix`），这是元组键 `Dictionary` 做不到的。
-- 不该用：固定异构二 / 三键 → `TwoKey` / `ThreeKey`；单键热点 O(1) → `MultiDictionary`。
+## When to use it
 
-## 如何运行
+- Hierarchical paths plus multiple tags (composite key + one-key-many-values).
+- You need **prefix queries / prefix deletion** (`GetByPrefix` / `RemovePrefix`), which a tuple-key `Dictionary` cannot do.
+- Do not use it for: fixed heterogeneous two / three keys → `TwoKey` / `ThreeKey`; single-key O(1) hot spots → `MultiDictionary`.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.MultiKeyMultiDictionary
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 复合键多值（Count = 完整键数） | `Add` / `Count` / `TotalValueCount` / `this[key]` |
-| 2 | 前缀投影 | `CountOfPrefix` / `GetByPrefix` / `GetBranches` |
-| 3 | 删整棵子树 | `RemovePrefix` |
+| 1 | Composite-key multi-values (Count = full key count) | `Add` / `Count` / `TotalValueCount` / `this[key]` |
+| 2 | Prefix projection | `CountOfPrefix` / `GetByPrefix` / `GetBranches` |
+| 3 | Removing a whole subtree | `RemovePrefix` |
 | 4 | 6.8 EntrySet | `EntrySet()` |
 
-## 关键 API
+## Key APIs
 
-- `MultiKeyMultiDictionary<TKey,TValue>.Add(TKey[], TValue)` — 单对增删 = trie 走位 O(键长) + 集合操作。
-- `Count` / `KeyCount` — **完整键数**；`TotalValueCount` — 值总数。
-- `this[TKey[]]` — 该完整键下的值集合；缺键返回空集合，不抛。
-- `GetByPrefix(TKey[])` / `CountOfPrefix(TKey[])` / `GetBranches(TKey[])` — 前缀投影（子树遍历）。
-- `RemovePrefix(TKey[])` — 删整棵子树，返回删除的**值**数。
-- `EntrySet()` — 6.8：`(TKey[] Key, TValue Value)` 扁平投影，一值一对。
+- `MultiKeyMultiDictionary<TKey,TValue>.Add(TKey[], TValue)` — single add / remove = trie walk O(key length) + a set operation.
+- `Count` / `KeyCount` — the **full key count**; `TotalValueCount` — the value total.
+- `this[TKey[]]` — the value set under that full key; a missing key returns an empty collection without throwing.
+- `GetByPrefix(TKey[])` / `CountOfPrefix(TKey[])` / `GetBranches(TKey[])` — prefix projection (subtree traversal).
+- `RemovePrefix(TKey[])` — removes a whole subtree, returning the deleted **value** count.
+- `EntrySet()` — 6.8: a flat `(TKey[] Key, TValue Value)` projection, one pair per value.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **`Count` 是完整键数**，不是值数：值总数用 `TotalValueCount`。
-- **缺键索引器返回空集合**，不抛。
-- **完整键 O(键长) 而非 O(1)**：trie 走位；要元组键 O(1) 用 `MultiDictionary` + 元组键（失去前缀）。
-- **`RemovePrefix` 返回的是值数**，不是键数；需要键数先 `CountOfPrefix`。
+- **`Count` is the full key count**, not the value count: use `TotalValueCount` for the value total.
+- **A missing-key indexer returns an empty collection** without throwing.
+- **A full key is O(key length), not O(1)**: it is a trie walk; for tuple-key O(1) use `MultiDictionary` with a tuple key (losing prefixes).
+- **`RemovePrefix` returns the value count**, not the key count; use `CountOfPrefix` first if you need the key count.

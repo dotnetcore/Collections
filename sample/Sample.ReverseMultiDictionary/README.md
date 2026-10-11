@@ -1,45 +1,47 @@
 # Sample.ReverseMultiDictionary
 
-> **反向多重字典 ReverseMultiDictionary&lt;V,K&gt;** — `MultiDictionary` 的倒排快照（F17，`DotNetCore.Collections.Multi`，6.3.0；6.7.1 增强）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Reverse multidictionary ReverseMultiDictionary&lt;V,K&gt;** — an inverted snapshot of `MultiDictionary` (F17, `DotNetCore.Collections.Multi`, 6.3.0; enhanced in 6.7.1).
 
-`ReverseMultiDictionary<V,K>` 把「值 → 持有它的键集合」拷出来，成为**自包含**实例：「哪些键存了这个值？」O(1) 回答。构造器从源 map 拷出绑定、不保留引用链，因此快照在源后续变化 / 被丢弃后保持不变，可安全序列化。示例展示快照语义、轴对调的成员命名，以及它与 6.7.1 落地的 `AsReverse` 全家桶（活视图 / 有序拷贝 / 独立拷贝）的对照。
+## What this sample demonstrates
 
-## 什么时候用
+`ReverseMultiDictionary<V,K>` copies out "value → the set of keys holding it" into a **self-contained** instance, answering "which keys store this value?" in O(1). The constructor copies the bindings out of the source map without retaining a reference chain, so the snapshot stays unchanged after the source later changes / is discarded and can be safely serialized. The sample shows the snapshot semantics, the axis-swapped member naming, and how it compares with the `AsReverse` family (live view / ordered copy / independent copy) shipped in 6.7.1.
 
-- 离线倒排分析、需要**自包含**可序列化的倒排索引。
-- 需要实例构造后仍可**独立增删**。
-- 不该用：要跟源联动 → 用 `MultiDictionary.AsReverse()`（活视图，见 F18）。
+## When to use it
 
-## 如何运行
+- Offline inverted-index analysis needing a **self-contained**, serializable inverted index.
+- You need the instance to remain **independently mutable** after construction.
+- Do not use it for: following the source → use `MultiDictionary.AsReverse()` (a live view, see F18).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.ReverseMultiDictionary
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 倒排快照（拷贝，不跟源） | `new ReverseMultiDictionary<V,K>(source)` / `this[value]` |
-| 2 | 轴对调命名与缺值语义 | `ValueCount` / `TotalKeyCount` / `KeyCount` / `ContainsValue` / `ContainsKey` |
-| 3 | 独立可变与不变式 | `Add` / `Remove(value, key)` |
-| 4 | `AsReverse` 全家桶对照 | `MultiDictionary.AsReverse` / `OrderedMultiDictionary.AsReverse` / `BiDictionary.AsReverse` / `TwoKeyDictionary.AsReverse` |
+| 1 | Inverted snapshot (copy, does not follow the source) | `new ReverseMultiDictionary<V,K>(source)` / `this[value]` |
+| 2 | Axis-swapped naming and missing-value semantics | `ValueCount` / `TotalKeyCount` / `KeyCount` / `ContainsValue` / `ContainsKey` |
+| 3 | Independent mutability and invariants | `Add` / `Remove(value, key)` |
+| 4 | `AsReverse` family comparison | `MultiDictionary.AsReverse` / `OrderedMultiDictionary.AsReverse` / `BiDictionary.AsReverse` / `TwoKeyDictionary.AsReverse` |
 
-## 关键 API
+## Key APIs
 
-- `ReverseMultiDictionary<V,K>(MultiDictionary<K,V> source)` — 从源 map 拷出绑定的自包含快照。
-- `this[V value]` — 持有该值的键集合；缺值返回空集合，不抛。
-- `Count` / `ValueCount` — 不同**值**数（镜像 `MultiDictionary.KeyCount`）。
-- `TotalKeyCount` — 键出现总数（镜像 `TotalValueCount`）；`KeyCount(V)` — 该值下的键数。
-- `ContainsValue(V)` — O(1) 存在性；`ContainsKey(K)` — 扫描键（O(entries)）。
-- `Add` / `Remove(V)` / `Remove(V,K)` / `Clear` — 快照自身可独立变；「无空内层」不变式镜像。
-- `ToSerializableModel()` / `FromModel` — 序列化模型（`MultiDictionaryModel<V,K>`）。
+- `ReverseMultiDictionary<V,K>(MultiDictionary<K,V> source)` — a self-contained snapshot copying the bindings out of the source map.
+- `this[V value]` — the set of keys holding that value; a missing value returns an empty collection without throwing.
+- `Count` / `ValueCount` — the number of distinct **values** (mirrors `MultiDictionary.KeyCount`).
+- `TotalKeyCount` — the total number of key occurrences (mirrors `TotalValueCount`); `KeyCount(V)` — the key count under that value.
+- `ContainsValue(V)` — O(1) existence; `ContainsKey(K)` — scans the keys (O(entries)).
+- `Add` / `Remove(V)` / `Remove(V,K)` / `Clear` — the snapshot is independently mutable; the "no empty inner set" invariant is mirrored.
+- `ToSerializableModel()` / `FromModel` — the serialization model (`MultiDictionaryModel<V,K>`).
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **是快照不是活视图**：源变化不自动反映；要联动用 `MultiDictionary.AsReverse()`。
-- **重复值折叠**：同键存同值多次，倒排只列一次键。
-- **`null` 值成 `null` 条目**（专用桶），枚举最后。
-- **`AsReverse` 一名的多种形态**：`MultiDictionary` / `BiDictionary` 返回**活视图**，`OrderedMultiDictionary` 返回**有序拷贝**，`TwoKey` / `ThreeKey` 返回**独立拷贝**；读返回类型再假定活性。
+- **It is a snapshot, not a live view**: source changes are not reflected automatically; for linkage use `MultiDictionary.AsReverse()`.
+- **Duplicate values collapse**: storing the same value multiple times under one key lists the key only once in the inverted index.
+- **A `null` value becomes a `null` entry** (a dedicated bucket), enumerated last.
+- **The single name `AsReverse` has several forms**: `MultiDictionary` / `BiDictionary` return a **live view**, `OrderedMultiDictionary` returns an **ordered copy**, and `TwoKey` / `ThreeKey` return an **independent copy**; read the return type before assuming liveness.
