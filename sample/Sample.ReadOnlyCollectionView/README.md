@@ -1,42 +1,44 @@
 # Sample.ReadOnlyCollectionView
 
-> **跨 TFM 只读值视图包装** — `MultiDictionary` 的只读值视图（F19，`DotNetCore.Collections.Multi`，6.4.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Cross-TFM read-only value-view wrapper** — the read-only value view of `MultiDictionary` (F19, `DotNetCore.Collections.Multi`, 6.4.0).
 
-包内有一个 `internal sealed` 的 `ReadOnlyCollectionView<T>`，把 `ICollection<T>` 暴露为 `IReadOnlyCollection<T>`。它解决一个具体的跨 TFM 危险：把内层集合（如 `HashSet<T>`）以**裸转型**暴露为 `IReadOnlyCollection<T>`，而框架的 `HashSet<T>` 在 net451 / net461 上既不静态声明也不在运行时实现该接口，裸转型恰好在这些受支持目标上抛 `InvalidCastException`。本示例**只演示用户可见面**（索引器 / `AsReadOnly`），说明修复后的行为：全 TFM 可读、活视图、零拷贝。
+## What this sample demonstrates
 
-## 什么时候用
+The package has an `internal sealed` `ReadOnlyCollectionView<T>` that exposes an `ICollection<T>` as an `IReadOnlyCollection<T>`. It addresses a specific cross-TFM danger: exposing the inner collection (such as `HashSet<T>`) as an `IReadOnlyCollection<T>` via a **raw cast**, when the framework's `HashSet<T>` neither statically declares nor implements that interface at runtime on net451 / net461, so the raw cast throws `InvalidCastException` exactly on those supported targets. This sample demonstrates **only the user-visible surface** (the indexer / `AsReadOnly`) to show the fixed behavior: readable on all TFMs, a live view, zero-copy.
 
-- 使用方无直接场景；本篇帮助理解「为何 net451 上只读值视图曾经 / 不再抛」。
-- 功能使用见 F02（`MultiDictionary`）/ F18（`AsReverse`）。
-- 不该用：在示例 / 文档里直接引用 `ReadOnlyCollectionView`（它是 `internal`，编译不过）。
+## When to use it
 
-## 如何运行
+- Consumers have no direct scenario; this article helps explain "why the read-only value view used to throw / no longer throws on net451".
+- For feature usage see F02 (`MultiDictionary`) / F18 (`AsReverse`).
+- Do not use it for: referencing `ReadOnlyCollectionView` directly in a sample / doc (it is `internal` and will not compile).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.ReadOnlyCollectionView
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 只读值视图（内层 `HashSet`） | `new MultiDictionary<TKey,TValue>(allowDuplicateValues: false)` / `this[key]` |
-| 2 | 活视图（不是快照） | `this[key]` 的 `Count` / 枚举随源变化 |
-| 3 | `AsReadOnly` / `ToDictionary` 内层视图 | `AsReadOnly()` / `ToDictionary()` |
-| 4 | 跨 TFM 说明与陷阱 | 只用 `IReadOnlyCollection<T>`，不引用内部类型 |
+| 1 | Read-only value view (inner `HashSet`) | `new MultiDictionary<TKey,TValue>(allowDuplicateValues: false)` / `this[key]` |
+| 2 | Live view (not a snapshot) | `Count` / enumeration of `this[key]` change with the source |
+| 3 | `AsReadOnly` / `ToDictionary` inner views | `AsReadOnly()` / `ToDictionary()` |
+| 4 | Cross-TFM notes and pitfalls | Use only `IReadOnlyCollection<T>`, do not reference the internal type |
 
-## 关键 API
+## Key APIs
 
-- `MultiDictionary<TKey,TValue>(bool allowDuplicateValues)` — `false` 时内层为 `HashSet<TValue>`。
-- `MultiDictionary<TKey,TValue>.this[TKey]` — 返回 `IReadOnlyCollection<TValue>`，经包装暴露（活视图）。
-- `MultiDictionary<TKey,TValue>.AsReadOnly()` — 整张 map 的活只读视图。
-- `MultiDictionary<TKey,TValue>.ToDictionary()` — 外层快照，内层值集合仍是活视图。
+- `MultiDictionary<TKey,TValue>(bool allowDuplicateValues)` — with `false` the inner collection is a `HashSet<TValue>`.
+- `MultiDictionary<TKey,TValue>.this[TKey]` — returns `IReadOnlyCollection<TValue>`, exposed through the wrapper (a live view).
+- `MultiDictionary<TKey,TValue>.AsReadOnly()` — a live read-only view of the whole map.
+- `MultiDictionary<TKey,TValue>.ToDictionary()` — an outer snapshot whose inner value sets are still live views.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **内部类型**：`ReadOnlyCollectionView<T>` 是 `internal`，不要写进示例 / 公开文档当 API。
-- **活视图非快照**：改 map 后视图内容跟着变；要冻结用 `ToSerializableModel`（F10）。
-- **问题域是 net451 / net461**：高 TFM 上 `HashSet` 已实现该接口，但包内统一包装以避免 `#if` 分叉。
-- **`ToDictionary` 的外层是快照、内层是活视图**：两者语义不同，勿混。
+- **Internal type**: `ReadOnlyCollectionView<T>` is `internal`; do not write it into samples / public docs as an API.
+- **A live view, not a snapshot**: view contents change after the map changes; use `ToSerializableModel` (F10) to freeze.
+- **The problem domain is net451 / net461**: on higher TFMs `HashSet` already implements the interface, but the package wraps uniformly to avoid `#if` forks.
+- **`ToDictionary`'s outer layer is a snapshot while its inner layers are live views**: the two semantics differ, do not mix them up.

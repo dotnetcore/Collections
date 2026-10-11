@@ -1,50 +1,52 @@
 # Sample.CollectionChanged
 
-> **自建变更通知 CollectionChanged** — `MultiList<T>` / `MultiDictionary<TKey,TValue>` 的变更事件（6.9.0，`DotNetCore.Collections.Multi`，6.9.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **A home-grown change notification, CollectionChanged** — the change events of `MultiList<T>` / `MultiDictionary<TKey,TValue>` (6.9.0, `DotNetCore.Collections.Multi`, 6.9.0).
 
-两个核心类型各自暴露一个 `CollectionChanged` 事件：每次**真正改变**集合的改动（加、删、清空）都会触发一次，
-事件参数 `CollectionChangedEventArgs<TKey>` 说明改的是哪个元素/键、移动了多少份、以及改动后的计数。
-本示例展示三个侧面：`MultiList<T>` 的加/删/清空通知、处理器读回集合看到的是**新状态**、
-`MultiDictionary<TKey,TValue>` 以「键」为单位报告值数量变化。核心记忆点——**它不是框架的 `INotifyCollectionChanged`**。
+## What this sample demonstrates
 
-## 什么时候用
+The two core types each expose a `CollectionChanged` event: every change that **actually mutates** the collection (add, remove, clear) fires it once,
+and the event arguments `CollectionChangedEventArgs<TKey>` describe which element/key changed, how many copies moved, and the count after the change.
+This sample shows three facets: add/remove/clear notifications for `MultiList<T>`, a handler reading the collection back sees the **new state**,
+and `MultiDictionary<TKey,TValue>` reports value-count changes in units of a "key". The key takeaway — **it is not the framework's `INotifyCollectionChanged`**.
 
-- 需要在集合变化时触发副作用（刷新界面、写审计日志、级联更新缓存）。
-- 需要「改动后」而非「改动前」的一致状态——事件在集合到达新状态后才触发。
-- 不该用：需要位置型、面向索引的变更通知（多重集没有位置）→ 用有序集合并配合框架通知；
-  只是读取数据、无副作用 → 无需订阅（不订阅时事件**零开销**）。
+## When to use it
 
-## 如何运行
+- Needing to trigger side effects when a collection changes (refresh the UI, write an audit log, cascade-update a cache).
+- Needing the consistent state "after the change" rather than "before" — the event fires after the collection reaches its new state.
+- Not for: needing positional, index-oriented change notifications (a multiset has no positions) → use an ordered collection together with the framework notification;
+  only reading data with no side effects → no need to subscribe (with no subscriber the event is **zero-cost**).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.CollectionChanged
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | MultiList 的加 / 删 / 清空通知 | `CollectionChanged` / `CollectionChangeType.Add` / `Remove` / `Reset` |
-| 2 | 事件后读回集合看到新状态 | 处理器内 `TotalCount` 已含本次改动 |
-| 3 | MultiDictionary 以键为单位的通知 | `Add(TKey,TValue)` / `Remove(TKey)` / `Remove(TKey,TValue)` / `Clear()` |
-| 4 | 与框架通知的区别 | 事件参数是自建的 `CollectionChangedEventArgs<TKey>` |
+| 1 | Add / remove / clear notifications for MultiList | `CollectionChanged` / `CollectionChangeType.Add` / `Remove` / `Reset` |
+| 2 | Reading the collection back after the event sees the new state | inside the handler, `TotalCount` already includes this change |
+| 3 | Per-key notifications for MultiDictionary | `Add(TKey,TValue)` / `Remove(TKey)` / `Remove(TKey,TValue)` / `Clear()` |
+| 4 | How it differs from the framework notification | the event args are the home-grown `CollectionChangedEventArgs<TKey>` |
 
-## 关键 API
+## Key APIs
 
-- `MultiList<T>.CollectionChanged` / `MultiDictionary<TKey,TValue>.CollectionChanged` — `EventHandler<CollectionChangedEventArgs<TKey>>`。
-- `CollectionChangedEventArgs<TKey>.ChangeType` — `CollectionChangeType`（`Add` / `Remove` / `Reset`）。
-- `CollectionChangedEventArgs<TKey>.Key` — 元素（bag）或键（multimap）；`Reset` 时无意义。
-- `CollectionChangedEventArgs<TKey>.Count` — 本次移动的份数（bag）或值数（multimap）；`Reset` 恒为 0。
-- `CollectionChangedEventArgs<TKey>.NewCount` — 改动后的计数（0 表示该条目已消失）；`Reset` 恒为 0。
-- `CollectionChangedEventArgs<TKey>.ToString()` — 一行摘要，如 `Add apple x3 -> 3`。
+- `MultiList<T>.CollectionChanged` / `MultiDictionary<TKey,TValue>.CollectionChanged` — `EventHandler<CollectionChangedEventArgs<TKey>>`.
+- `CollectionChangedEventArgs<TKey>.ChangeType` — `CollectionChangeType` (`Add` / `Remove` / `Reset`).
+- `CollectionChangedEventArgs<TKey>.Key` — the element (bag) or key (multimap); meaningless for `Reset`.
+- `CollectionChangedEventArgs<TKey>.Count` — the number of copies moved this time (bag) or values (multimap); always 0 for `Reset`.
+- `CollectionChangedEventArgs<TKey>.NewCount` — the count after the change (0 means the entry is gone); always 0 for `Reset`.
+- `CollectionChangedEventArgs<TKey>.ToString()` — a one-line summary, e.g. `Add apple x3 -> 3`.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **不是 `INotifyCollectionChanged`**：框架通知是位置导向的，而多重集没有位置、一次调用可移动多份副本，
-  位置型动作无法表达；本通知是自建类型，无 `System.ObjectModel` 依赖。
-- **只有真正改变集合的改动才触发**：例如空袋再 `Clear()`、`Add` 被去重集合静默拒绝，都不会触发事件。
-- **事件在新状态之后触发**：处理器里读回集合能看到刚被告知的改动。
-- **不订阅时零开销**：内部只在有处理器时才构造参数对象。
-- **非线程安全**：并发修改仍需外部同步（并发类型见 F14）。
+- **It is not `INotifyCollectionChanged`**: the framework notification is position-oriented, but a multiset has no positions and a single call may move several copies,
+  so a positional action cannot express it; this notification is a home-grown type with no `System.ObjectModel` dependency.
+- **Only changes that actually mutate the collection fire**: e.g. `Clear()` on an already-empty bag, or an `Add` silently rejected by a de-duplicating collection, fire no event.
+- **The event fires after the new state**: inside the handler, reading the collection back shows the change just announced.
+- **Zero-cost when unsubscribed**: the arguments object is only constructed internally when a handler exists.
+- **Not thread-safe**: concurrent modification still needs external synchronization (for concurrent types see F14).

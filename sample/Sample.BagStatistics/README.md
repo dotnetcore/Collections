@@ -1,46 +1,48 @@
 # Sample.BagStatistics
 
-> **bag 统计 Mode / Median / Entropy** — `IMultiSet<T>` 上的三个频次分布摘要扩展（6.9.0，`DotNetCore.Collections.Multi`，6.9.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Bag statistics Mode / Median / Entropy** — three frequency-distribution summary extensions on `IMultiSet<T>` (6.9.0, `DotNetCore.Collections.Multi`, 6.9.0).
 
-三个扩展方法把任意 `IMultiSet<T>` 当作频次分布来概括：`Mode()` 给出**所有**并列最高副本数的元素（多重集可能多峰）、
-`Median(comparer)` 给出**上中位副本**、`Entropy()` 给出副本分布的香农熵（比特）。它们都通过 `EntrySet()`
-（不同元素 + 副本数）读取，**不展开副本**，所以对任何 bag 实现都成立，也不需要泛型数学支持。
+## What this sample demonstrates
 
-## 什么时候用
+Three extension methods summarize any `IMultiSet<T>` as a frequency distribution: `Mode()` yields **all** elements tied for the highest copy count (a multiset can be multimodal),
+`Median(comparer)` yields the **upper-median copy**, and `Entropy()` yields the Shannon entropy (in bits) of the copy distribution. They all read via `EntrySet()`
+(distinct elements + copy counts), **without expanding copies**, so they hold for any bag implementation and need no generic-math support.
 
-- 快速概括一批频次数据的「众数 / 中位 / 离散度」。
-- 需要「多峰」众数而不是单一赢家（普通众数实现常常只给一个）。
-- 需要中位数但又不想展开全部副本（内存 O(d) 而非 O(总份数)）。
-- 不该用：需要更细的分位 / 名次读 → `PositionalRead`（F24，经有序集）；只是想要直方图 → `EntrySet()`。
+## When to use it
 
-## 如何运行
+- Quickly summarizing the "mode / median / dispersion" of a batch of frequency data.
+- Needing a "multimodal" mode rather than a single winner (ordinary mode implementations often return only one).
+- Needing a median without expanding every copy (memory O(d) instead of O(total copies)).
+- Not for: needing finer quantile / rank reads → `PositionalRead` (F24, via an ordered set); just wanting a histogram → `EntrySet()`.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.BagStatistics
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 众数（并列全部返回） | `IMultiSet<T>.Mode()` |
-| 2 | 上中位副本（偶数取较大者） | `IMultiSet<T>.Median(IComparer<T>)` |
-| 3 | 副本分布香农熵（比特） | `IMultiSet<T>.Entropy()` |
+| 1 | Mode (all ties returned) | `IMultiSet<T>.Mode()` |
+| 2 | Upper-median copy (the larger one for an even total) | `IMultiSet<T>.Median(IComparer<T>)` |
+| 3 | Shannon entropy of the copy distribution (bits) | `IMultiSet<T>.Entropy()` |
 
-## 关键 API
+## Key APIs
 
-- `IMultiSet<T>.Mode()` — 返回 `IReadOnlyList<T>`，含**全部**并列最高副本数的元素；空袋返回空列表。
-- `IMultiSet<T>.Median(IComparer<T> comparer)` — 返回上中位副本：奇数总量取正中，偶数总量取两个中位中较大者；
-  结果必是袋中元素，不插值；空袋抛 `InvalidOperationException`。
-- `IMultiSet<T>.Entropy()` — 返回 `double`，`-Σ p·log2(p)`；单元素袋为 0，d 个元素均分为 `log2(d)`，空袋为 0。
-- 三者都基于 `EntrySet()`；`Median` 成本 O(d log d) 时间、O(d) 空间（d 为不同元素数）。
+- `IMultiSet<T>.Mode()` — returns `IReadOnlyList<T>` containing **all** elements tied for the highest copy count; an empty bag returns an empty list.
+- `IMultiSet<T>.Median(IComparer<T> comparer)` — returns the upper-median copy: for an odd total, the middle one; for an even total, the larger of the two middle ones;
+  the result is always an element of the bag, never interpolated; an empty bag throws `InvalidOperationException`.
+- `IMultiSet<T>.Entropy()` — returns a `double`, `-Σ p·log2(p)`; a single-element bag is 0, d equally sized elements give `log2(d)`, and an empty bag is 0.
+- All three are based on `EntrySet()`; `Median` costs O(d log d) time and O(d) space (d being the number of distinct elements).
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **`Median` 需要 `IComparer<T>`**：没有无参重载；因为多重集不一定是数值类型，绝不取平均。
-- **`Mode` 返回顺序**是袋枚举不同元素的顺序（哈希顺序，无契约），不要依赖插入序。
-- **上中位**：偶数总量返回的是较大的那个中位元素，不是两个中位的平均。
-- **空袋**：`Mode` 返回空列表、`Entropy` 返回 0，但 `Median` **抛** `InvalidOperationException`。
-- **非数值元素也能用**：计数是普通 `int`，不依赖泛型数学，`net451` 同样可用。
+- **`Median` requires an `IComparer<T>`**: there is no parameterless overload; because a multiset is not necessarily numeric, it never averages.
+- **`Mode`'s return order** is the order in which the bag enumerates distinct elements (hash order, no contract); do not rely on insertion order.
+- **Upper median**: for an even total it returns the larger of the two middle elements, not their average.
+- **Empty bag**: `Mode` returns an empty list and `Entropy` returns 0, but `Median` **throws** `InvalidOperationException`.
+- **Non-numeric elements work too**: the counts are plain `int` and do not rely on generic math, so `net451` works as well.

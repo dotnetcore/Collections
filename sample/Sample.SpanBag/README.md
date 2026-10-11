@@ -1,48 +1,51 @@
 # Sample.SpanBag
 
-> **栈上临时袋** — `SpanBag<T>`：栈上零堆分配的定容计数袋（对应 feature F22，`DotNetCore.Collections.Multi`，6.4.0）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Stack-based temporary bag** — `SpanBag<T>`: a fixed-capacity counting bag with zero heap allocation on the stack (feature F22, `DotNetCore.Collections.Multi`, 6.4.0).
 
-`SpanBag<T> where T : unmanaged` 是 `ref struct`：存储由调用方提供的 `Span<T>` / `Span<int>`（通常
-`stackalloc`）**借用**，用于单方法内短命频次统计——零堆分配、无需 `Dispose`。示例展示三个侧面：
-方法内找第一个重复值、定容与满容行为（新元素 `Add` 返回 `false`）、以及枚举 / 删除 / `Clear` 复用。
-生命周期契约由编译器强制：`ref struct` 不可装箱、不可作字段、不可被 lambda 捕获、不可跨 `await`。
+## What this sample demonstrates
 
-## 什么时候用
+`SpanBag<T> where T : unmanaged` is a `ref struct`: its storage is **borrowed** from a `Span<T>` / `Span<int>` supplied by the
+caller (usually `stackalloc`), for short-lived frequency counting within a single method — zero heap allocation, no `Dispose`
+needed. The sample shows three facets: finding the first duplicate value within a method, fixed capacity and full-capacity
+behavior (a new element's `Add` returns `false`), and enumeration / removal / `Clear` reuse. The lifetime contract is enforced
+by the compiler: a `ref struct` cannot be boxed, cannot be a field, cannot be captured by a lambda, and cannot cross an `await`.
 
-- 方法内重复检测 / 频次统计，要求零堆分配的热路径小直方图。
-- 需要「内存随栈帧消失」的短命计数，不必手动释放。
-- 不该用：需跨方法 / 跨 `await` 持有（用 `PackedBag<T>` / `MultiList<T>`）；引用类型（约束 `unmanaged`）；net451 / netstandard2.0（类型不存在）。
+## When to use it
 
-## 如何运行
+- In-method duplicate detection / frequency counting where a hot-path small histogram must have zero heap allocation.
+- A short-lived count whose "memory disappears with the stack frame", with no manual release needed.
+- Do not use for: needing to hold across methods / across `await` (use `PackedBag<T>` / `MultiList<T>`); reference types (the constraint is `unmanaged`); net451 / netstandard2.0 (the type does not exist).
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.SpanBag
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 方法内零堆计数 | `new SpanBag<T>(Span<T>, Span<int>)` / `CountOf` / `Add(T)` |
-| 2 | 定容与满容行为 | `Capacity` / `Remaining` / `Add` 返回 `bool` / `DistinctCount` / `TotalCount` |
-| 3 | 枚举直方图 | `GetEnumerator()`（`ref struct` 枚举器）/ `Contains` |
-| 4 | 删除与 `Clear` 复用 | `Remove(T)` / `RemoveAllCopies(T)` / `Clear()` / `IsEmpty` |
-| 5 | 生命周期边界 | `ref struct` 编译期约束（反例注释） |
+| 1 | In-method zero-heap counting | `new SpanBag<T>(Span<T>, Span<int>)` / `CountOf` / `Add(T)` |
+| 2 | Fixed capacity and full-capacity behavior | `Capacity` / `Remaining` / `Add` returning `bool` / `DistinctCount` / `TotalCount` |
+| 3 | Enumerated histogram | `GetEnumerator()` (a `ref struct` enumerator) / `Contains` |
+| 4 | Removal and `Clear` reuse | `Remove(T)` / `RemoveAllCopies(T)` / `Clear()` / `IsEmpty` |
+| 5 | Lifetime boundary | `ref struct` compile-time constraints (counter-example comment) |
 
-## 关键 API
+## Key APIs
 
-- `SpanBag<T>` — `where T : unmanaged`，`ref struct`；构造 `new SpanBag<T>(Span<T> values, Span<int> counts)`，两 span 必须等长。
-- `SpanBag<T>.Add(T)` — 返回 `bool`：新元素在满容时返回 `false`（尺寸条件，非异常），已有元素恒成功。
-- `SpanBag<T>.CountOf` / `Contains` / `Remove(T)` / `RemoveAllCopies(T)` / `Clear()`。
-- `SpanBag<T>.Capacity` / `Remaining` / `DistinctCount` / `TotalCount` / `IsEmpty`。
-- `SpanBag<T>.GetEnumerator()` — 返回 `ref struct` 枚举器，同样不能逃出栈帧。
+- `SpanBag<T>` — `where T : unmanaged`, a `ref struct`; construct with `new SpanBag<T>(Span<T> values, Span<int> counts)`, the two spans must be the same length.
+- `SpanBag<T>.Add(T)` — returns `bool`: a new element at full capacity returns `false` (a size condition, not an exception); an existing element always succeeds.
+- `SpanBag<T>.CountOf` / `Contains` / `Remove(T)` / `RemoveAllCopies(T)` / `Clear()`.
+- `SpanBag<T>.Capacity` / `Remaining` / `DistinctCount` / `TotalCount` / `IsEmpty`.
+- `SpanBag<T>.GetEnumerator()` — returns a `ref struct` enumerator that likewise cannot escape the stack frame.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **`ref struct` 生命周期**：不可装箱 / 作字段 / 被 lambda 捕获 / 跨 `await` / `yield`——全为编译错误，by design。
-- **定容，不增长**：容量 = `min(values.Length, counts.Length)` 构造时定死；满时新元素 `Add` 返回 `false`，**务必检查返回值**，否则新元素被静默丢弃。
-- **两 span 必须等长**：否则构造抛 `ArgumentException`。
-- **仅 netstandard2.1 / net6.0+**：`net451`..`net48` / `netstandard2.0` 不暴露本类型（用 `PackedBag<T>`）。
-- **无需 `Dispose`**：内存从未向分配器要；`Clear` 只重置计数与总数。
+- **`ref struct` lifetime**: cannot be boxed / used as a field / captured by a lambda / cross an `await` / `yield` — all compile errors, by design.
+- **Fixed capacity, no growth**: capacity = `min(values.Length, counts.Length)` is fixed at construction; when full, a new element's `Add` returns `false`, so **always check the return value** or the new element is silently dropped.
+- **The two spans must be the same length**: otherwise the constructor throws `ArgumentException`.
+- **Only netstandard2.1 / net6.0+**: `net451`..`net48` / `netstandard2.0` do not expose this type (use `PackedBag<T>`).
+- **No `Dispose` needed**: memory was never requested from the allocator; `Clear` only resets the counts and totals.

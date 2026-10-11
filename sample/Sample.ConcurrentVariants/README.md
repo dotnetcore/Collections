@@ -1,48 +1,52 @@
 # Sample.ConcurrentVariants
 
-> **并发变体** — `ConcurrentMultiList<T>` / `ConcurrentMultiDictionary<TKey,TValue>`：线程安全多重集合与映射（对应 feature F14，`DotNetCore.Collections.Multi`，6.2.0；只读投影为 6.7.1）。
+> **English** | [中文](README.zh-CN.md)
 
-## 本示例演示什么
+> **Concurrent variants** — `ConcurrentMultiList<T>` / `ConcurrentMultiDictionary<TKey,TValue>`: thread-safe multi-set and multi-map (feature F14, `DotNetCore.Collections.Multi`, 6.2.0; read-only projections since 6.7.1).
 
-并发变体让多线程无需外层加锁即可安全计数与分组。集合 `ConcurrentMultiList<T>` 每操作在单锁后串行，
-保证线性化、计数确定；映射 `ConcurrentMultiDictionary<TKey,TValue>` 按键哈希分片（默认 8 片），
-不同键的写可并行，跨片读取一致快照。示例展示三个侧面：多线程 `Add` 后计数确定、分片映射的键数 / 值数口径、
-以及 6.7.1 新增的只读投影（`EntrySet()` / `DistinctItems()` / `ToList()` / `ToArray()` / `ToDictionary()`）。
+## What this sample demonstrates
 
-## 什么时候用
+The concurrent variants let multiple threads count and group safely without an outer lock. The set `ConcurrentMultiList<T>`
+serializes each operation behind a single lock, guaranteeing linearization and deterministic counts; the map
+`ConcurrentMultiDictionary<TKey,TValue>` shards by key hash (8 shards by default), so writes to different keys run in
+parallel and cross-shard reads take a consistent snapshot. The sample shows three facets: deterministic counts after
+multi-threaded `Add`, the key-count / value-count semantics of the sharded map, and the read-only projections added in
+6.7.1 (`EntrySet()` / `DistinctItems()` / `ToList()` / `ToArray()` / `ToDictionary()`).
 
-- 多线程频次统计 / 直方图 → `ConcurrentMultiList<T>`。
-- 多线程一对多索引 → `ConcurrentMultiDictionary<TKey,TValue>`。
-- 不该用：读极多写极少 → 用 `ImmutableMultiList<T>`（F13，无锁读）。
-- 不该用：单线程热点 → 可变版 `MultiList<T>` 更快。
+## When to use it
 
-## 如何运行
+- Multi-threaded frequency counting / histograms → `ConcurrentMultiList<T>`.
+- Multi-threaded one-to-many indexing → `ConcurrentMultiDictionary<TKey,TValue>`.
+- Do not use for: very read-heavy, very write-light workloads → use `ImmutableMultiList<T>` (F13, lock-free reads).
+- Do not use for: single-threaded hot spots → the mutable `MultiList<T>` is faster.
+
+## How to run
 
 ```bash
 dotnet run --project sample/Sample.ConcurrentVariants
 ```
 
-## 走查
+## Walkthrough
 
-| 步骤 | 概念 | 关键 API |
+| Step | Concept | Key API |
 | :--- | :--- | :--- |
-| 1 | 多线程 `Add`，计数确定 | `ConcurrentMultiList<T>.Add` / `CountOf` / `TotalCount` / `DistinctCount` |
-| 2 | 分片映射与跨片读 | `ConcurrentMultiDictionary<TKey,TValue>.Add` / `ShardCount` / `KeyCount` / `TotalValueCount` / 索引器 |
-| 3 | 6.7.1 只读投影（脱钩快照） | `EntrySet()` / `DistinctItems()` / `ToList()` / `ToArray()` / `ToDictionary()` |
-| 4 | 枚举快照 | `ToArray()` 导出后写不影响已取快照 |
+| 1 | Multi-threaded `Add`, deterministic counts | `ConcurrentMultiList<T>.Add` / `CountOf` / `TotalCount` / `DistinctCount` |
+| 2 | Sharded map and cross-shard reads | `ConcurrentMultiDictionary<TKey,TValue>.Add` / `ShardCount` / `KeyCount` / `TotalValueCount` / indexer |
+| 3 | 6.7.1 read-only projections (detached snapshots) | `EntrySet()` / `DistinctItems()` / `ToList()` / `ToArray()` / `ToDictionary()` |
+| 4 | Enumeration snapshot | after exporting via `ToArray()`, later writes don't affect the taken snapshot |
 
-## 关键 API
+## Key APIs
 
-- `ConcurrentMultiList<T>.Add(T)` / `Add(T,int)` — 单锁串行，线性化；`CountOf` / `TotalCount` / `DistinctCount` 与可变版语义一致。
-- `ConcurrentMultiList<T>.Snapshot()` — 返回独立的 `MultiList<T>`；下列投影均取自它。
-- `ConcurrentMultiList<T>.EntrySet()` / `DistinctItems()` / `ToList()` / `ToArray()` / `ToDictionary()` — 6.7.1 起提供；结果与 bag 脱钩，不受并发写影响。
-- `ConcurrentMultiDictionary<TKey,TValue>` — 默认 8 片（`shardCount` 向上取 2 的幂）；`Count` / `KeyCount` = 键数，`TotalValueCount` = 值数。
-- `ConcurrentMultiDictionary<TKey,TValue>.ShardCount` — 实际分片数。
+- `ConcurrentMultiList<T>.Add(T)` / `Add(T,int)` — serialized behind a single lock, linearized; `CountOf` / `TotalCount` / `DistinctCount` match the mutable version's semantics.
+- `ConcurrentMultiList<T>.Snapshot()` — returns an independent `MultiList<T>`; all projections below are taken from it.
+- `ConcurrentMultiList<T>.EntrySet()` / `DistinctItems()` / `ToList()` / `ToArray()` / `ToDictionary()` — available since 6.7.1; the results are detached from the bag and unaffected by concurrent writes.
+- `ConcurrentMultiDictionary<TKey,TValue>` — 8 shards by default (`shardCount` is rounded up to a power of two); `Count` / `KeyCount` = key count, `TotalValueCount` = value count.
+- `ConcurrentMultiDictionary<TKey,TValue>.ShardCount` — the actual shard count.
 
-## 注意事项 / 陷阱
+## Notes and pitfalls
 
-- **集合单锁，无读并行**：并发正确 ≠ 高吞吐；读多写少用 `ImmutableMultiList<T>`。
-- **映射跨片读贵**：`Count` / `TotalValueCount` / `ContainsValue` / 枚举按片索引顺序锁一遍取一致快照，别在循环里反复读。
-- **枚举是快照拷贝**：枚举开始时付一次拷贝成本，但免疫并发写、不会撕裂。
-- **`shardCount` 向上取 2 的幂**：路由掩码要求；`ShardCount` 报的是实际值。
-- **`ToDictionary()` 遇 `null` 元素抛** `InvalidOperationException`（继承自 `MultiList<T>`）；`EntrySet()` 是 `null` 安全替代。
+- **The set uses a single lock, no read parallelism**: concurrency correctness ≠ high throughput; for read-heavy write-light use `ImmutableMultiList<T>`.
+- **Cross-shard reads on the map are expensive**: `Count` / `TotalValueCount` / `ContainsValue` / enumeration lock each shard in index order to take a consistent snapshot; don't read them repeatedly inside a loop.
+- **Enumeration is a snapshot copy**: enumeration pays a one-time copy cost but is immune to concurrent writes and never tears.
+- **`shardCount` is rounded up to a power of two**: required by the routing mask; `ShardCount` reports the actual value.
+- **`ToDictionary()` throws** `InvalidOperationException` on a `null` element (inherited from `MultiList<T>`); `EntrySet()` is the `null`-safe alternative.
