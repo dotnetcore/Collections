@@ -22,7 +22,7 @@ env:
 #   Workflow file    : release.yml       (file name only, no .github/workflows/ prefix)
 #   Environment      : leave empty unless an `environment:` is added to this job
 #   Secret           : NUGET_USERNAME = the nuget.org profile name, not the e-mail
-# The policy owner must own all 11 DotNetCore.Collections.* packages.
+# The policy owner must own all 12 DotNetCore.Collections.* packages.
 
 jobs:
   publish-nuget:
@@ -47,18 +47,22 @@ jobs:
       - name: Pack all packages
         shell: pwsh
         run: |
+          # Full project directory names, not suffixes: the engine package lives at
+          # src/DotNetCore.Collections itself, which a "DotNetCore.Collections.$suffix"
+          # list cannot express (it would resolve to src/DotNetCore.Collections.).
           $projects = @(
-            'Multi',
-            'Paginable',
-            'Paginable.Chloe',
-            'Paginable.DosOrm',
-            'Paginable.EntityFramework',
-            'Paginable.EntityFrameworkCore',
-            'Paginable.FreeSql',
-            'Paginable.FreeSql.DbContext',
-            'Paginable.NHibernate',
-            'Paginable.SqlKata',
-            'Paginable.SqlSugar'
+            'DotNetCore.Collections',
+            'DotNetCore.Collections.Multi',
+            'DotNetCore.Collections.Paginable',
+            'DotNetCore.Collections.Paginable.Chloe',
+            'DotNetCore.Collections.Paginable.DosOrm',
+            'DotNetCore.Collections.Paginable.EntityFramework',
+            'DotNetCore.Collections.Paginable.EntityFrameworkCore',
+            'DotNetCore.Collections.Paginable.FreeSql',
+            'DotNetCore.Collections.Paginable.FreeSql.DbContext',
+            'DotNetCore.Collections.Paginable.NHibernate',
+            'DotNetCore.Collections.Paginable.SqlKata',
+            'DotNetCore.Collections.Paginable.SqlSugar'
           )
 
           New-Item -ItemType Directory -Force -Path nuget_pub | Out-Null
@@ -67,7 +71,7 @@ jobs:
             # DocumentationFile is isolated per TFM by build/common.props, so the
             # per-TFM inner builds no longer race on a single project-root file
             # (no CS0016) and no -m:1 serialisation is needed.
-            dotnet pack "src/DotNetCore.Collections.$p" -c Release -o nuget_pub
+            dotnet pack "src/$p" -c Release -o nuget_pub
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
 

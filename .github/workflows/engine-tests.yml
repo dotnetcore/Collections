@@ -56,6 +56,12 @@ jobs:
       - name: Build (11 TFMs)
         run: dotnet build src/DotNetCore.Collections/DotNetCore.Collections.csproj -c Release
 
+      - name: Pack (verify package generation incl. snupkg)
+        # F7-16: the engine ships as its own NuGet package. The pack is verified here for
+        # the same reason paginable-tests.yml verifies its own -- a packaging regression
+        # (a missing TFM asset, a missing symbol package) should fail CI, not the release.
+        run: dotnet pack src/DotNetCore.Collections/DotNetCore.Collections.csproj -c Release --no-build
+
       - name: Build the overload-resolution sample and the framework probe
         # Built once here and executed below, rather than with `dotnet run`: the probe targets the
         # four .NET Framework generations, which `dotnet exec` cannot host, so the pair is run the
