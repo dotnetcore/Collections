@@ -14,17 +14,16 @@ modules.
 | **Engine** | `DotNetCore.Collections` | A LINQ engine built on value-type enumerators: zero-allocation hot paths, one code path across `net451` – `net10.0`. |
 
 See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
-**7.1.0** release: a new package, `DotNetCore.Collections` — a LINQ engine built on value-type
-enumerators. Its enumerator is a plain `struct` rather than a `ref struct`, so it can be a type
-argument and can cross an `await` on every target framework from `net451` to `net10.0`, and its hot
-paths allocate nothing: `WhereSelect` measured 6.0 % and 13.0 % faster than `System.Linq` on `net8.0`,
-and 18.0 % and 29.0 % faster on the polyfill path, at **0 bytes per walk**. `ToValueEnumerable()`
-wraps an array, a `List<T>`, an `IReadOnlyList<T>` or any `IEnumerable<T>` without copying it, and
-five operators — `Index`, `ForEach`, `TagFirstLast`, `Pairwise` and `Scan` — are declared once per
-source arm so the enumerator stays a value type end to end. The package is additive: `Paginable`
-and `Multi` are untouched, and importing the engine cannot change what existing `System.Linq` code
-binds to — a property the build verifies rather than assumes. There is no **Breaking** change in
-this release.
+**7.2.0** release: the engine now ships **nineteen polyfill operators** for the BCL's version-gapped
+APIs — thirteen in the P0 layer (`DistinctBy`, `ExceptBy`, `IntersectBy`, `UnionBy`, `MaxBy`, `MinBy`,
+`Chunk`, `Order`, `OrderDescending`, `CountBy`, `AggregateBy`, `LeftJoin`, `RightJoin`) and six in
+the P1 layer (`DistinctUntilChanged`, `Memoize`, `FallbackIfEmpty`, `AtLeast` / `Exactly` /
+`CountBetween`, `PartialSortBy`, `Choose`). All nineteen follow the same four-arm dispatch pattern
+as the engine's existing operators, so the enumerator stays a value type end to end. A cross-TFM
+behavior consistency suite verifies that the P0 polyfill operators behave identically to the BCL on
+`net8.0`. The package is additive: `Paginable` and `Multi` are untouched, and importing the engine
+cannot change what existing `System.Linq` code binds to — a property the build verifies rather than
+assumes. There is no **Breaking** change in this release.
 
 ## Contents
 
@@ -1078,7 +1077,7 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 
 Publishing is automated by the GitHub Actions `Release` workflow
 (`.github/workflows/release.yml`); no local tooling is involved. It runs on a version-tag push —
-`7.1.0` or `v7.1.0` — and can also be started manually through `workflow_dispatch`:
+`7.2.0` or `v7.2.0` — and can also be started manually through `workflow_dispatch`:
 
 1. **Pack** — all 12 projects are packed in Release configuration into `nuget_pub` on a
    `windows-latest` runner, with the full git history fetched so SourceLink can attach sources to
@@ -1107,7 +1106,7 @@ The policy owner must own all 12 `DotNetCore.Collections.*` packages. See
 
 Versions are driven by `build/version.props`, which is the single source of truth for every
 package — bump the version there and all 12 packages follow. Tag the commit with the matching
-version (`7.1.0` or `v7.1.0`) to trigger the automated publish; see [Publishing](#publishing) for
+version (`7.2.0` or `v7.2.0`) to trigger the automated publish; see [Publishing](#publishing) for
 what the release workflow does and the one-time nuget.org policy it requires.
 
 ## License

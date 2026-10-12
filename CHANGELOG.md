@@ -4,6 +4,67 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [7.2.0] - 2026-10-13
+
+### Added
+
+- **Nineteen polyfill operators for the BCL's version-gapped APIs.** The engine now ships
+  implementations of operators the BCL added in .NET 6 through .NET 10, so a consumer on `net451`
+  through `netstandard2.0` gets the same API shape as a consumer on `net10.0`. The polyfill layer
+  is split into two priority tiers:
+
+  **P0 layer (13 operators):** `DistinctBy`, `ExceptBy`, `IntersectBy`, `UnionBy` (keyed-set);
+  `MaxBy`, `MinBy` (extreme-key); `Chunk` (batching); `Order`, `OrderDescending` (keyless ordering);
+  `CountBy`, `AggregateBy` (keyed-aggregation); `LeftJoin`, `RightJoin` (outer-join). The keyed-set,
+  extreme-key, chunk, and keyed-aggregation operators are BCL APIs from .NET 6 through .NET 9; the
+  engine's implementations are available on every TFM the engine targets. `Order` and `OrderDescending`
+  are .NET 7 APIs; the engine's implementations are available on every TFM. `LeftJoin` and `RightJoin`
+  are .NET 10 APIs; the engine's implementations are available on `net451` through `net9.0` only —
+  on `net10.0` and above, the BCL's own implementations are used, so the engine does not compete with
+  the platform.
+
+  **P1 layer (6 operators):** `DistinctUntilChanged` (consecutive-duplicate removal); `Memoize`
+  (cache-on-first-enumeration for replay); `FallbackIfEmpty` (alternative sequence when empty);
+  `AtLeast`, `Exactly`, `CountBetween` (short-circuit count predicates); `PartialSortBy` (top-N by
+  key, O(n log k)); `Choose` (combined filter and projection, F# `Seq.choose` semantics). These
+  operators are not in the BCL on any TFM; they are engine-only additions.
+
+  All nineteen operators follow the same four-arm dispatch pattern as the engine's existing operators:
+  one overload per source shape (`T[]`, `List<T>`, `IReadOnlyList<T>`, `IEnumerable<T>`), so the
+  enumerator stays a value type through the whole pipeline. On high TFMs where the BCL already ships
+  the operator, the arbitrary-sequence arm (`IEnumerable<T>`) forwards to the BCL's implementation;
+  the three contiguous arms (`T[]`, `List<T>`, `IReadOnlyList<T>`) always walk the engine's value-type
+  path, so a contiguous source never pays for the BCL's interface-based enumeration.
+
+- **Cross-TFM behavior consistency tests for the P0 polyfill layer.** A new test suite verifies that
+  the polyfill operators behave identically to the BCL on `net8.0`, where the BCL's own implementation
+  is available. The tests cover boundary cases, exception behavior, and edge cases for the eleven
+  BCL-backed operators. The comparison is exact: every engine answer is compared with the `System.Linq`
+  expression it claims to be equivalent to. This is the contract the polyfill layer exists for — a
+  low-TFM consumer must not be able to tell the polyfill from the platform.
+
+### Changed
+
+- **The engine's test suite grew from 105 to 249 tests.** The P0 polyfill layer added 77 tests
+  (105 → 182); the P1 layer added 42 tests; the cross-TFM consistency suite added 25 tests. All 249
+  tests pass on `net8.0`.
+
+### Fixed
+
+- None. No packaged defect was addressed.
+
+### Breaking
+
+- **None.** This release is a pure addition on every axis:
+  1. **No existing operator signature changed.** Every operator added in 7.1.0 (`Index`, `ForEach`,
+     `TagFirstLast`, `Pairwise`, `Scan`) is exactly what it was.
+  2. **No `Paginable` or `Multi` dependency changed.** Neither package references the engine, so
+     neither package's dependency graph moved.
+  3. **The polyfill operators are new public API, not replacements.** They add to the engine's surface;
+     they do not override or shadow any existing method.
+
+  Existing code therefore keeps compiling and running unchanged, and no upgrade step is required.
+
 ## [7.1.0] - 2026-10-11
 
 ### Added
