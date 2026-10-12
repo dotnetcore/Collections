@@ -1,5 +1,5 @@
-// Sample.QueryEntryState — 查询入口状态 IQueryEntryState<T>（F48）
-// Sample.QueryEntryState — the query entry state IQueryEntryState<T> (F48)
+// Sample.QueryEntryState — 查询入口状态 IQueryEntryState<T>（6.0.0）
+// Sample.QueryEntryState — the query entry state IQueryEntryState<T> (6.0.0)
 // 运行：dotnet run --project sample/Sample.QueryEntryState
 // Run: dotnet run --project sample/Sample.QueryEntryState
 //
@@ -74,8 +74,8 @@ var counting = new CountingState<Order>(orders);
 _ = counting.AllValues.ElementAt(1);   // 第 1 次取 AllValues（枚举 1） / the 1st AllValues read (enumeration 1)
 _ = counting.AllValues.ElementAt(2);   // 第 2 次取 AllValues（枚举 2） / the 2nd AllValues read (enumeration 2)
 Console.WriteLine($"AllValues 被读取次数 / number of AllValues reads = {counting.ReadCount}");   // 2
-// ⚠️ 对非列表源，ElementAt 会重枚举；热路径应一次物化（F39）。
-// ⚠️ For non-list sources, ElementAt re-enumerates; hot paths should materialize once (F39).
+// ⚠️ 对非列表源，ElementAt 会重枚举；热路径应一次物化（6.0.0）。
+// ⚠️ For non-list sources, ElementAt re-enumerates; hot paths should materialize once (6.0.0).
 // ❌ 错误写法：在循环里反复读 PageMember.Value（状态形态），可能每读一次就重查一次。
 // ❌ Wrong approach: repeatedly reading PageMember.Value (state form) in a loop, which may re-query on every read.
 

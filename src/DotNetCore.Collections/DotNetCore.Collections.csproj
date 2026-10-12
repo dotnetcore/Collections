@@ -23,12 +23,12 @@
         <Description>High-performance LINQ engine with value-type enumerators and zero-allocation hot paths for .NET.</Description>
     </PropertyGroup>
 
-    <!-- F7-01 + F7-02: polyfill packages for TFMs lacking in-box Span / ArrayPool / Unsafe.
+    <!-- Since 7.1.0: polyfill packages for TFMs lacking in-box Span / ArrayPool / Unsafe.
          netstandard2.1 ships Span / Memory / ArrayPool in-box and net6.0+ ships all of them,
          so those two generations must NOT take the System.Memory / System.Buffers references.
 
          Unsafe is the one exception: it only reaches the BCL in-box with .NET Core 3.0 / .NET 5+,
-         so netstandard2.1 needs the package as well (F7-02 is the first code to call Unsafe.As).
+         so netstandard2.1 needs the package as well (7.1.0 is the first release whose code calls Unsafe.As).
 
          Version notes:
          - System.Memory 4.6.3 targets net462+ / netstandard2.0+; it has NO net451 build.
@@ -62,22 +62,22 @@
         <NoWarn>$(NoWarn);NU1605</NoWarn>
     </PropertyGroup>
 
-    <!-- F7-01: ValueTuple is in-box from net47 upwards; only net451 and net461 need the package. -->
+    <!-- Since 7.1.0 the package references ValueTuple only for net451 and net461; it is in-box from net47 upwards. -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net451' Or '$(TargetFramework)' == 'net461'">
         <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     </ItemGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="DotNetCore.Collections.Tests" />
-        <!-- F7-02: the four .NET Framework generations the package targets cannot be reached by
+        <!-- Since 7.1.0: the four .NET Framework generations the package targets cannot be reached by
              the xunit stack (Microsoft.NET.Test.Sdk needs net462 or newer), yet the list arm rests
              on the field layout of List<T> on exactly those generations. The probe is therefore a
              self-checking console app that compares ListLayoutAccessor against reflection, and it
              needs the internal accessor to do so. -->
         <InternalsVisibleTo Include="DotNetCore.Collections.FrameworkProbe" />
-        <!-- F7-04: the Go/No-Go baseline suite has to measure the operators, and F7-03 deliberately
-             kept them off the public API until F7-07 settles the namespace and the overload
-             resolution. This grant is therefore temporary by design: once F7-07 publishes the
+        <!-- Since 7.1.0: the Go/No-Go baseline suite has to measure the operators, and the operator
+             surface was deliberately kept off the public API until the namespace and the overload
+             resolution settled. This grant is therefore temporary by design: once the operator
              operator surface, the benchmark arms move to the public entry points and this line
              should go with it. -->
         <InternalsVisibleTo Include="DotNetCore.Collections.Benchmarks" />

@@ -1,5 +1,5 @@
-// Sample.PaginableSettings — 分页配置与管理器（F37）
-// Sample.PaginableSettings — Paging settings and manager (F37)
+// Sample.PaginableSettings — 分页配置与管理器（6.0.0）
+// Sample.PaginableSettings — Paging settings and manager (6.0.0)
 // 运行：dotnet run --project sample/Sample.PaginableSettings
 // Run: dotnet run --project sample/Sample.PaginableSettings
 //

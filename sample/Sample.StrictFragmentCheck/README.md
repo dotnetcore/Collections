@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Strict fragment-check option** — `PageCreationOptions.Lenient` / `Strict` decides whether a fragment shorter than the metadata is tolerated or rejected (feature F33, `DotNetCore.Collections.Paginable`, 6.2.0).
+> **Strict fragment-check option** — `PageCreationOptions.Lenient` / `Strict` decides whether a fragment shorter than the metadata is tolerated or rejected (`DotNetCore.Collections.Paginable`, 6.2.0).
 
 ## What this sample demonstrates
 

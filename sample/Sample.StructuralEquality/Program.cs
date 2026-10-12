@@ -1,5 +1,5 @@
-// Sample.StructuralEquality — 多重集合结构相等（F03）
-// Sample.StructuralEquality — Multiset structural equality (F03)
+// Sample.StructuralEquality — 多重集合结构相等（6.1.0）
+// Sample.StructuralEquality — Multiset structural equality (6.1.0)
 // 运行：dotnet run --project sample/Sample.StructuralEquality
 // Run: dotnet run --project sample/Sample.StructuralEquality
 //

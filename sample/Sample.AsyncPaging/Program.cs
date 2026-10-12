@@ -1,5 +1,5 @@
-// Sample.AsyncPaging — 端到端异步分页（内存形态）（F31）
-// Sample.AsyncPaging — End-to-end async paging (in-memory form) (F31)
+// Sample.AsyncPaging — 端到端异步分页（内存形态）（6.0.0）
+// Sample.AsyncPaging — End-to-end async paging (in-memory form) (6.0.0)
 // 运行：dotnet run --project sample/Sample.AsyncPaging
 // Run: dotnet run --project sample/Sample.AsyncPaging
 //
@@ -11,8 +11,8 @@
 //   2. The extension methods come from DotNetCore.Collections.Paginable.SolidPageExtensions
 //      （该类型名在 10 个包中同名，故写全限定名以避免歧义）。
 //      (that type name is identical across 10 packages, so the fully qualified name is written to avoid ambiguity).
-//   3. Paginable.CreatePageAsync 是片段建页（F32/F35）的 async 对偶：校验同步抛出、CancellationToken 不被观察。
-//   3. Paginable.CreatePageAsync is the async dual of fragment page building (F32/F35): validation throws synchronously and the CancellationToken is not observed.
+//   3. Paginable.CreatePageAsync 是片段建页（6.1.0/6.2.0）的 async 对偶：校验同步抛出、CancellationToken 不被观察。
+//   3. Paginable.CreatePageAsync is the async dual of fragment page building (6.1.0/6.2.0): validation throws synchronously and the CancellationToken is not observed.
 //   4. 真 I/O 异步要用提供方扩展（EF Core / FreeSql / SqlSugar）；本示例只用内存源，不引入任何第三方包。
 //   4. True I/O async requires provider extensions (EF Core / FreeSql / SqlSugar); this sample uses an in-memory source only and pulls in no third-party package.
 using System;

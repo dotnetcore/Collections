@@ -1,5 +1,5 @@
-// Sample.ConcurrentVariants — 线程安全多重集合与映射（F14，含 6.7.1 只读投影）
-// Sample.ConcurrentVariants — thread-safe multi-set and multi-map (F14, with 6.7.1 read-only projections)
+// Sample.ConcurrentVariants — 线程安全多重集合与映射（6.2.0，含 6.7.1 只读投影）
+// Sample.ConcurrentVariants — thread-safe multi-set and multi-map (6.2.0, with 6.7.1 read-only projections)
 // 运行：dotnet run --project sample/Sample.ConcurrentVariants
 // Run: dotnet run --project sample/Sample.ConcurrentVariants
 //
@@ -48,8 +48,8 @@ var parity = new ConcurrentMultiList<string>();
 Parallel.For(0, 500, i => parity.Add(i % 2 == 0 ? "even" : "odd"));
 Console.WriteLine($"even = {parity.CountOf("even")}, odd = {parity.CountOf("odd")}"); // 250 / 250
 
-// ⚠️ 集合是单锁设计：并发正确 ≠ 高吞吐。读多写少请改用 ImmutableMultiList<T>（见 F13）。
-// ⚠️ The set uses a single lock: concurrency correctness ≠ high throughput. For read-heavy write-light, switch to ImmutableMultiList<T> (see F13).
+// ⚠️ 集合是单锁设计：并发正确 ≠ 高吞吐。读多写少请改用 ImmutableMultiList<T>（见 6.2.0）。
+// ⚠️ The set uses a single lock: concurrency correctness ≠ high throughput. For read-heavy write-light, switch to ImmutableMultiList<T> (see 6.2.0).
 // ❌ 错误写法：对集合并发变体期望读并行 —— 读吞吐上不去，因为所有操作都过同一把锁。
 // ❌ Wrong usage: expecting read parallelism from the set's concurrent variant — read throughput won't rise, because all operations go through the same lock.
 

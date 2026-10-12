@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **End-to-end async paging (in-memory form)** — the `*Async` on an in-memory source is a synchronously completing "async shape", semantically different from true I/O async (feature F31, `DotNetCore.Collections.Paginable`, 6.0.0 / 6.2.0).
+> **End-to-end async paging (in-memory form)** — the `*Async` on an in-memory source is a synchronously completing "async shape", semantically different from true I/O async (`DotNetCore.Collections.Paginable`, 6.0.0 / 6.2.0).
 
 ## What this sample demonstrates
 
@@ -43,4 +43,4 @@ dotnet run --project sample/Sample.AsyncPaging
 - **The fragment `CreatePageAsync` does not observe `CancellationToken`**: there is no I/O to cancel; the token is only for signature symmetry.
 - **Validation throws synchronously**: invalid arguments throw `ArgumentException` / `ArgumentOutOfRangeException` before the `await`, so do not use `catch (AggregateException)` to catch them.
 - **`IPage<T>` enumeration is still synchronous**: the library provides no `IAsyncEnumerable`; the page object is `IPage<T> : IEnumerable<IPageMember<T>>`.
-- **True I/O async** requires provider extensions (e.g. EF Core `SolidPageExtensions.GetPageAsync`), see F31 / F44.
+- **True I/O async** requires provider extensions (e.g. EF Core `SolidPageExtensions.GetPageAsync`), see 6.0.0.

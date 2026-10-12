@@ -13,7 +13,7 @@ namespace DotNetCore.Collections.Multi
 {
     /// <summary>
     /// Represents a frequency priority bag: a bag that knows which element occurs most often and
-    /// can hand it out in O(log n), making Top-K queries a natural fit (F6-08).
+    /// can hand it out in O(log n), making Top-K queries a natural fit (since 6.4.0).
     /// </summary>
     /// <remarks>
     /// <para>
@@ -600,7 +600,7 @@ namespace DotNetCore.Collections.Multi
         }
 
         // ------------------------------------------------------------------
-        // Internals: lazily materialized max-heap (F6-08)
+        // Internals: lazily materialized max-heap (since 6.4.0)
         // ------------------------------------------------------------------
 
         /// <summary>

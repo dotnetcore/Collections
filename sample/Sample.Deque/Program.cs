@@ -1,5 +1,5 @@
-// Sample.Deque — 双端队列（F28）
-// Sample.Deque — double-ended queue (F28)
+// Sample.Deque — 双端队列（6.6.0）
+// Sample.Deque — double-ended queue (6.6.0)
 // 运行：dotnet run --project sample/Sample.Deque
 // Run: dotnet run --project sample/Sample.Deque
 //

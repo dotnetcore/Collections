@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **有序访问与区间查询** — `OrderedMultiList` 的极值、区间与有序访问（F06，`DotNetCore.Collections.Multi`，6.2.0）。
+> **有序访问与区间查询** — `OrderedMultiList` 的极值、区间与有序访问（`DotNetCore.Collections.Multi`，6.2.0）。
 
 ## 本示例演示什么
 

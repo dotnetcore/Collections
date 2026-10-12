@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **多重映射批量删除** — `MultiDictionary<TKey,TValue>.RemoveRange` 按键批量删值（F04，`DotNetCore.Collections.Multi`，6.1.0）。
+> **多重映射批量删除** — `MultiDictionary<TKey,TValue>.RemoveRange` 按键批量删值（`DotNetCore.Collections.Multi`，6.1.0）。
 
 ## 本示例演示什么
 

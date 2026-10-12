@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **多重集合结构相等** — `MultiList<T>` 的 `Equals` / `GetHashCode`（F03，`DotNetCore.Collections.Multi`，6.1.0）。
+> **多重集合结构相等** — `MultiList<T>` 的 `Equals` / `GetHashCode`（`DotNetCore.Collections.Multi`，6.1.0）。
 
 ## 本示例演示什么
 

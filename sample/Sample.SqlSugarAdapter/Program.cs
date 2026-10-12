@@ -1,5 +1,5 @@
-// Sample.SqlSugarAdapter — SqlSugar 适配器入口面与取消令牌边界（F53）
-// Sample.SqlSugarAdapter — SqlSugar adapter entry surface and cancellation-token boundary (F53)
+// Sample.SqlSugarAdapter — SqlSugar 适配器入口面与取消令牌边界（2.x）
+// Sample.SqlSugarAdapter — SqlSugar adapter entry surface and cancellation-token boundary (2.x)
 // 运行：dotnet run --project sample/Sample.SqlSugarAdapter
 // Run: dotnet run --project sample/Sample.SqlSugarAdapter
 //
@@ -9,8 +9,8 @@
 //   1. The SqlSugar adapter exposes a trio: SolidPageExtensions + PaginableSqlSugarQuery<T> + SqlSugarPage<T>;
 //   2. 源类型是 SqlSugar.ISugarQueryable<T>（参数名 query）；
 //   2. the source type is SqlSugar.ISugarQueryable<T> (parameter name query);
-//   3. F6-38（6.6.0）：取消令牌穿透工厂与取页，**已取消令牌在第一次数据库往返前**抛
-//   3. F6-38 (6.6.0): the cancellation token threads through the factory and page fetch, and an **already-cancelled token throws before the first database round trip**
+//   3. 6.6.0：取消令牌穿透工厂与取页，**已取消令牌在第一次数据库往返前**抛
+//   3. 6.6.0: the cancellation token threads through the factory and page fetch, and an **already-cancelled token throws before the first database round trip**
 //      OperationCanceledException；中段取消仍取决于 SqlSugar 版本（其 API 无令牌重载）；
 //      OperationCanceledException; mid-flight cancellation still depends on the SqlSugar version (its API has no token overloads);
 //   4. 包支撑说明型：引用真实适配器程序集，反射打印真实入口签名，不连库。
@@ -62,8 +62,8 @@ if (spe is not null)
 }
 
 // ---------------------------------------------------------------------------
-// 3. 统一动词 + 取消令牌边界（F6-38）
-// 3. Unified verbs + cancellation-token boundary (F6-38)
+// 3. 统一动词 + 取消令牌边界（6.6.0）
+// 3. Unified verbs + cancellation-token boundary (6.6.0)
 // ---------------------------------------------------------------------------
 Console.WriteLine();
 Console.WriteLine("=== 3. 统一动词 + 取消令牌边界 ===");
@@ -71,8 +71,8 @@ Console.WriteLine("=== 3. Unified verbs + cancellation-token boundary ===");
 
 // 三件套：SolidPageExtensions（ISugarQueryable<T> 入口）、PaginableSqlSugarQuery<T>、SqlSugarPage<T>。
 // The trio: SolidPageExtensions (ISugarQueryable<T> entry point), PaginableSqlSugarQuery<T>, SqlSugarPage<T>.
-// 动词同构：ToPaginable / GetPage / *Async；越界抛 ArgumentOutOfRangeException（F40）。
-// Isomorphic verbs: ToPaginable / GetPage / *Async; out of range throws ArgumentOutOfRangeException (F40).
+// 动词同构：ToPaginable / GetPage / *Async；越界抛 ArgumentOutOfRangeException（6.2.0）。
+// Isomorphic verbs: ToPaginable / GetPage / *Async; out of range throws ArgumentOutOfRangeException (6.2.0).
 Console.WriteLine("query.ToPaginable<T>(20)                         // 建集合 / build collection");
 Console.WriteLine("query.GetPage<T>(1, 20)                          // 从全源切一页 / slice one page from the full source");
 Console.WriteLine("await query.GetPageAsync<T>(1, 20, ct)           // 6.6+：ct 已取消则不打库 / 6.6+: if ct is already cancelled, no database hit");
@@ -113,7 +113,7 @@ foreach (var member in page)
 Console.WriteLine();
 Console.WriteLine("=== 5. TFM 与为什么不真正执行 ===");
 Console.WriteLine("=== 5. TFM and why it is not really executed ===");
-Console.WriteLine("SqlSugar 包无 netstandard2.0；net4* 用 sqlSugar，其它用 sqlSugarCore（F57）。 / The SqlSugar package has no netstandard2.0; net4* uses sqlSugar and the rest use sqlSugarCore (F57).");
+Console.WriteLine("SqlSugar 包无 netstandard2.0；net4* 用 sqlSugar，其它用 sqlSugarCore（6.0.0）。 / The SqlSugar package has no netstandard2.0; net4* uses sqlSugar and the rest use sqlSugarCore (6.0.0).");
 Console.WriteLine("GetPage 经 SqlSugarHelper.Count / FetchPageAsync 打库，控制台示例不连库，故只演示入口面。 / GetPage hits the database via SqlSugarHelper.Count / FetchPageAsync; the console example does not connect to a database, so it only demonstrates the entry surface.");
 
 Console.WriteLine();

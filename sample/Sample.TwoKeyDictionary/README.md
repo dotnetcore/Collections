@@ -2,11 +2,11 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Two-key composite dictionary TwoKeyDictionary&lt;K1,K2,V&gt;** — a 2-D dictionary + dual-axis projection (F29, `DotNetCore.Collections.Multi`, 6.2.0; enhanced in 6.7.1 / 6.8.0).
+> **Two-key composite dictionary TwoKeyDictionary&lt;K1,K2,V&gt;** — a 2-D dictionary + dual-axis projection (`DotNetCore.Collections.Multi`, 6.2.0; enhanced in 6.7.1 / 6.8.0).
 
 ## What this sample demonstrates
 
-The key of `TwoKeyDictionary<K1,K2,V>` is two **heterogeneous** components, mapping to a single `V`. It is a thin ergonomic wrapper over `MultiKeyDictionary` (arity 2): a 2-D indexer `this[k1, k2]` plus per-axis projections `GetByFirstKey` / `GetBySecondKey`. The two components may be of different types, so the components are boxed into `object` and handed to a homogeneous trie. The sample shows dual-axis projection, the secondary-axis reverse index (F09), batch deletion by the second axis, the `Values` / `ContainsValue` / `AsReverse` added in 6.7.1, and the `EntrySet()` added in 6.8.0.
+The key of `TwoKeyDictionary<K1,K2,V>` is two **heterogeneous** components, mapping to a single `V`. It is a thin ergonomic wrapper over `MultiKeyDictionary` (arity 2): a 2-D indexer `this[k1, k2]` plus per-axis projections `GetByFirstKey` / `GetBySecondKey`. The two components may be of different types, so the components are boxed into `object` and handed to a homogeneous trie. The sample shows dual-axis projection, the secondary-axis reverse index (6.2.0), batch deletion by the second axis, the `Values` / `ContainsValue` / `AsReverse` added in 6.7.1, and the `EntrySet()` added in 6.8.0.
 
 ## When to use it
 

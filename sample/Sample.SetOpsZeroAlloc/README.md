@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Zero-allocation set operations** — in-place reads plus a reused scratch area when the argument is already a same-comparer `MultiList<T>` (F12, `DotNetCore.Collections.Multi`, 6.2.0).
+> **Zero-allocation set operations** — in-place reads plus a reused scratch area when the argument is already a same-comparer `MultiList<T>` (`DotNetCore.Collections.Multi`, 6.2.0).
 
 ## What this sample demonstrates
 

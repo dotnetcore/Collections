@@ -1,5 +1,5 @@
-// Sample.PageMetadata — 页面元数据与校验（F36）
-// Sample.PageMetadata — Page metadata and validation (F36)
+// Sample.PageMetadata — 页面元数据与校验（6.0.0）
+// Sample.PageMetadata — Page metadata and validation (6.0.0)
 // 运行：dotnet run --project sample/Sample.PageMetadata
 // Run: dotnet run --project sample/Sample.PageMetadata
 //

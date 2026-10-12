@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **多 TFM 暴露面与逐包子集差异** — 11 TFM 矩阵、低代际差异与逐包差异（对应 feature F57，`DotNetCore.Collections.Multi` 等，6.0.0 扩到 11 TFM）。
+> **多 TFM 暴露面与逐包子集差异** — 11 TFM 矩阵、低代际差异与逐包差异（`DotNetCore.Collections.Multi` 等，6.0.0 扩到 11 TFM）。
 
 ## 本示例演示什么
 
@@ -45,6 +45,6 @@ dotnet run --project sample/Sample.MultiTfmSurface -f net10.0 # net10.0
 ## 注意事项 / 陷阱
 
 - **不要假设全包 11 TFM**：EF Core 仅 net6+；Chloe / Dos / NHibernate 无 net451；SqlSugar 无 netstandard2.0。
-- **net451 缺接口**会导致「同一代码在低代际编不过」；可空靠 internal 垫片（F43）。
+- **net451 缺接口**会导致「同一代码在低代际编不过」；可空靠 internal 垫片（6.3.0）。
 - **`SpanBag` 等类型仅 `Span<T>` 在框的目标**存在——勿假设全包同矩阵。
 - **锁定依赖** `packages.lock.json`（6.0.0 起确定性构建）。

@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **异步片段入口** — `Paginable.CreatePageAsync` 是片段建页的 async 形状对偶，**同步完成**（对应 feature F35，`DotNetCore.Collections.Paginable`，6.2.0）。
+> **异步片段入口** — `Paginable.CreatePageAsync` 是片段建页的 async 形状对偶，**同步完成**（`DotNetCore.Collections.Paginable`，6.2.0）。
 
 ## 本示例演示什么
 
@@ -41,5 +41,5 @@ dotnet run --project sample/Sample.AsyncFragmentEntry
 
 - **同步抛错**：不要写 `catch (AggregateException)` 去包校验失败；`ArgumentException` / `ArgumentOutOfRangeException` 从调用本身抛出。
 - **令牌不观察**：`Async` 后缀是形状，不是取消语义。
-- **无 `CreateSinglePageSetAsync`**：单页集合用同步工厂（F34）。
+- **无 `CreateSinglePageSetAsync`**：单页集合用同步工厂（6.2.0）。
 - **重载集合 = `CreatePage` + `CancellationToken`**：含 options 变体，行为与同步 `CreatePage` 完全一致。

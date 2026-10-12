@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **多重映射双缓存** — 值总数缓存 + 值反向索引（F11，`DotNetCore.Collections.Multi`，6.2.0）。
+> **多重映射双缓存** — 值总数缓存 + 值反向索引（`DotNetCore.Collections.Multi`，6.2.0）。
 
 ## 本示例演示什么
 
@@ -15,7 +15,7 @@
 
 - 频繁读值总数：`TotalValueCount` 为 O(1)，观测与断言不再付 O(键) 扫描。
 - 值存在性是热点：`ContainsValue` 为 O(1)，可进热路径。
-- 活反查视图就绪：`AsReverse` 直接读反向索引（见 F18）。
+- 活反查视图就绪：`AsReverse` 直接读反向索引（见 6.3.0）。
 - 不该用：只写不读总数 → 缓存是几乎可忽略的纯开销。
 
 ## 如何运行

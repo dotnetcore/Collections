@@ -31,7 +31,7 @@ namespace DotNetCore.Collections
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        // F7-03: the count hook reads the list's own Count (a direct field read); the span and
+        // Since 7.1.0: the count hook reads the list's own Count (a direct field read); the span and
         // copy hooks are built over the backing array. The span stops at Count, never at the
         // capacity, so spare capacity never leaks into a bulk path.
 

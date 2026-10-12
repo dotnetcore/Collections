@@ -724,7 +724,7 @@ namespace DotNetCore.Collections.Multi
 
         /// <summary>
         /// Views the argument of a multiset operation in place rather than materialising it as a
-        /// <see cref="MultiList{T}"/> (L-07). Returns the argument when it already <em>is</em> a
+        /// <see cref="MultiList{T}"/> (since 6.2.0). Returns the argument when it already <em>is</em> a
         /// multiset whose element comparer is equivalent to this one - reading it directly can not
         /// change the result, because re-materialising would only re-hash each element under the
         /// same notion of equality - and <c>null</c> when the caller has to fall back to

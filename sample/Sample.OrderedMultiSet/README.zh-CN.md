@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **有序多重集合 OrderedMultiList&lt;T&gt;** — 有序 bag：允许重复、跟踪副本数、枚举升序（F05，`DotNetCore.Collections.Multi`，6.2.0）。
+> **有序多重集合 OrderedMultiList&lt;T&gt;** — 有序 bag：允许重复、跟踪副本数、枚举升序（`DotNetCore.Collections.Multi`，6.2.0）。
 
 ## 本示例演示什么
 
@@ -11,7 +11,7 @@
 ## 什么时候用
 
 - 既要计数又要**有序输出**（有序频次、榜单、字典序报表）。
-- 需要 `GetFirst` / `GetLast` 这类 O(log n) 极值，或后续的名次 / 区间读（见 F06 / F07 / F24）。
+- 需要 `GetFirst` / `GetLast` 这类 O(log n) 极值，或后续的名次 / 区间读（见 6.2.0 / 6.5.0）。
 - 不该用：纯无序计数热点 → `MultiList<T>`（O(1) 更快）；小值域直方图 → `PackedBag<T>`。
 
 ## 如何运行

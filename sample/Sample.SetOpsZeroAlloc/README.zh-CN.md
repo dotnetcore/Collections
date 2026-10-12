@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **集合运算零分配** — 参数已是同比较器 `MultiList<T>` 时就地读 + 暂存区复用（F12，`DotNetCore.Collections.Multi`，6.2.0）。
+> **集合运算零分配** — 参数已是同比较器 `MultiList<T>` 时就地读 + 暂存区复用（`DotNetCore.Collections.Multi`，6.2.0）。
 
 ## 本示例演示什么
 

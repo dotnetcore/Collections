@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **自建变更通知 CollectionChanged** — `MultiList<T>` / `MultiDictionary<TKey,TValue>` 的变更事件（6.9.0，`DotNetCore.Collections.Multi`，6.9.0）。
+> **自建变更通知 CollectionChanged** — `MultiList<T>` / `MultiDictionary<TKey,TValue>` 的变更事件（`DotNetCore.Collections.Multi`，6.9.0）。
 
 ## 本示例演示什么
 
@@ -49,4 +49,4 @@ dotnet run --project sample/Sample.CollectionChanged
 - **只有真正改变集合的改动才触发**：例如空袋再 `Clear()`、`Add` 被去重集合静默拒绝，都不会触发事件。
 - **事件在新状态之后触发**：处理器里读回集合能看到刚被告知的改动。
 - **不订阅时零开销**：内部只在有处理器时才构造参数对象。
-- **非线程安全**：并发修改仍需外部同步（并发类型见 F14）。
+- **非线程安全**：并发修改仍需外部同步（并发类型见 6.2.0）。

@@ -1,5 +1,5 @@
-// Sample.BiDictionary — 严格双射字典 BiDictionary<TLeft,TRight>（F16）
-// Sample.BiDictionary — strict bijective dictionary BiDictionary<TLeft,TRight> (F16)
+// Sample.BiDictionary — 严格双射字典 BiDictionary<TLeft,TRight>（6.3.0）
+// Sample.BiDictionary — strict bijective dictionary BiDictionary<TLeft,TRight> (6.3.0)
 // 运行：dotnet run --project sample/Sample.BiDictionary
 // Run: dotnet run --project sample/Sample.BiDictionary
 //

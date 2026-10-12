@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **三键复合字典 ThreeKeyDictionary&lt;K1,K2,K3,V&gt;** — 键为三个异构分量的复合键字典（F15，`DotNetCore.Collections.Multi`，6.2.0；6.7.1 / 6.8.0 增强）。
+> **三键复合字典 ThreeKeyDictionary&lt;K1,K2,K3,V&gt;** — 键为三个异构分量的复合键字典（`DotNetCore.Collections.Multi`，6.2.0；6.7.1 / 6.8.0 增强）。
 
 ## 本示例演示什么
 

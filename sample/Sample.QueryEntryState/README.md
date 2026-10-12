@@ -2,11 +2,11 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **The query entry state `IQueryEntryState<T>`** — abstracting "where a page's elements come from" into a covariant interface, used by `PageMember`'s state form for lazy value reads (feature F48, `DotNetCore.Collections.Paginable`, 6.0.0).
+> **The query entry state `IQueryEntryState<T>`** — abstracting "where a page's elements come from" into a covariant interface, used by `PageMember`'s state form for lazy value reads (`DotNetCore.Collections.Paginable`, 6.0.0).
 
 ## What this sample demonstrates
 
-`IQueryEntryState<out T>` lives in `DotNetCore.Collections.Paginable.Abstractions` and has **only one member**, `IEnumerable<T> AllValues`. It abstracts "where a page's elements come from" for `PageMember`'s state form (F46) to read lazily — page initialization does not have to materialize all elements into a `List`, and `Value` is only read via `ElementAt(_offset)` when accessed. This sample shows: the interface shape (only `AllValues`), covariance (an `IQueryEntryState<Derived>` can be used as an `IQueryEntryState<Base>`), its use as the source for `PageMember`'s state form, and that `AllValues` may be a lazy sequence (multiple enumerations may mean multiple queries).
+`IQueryEntryState<out T>` lives in `DotNetCore.Collections.Paginable.Abstractions` and has **only one member**, `IEnumerable<T> AllValues`. It abstracts "where a page's elements come from" for `PageMember`'s state form (6.0.0) to read lazily — page initialization does not have to materialize all elements into a `List`, and `Value` is only read via `ElementAt(_offset)` when accessed. This sample shows: the interface shape (only `AllValues`), covariance (an `IQueryEntryState<Derived>` can be used as an `IQueryEntryState<Base>`), its use as the source for `PageMember`'s state form, and that `AllValues` may be a lazy sequence (multiple enumerations may mean multiple queries).
 
 ## When to use it
 
@@ -40,4 +40,4 @@ dotnet run --project sample/Sample.QueryEntryState
 - **The implementation class `QueryEntryState<T>` is internal**: consumers usually use it indirectly through `PageMember.Value`; the sample uses a custom `IQueryEntryState<T>` implementation to demonstrate.
 - **Not a collection type**: do not use it as an `IList`; `ElementAt` is O(n) for non-list sources.
 - **Covariant interface**: `out T` makes the type compatible more widely.
-- Hot paths should materialize once (F39) to avoid repeatedly reading the state form's `Value`.
+- Hot paths should materialize once (6.0.0) to avoid repeatedly reading the state form's `Value`.

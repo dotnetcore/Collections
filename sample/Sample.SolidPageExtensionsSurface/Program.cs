@@ -1,5 +1,5 @@
-// Sample.SolidPageExtensionsSurface — 偏移分页的扩展入口面（F45）
-// Sample.SolidPageExtensionsSurface — the extension entry surface of offset pagination (F45)
+// Sample.SolidPageExtensionsSurface — 偏移分页的扩展入口面（all releases）
+// Sample.SolidPageExtensionsSurface — the extension entry surface of offset pagination (all releases)
 // 运行：dotnet run --project sample/Sample.SolidPageExtensionsSurface
 // Run: dotnet run --project sample/Sample.SolidPageExtensionsSurface
 //
@@ -9,8 +9,8 @@
 //   1. The core package's ToPaginable / GetPage for two kinds of source (IEnumerable + IQueryable).
 //   2. 动词区分：GetPage = 从**全源**切一页；片段用 ToPage。
 //   2. Verb distinction: GetPage = slice one page from a **full source**; a fragment uses ToPage.
-//   3. 空源返回空页、越界抛 ArgumentOutOfRangeException（F40）。
-//   3. An empty source returns an empty page; out-of-range throws ArgumentOutOfRangeException (F40).
+//   3. 空源返回空页、越界抛 ArgumentOutOfRangeException（6.2.0）。
+//   3. An empty source returns an empty page; out-of-range throws ArgumentOutOfRangeException (6.2.0).
 //   4. ⚠️ 头号陷阱：SolidPageExtensions 在 10 个包同名，两包同引裸写类型名会 CS0104。
 //   4. ⚠️ The number-one pitfall: SolidPageExtensions has the same name in 10 packages, so referencing two packages and writing the bare type name causes CS0104.
 using System;
@@ -57,8 +57,8 @@ var qpage = query.GetPage(1, 2);
 Console.WriteLine($"GetPage(Queryable) → 成员 / Members = {string.Join(",", qpage.ToOriginalItems().Select(o => o.Id))}"); // 1,2
 
 // ---------------------------------------------------------------------------
-// 4. 空源不抛、越界抛（F40）
-// 4. An empty source does not throw; out-of-range throws (F40)
+// 4. 空源不抛、越界抛（6.2.0）
+// 4. An empty source does not throw; out-of-range throws (6.2.0)
 // ---------------------------------------------------------------------------
 Console.WriteLine();
 Console.WriteLine("=== 4. 空源 vs 越界 ===");

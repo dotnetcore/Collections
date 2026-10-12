@@ -55,14 +55,14 @@ namespace DotNetCore.Collections.Multi
 
         /// <summary>
         /// Cached total number of values across all keys, kept in step by every mutation instead of
-        /// being recomputed on each read (L-06). Previously <see cref="TotalValueCount"/> walked
+        /// being recomputed on each read (since 6.2.0). Previously <see cref="TotalValueCount"/> walked
         /// every inner collection, which costs O(keys) per read.
         /// </summary>
         private int _totalValueCount;
 
         /// <summary>
         /// Backwards index over values: maps a value to the set of keys that store it, so
-        /// <see cref="ContainsValue(TValue)"/> answers without scanning (L-05). Keeps
+        /// <see cref="ContainsValue(TValue)"/> answers without scanning (since 6.2.0). Keeps
         /// <see cref="EqualityComparer{TValue}.Default"/> as its notion of value equality - which is
         /// what the per-key collections themselves use.
         /// </summary>
@@ -1016,7 +1016,7 @@ namespace DotNetCore.Collections.Multi
         {
             // Wrapped, not cast: the framework's HashSet<T> (the allowDuplicateValues:false
             // factory) does not declare IReadOnlyCollection<T> on the .NET Framework generation
-            // the package supports (F6-24) - the reference assemblies of net451/net461 lack the
+            // the package supports (since 6.4.0) - the reference assemblies of net451/net461 lack the
             // declaration and the 4.5.1/4.6.1-era runtimes lack the interface itself, so a bare
             // cast fails exactly there. The internal wrapper is safe everywhere and keeps the
             // view live.
@@ -1055,7 +1055,7 @@ namespace DotNetCore.Collections.Multi
         }
 
         // ------------------------------------------------------------------
-        // Cache and backwards-index maintenance (L-05 / L-06)
+        // Cache and backwards-index maintenance (since 6.2.0)
         // ------------------------------------------------------------------
 
         /// <summary>
@@ -1244,7 +1244,7 @@ namespace DotNetCore.Collections.Multi
 
             private static IReadOnlyCollection<TValue> AsView(ICollection<TValue> collection)
             {
-                // Same rationale as MultiDictionary.AsReadOnlyView (F6-24): wrapped, never cast.
+                // Same rationale as MultiDictionary.AsReadOnlyView (since 6.4.0): wrapped, never cast.
                 return new ReadOnlyCollectionView<TValue>(collection);
             }
         }

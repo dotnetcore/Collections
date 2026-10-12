@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Single-page set wrapper** — wrap "one already-assembled page + full-source metadata" into an `IPaginable<T>`, with `PageCount` always 1 (feature F34, `DotNetCore.Collections.Paginable`, 6.2.0).
+> **Single-page set wrapper** — wrap "one already-assembled page + full-source metadata" into an `IPaginable<T>`, with `PageCount` always 1 (`DotNetCore.Collections.Paginable`, 6.2.0).
 
 ## What this sample demonstrates
 

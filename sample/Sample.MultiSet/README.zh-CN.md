@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **多重集合 MultiList&lt;T&gt;** — 无序 bag：允许重复元素，并为每个不同元素跟踪**副本数**（F01，`DotNetCore.Collections.Multi`，6.0.0）。
+> **多重集合 MultiList&lt;T&gt;** — 无序 bag：允许重复元素，并为每个不同元素跟踪**副本数**（`DotNetCore.Collections.Multi`，6.0.0）。
 
 ## 本示例演示什么
 
@@ -15,8 +15,8 @@
 - 频次统计 / 直方图（值域较大），需要 O(1) 的单副本增删与查询。
 - 需要「展开后序列」（每个副本各出现一次）直接对接下游。
 - 需要按**副本数**做并 / 交 / 差的多重集运算。
-- 不该用：要有序输出 → `OrderedMultiList<T>`（F05）；小值域（≤16）直方图 → `PackedBag<T>`（F21）；
-  Top-K 高频查询 → `FrequencyPriorityBag<T>`（F23）。
+- 不该用：要有序输出 → `OrderedMultiList<T>`（6.2.0）；小值域（≤16）直方图 → `PackedBag<T>`（6.4.0）；
+  Top-K 高频查询 → `FrequencyPriorityBag<T>`（6.4.0）。
 
 ## 如何运行
 
@@ -47,5 +47,5 @@ dotnet run --project sample/Sample.MultiSet
 - **`Count` 不是不同元素数**：`bag.Count == TotalCount`（副本数）；要不同元素数用 `DistinctCount`。
 - **枚举顺序无契约**：哈希表枚举顺序是实现细节，不要依赖插入序或哈希序写断言。
 - **`UnionWith` 不加副本数**：`{x,x} ∪ {x}` 得 `{x,x}`（取 max），不是 `{x,x,x}`。
-- **`ToDictionary()` 遇 `null` 元素会抛** `InvalidOperationException`（`null` 不能作字典键）；需要携带 `null` 用 `ToSerializableModel`（F10）。
-- **非线程安全**：并发写会损坏内部计数表，请用 `ConcurrentMultiList<T>`（F14）。
+- **`ToDictionary()` 遇 `null` 元素会抛** `InvalidOperationException`（`null` 不能作字典键）；需要携带 `null` 用 `ToSerializableModel`（6.2.0）。
+- **非线程安全**：并发写会损坏内部计数表，请用 `ConcurrentMultiList<T>`（6.2.0）。

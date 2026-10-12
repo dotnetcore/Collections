@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **成员上限与开区间** — 全局硬上限 `MaxMemberItems` 与调用级封顶 `limitedMemberCount`（对应 feature F38，`DotNetCore.Collections.Paginable`，6.0.0）。
+> **成员上限与开区间** — 全局硬上限 `MaxMemberItems` 与调用级封顶 `limitedMemberCount`（`DotNetCore.Collections.Paginable`，6.0.0）。
 
 ## 本示例演示什么
 

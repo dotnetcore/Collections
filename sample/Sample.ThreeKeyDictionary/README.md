@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Three-key composite dictionary ThreeKeyDictionary&lt;K1,K2,K3,V&gt;** — a composite-key dictionary whose key is three heterogeneous components (F15, `DotNetCore.Collections.Multi`, 6.2.0; enhanced in 6.7.1 / 6.8.0).
+> **Three-key composite dictionary ThreeKeyDictionary&lt;K1,K2,K3,V&gt;** — a composite-key dictionary whose key is three heterogeneous components (`DotNetCore.Collections.Multi`, 6.2.0; enhanced in 6.7.1 / 6.8.0).
 
 ## What this sample demonstrates
 

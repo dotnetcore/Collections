@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Fixed-capacity sliding-window bag BoundedBag&lt;T&gt;** — a bag whose total copy count is capped: exceeding capacity silently evicts the oldest copies (6.9.0, `DotNetCore.Collections.Multi`, 6.9.0).
+> **Fixed-capacity sliding-window bag BoundedBag&lt;T&gt;** — a bag whose total copy count is capped: exceeding capacity silently evicts the oldest copies (`DotNetCore.Collections.Multi`, 6.9.0).
 
 ## What this sample demonstrates
 
@@ -14,8 +14,8 @@ the void semantics and order sensitivity of `Add`, projection/enumeration, and r
 
 - Needing a "last N" sliding window (recent logs, recent visits, the last N samples).
 - Scenarios with a small capacity where automatically pushing out the oldest data is acceptable.
-- Not for: needing unbounded growth → `MultiList<T>` (F01); needing multiset operations by copy count / implementing `IMultiSet<T>` → `MultiList<T>`;
-  a small-domain histogram → `PackedBag<T>` (F21).
+- Not for: needing unbounded growth → `MultiList<T>` (6.0.0); needing multiset operations by copy count / implementing `IMultiSet<T>` → `MultiList<T>`;
+  a small-domain histogram → `PackedBag<T>` (6.4.0).
 
 ## How to run
 

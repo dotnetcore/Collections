@@ -29,7 +29,7 @@ namespace DotNetCore.Collections.Multi
     /// while enumerating keys and values in sorted order.
     /// </para>
     /// <para>
-    /// <b>The storage layer is one B+ tree, not a dictionary of collections (F6-36).</b> Every
+    /// <b>The storage layer is one B+ tree, not a dictionary of collections (since 6.6.0).</b> Every
     /// distinct key is a slot in a leaf of <see cref="OrderStatisticTree{TKey,TPayload}"/>, holding
     /// the key, the key's value bucket and the number of values in that bucket; every node caches
     /// the number of values stored below it. Two things follow from that shape. First, enumeration
@@ -60,7 +60,7 @@ namespace DotNetCore.Collections.Multi
     /// a custom comparer decides for itself where <c>null</c> belongs and may reject it by
     /// throwing. This type never inspects values itself, so whatever the value comparer does with
     /// <c>null</c> is what happens — the doctrine
-    /// <see cref="OrderedMultiList{T}"/> already follows on its element axis. Since F6-36 both
+    /// <see cref="OrderedMultiList{T}"/> already follows on its element axis. Since 6.6.0 both
     /// duplicate policies share one bucket type, so the <c>allowDuplicateValues: false</c> policy
     /// accepts <c>null</c> values exactly the way the duplicating one does.
     /// </para>
@@ -814,7 +814,7 @@ namespace DotNetCore.Collections.Multi
         }
 
         // ------------------------------------------------------------------
-        // Positional reads over the expanded sequence (F6-36)
+        // Positional reads over the expanded sequence (since 6.6.0)
         // ------------------------------------------------------------------
 
         /// <summary>
@@ -828,7 +828,7 @@ namespace DotNetCore.Collections.Multi
         /// <returns>the pair holding that copy.</returns>
         /// <remarks>
         /// This is the positional read of the whole map, and it addresses exactly the sequence
-        /// enumeration produces. Before F6-36 the type could only answer it by materialising the
+        /// enumeration produces. Before 6.6.0 the type could only answer it by materialising the
         /// entire expanded sequence and indexing into that copy.
         /// </remarks>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="rank"/> is negative or
@@ -1231,7 +1231,7 @@ namespace DotNetCore.Collections.Multi
         /// <remarks>
         /// The single <c>yield</c> here is the enumerator of the whole map, not of a key: the body
         /// walks the tree's leaves and each bucket through struct enumerators, so enumerating a key
-        /// allocates nothing. That is the F6-36 fix — the storage this type used before built two
+        /// allocates nothing. That is the 6.6.0 fix — the storage this type used before built two
         /// iterator objects per key, because the value side was reached through an interface.
         /// </remarks>
         /// <example>
@@ -1298,7 +1298,7 @@ namespace DotNetCore.Collections.Multi
 
         /// <summary>
         /// Creates the bucket a new key stores its values in. Both duplicate policies share this one
-        /// bucket type since F6-36: the policy is enforced by the operations, which either admit a
+        /// bucket type since 6.6.0: the policy is enforced by the operations, which either admit a
         /// second copy or check for the value first, so the value axis is one sorted multiset with
         /// the positional reads available on either setting.
         /// </summary>
@@ -1333,9 +1333,9 @@ namespace DotNetCore.Collections.Multi
 
         private IReadOnlyCollection<TValue> AsReadOnlyView(OrderedMultiList<TValue> bucket)
         {
-            // Wrapped, not cast (F6-24): the view has to reach consumers through the internal
+            // Wrapped, not cast (since 6.4.0): the view has to reach consumers through the internal
             // wrapper on every target, so the net451/net461 generation sees the same type the
-            // modern one does. The bucket is a concrete OrderedMultiList<TValue> since F6-36, but
+            // modern one does. The bucket is a concrete OrderedMultiList<TValue> since 6.6.0, but
             // the wrapper is what the pinning tests and the low-generation regression tests assert.
             return new ReadOnlyCollectionView<TValue>(bucket);
         }
@@ -1413,7 +1413,7 @@ namespace DotNetCore.Collections.Multi
         /// agreement between each entry's cached value total and the length of the bucket it holds,
         /// the B+ invariants of every bucket, and that the buckets add up to the tree's own total.
         /// Exposed for the test suite, which asserts them instead of relying on timing measurements
-        /// (F6-36, following F6-25 / R2-02).
+        /// (6.6.0, following 6.5.0 / R2-02).
         /// </summary>
         internal bool ValidateTree(out string? error)
         {

@@ -1,5 +1,5 @@
-// Sample.SinglePageSet — 单页集合包装（F34）
-// Sample.SinglePageSet — Single-page set wrapper (F34)
+// Sample.SinglePageSet — 单页集合包装（6.2.0）
+// Sample.SinglePageSet — Single-page set wrapper (6.2.0)
 // 运行：dotnet run --project sample/Sample.SinglePageSet
 // Run: dotnet run --project sample/Sample.SinglePageSet
 //

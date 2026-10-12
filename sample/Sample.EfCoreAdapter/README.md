@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **EF Core adapter: true async pagination** — `SolidPageExtensions` (EntityFrameworkCore) + keyset async entry point (feature F51, `DotNetCore.Collections.Paginable.EntityFrameworkCore`, 6.0.0–6.5.0).
+> **EF Core adapter: true async pagination** — `SolidPageExtensions` (EntityFrameworkCore) + keyset async entry point (`DotNetCore.Collections.Paginable.EntityFrameworkCore`, 6.0.0–6.5.0).
 
 ## What this sample demonstrates
 
@@ -10,9 +10,9 @@ The EF Core adapter wires the pagination verbs into `IQueryable<T>` / `DbSet<T>`
 
 ## When to use it
 
-- The standard pagination path for ASP.NET Core + EF Core, when you need true async / cancellation token forwarding (F44).
-- When you need keyset async → there is also `KeysetPageAsyncExtensions` (F31), unique to EF Core.
-- Should not use: for a synchronous console utility → the core package's `IEnumerable` entry point suffices (F45).
+- The standard pagination path for ASP.NET Core + EF Core, when you need true async / cancellation token forwarding (6.0.0).
+- When you need keyset async → there is also `KeysetPageAsyncExtensions` (6.0.0), unique to EF Core.
+- Should not use: for a synchronous console utility → the core package's `IEnumerable` entry point suffices (all releases).
 
 ## How to run
 
@@ -44,5 +44,5 @@ dotnet run --project sample/Sample.EfCoreAdapter
 - **`ToPaginableAsync(pageSize: 10)` causes CS0121**: the core package `(IEnumerable<T>, int, …)` and the EF package `(IQueryable<T>, int?, …)` each win on one dimension, so the compiler reports ambiguity; only the no-argument call `ToPaginableAsync()` uniquely resolves to the EF package.
 - **True async ≠ core shape async**: the core's `*Async` over `IEnumerable` completes synchronously and does not observe the token; do not conflate the two.
 - **Keyset async lives in another extension class** `KeysetPageAsyncExtensions`, not on `SolidPageExtensions`.
-- **TFM is net6+ only**: the EF Core package has no net451 (F57).
-- **Out of range throws `ArgumentOutOfRangeException`**; an empty source returns an empty page (F40).
+- **TFM is net6+ only**: the EF Core package has no net451 (6.0.0).
+- **Out of range throws `ArgumentOutOfRangeException`**; an empty source returns an empty page (6.2.0).

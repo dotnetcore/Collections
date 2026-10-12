@@ -1,5 +1,5 @@
-// Sample.LiveReverseView — 多重映射活反查视图 MultiDictionary.AsReverse()（F18）
-// Sample.LiveReverseView — live reverse view of a multimap, MultiDictionary.AsReverse() (F18)
+// Sample.LiveReverseView — 多重映射活反查视图 MultiDictionary.AsReverse()（6.3.0）
+// Sample.LiveReverseView — live reverse view of a multimap, MultiDictionary.AsReverse() (6.3.0)
 // 运行：dotnet run --project sample/Sample.LiveReverseView
 // Run: dotnet run --project sample/Sample.LiveReverseView
 //
@@ -11,8 +11,8 @@
 //   2. The view reads the reverse index the source already maintains directly: zero-cost to build, O(1) per read.
 //   3. 源一变视图即变；不暴露突变成员。
 //   3. The view changes as soon as the source does; no mutating members are exposed.
-//   4. 与 ReverseMultiDictionary 快照互为两半，任意时刻一致（见 F17）。
-//   4. It is one half of the two inverted entry points alongside the ReverseMultiDictionary snapshot, consistent at any moment (see F17).
+//   4. 与 ReverseMultiDictionary 快照互为两半，任意时刻一致（见 6.3.0）。
+//   4. It is one half of the two inverted entry points alongside the ReverseMultiDictionary snapshot, consistent at any moment (see 6.3.0).
 using System;
 using System.Linq;
 using DotNetCore.Collections.Multi;

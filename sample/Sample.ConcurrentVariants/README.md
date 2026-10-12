@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Concurrent variants** — `ConcurrentMultiList<T>` / `ConcurrentMultiDictionary<TKey,TValue>`: thread-safe multi-set and multi-map (feature F14, `DotNetCore.Collections.Multi`, 6.2.0; read-only projections since 6.7.1).
+> **Concurrent variants** — `ConcurrentMultiList<T>` / `ConcurrentMultiDictionary<TKey,TValue>`: thread-safe multi-set and multi-map (`DotNetCore.Collections.Multi`, 6.2.0; read-only projections since 6.7.1).
 
 ## What this sample demonstrates
 
@@ -17,7 +17,7 @@ multi-threaded `Add`, the key-count / value-count semantics of the sharded map, 
 
 - Multi-threaded frequency counting / histograms → `ConcurrentMultiList<T>`.
 - Multi-threaded one-to-many indexing → `ConcurrentMultiDictionary<TKey,TValue>`.
-- Do not use for: very read-heavy, very write-light workloads → use `ImmutableMultiList<T>` (F13, lock-free reads).
+- Do not use for: very read-heavy, very write-light workloads → use `ImmutableMultiList<T>` (6.2.0, lock-free reads).
 - Do not use for: single-threaded hot spots → the mutable `MultiList<T>` is faster.
 
 ## How to run

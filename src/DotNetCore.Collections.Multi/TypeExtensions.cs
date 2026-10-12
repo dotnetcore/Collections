@@ -23,7 +23,7 @@ namespace DotNetCore.Collections.Multi
     }
 
     /// <summary>
-    /// <see cref="Type"/> formatting helpers (F6-30): a one-line, human-readable spelling of a type,
+    /// <see cref="Type"/> formatting helpers (since 6.6.0): a one-line, human-readable spelling of a type,
     /// for diagnostics, log messages and test failure output.
     /// </summary>
     /// <remarks>

@@ -1,5 +1,5 @@
-// Sample.FreeSqlAdapter — FreeSql 适配器入口面（F52）
-// Sample.FreeSqlAdapter — FreeSql adapter entry surface (F52)
+// Sample.FreeSqlAdapter — FreeSql 适配器入口面（2.x）
+// Sample.FreeSqlAdapter — FreeSql adapter entry surface (2.x)
 // 运行：dotnet run --project sample/Sample.FreeSqlAdapter
 // Run: dotnet run --project sample/Sample.FreeSqlAdapter
 //

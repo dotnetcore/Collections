@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **FreeSql 适配器入口面** — `SolidPageExtensions` + `PaginableFreeSqlQuery<T>` + `FreeSqlPage<T>`（对应 feature F52，`DotNetCore.Collections.Paginable.FreeSql`，2.x）。
+> **FreeSql 适配器入口面** — `SolidPageExtensions` + `PaginableFreeSqlQuery<T>` + `FreeSqlPage<T>`（对应 feature 2.x，`DotNetCore.Collections.Paginable.FreeSql`，2.x）。
 
 ## 本示例演示什么
 
@@ -44,7 +44,7 @@ dotnet run --project sample/Sample.FreeSqlAdapter
 
 ## 注意事项 / 陷阱
 
-- **`SolidPageExtensions` 同名**：适配器与核心同在 `DotNetCore.Collections.Paginable` 命名空间，直接写类型名会 CS0104（U27）。
+- **`SolidPageExtensions` 同名**：适配器与核心同在 `DotNetCore.Collections.Paginable` 命名空间，直接写类型名会 CS0104（6.2.0）。
 - **DbContext 包没有** `PaginableFreeSqlQuery` 的自有工厂；用具体类型时仍引用 FreeSql 包。
 - **`includeNestedMembers` 语义由 FreeSql 决定**（导航加载），影响结果形状与成本。
-- **net451 双轨**：net451 保留 `#if NET451` 手写成员（F56）；越界抛 `ArgumentOutOfRangeException`。
+- **net451 双轨**：net451 保留 `#if NET451` 手写成员（6.5.0）；越界抛 `ArgumentOutOfRangeException`。

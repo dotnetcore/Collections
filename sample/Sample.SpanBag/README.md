@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Stack-based temporary bag** — `SpanBag<T>`: a fixed-capacity counting bag with zero heap allocation on the stack (feature F22, `DotNetCore.Collections.Multi`, 6.4.0).
+> **Stack-based temporary bag** — `SpanBag<T>`: a fixed-capacity counting bag with zero heap allocation on the stack (`DotNetCore.Collections.Multi`, 6.4.0).
 
 ## What this sample demonstrates
 

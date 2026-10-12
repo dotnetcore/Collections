@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **可读类型名格式化** — `TypeExtensions.ToReadableString()` / `TypeNameFormat`（对应 feature F26，`DotNetCore.Collections.Multi`，6.6.0）。
+> **可读类型名格式化** — `TypeExtensions.ToReadableString()` / `TypeNameFormat`（`DotNetCore.Collections.Multi`，6.6.0）。
 
 ## 本示例演示什么
 

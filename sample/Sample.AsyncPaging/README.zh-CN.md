@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **端到端异步分页（内存形态）** — 内存源的 `*Async` 是同步完成的「异步形状」，与真 I/O 异步语义不同（对应 feature F31，`DotNetCore.Collections.Paginable`，6.0.0 / 6.2.0）。
+> **端到端异步分页（内存形态）** — 内存源的 `*Async` 是同步完成的「异步形状」，与真 I/O 异步语义不同（`DotNetCore.Collections.Paginable`，6.0.0 / 6.2.0）。
 
 ## 本示例演示什么
 
@@ -43,4 +43,4 @@ dotnet run --project sample/Sample.AsyncPaging
 - **片段 `CreatePageAsync` 不观察 `CancellationToken`**：无 I/O 可取消，令牌仅为签名对称。
 - **校验同步抛**：非法参数在 `await` 之前就抛 `ArgumentException` / `ArgumentOutOfRangeException`，不要用 `catch (AggregateException)` 去接。
 - **`IPage<T>` 枚举仍是同步的**：库不提供 `IAsyncEnumerable`；页对象 `IPage<T> : IEnumerable<IPageMember<T>>`。
-- **真 I/O 异步**要用提供方扩展（EF Core `SolidPageExtensions.GetPageAsync` 等），见 F31 / F44。
+- **真 I/O 异步**要用提供方扩展（EF Core `SolidPageExtensions.GetPageAsync` 等），见 6.0.0。

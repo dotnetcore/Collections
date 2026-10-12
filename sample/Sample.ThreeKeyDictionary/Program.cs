@@ -1,5 +1,5 @@
-// Sample.ThreeKeyDictionary — 三键复合字典 ThreeKeyDictionary<K1,K2,K3,V>（F15）
-// Sample.ThreeKeyDictionary — three-key composite dictionary ThreeKeyDictionary<K1,K2,K3,V> (F15)
+// Sample.ThreeKeyDictionary — 三键复合字典 ThreeKeyDictionary<K1,K2,K3,V>（6.2.0）
+// Sample.ThreeKeyDictionary — three-key composite dictionary ThreeKeyDictionary<K1,K2,K3,V> (6.2.0)
 // 运行：dotnet run --project sample/Sample.ThreeKeyDictionary
 // Run: dotnet run --project sample/Sample.ThreeKeyDictionary
 //
@@ -60,8 +60,8 @@ Console.WriteLine($"CountOfThirdKey(cash) = {map.CountOfThirdKey("cash")}"); // 
 Console.WriteLine($"ContainsSecondKey(USD)= {map.ContainsSecondKey("USD")}"); // True
 // ❌ 错误写法：把第二轴当 O(1) 索引查询 —— 本类型只有第一轴是前缀，第二 / 三轴是扫描。
 // ❌ Wrong approach: treating the second axis as an O(1) indexed lookup — in this type only the first axis is a prefix; the second / third axes are scans.
-// 需要第二轴热点索引请换 TwoKeyDictionary（F09），或把查询轴放到 MultiKeyDictionary 最前。
-// For a hot second-axis index, switch to TwoKeyDictionary (F09), or move the queried axis to the front of MultiKeyDictionary.
+// 需要第二轴热点索引请换 TwoKeyDictionary（6.2.0），或把查询轴放到 MultiKeyDictionary 最前。
+// For a hot second-axis index, switch to TwoKeyDictionary (6.2.0), or move the queried axis to the front of MultiKeyDictionary.
 
 // ---------------------------------------------------------------------------
 // 3. 6.7.1：Values / ContainsValue / AsReverse

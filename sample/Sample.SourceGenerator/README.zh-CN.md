@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **SolidPageExtensions 源生成器** — `[SolidPageExtensionsFor]` 属性声明与生成物形状（对应 feature F56，`DotNetCore.Collections.Paginable.SourceGenerators`，6.5.0）。
+> **SolidPageExtensions 源生成器** — `[SolidPageExtensionsFor]` 属性声明与生成物形状（`DotNetCore.Collections.Paginable.SourceGenerators`，6.5.0）。
 
 ## 本示例演示什么
 

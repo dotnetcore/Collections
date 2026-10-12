@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Ordered multiset OrderedMultiList&lt;T&gt;** — an ordered bag: duplicates allowed, copy counts tracked, enumeration in ascending order (F05, `DotNetCore.Collections.Multi`, 6.2.0).
+> **Ordered multiset OrderedMultiList&lt;T&gt;** — an ordered bag: duplicates allowed, copy counts tracked, enumeration in ascending order (`DotNetCore.Collections.Multi`, 6.2.0).
 
 ## What this sample demonstrates
 
@@ -11,7 +11,7 @@
 ## When to use it
 
 - You need both counting and **ordered output** (ordered frequencies, leaderboards, lexicographic reports).
-- You need O(log n) extremes such as `GetFirst` / `GetLast`, or subsequent rank / range reads (see F06 / F07 / F24).
+- You need O(log n) extremes such as `GetFirst` / `GetLast`, or subsequent rank / range reads (see 6.2.0 / 6.5.0).
 - Do not use it for: pure unordered counting hot spots → `MultiList<T>` (O(1), faster); small-domain histograms → `PackedBag<T>`.
 
 ## How to run

@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Empty page and single-page set** — `EmptyPage<T>` (no results does not return null) and `PaginableSinglePage<T>` (one page wrapped as a set, `PageCount` always 1) (feature F49, `DotNetCore.Collections.Paginable`, 6.2.0).
+> **Empty page and single-page set** — `EmptyPage<T>` (no results does not return null) and `PaginableSinglePage<T>` (one page wrapped as a set, `PageCount` always 1) (`DotNetCore.Collections.Paginable`, 6.2.0).
 
 ## What this sample demonstrates
 

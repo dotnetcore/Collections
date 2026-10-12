@@ -1,5 +1,5 @@
-// Sample.PositionalRead — 名次与分位读（F24）
-// Sample.PositionalRead — rank and quantile reads (F24)
+// Sample.PositionalRead — 名次与分位读（6.5.0）
+// Sample.PositionalRead — rank and quantile reads (6.5.0)
 // 运行：dotnet run --project sample/Sample.PositionalRead
 // Run: dotnet run --project sample/Sample.PositionalRead
 //

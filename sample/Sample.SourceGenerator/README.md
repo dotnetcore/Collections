@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **SolidPageExtensions source generator** — the `[SolidPageExtensionsFor]` attribute declaration and the shape of the generated output (feature F56, `DotNetCore.Collections.Paginable.SourceGenerators`, 6.5.0).
+> **SolidPageExtensions source generator** — the `[SolidPageExtensionsFor]` attribute declaration and the shape of the generated output (`DotNetCore.Collections.Paginable.SourceGenerators`, 6.5.0).
 
 ## What this sample demonstrates
 

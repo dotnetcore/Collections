@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Async fragment entry** — `Paginable.CreatePageAsync` is the async-shape dual of fragment page building, **completing synchronously** (feature F35, `DotNetCore.Collections.Paginable`, 6.2.0).
+> **Async fragment entry** — `Paginable.CreatePageAsync` is the async-shape dual of fragment page building, **completing synchronously** (`DotNetCore.Collections.Paginable`, 6.2.0).
 
 ## What this sample demonstrates
 
@@ -41,5 +41,5 @@ dotnet run --project sample/Sample.AsyncFragmentEntry
 
 - **Throws synchronously**: do not use `catch (AggregateException)` to wrap a validation failure; `ArgumentException` / `ArgumentOutOfRangeException` are thrown from the call itself.
 - **The token is not observed**: the `Async` suffix is a shape, not a cancellation semantic.
-- **There is no `CreateSinglePageSetAsync`**: use the synchronous factory for single-page sets (F34).
+- **There is no `CreateSinglePageSetAsync`**: use the synchronous factory for single-page sets (6.2.0).
 - **The overload set = `CreatePage` + `CancellationToken`**: including the options variant, behavior is identical to the synchronous `CreatePage`.

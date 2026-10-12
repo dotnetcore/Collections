@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **名次与分位读** — `GetByRank` / `GetRank` / `GetMedian` / `GetQuantile` / `TotalValueCount`（对应 feature F24，`DotNetCore.Collections.Multi`，6.5.0 列表 + 6.6.0 映射）。
+> **名次与分位读** — `GetByRank` / `GetRank` / `GetMedian` / `GetQuantile` / `TotalValueCount`（`DotNetCore.Collections.Multi`，6.5.0 列表 + 6.6.0 映射）。
 
 ## 本示例演示什么
 

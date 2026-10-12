@@ -33,7 +33,7 @@ namespace DotNetCore.Collections
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        // F7-03: the static type carries no shape information, but the object behind it usually
+        // Since 7.1.0: the static type carries no shape information, but the object behind it usually
         // does. The hooks below probe the run-time type once per call, which is the cheap half of
         // the "virtual singleton dispatch" idea: an IEnumerable<T> that really is a T[] or a
         // List<T> still reaches the bulk paths, and only a genuinely lazy sequence walks.

@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **复合键多重映射 MultiKeyMultiDictionary&lt;TKey,TValue&gt;** — 复合键 + 一键多值（F20，`DotNetCore.Collections.Multi`，6.4.0；6.8.0 增强）。
+> **复合键多重映射 MultiKeyMultiDictionary&lt;TKey,TValue&gt;** — 复合键 + 一键多值（`DotNetCore.Collections.Multi`，6.4.0；6.8.0 增强）。
 
 ## 本示例演示什么
 

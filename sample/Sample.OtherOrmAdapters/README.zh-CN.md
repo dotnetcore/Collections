@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **Chloe / DosOrm / NHibernate 三包入口名对照** — 类型名逐包不同、独有重载与约束（对应 feature F55，`DotNetCore.Collections.Paginable.Chloe` / `.DosOrm` / `.NHibernate`，2.x 线）。
+> **Chloe / DosOrm / NHibernate 三包入口名对照** — 类型名逐包不同、独有重载与约束（对应 feature 2.x，`DotNetCore.Collections.Paginable.Chloe` / `.DosOrm` / `.NHibernate`，2.x 线）。
 
 ## 本示例演示什么
 
@@ -47,4 +47,4 @@ dotnet run --project sample/Sample.OtherOrmAdapters
 - **类型名逐包不同**，不可写 `PaginableEfCoreQuery` 之类类比。
 - **`NhCorePage<T>` 特殊命名**：不是 `NHibernatePage<T>`。
 - **Dos 的 `Entity` 约束**：不能把任意 DTO 直接 `ToPaginable`。
-- **`additionalQueryFunc` 可空**，不要在其中做副作用；三包 TFM **无 net451**（F57）。
+- **`additionalQueryFunc` 可空**，不要在其中做副作用；三包 TFM **无 net451**（6.0.0）。

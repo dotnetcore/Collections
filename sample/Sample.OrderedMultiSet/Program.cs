@@ -1,5 +1,5 @@
-// Sample.OrderedMultiSet — 有序多重集合 OrderedMultiList<T>（F05）
-// Sample.OrderedMultiSet — ordered multiset OrderedMultiList<T> (F05)
+// Sample.OrderedMultiSet — 有序多重集合 OrderedMultiList<T>（6.2.0）
+// Sample.OrderedMultiSet — ordered multiset OrderedMultiList<T> (6.2.0)
 // 运行：dotnet run --project sample/Sample.OrderedMultiSet
 // Run: dotnet run --project sample/Sample.OrderedMultiSet
 //

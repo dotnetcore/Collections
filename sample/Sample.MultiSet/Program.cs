@@ -1,5 +1,5 @@
-// Sample.MultiSet — 多重集合 MultiList<T>（F01）
-// Sample.MultiSet — Multiset MultiList<T> (F01)
+// Sample.MultiSet — 多重集合 MultiList<T>（6.0.0）
+// Sample.MultiSet — Multiset MultiList<T> (6.0.0)
 // 运行：dotnet run --project sample/Sample.MultiSet
 // Run: dotnet run --project sample/Sample.MultiSet
 //

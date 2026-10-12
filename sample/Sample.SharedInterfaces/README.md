@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Shared interfaces** — `IMultiSet<T>` / `IMultiDictionary<TKey,TValue>`: the shared read/write abstraction for multi-sets / multi-maps (feature F27, `DotNetCore.Collections.Multi`, 6.6.0).
+> **Shared interfaces** — `IMultiSet<T>` / `IMultiDictionary<TKey,TValue>`: the shared read/write abstraction for multi-sets / multi-maps (`DotNetCore.Collections.Multi`, 6.6.0).
 
 ## What this sample demonstrates
 

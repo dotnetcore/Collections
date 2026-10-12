@@ -1,5 +1,5 @@
-// Sample.SourceGenerator — SolidPageExtensions 源生成器：属性声明与生成物形状（F56）
-// Sample.SourceGenerator — SolidPageExtensions source generator: attribute declaration and generated-output shape (F56)
+// Sample.SourceGenerator — SolidPageExtensions 源生成器：属性声明与生成物形状（6.5.0）
+// Sample.SourceGenerator — SolidPageExtensions source generator: attribute declaration and generated-output shape (6.5.0)
 // 运行：dotnet run --project sample/Sample.SourceGenerator
 // Run: dotnet run --project sample/Sample.SourceGenerator
 //
@@ -52,8 +52,8 @@ Console.WriteLine(@"[SolidPageExtensionsFor(
 public static partial class SolidPageExtensions { }");
 
 // ---------------------------------------------------------------------------
-// 2. 关键属性开关（节选，逐字来自 F56）
-// 2. Key attribute switches (excerpt, verbatim from F56)
+// 2. 关键属性开关（节选，逐字来自 6.5.0）
+// 2. Key attribute switches (excerpt, verbatim from 6.5.0)
 // ---------------------------------------------------------------------------
 Console.WriteLine();
 Console.WriteLine("=== 2. 关键属性开关 ===");
@@ -101,7 +101,7 @@ Console.WriteLine();
 Console.WriteLine("=== 4. net451 双轨 ===");
 Console.WriteLine("=== 4. net451 dual-track ===");
 Console.WriteLine("FreeSql / SqlKata / SqlSugar 在 net451 **不引用生成器**，保留 #if NET451 手写成员； / FreeSql / SqlKata / SqlSugar on net451 **do not reference the generator** and keep the #if NET451 hand-written members;");
-Console.WriteLine("改生成器属性时要同步手写面，否则只测一个 TFM 会漏（F57）。 / when changing generator attributes, sync the hand-written surface, otherwise testing only one TFM will miss it (F57).");
+Console.WriteLine("改生成器属性时要同步手写面，否则只测一个 TFM 会漏（6.0.0）。 / when changing generator attributes, sync the hand-written surface, otherwise testing only one TFM will miss it (6.0.0).");
 
 // ---------------------------------------------------------------------------
 // 5. 消费方可见性与不变量

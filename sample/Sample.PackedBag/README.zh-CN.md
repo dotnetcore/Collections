@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **打包值类型袋** — `PackedBag<T>`：密集数组直方图袋，无装箱存储（对应 feature F21，`DotNetCore.Collections.Multi`，6.4.0）。
+> **打包值类型袋** — `PackedBag<T>`：密集数组直方图袋，无装箱存储（`DotNetCore.Collections.Multi`，6.4.0）。
 
 ## 本示例演示什么
 
@@ -16,7 +16,7 @@
 - 枚举域 / 小整数域（约 ≤16 个不同值）的直方图：稠密布局比 `MultiList<T>` 的字典更快、更省分配。
 - 热点 `Add` / `CountOf`：无哈希、无追桶。
 - 不该用：大 / 稀疏值域（用 `MultiList<T>`）；需要集合运算（用 `MultiList<T>`）；引用类型元素。
-- 与 `SpanBag<T>` 的区别：后者还要 `unmanaged` 且存储来自栈上 `stackalloc`（见 F22）。
+- 与 `SpanBag<T>` 的区别：后者还要 `unmanaged` 且存储来自栈上 `stackalloc`（见 6.4.0）。
 
 ## 如何运行
 

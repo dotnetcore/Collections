@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **跨 TFM 只读值视图包装** — `MultiDictionary` 的只读值视图（F19，`DotNetCore.Collections.Multi`，6.4.0）。
+> **跨 TFM 只读值视图包装** — `MultiDictionary` 的只读值视图（`DotNetCore.Collections.Multi`，6.4.0）。
 
 ## 本示例演示什么
 
@@ -11,7 +11,7 @@
 ## 什么时候用
 
 - 使用方无直接场景；本篇帮助理解「为何 net451 上只读值视图曾经 / 不再抛」。
-- 功能使用见 F02（`MultiDictionary`）/ F18（`AsReverse`）。
+- 功能使用见 6.0.0（`MultiDictionary`）/ 6.3.0（`AsReverse`）。
 - 不该用：在示例 / 文档里直接引用 `ReadOnlyCollectionView`（它是 `internal`，编译不过）。
 
 ## 如何运行
@@ -39,6 +39,6 @@ dotnet run --project sample/Sample.ReadOnlyCollectionView
 ## 注意事项 / 陷阱
 
 - **内部类型**：`ReadOnlyCollectionView<T>` 是 `internal`，不要写进示例 / 公开文档当 API。
-- **活视图非快照**：改 map 后视图内容跟着变；要冻结用 `ToSerializableModel`（F10）。
+- **活视图非快照**：改 map 后视图内容跟着变；要冻结用 `ToSerializableModel`（6.2.0）。
 - **问题域是 net451 / net461**：高 TFM 上 `HashSet` 已实现该接口，但包内统一包装以避免 `#if` 分叉。
 - **`ToDictionary` 的外层是快照、内层是活视图**：两者语义不同，勿混。

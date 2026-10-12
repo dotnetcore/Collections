@@ -1,5 +1,5 @@
-// Sample.PackedBag — 打包值类型袋（F21）
-// Sample.PackedBag — packed value-type bag (F21)
+// Sample.PackedBag — 打包值类型袋（6.4.0）
+// Sample.PackedBag — packed value-type bag (6.4.0)
 // 运行：dotnet run --project sample/Sample.PackedBag
 // Run: dotnet run --project sample/Sample.PackedBag
 //

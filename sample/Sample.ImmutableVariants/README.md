@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Immutable variants** — `ImmutableMultiList<T>` / `ImmutableMultiDictionary<TKey,TValue>`: mutations return a new instance, the instance never changes (feature F13, `DotNetCore.Collections.Multi`, 6.2.0).
+> **Immutable variants** — `ImmutableMultiList<T>` / `ImmutableMultiDictionary<TKey,TValue>`: mutations return a new instance, the instance never changes (`DotNetCore.Collections.Multi`, 6.2.0).
 
 ## What this sample demonstrates
 

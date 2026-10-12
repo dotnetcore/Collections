@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **有序多重映射 OrderedMultiDictionary&lt;TKey,TValue&gt;** — 键升序、键下值也升序的多重映射（F08，`DotNetCore.Collections.Multi`，6.2.0）。
+> **有序多重映射 OrderedMultiDictionary&lt;TKey,TValue&gt;** — 键升序、键下值也升序的多重映射（`DotNetCore.Collections.Multi`，6.2.0）。
 
 ## 本示例演示什么
 

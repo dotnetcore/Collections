@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Frequency-priority bag** — `FrequencyPriorityBag<T>`: the highest-frequency element is available in O(log n) (feature F23, `DotNetCore.Collections.Multi`, 6.4.0).
+> **Frequency-priority bag** — `FrequencyPriorityBag<T>`: the highest-frequency element is available in O(log n) (`DotNetCore.Collections.Multi`, 6.4.0).
 
 ## What this sample demonstrates
 

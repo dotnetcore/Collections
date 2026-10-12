@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Multiset MultiList&lt;T&gt;** — an unordered bag: it allows duplicate elements and tracks a **copy count** for each distinct element (F01, `DotNetCore.Collections.Multi`, 6.0.0).
+> **Multiset MultiList&lt;T&gt;** — an unordered bag: it allows duplicate elements and tracks a **copy count** for each distinct element (`DotNetCore.Collections.Multi`, 6.0.0).
 
 ## What this sample demonstrates
 
@@ -17,8 +17,8 @@ semantics, and removal with argument validation. It corrects one high-frequency 
 - Frequency counting / histograms (large value domain) that need O(1) single-copy add/remove/query.
 - When you need an "expanded sequence" (each copy appears once) to feed downstream directly.
 - When you need union / intersection / difference multiset operations by **copy count**.
-- When not to use it: ordered output → `OrderedMultiList<T>` (F05); small-domain (≤16) histograms → `PackedBag<T>` (F21);
-  Top-K frequent queries → `FrequencyPriorityBag<T>` (F23).
+- When not to use it: ordered output → `OrderedMultiList<T>` (6.2.0); small-domain (≤16) histograms → `PackedBag<T>` (6.4.0);
+  Top-K frequent queries → `FrequencyPriorityBag<T>` (6.4.0).
 
 ## How to run
 
@@ -49,5 +49,5 @@ dotnet run --project sample/Sample.MultiSet
 - **`Count` is not the number of distinct elements**: `bag.Count == TotalCount` (copy count); for the number of distinct elements use `DistinctCount`.
 - **Enumeration order has no contract**: hash-table enumeration order is an implementation detail; do not write assertions that depend on insertion or hash order.
 - **`UnionWith` does not add copy counts**: `{x,x} ∪ {x}` yields `{x,x}` (max), not `{x,x,x}`.
-- **`ToDictionary()` throws** `InvalidOperationException` on a `null` element (`null` cannot be a dictionary key); to carry `null`, use `ToSerializableModel` (F10).
-- **Not thread-safe**: concurrent writes will corrupt the internal count table; use `ConcurrentMultiList<T>` (F14).
+- **`ToDictionary()` throws** `InvalidOperationException` on a `null` element (`null` cannot be a dictionary key); to carry `null`, use `ToSerializableModel` (6.2.0).
+- **Not thread-safe**: concurrent writes will corrupt the internal count table; use `ConcurrentMultiList<T>` (6.2.0).

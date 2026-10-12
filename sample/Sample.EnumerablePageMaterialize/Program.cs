@@ -1,5 +1,5 @@
-// Sample.EnumerablePageMaterialize — EnumerablePage 单次物化（F39）
-// Sample.EnumerablePageMaterialize — EnumerablePage single materialization (F39)
+// Sample.EnumerablePageMaterialize — EnumerablePage 单次物化（6.0.0）
+// Sample.EnumerablePageMaterialize — EnumerablePage single materialization (6.0.0)
 // 运行：dotnet run --project sample/Sample.EnumerablePageMaterialize
 // Run: dotnet run --project sample/Sample.EnumerablePageMaterialize
 //
@@ -11,8 +11,8 @@
 //   2. GetPage side: an ICollection<T> goes through O(1) Count + Skip/Take; a lazy non-ICollection does a single pass fetching both the page and the total length.
 //   3. 物化意味着「页是快照」：建成后源变化不影响页。
 //   3. Materialization means "the page is a snapshot": after it is built, changes to the source do not affect the page.
-//   4. sourceIsFull 分支：true 会按页号 Skip + Take（全源）；false 只 Take（片段），与 F32 配合防二次切片。
-//   4. sourceIsFull branch: true slices by page number with Skip + Take (full source); false only Takes (fragment), cooperating with F32 to prevent double slicing.
+//   4. sourceIsFull 分支：true 会按页号 Skip + Take（全源）；false 只 Take（片段），与 6.1.0 配合防二次切片。
+//   4. sourceIsFull branch: true slices by page number with Skip + Take (full source); false only Takes (fragment), cooperating with 6.1.0 to prevent double slicing.
 using System;
 using System.Collections.Generic;
 using System.Linq;

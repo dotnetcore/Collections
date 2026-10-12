@@ -1,5 +1,5 @@
-// Sample.SetOpsZeroAlloc — 集合运算零分配（F12）
-// Sample.SetOpsZeroAlloc — Zero-allocation set operations (F12)
+// Sample.SetOpsZeroAlloc — 集合运算零分配（6.2.0）
+// Sample.SetOpsZeroAlloc — Zero-allocation set operations (6.2.0)
 // 运行：dotnet run --project sample/Sample.SetOpsZeroAlloc
 // Run: dotnet run --project sample/Sample.SetOpsZeroAlloc
 //

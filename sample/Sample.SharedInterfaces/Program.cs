@@ -1,5 +1,5 @@
-// Sample.SharedInterfaces — 多集合共享接口（F27）
-// Sample.SharedInterfaces — shared multi-collection interfaces (F27)
+// Sample.SharedInterfaces — 多集合共享接口（6.6.0）
+// Sample.SharedInterfaces — shared multi-collection interfaces (6.6.0)
 // 运行：dotnet run --project sample/Sample.SharedInterfaces
 // Run: dotnet run --project sample/Sample.SharedInterfaces
 //

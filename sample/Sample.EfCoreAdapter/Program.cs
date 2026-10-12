@@ -1,5 +1,5 @@
-// Sample.EfCoreAdapter — EF Core 适配器：真异步分页 + 键集异步入口（F51）
-// Sample.EfCoreAdapter — EF Core adapter: true async pagination + keyset async entry point (F51)
+// Sample.EfCoreAdapter — EF Core 适配器：真异步分页 + 键集异步入口（6.0.0）
+// Sample.EfCoreAdapter — EF Core adapter: true async pagination + keyset async entry point (6.0.0)
 // 运行：dotnet run --project sample/Sample.EfCoreAdapter
 // Run: dotnet run --project sample/Sample.EfCoreAdapter
 //
@@ -131,8 +131,8 @@ Console.WriteLine();
 Console.WriteLine("=== 4. 真异步 vs 核心形状异步 ===");
 Console.WriteLine("=== 4. True async vs core shape async ===");
 Console.WriteLine("核心包 list.GetPageAsync(...) 对 IEnumerable 只是 Task.FromResult（同步完成、不观察令牌）； / The core package's list.GetPageAsync(...) over IEnumerable is only Task.FromResult (completes synchronously, does not observe the token);");
-Console.WriteLine("EF Core 包 query.GetPageAsync(...) 真正 await CountAsync/ToListAsync（令牌下传，F44）。 / The EF Core package's query.GetPageAsync(...) genuinely awaits CountAsync/ToListAsync (the token is forwarded, F44).");
-Console.WriteLine("另有 KeysetPageAsyncExtensions（键集异步），是 EF Core 独有、其它适配器未必有（F31）。 / There is also KeysetPageAsyncExtensions (keyset async), unique to EF Core and not necessarily present in other adapters (F31).");
+Console.WriteLine("EF Core 包 query.GetPageAsync(...) 真正 await CountAsync/ToListAsync（令牌下传，6.0.0）。 / The EF Core package's query.GetPageAsync(...) genuinely awaits CountAsync/ToListAsync (the token is forwarded, 6.0.0).");
+Console.WriteLine("另有 KeysetPageAsyncExtensions（键集异步），是 EF Core 独有、其它适配器未必有（6.0.0）。 / There is also KeysetPageAsyncExtensions (keyset async), unique to EF Core and not necessarily present in other adapters (6.0.0).");
 
 // ❌ 错误写法：同时 using 核心与 EF 的 SolidPageExtensions 后直接写类型名——会 CS0104。
 // ❌ Wrong approach: after using both the core and EF SolidPageExtensions, writing the type name directly causes CS0104.
@@ -143,8 +143,8 @@ Console.WriteLine("另有 KeysetPageAsyncExtensions（键集异步），是 EF C
 // ✅ Correct approach: call the extension method (resolved by receiver type), or write a fully-qualified name / using alias for the static class.
 
 // ---------------------------------------------------------------------------
-// 5. 越界抛 ArgumentOutOfRangeException（F40 统一）
-// 5. Out of range throws ArgumentOutOfRangeException (unified in F40)
+// 5. 越界抛 ArgumentOutOfRangeException（6.2.0 统一）
+// 5. Out of range throws ArgumentOutOfRangeException (unified in 6.2.0)
 // ---------------------------------------------------------------------------
 Console.WriteLine();
 Console.WriteLine("=== 5. 越界异常统一 ===");

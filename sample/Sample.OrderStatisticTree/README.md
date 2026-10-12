@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Order-statistic tree engine** — `OrderStatisticTree&lt;TKey,TPayload&gt;` (internal), observed through `OrderedMultiList&lt;T&gt;` (F07, `DotNetCore.Collections.Multi`, 6.2.0 / 6.5.0).
+> **Order-statistic tree engine** — `OrderStatisticTree&lt;TKey,TPayload&gt;` (internal), observed through `OrderedMultiList&lt;T&gt;` (`DotNetCore.Collections.Multi`, 6.2.0 / 6.5.0).
 
 ## What this sample demonstrates
 
@@ -11,8 +11,8 @@
 ## When to use it
 
 - You need an O(log n) **rank read** (the k-th copy / the rank of an element) without materializing the whole sequence.
-- You need order statistics such as median / quantile (see F24).
-- This article also targets readers who need to understand the performance model of ordered Multi; ordinary consumers can just use F05 / F06 / F08 / F24.
+- You need order statistics such as median / quantile (see 6.5.0).
+- This article also targets readers who need to understand the performance model of ordered Multi; ordinary consumers can just use 6.2.0 / 6.5.0.
 - Do not use it for: referencing the engine type directly — it is `internal` and will not compile.
 
 ## How to run

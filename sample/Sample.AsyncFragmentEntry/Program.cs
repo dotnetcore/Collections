@@ -1,12 +1,12 @@
-// Sample.AsyncFragmentEntry — 异步片段入口（F35）
-// Sample.AsyncFragmentEntry — Async fragment entry (F35)
+// Sample.AsyncFragmentEntry — 异步片段入口（6.2.0）
+// Sample.AsyncFragmentEntry — Async fragment entry (6.2.0)
 // 运行：dotnet run --project sample/Sample.AsyncFragmentEntry
 // Run: dotnet run --project sample/Sample.AsyncFragmentEntry
 //
 // 演示重点：
 // Highlights:
-//   1. Paginable.CreatePageAsync 是片段建页（F32）的 async 形状对偶，四个重载与 CreatePage 一一对应。
-//   1. Paginable.CreatePageAsync is the async-shape dual of fragment page building (F32); its four overloads correspond one-to-one with CreatePage.
+//   1. Paginable.CreatePageAsync 是片段建页（6.1.0）的 async 形状对偶，四个重载与 CreatePage 一一对应。
+//   1. Paginable.CreatePageAsync is the async-shape dual of fragment page building (6.1.0); its four overloads correspond one-to-one with CreatePage.
 //   2. 它「同步完成」：片段已在内存，没有可 await 的 I/O；返回的 Task 已经完成（Task.FromResult）。
 //   2. It "completes synchronously": the fragment is already in memory, there is no I/O to await; the returned Task is already completed (Task.FromResult).
 //   3. 参数校验从「调用本身」同步抛出，不是 faulted task；cancellationToken 仅为签名对称，不被观察。
@@ -80,8 +80,8 @@ using var cts = new CancellationTokenSource();
 cts.Cancel();
 IPage<Order> stillOk = await Paginable.CreatePageAsync(fragment, 3, 5, 12, cts.Token);
 Console.WriteLine($"已取消令牌下仍成功 / still succeeds with a cancelled token: CurrentPageSize = {stillOk.CurrentPageSize}"); // 2
-// ✅ 真需要取消用提供方异步 API（EF Core GetPageAsync 等，见 F31 / F44）。
-// ✅ For real cancellation use the provider async APIs (e.g. EF Core GetPageAsync, see F31 / F44).
+// ✅ 真需要取消用提供方异步 API（EF Core GetPageAsync 等，见 6.0.0）。
+// ✅ For real cancellation use the provider async APIs (e.g. EF Core GetPageAsync, see 6.0.0).
 
 // ---------------------------------------------------------------------------
 // 4. 参数校验从调用本身同步抛出

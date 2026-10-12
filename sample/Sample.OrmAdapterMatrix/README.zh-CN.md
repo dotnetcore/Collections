@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **ORM 适配器同构矩阵** — 9 个 ORM 集成包的公开面与入口名对照（对应 feature F50，`DotNetCore.Collections.Paginable.*`，2.x–6.6 逐包引入）。
+> **ORM 适配器同构矩阵** — 9 个 ORM 集成包的公开面与入口名对照（对应 feature 2.x，`DotNetCore.Collections.Paginable.*`，2.x–6.6 逐包引入）。
 
 ## 本示例演示什么
 
@@ -15,7 +15,7 @@ NHibernate 的 `NhCorePage<T>`、EF/EF Core/FreeSql.DbContext 只有 `SolidPageE
 
 - 选型：确认你的 ORM 对应哪个 NuGet 包、入口类型叫什么。
 - 写文档 / 测试时核对入口名，避免杜撰 `PaginableEfCoreQuery<T>` 之类不存在的类型。
-- 审计：对照异步、取消、TFM 的逐包差异（见 F44 / F57）。
+- 审计：对照异步、取消、TFM 的逐包差异（见 6.0.0）。
 - 不该用：想直接跑一次分页 → 见 `Sample.EfCoreAdapter`（真异步）或 `Sample.SerializationEntry`（片段重建）。
 
 ## 如何运行
@@ -45,5 +45,5 @@ dotnet run --project sample/Sample.OrmAdapterMatrix
 
 - **入口名逐包不同**，查矩阵，不要按命名规律硬造类型。
 - **`NhCorePage<T>`** 不是 `NHibernatePage<T>`；查询集合是 `PaginableNhCoreQuery<T>`。
-- **`SolidPageExtensions` 10 处同名**：凡提及必带包名 / 命名空间，混用两包会 CS0104（U27）。
+- **`SolidPageExtensions` 10 处同名**：凡提及必带包名 / 命名空间，混用两包会 CS0104（6.2.0）。
 - **SqlKata 源类型非泛型**：`ToPaginable<T>` / `GetPage<T>` 必须显式写元素类型。

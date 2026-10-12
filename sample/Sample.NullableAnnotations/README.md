@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Public API nullable reference type annotations (NRT)** — the compile-time nullability contract: `T?` / `string?` tell the caller "this can be null" (feature F41, all packages, 6.3.0).
+> **Public API nullable reference type annotations (NRT)** — the compile-time nullability contract: `T?` / `string?` tell the caller "this can be null" (all packages, 6.3.0).
 
 ## What this sample demonstrates
 
@@ -40,5 +40,5 @@ dotnet run --project sample/Sample.NullableAnnotations
 
 - **Annotations are not runtime checks**: they will not throw `ArgumentNullException` for you; at the boundary you still guard against NREs yourself.
 - **Upgrading needs no code changes**: you only need to be aware of the new annotations and clear warnings accordingly.
-- **Low-generation TFMs**: the annotation metadata is supplied by an internal shim (see F43).
+- **Low-generation TFMs**: the annotation metadata is supplied by an internal shim (see 6.3.0).
 - **This sample references only the core package**; the `MultiList<T>` nullable comparer in the doc example belongs to the Multi side, with the same convention (`IEqualityComparer<T>?` -> `EqualityComparer<T>.Default`); here a local `SortBy` demonstrates the same pattern.

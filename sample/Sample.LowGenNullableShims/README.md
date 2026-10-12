@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Nullability attribute shims for low-generation TFMs** — targets such as net451 have no nullable annotation attribute types, so an internal polyfill supplies them, keeping a single source across all TFMs with complete annotations (feature F43, low-TFM assets of all packages, 6.3.0).
+> **Nullability attribute shims for low-generation TFMs** — targets such as net451 have no nullable annotation attribute types, so an internal polyfill supplies them, keeping a single source across all TFMs with complete annotations (low-TFM assets of all packages, 6.3.0).
 
 ## What this sample demonstrates
 
@@ -37,6 +37,6 @@ dotnet run --project sample/Sample.LowGenNullableShims
 ## Notes and pitfalls
 
 - **The shims are an internal implementation detail**: do not write them into public API docs as types (they cannot be found / are internal).
-- **Paired with F41**: F41 is "add NRT annotations to the public APIs", F43 is "make that annotation have an attribute type to compile against on low TFMs".
+- **Paired with 6.3.0**: 6.3.0 is "add NRT annotations to the public APIs", 6.3.0 is "make that annotation have an attribute type to compile against on low TFMs".
 - **Does not replace null checks**: the shims only make the annotation metadata compilable and readable.
 - This sample's net8 asset does **not** compile in the shims, so step 3 cannot find the definition, which is expected (the runtime ships types of the same name).

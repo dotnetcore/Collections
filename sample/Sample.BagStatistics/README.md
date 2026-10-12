@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Bag statistics Mode / Median / Entropy** — three frequency-distribution summary extensions on `IMultiSet<T>` (6.9.0, `DotNetCore.Collections.Multi`, 6.9.0).
+> **Bag statistics Mode / Median / Entropy** — three frequency-distribution summary extensions on `IMultiSet<T>` (`DotNetCore.Collections.Multi`, 6.9.0).
 
 ## What this sample demonstrates
 
@@ -15,7 +15,7 @@ Three extension methods summarize any `IMultiSet<T>` as a frequency distribution
 - Quickly summarizing the "mode / median / dispersion" of a batch of frequency data.
 - Needing a "multimodal" mode rather than a single winner (ordinary mode implementations often return only one).
 - Needing a median without expanding every copy (memory O(d) instead of O(total copies)).
-- Not for: needing finer quantile / rank reads → `PositionalRead` (F24, via an ordered set); just wanting a histogram → `EntrySet()`.
+- Not for: needing finer quantile / rank reads → `PositionalRead` (6.5.0, via an ordered set); just wanting a histogram → `EntrySet()`.
 
 ## How to run
 

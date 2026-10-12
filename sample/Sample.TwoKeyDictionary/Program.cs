@@ -1,5 +1,5 @@
-// Sample.TwoKeyDictionary — 两键复合字典 TwoKeyDictionary<K1,K2,V>（F29）
-// Sample.TwoKeyDictionary — two-key composite dictionary TwoKeyDictionary<K1,K2,V> (F29)
+// Sample.TwoKeyDictionary — 两键复合字典 TwoKeyDictionary<K1,K2,V>（6.2.0）
+// Sample.TwoKeyDictionary — two-key composite dictionary TwoKeyDictionary<K1,K2,V> (6.2.0)
 // 运行：dotnet run --project sample/Sample.TwoKeyDictionary
 // Run: dotnet run --project sample/Sample.TwoKeyDictionary
 //
@@ -33,8 +33,8 @@ map[2, "USD"] = 1.05m;
 
 Console.WriteLine($"map[1,USD] = {map[1, "USD"]}");                        // 1.00
 Console.WriteLine($"Count      = {map.Count}");                            // 3
-// 第一轴走 trie 前缀下降；第二轴走 K2 -> HashSet<K1> 反向索引（见 F09）——两轴都是 O(1) 起。
-// The first axis walks a trie prefix descent; the second axis walks the K2 -> HashSet<K1> reverse index (see F09) — both axes are O(1) to start.
+// 第一轴走 trie 前缀下降；第二轴走 K2 -> HashSet<K1> 反向索引（见 6.2.0）——两轴都是 O(1) 起。
+// The first axis walks a trie prefix descent; the second axis walks the K2 -> HashSet<K1> reverse index (see 6.2.0) — both axes are O(1) to start.
 Console.WriteLine($"GetByFirstKey(1).Count  = {map.GetByFirstKey(1).Count()}");     // 2
 Console.WriteLine($"GetBySecondKey(USD).Count = {map.GetBySecondKey("USD").Count()}"); // 2
 Console.WriteLine($"CountOfSecondKey(USD)   = {map.CountOfSecondKey("USD")}");      // 2

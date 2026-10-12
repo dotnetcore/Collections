@@ -1,5 +1,5 @@
-// Sample.MultiTfmSurface — 多 TFM 暴露面与逐包子集差异（F57）
-// Sample.MultiTfmSurface — multi-TFM surface and per-package subset differences (F57)
+// Sample.MultiTfmSurface — 多 TFM 暴露面与逐包子集差异（6.0.0）
+// Sample.MultiTfmSurface — multi-TFM surface and per-package subset differences (6.0.0)
 // 运行：dotnet run --project sample/Sample.MultiTfmSurface            （默认 net8.0）
 // Run: dotnet run --project sample/Sample.MultiTfmSurface            (default net8.0)
 //       dotnet run --project sample/Sample.MultiTfmSurface -f net10.0
@@ -77,11 +77,11 @@ var tfms = new[]
     "net6.0", "net7.0", "net8.0", "net9.0", "net10.0",
 };
 Console.WriteLine("核心 / Multi / 部分适配器目标 / Core / Multi / some adapters target：" + string.Join("; ", tfms));
-Console.WriteLine("各包 TFM **子集不同**——API 手册「目标框架」列必填（F57）。 / Each package's TFM **subset differs** — the \"target frameworks\" column is mandatory in the API manual (F57).");
+Console.WriteLine("各包 TFM **子集不同**——API 手册「目标框架」列必填（6.0.0）。 / Each package's TFM **subset differs** — the \"target frameworks\" column is mandatory in the API manual (6.0.0).");
 
 // ---------------------------------------------------------------------------
-// 4. 逐包 TFM 子集差异（逐字来自 F57）
-// 4. Per-package TFM subset differences (verbatim from F57)
+// 4. 逐包 TFM 子集差异（逐字来自 6.0.0）
+// 4. Per-package TFM subset differences (verbatim from 6.0.0)
 // ---------------------------------------------------------------------------
 Console.WriteLine();
 Console.WriteLine("=== 4. 逐包 TFM 子集差异 ===");
@@ -93,7 +93,7 @@ var diffs = new (string Package, string Diff)[]
     ("Chloe / Dos / NHibernate",                  "无 net451 / no net451"),
     ("SqlSugar",                                  "无 netstandard2.0 / no netstandard2.0"),
     ("FreeSql / SqlKata / SqlSugar",              "net451 保留 #if NET451 手写（不引用生成器）/ net451 keeps the #if NET451 hand-written members (does not reference the generator)"),
-    ("低代际（尤其 net451）/ low generations (especially net451)", "缺 IReadOnly* 暴露面；可空靠 internal 垫片（F43）/ lacks the IReadOnly* surface; nullability relies on internal shims (F43)"),
+    ("低代际（尤其 net451）/ low generations (especially net451)", "缺 IReadOnly* 暴露面；可空靠 internal 垫片（6.3.0）/ lacks the IReadOnly* surface; nullability relies on internal shims (6.3.0)"),
     ("Multi.NetFxTests",                          "net462 侧车工程，验证低代际暴露面 / a net462 sidecar project that validates the low-generation surface"),
 };
 

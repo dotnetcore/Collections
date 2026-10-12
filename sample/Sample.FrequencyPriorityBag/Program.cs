@@ -1,5 +1,5 @@
-// Sample.FrequencyPriorityBag — 频次优先袋（F23）
-// Sample.FrequencyPriorityBag — frequency-priority bag (F23)
+// Sample.FrequencyPriorityBag — 频次优先袋（6.4.0）
+// Sample.FrequencyPriorityBag — frequency-priority bag (6.4.0)
 // 运行：dotnet run --project sample/Sample.FrequencyPriorityBag
 // Run: dotnet run --project sample/Sample.FrequencyPriorityBag
 //

@@ -1,5 +1,5 @@
-// Sample.SerializationEntry — Paginable 侧「无独立序列化 API」与正确重建路径（F58，负结果）
-// Sample.SerializationEntry — "no standalone serialization API" on the Paginable side and the correct rebuild path (F58, negative result)
+// Sample.SerializationEntry — Paginable 侧「无独立序列化 API」与正确重建路径（6.2.0，负结果）
+// Sample.SerializationEntry — "no standalone serialization API" on the Paginable side and the correct rebuild path (6.2.0, negative result)
 // 运行：dotnet run --project sample/Sample.SerializationEntry
 // Run: dotnet run --project sample/Sample.SerializationEntry
 //
@@ -7,8 +7,8 @@
 // Highlights:
 //   1. **负结果**：Paginable 核心与 9 个适配器**都没有** `ToSerializableModel` / `FromModel`——
 //   1. **negative result**: the Paginable core and the 9 adapters **all lack** `ToSerializableModel` / `FromModel` —
-//      那是 Multi 的 API（MultiListModel<T> / MultiDictionaryModel<TKey,TValue>，见 F10）；
-//      that is Multi's API (MultiListModel<T> / MultiDictionaryModel<TKey,TValue>, see F10);
+//      那是 Multi 的 API（MultiListModel<T> / MultiDictionaryModel<TKey,TValue>，见 6.2.0）；
+//      that is Multi's API (MultiListModel<T> / MultiDictionaryModel<TKey,TValue>, see 6.2.0);
 //   2. 正确路径：序列化 `items` + 三元组元数据（CurrentPageNumber / PageSize / TotalMemberCount），
 //   2. the correct path: serialize `items` + the triple metadata (CurrentPageNumber / PageSize / TotalMemberCount),
 //      对端用 `Paginable.CreatePage` 重建 IPage<T>，全局编号与整源分页一致；
@@ -35,8 +35,8 @@ Console.WriteLine("=== 0. Server-side whole-source pagination (25 rows in the so
 
 var source = Enumerable.Range(1, 25).Select(i => new Order(i, i * 10m)).ToArray();
 
-// 从**整源**切第 2 页（每页 10 条）——这是 SolidPageExtensions 的核心入口（F45）。
-// Slice page 2 from the **whole source** (10 rows per page) — this is the core entry point of SolidPageExtensions (F45).
+// 从**整源**切第 2 页（每页 10 条）——这是 SolidPageExtensions 的核心入口（all releases）。
+// Slice page 2 from the **whole source** (10 rows per page) — this is the core entry point of SolidPageExtensions (all releases).
 IPage<Order> page = source.GetPage(pageNumber: 2, pageSize: 10);
 Console.WriteLine($"CurrentPageNumber = {page.CurrentPageNumber}, PageSize = {page.PageSize}"); // 2, 10
 Console.WriteLine($"TotalMemberCount = {page.TotalMemberCount}, CurrentPageSize = {page.CurrentPageSize}"); // 25, 10
@@ -51,7 +51,7 @@ Console.WriteLine("=== 1. Negative result: there is no ToSerializableModel on th
 
 // ❌ 错误写法：从旧教程抄到 Paginable 上——这些成员在 Paginable 核心与 9 适配器里**都不存在**。
 // ❌ Wrong approach: copying from old tutorials onto Paginable — these members **do not exist** in the Paginable core or the 9 adapters.
-//    var model = page.ToSerializableModel();          // 不存在（那是 Multi 的 API，F10）/ does not exist (that is Multi's API, F10)
+//    var model = page.ToSerializableModel();          // 不存在（那是 Multi 的 API，6.2.0）/ does not exist (that is Multi's API, 6.2.0)
 //    var page2 = Paginable.FromModel(model);           // 不存在 / does not exist
 // ✅ 正确写法：投影成 DTO（items + 三元组元数据），对端用 Paginable.CreatePage 重建。
 // ✅ Correct approach: project into a DTO (items + the triple metadata) and rebuild with Paginable.CreatePage on the other side.

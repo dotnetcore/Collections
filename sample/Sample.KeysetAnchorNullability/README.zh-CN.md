@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **键集分页锚点参数可空化** — `lastKey` 锚点与键类型可空性一致：可空键可直接当锚点，`null` 表示「无锚点」（对应 feature F42，`DotNetCore.Collections.Paginable` / `…EntityFrameworkCore`，6.3.0）。
+> **键集分页锚点参数可空化** — `lastKey` 锚点与键类型可空性一致：可空键可直接当锚点，`null` 表示「无锚点」（`DotNetCore.Collections.Paginable` / `…EntityFrameworkCore`，6.3.0）。
 
 ## 本示例演示什么
 
@@ -38,6 +38,6 @@ dotnet run --project sample/Sample.KeysetAnchorNullability
 ## 注意事项 / 陷阱
 
 - **`null` 锚点是「无锚点」，不是「键值为 null」。** 若排序键本身可存 `null`，语义由查询提供方定义。
-- **非破坏升级**，与 F41 同批；运行时「有锚点 / 无锚点」分支不变。
-- **键集页不带总页数**（无 `COUNT(*)`、无 `OFFSET`），与偏移分页 `IPage<T>` 不同（见 F30）。
+- **非破坏升级**，与 6.3.0 同批；运行时「有锚点 / 无锚点」分支不变。
+- **键集页不带总页数**（无 `COUNT(*)`、无 `OFFSET`），与偏移分页 `IPage<T>` 不同（见 6.0.0）。
 - `IQueryable<T>` 源有 `Expression<Func<T, TKey>>` 重载；本示例用内存 `IEnumerable<T>` 的 `Func` 重载。

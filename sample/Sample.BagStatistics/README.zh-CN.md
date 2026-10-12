@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **bag 统计 Mode / Median / Entropy** — `IMultiSet<T>` 上的三个频次分布摘要扩展（6.9.0，`DotNetCore.Collections.Multi`，6.9.0）。
+> **bag 统计 Mode / Median / Entropy** — `IMultiSet<T>` 上的三个频次分布摘要扩展（`DotNetCore.Collections.Multi`，6.9.0）。
 
 ## 本示例演示什么
 
@@ -15,7 +15,7 @@
 - 快速概括一批频次数据的「众数 / 中位 / 离散度」。
 - 需要「多峰」众数而不是单一赢家（普通众数实现常常只给一个）。
 - 需要中位数但又不想展开全部副本（内存 O(d) 而非 O(总份数)）。
-- 不该用：需要更细的分位 / 名次读 → `PositionalRead`（F24，经有序集）；只是想要直方图 → `EntrySet()`。
+- 不该用：需要更细的分位 / 名次读 → `PositionalRead`（6.5.0，经有序集）；只是想要直方图 → `EntrySet()`。
 
 ## 如何运行
 

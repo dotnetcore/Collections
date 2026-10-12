@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Multi-TFM surface and per-package subset differences** — an 11-TFM matrix, low-generation differences and per-package differences (feature F57, `DotNetCore.Collections.Multi` and others, expanded to 11 TFMs in 6.0.0).
+> **Multi-TFM surface and per-package subset differences** — an 11-TFM matrix, low-generation differences and per-package differences (`DotNetCore.Collections.Multi` and others, expanded to 11 TFMs in 6.0.0).
 
 ## What this sample demonstrates
 
@@ -41,6 +41,6 @@ dotnet run --project sample/Sample.MultiTfmSurface -f net10.0 # net10.0
 ## Notes and pitfalls
 
 - **Do not assume 11 TFMs for all packages**: EF Core is net6+ only; Chloe / Dos / NHibernate have no net451; SqlSugar has no netstandard2.0.
-- **net451 lacks interfaces**, causing "the same code does not compile on a low generation"; nullability relies on internal shims (F43).
+- **net451 lacks interfaces**, causing "the same code does not compile on a low generation"; nullability relies on internal shims (6.3.0).
 - **Types such as `SpanBag` exist only on targets where `Span<T>` is in the box** — do not assume all packages share the same matrix.
 - **Locked dependencies** `packages.lock.json` (deterministic builds since 6.0.0).

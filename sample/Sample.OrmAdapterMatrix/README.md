@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **ORM adapter isomorphic matrix** — a cross-reference of the public surfaces and entry-point names of the 9 ORM integration packages (feature F50, `DotNetCore.Collections.Paginable.*`, introduced package by package across 2.x–6.6).
+> **ORM adapter isomorphic matrix** — a cross-reference of the public surfaces and entry-point names of the 9 ORM integration packages (feature 2.x, `DotNetCore.Collections.Paginable.*`, introduced package by package across 2.x–6.6).
 
 ## What this sample demonstrates
 
@@ -12,7 +12,7 @@ The nine adapter packages wire **the same set of pagination verbs** into differe
 
 - Selection: confirm which NuGet package corresponds to your ORM and what the entry type is called.
 - When writing docs/tests, verify entry names to avoid inventing types such as `PaginableEfCoreQuery<T>` that do not exist.
-- Auditing: compare per-package differences in async, cancellation, and TFM (see F44 / F57).
+- Auditing: compare per-package differences in async, cancellation, and TFM (see 6.0.0).
 - Should not use: when you want to actually run pagination once → see `Sample.EfCoreAdapter` (true async) or `Sample.SerializationEntry` (fragment rebuild).
 
 ## How to run
@@ -40,5 +40,5 @@ dotnet run --project sample/Sample.OrmAdapterMatrix
 
 - **Entry names differ from package to package**; consult the matrix, do not fabricate types by following a naming rule.
 - **`NhCorePage<T>`** is not `NHibernatePage<T>`; the paginable collection is `PaginableNhCoreQuery<T>`.
-- **`SolidPageExtensions` is same-named in 10 places**: any mention must carry the package name / namespace; mixing two packages causes CS0104 (U27).
+- **`SolidPageExtensions` is same-named in 10 places**: any mention must carry the package name / namespace; mixing two packages causes CS0104 (6.2.0).
 - **SqlKata's source type is non-generic**: `ToPaginable<T>` / `GetPage<T>` must spell out the element type explicitly.

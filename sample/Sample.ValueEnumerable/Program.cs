@@ -15,8 +15,8 @@
 //   2. the five operators Index / ForEach / TagFirstLast / Pairwise / Scan (including the seeded overload);
 //   3. 与 System.Linq 共存：同文件 using 两个命名空间，engine 的 Index 绑到包装器，
 //   3. coexistence with System.Linq: using both namespaces in the same file, the engine's Index binds to the wrapper,
-//      裸数组仍绑到 BCL（net9+），Enumerable 代码不受影响（F7-07）。
-//      while a bare array still binds to the BCL (net9+), leaving Enumerable code unaffected (F7-07).
+//      裸数组仍绑到 BCL（net9+），Enumerable 代码不受影响（7.1.0）。
+//      while a bare array still binds to the BCL (net9+), leaving Enumerable code unaffected (since 7.1.0).
 using System;
 using System.Collections.Generic;
 using System.Linq;

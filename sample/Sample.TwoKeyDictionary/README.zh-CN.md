@@ -2,11 +2,11 @@
 
 > **中文** | [English](README.md)
 
-> **两键复合字典 TwoKeyDictionary&lt;K1,K2,V&gt;** — 二维字典 + 双轴投影（F29，`DotNetCore.Collections.Multi`，6.2.0；6.7.1 / 6.8.0 增强）。
+> **两键复合字典 TwoKeyDictionary&lt;K1,K2,V&gt;** — 二维字典 + 双轴投影（`DotNetCore.Collections.Multi`，6.2.0；6.7.1 / 6.8.0 增强）。
 
 ## 本示例演示什么
 
-`TwoKeyDictionary<K1,K2,V>` 的键为两个**异构**分量，映射到单个 `V`。它是 `MultiKeyDictionary`（arity 2）的薄人体工学包装：二维索引器 `this[k1, k2]` + 每轴投影 `GetByFirstKey` / `GetBySecondKey`。两分量可不同类型，故分量装箱进 `object` 交给同质 trie。示例展示双轴投影、第二轴反向索引（F09）、按第二轴批量删除，以及 6.7.1 新增的 `Values` / `ContainsValue` / `AsReverse` 与 6.8.0 新增的 `EntrySet()`。
+`TwoKeyDictionary<K1,K2,V>` 的键为两个**异构**分量，映射到单个 `V`。它是 `MultiKeyDictionary`（arity 2）的薄人体工学包装：二维索引器 `this[k1, k2]` + 每轴投影 `GetByFirstKey` / `GetBySecondKey`。两分量可不同类型，故分量装箱进 `object` 交给同质 trie。示例展示双轴投影、第二轴反向索引（6.2.0）、按第二轴批量删除，以及 6.7.1 新增的 `Values` / `ContainsValue` / `AsReverse` 与 6.8.0 新增的 `EntrySet()`。
 
 ## 什么时候用
 

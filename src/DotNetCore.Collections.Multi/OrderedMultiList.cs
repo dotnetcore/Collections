@@ -510,7 +510,7 @@ namespace DotNetCore.Collections.Multi
         }
 
         // ------------------------------------------------------------------
-        // Positional access - IReadOnlyList<T> / IList<T> (F6-27)
+        // Positional access - IReadOnlyList<T> / IList<T> (since 6.5.0)
         // ------------------------------------------------------------------
 
         /// <summary>
@@ -1223,7 +1223,7 @@ namespace DotNetCore.Collections.Multi
         /// Gets a struct enumerator over the distinct elements and their copy counts, in ascending
         /// order. Exposed for the ordered multimap, which keeps one of these per key: enumerating a
         /// bucket through <see cref="GetEnumerator"/> would allocate one iterator per key, which is
-        /// exactly the per-key allocation F6-36 exists to remove.
+        /// exactly the per-key allocation 6.6.0 removed.
         /// </summary>
         internal OrderStatisticTree<T, NoPayload>.AscendingEnumerator GetAscendingEnumerator()
         {

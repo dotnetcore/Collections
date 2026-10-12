@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Ordered access and range queries** — extremes, ranges and ordered access on `OrderedMultiList` (F06, `DotNetCore.Collections.Multi`, 6.2.0).
+> **Ordered access and range queries** — extremes, ranges and ordered access on `OrderedMultiList` (`DotNetCore.Collections.Multi`, 6.2.0).
 
 ## What this sample demonstrates
 

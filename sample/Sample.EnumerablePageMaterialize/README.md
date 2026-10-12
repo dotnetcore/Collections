@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **EnumerablePage materialization** — a single `Skip/Take` materialization, so a deep page no longer explodes with page number (feature F39, `DotNetCore.Collections.Paginable`, 6.0.0).
+> **EnumerablePage materialization** — a single `Skip/Take` materialization, so a deep page no longer explodes with page number (`DotNetCore.Collections.Paginable`, 6.0.0).
 
 ## What this sample demonstrates
 
@@ -11,7 +11,7 @@
 ## When to use it
 
 - Deep paging that does not explode with page number.
-- A fragment page that is no longer offset twice (paired with F32's `sourceIsFull: false`).
+- A fragment page that is no longer offset twice (paired with 6.1.0's `sourceIsFull: false`).
 - A lazy sequence that is enumerated only once.
 - `IQueryable` (EF etc.) is left to the provider's translation, or to an adapter page type.
 
@@ -41,4 +41,4 @@ dotnet run --project sample/Sample.EnumerablePageMaterialize
 - **`sourceIsFull` semantics**: `true` means the input is the full source (slice by page number with `Skip`); `false` means a fragment (only `Take`).
 - **Materialization means later changes to the source do not affect the page**: for new data, fetch the page again.
 - **An empty source is legal**: `EmptyPage<T>` / `CurrentPageSize == 0`.
-- **6.0.0 also fixed the bug where `CurrentPageSize` returned 0 for an evenly-dividing last page** (see F36).
+- **6.0.0 also fixed the bug where `CurrentPageSize` returned 0 for an evenly-dividing last page** (see 6.0.0).

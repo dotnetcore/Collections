@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **FreeSql adapter entry surface** — `SolidPageExtensions` + `PaginableFreeSqlQuery<T>` + `FreeSqlPage<T>` (feature F52, `DotNetCore.Collections.Paginable.FreeSql`, 2.x).
+> **FreeSql adapter entry surface** — `SolidPageExtensions` + `PaginableFreeSqlQuery<T>` + `FreeSqlPage<T>` (feature 2.x, `DotNetCore.Collections.Paginable.FreeSql`, 2.x).
 
 ## What this sample demonstrates
 
@@ -40,7 +40,7 @@ dotnet run --project sample/Sample.FreeSqlAdapter
 
 ## Notes and pitfalls
 
-- **`SolidPageExtensions` is same-named**: the adapter and the core both live in the `DotNetCore.Collections.Paginable` namespace, so writing the type name directly causes CS0104 (U27).
+- **`SolidPageExtensions` is same-named**: the adapter and the core both live in the `DotNetCore.Collections.Paginable` namespace, so writing the type name directly causes CS0104 (6.2.0).
 - **The DbContext package has no** own factory for `PaginableFreeSqlQuery`; when using the concrete type, still reference the FreeSql package.
 - **The semantics of `includeNestedMembers` are decided by FreeSql** (navigation loading), affecting the result shape and cost.
-- **net451 dual-track**: net451 keeps the hand-written `#if NET451` members (F56); out of range throws `ArgumentOutOfRangeException`.
+- **net451 dual-track**: net451 keeps the hand-written `#if NET451` members (6.5.0); out of range throws `ArgumentOutOfRangeException`.

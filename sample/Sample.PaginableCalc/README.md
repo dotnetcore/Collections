@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **The pagination calculation utility `PaginableCalc`** — the single source of truth for member-count capping and page-count conversion (feature F47, `DotNetCore.Collections.Paginable`, 6.0.0).
+> **The pagination calculation utility `PaginableCalc`** — the single source of truth for member-count capping and page-count conversion (`DotNetCore.Collections.Paginable`, 6.0.0).
 
 ## What this sample demonstrates
 
@@ -38,5 +38,5 @@ dotnet run --project sample/Sample.PaginableCalc
 
 - **In the `Internal` namespace but public**: callable, but treat it as an implementation utility, not a business API.
 - **`GetRealPageCount` does not validate `pageSize > 0`**: the factory validates alongside it; the caller must guarantee it.
-- **Paired with F38 `MaxMemberItems`**: a result set exceeding the cap is rejected or trimmed, and trimming goes through `GetRealMemberCount`.
+- **Paired with 6.0.0 `MaxMemberItems`**: a result set exceeding the cap is rejected or trimmed, and trimming goes through `GetRealMemberCount`.
 - Each adapter computing the page count by hand leads to inconsistent last-page semantics — go through `PaginableCalc` uniformly.

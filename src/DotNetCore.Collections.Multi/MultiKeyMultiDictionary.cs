@@ -87,7 +87,7 @@ namespace DotNetCore.Collections.Multi
 
         /// <summary>
         /// Cached total number of values across all keys, kept in step by every mutation instead
-        /// of being recomputed on each read (L-06, mirroring
+        /// of being recomputed on each read (since 6.2.0, mirroring
         /// <see cref="MultiDictionary{TKey,TValue}.TotalValueCount"/>).
         /// </summary>
         private int _totalValueCount;
@@ -970,7 +970,7 @@ namespace DotNetCore.Collections.Multi
         /// Wrapped, not cast: the framework's <see cref="HashSet{T}"/> (the
         /// <c>allowDuplicateValues: false</c> factory) does not declare that interface on
         /// net451 / net461 (neither statically nor at runtime), so a direct cast would fail on
-        /// exactly those targets the package supports (the F6-24 hazard).
+        /// exactly those targets the package supports (the hazard 6.4.0 tracks).
         /// </summary>
         private static IReadOnlyCollection<TValue> AsView(ICollection<TValue> collection)
         {

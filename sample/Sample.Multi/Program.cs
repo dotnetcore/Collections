@@ -141,7 +141,7 @@ namespace Sample.Multi
             reversed.AddRange(shelf);
             Console.WriteLine($"descending ranks = {string.Join(", ", Enumerable.Range(0, reversed.TotalCount).Select(reversed.GetByRank))}");
 
-            // F6-27: the ordered multiset is a list too. Positions address the expanded sequence, so
+            // Since 6.5.0: the ordered multiset is a list too. Positions address the expanded sequence, so
             // the list members and the rank members are the same reads under two names.
             IReadOnlyList<string> asList = shelf;
             Console.WriteLine($"shelf[0] / shelf[3] = {asList[0]} / {asList[3]}   (same as GetByRank(0) / GetByRank(3))");
@@ -503,7 +503,7 @@ namespace Sample.Multi
                 assignments.Keys.Select(k => string.Join("/", k))));
         }
 
-        // F6-30: the readable type-name formatter - what a generic type looks like in a log line.
+        // Since 6.6.0: the readable type-name formatter - what a generic type looks like in a log line.
         private static void ReadableTypeNamesDemo()
         {
             Console.WriteLine("=== Type.ToReadableString() (readable type names, 6.6) ===");
@@ -515,7 +515,7 @@ namespace Sample.Multi
             Console.WriteLine($"capped   = {typeof(List<List<List<int>>>).ToReadableString(TypeNameFormat.Clr, 2)}");
         }
 
-        // F6-31: the .NET base class library ships no deque - Queue<T> and Stack<T> are
+        // Since 6.6.0: the .NET base class library ships no deque - Queue<T> and Stack<T> are
         // single-ended and LinkedList<T> allocates a node per element - so this is the one type
         // here that fills a gap rather than adding a variant.
         private static void DequeDemo()

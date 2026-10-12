@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **公开 API 可空引用类型标注（NRT）** — 编译期空性契约：`T?` / `string?` 告诉调用方「这里可为 null」（对应 feature F41，全包，6.3.0）。
+> **公开 API 可空引用类型标注（NRT）** — 编译期空性契约：`T?` / `string?` 告诉调用方「这里可为 null」（全包，6.3.0）。
 
 ## 本示例演示什么
 
@@ -40,5 +40,5 @@ dotnet run --project sample/Sample.NullableAnnotations
 
 - **标注非运行时检查**：不会替你抛 `ArgumentNullException`；边界仍要自己防 NRE。
 - **升级无需改代码**：仅需知晓新标注，按新标注消警告即可。
-- **低代际 TFM**：注解元数据靠内部垫片提供（见 F43）。
+- **低代际 TFM**：注解元数据靠内部垫片提供（见 6.3.0）。
 - **本示例只引用核心包**；文档示例中的 `MultiList<T>` 可空比较器属 Multi 侧，约定一致（`IEqualityComparer<T>?` → `EqualityComparer<T>.Default`），此处以本地 `SortBy` 演示同一模式。

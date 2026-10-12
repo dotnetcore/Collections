@@ -1,5 +1,5 @@
-// Sample.KeysetPagination — 键集分页（seek / keyset pagination）续页闭环（F30）
-// Sample.KeysetPagination — keyset (seek) pagination continuation loop (F30)
+// Sample.KeysetPagination — 键集分页（seek / keyset pagination）续页闭环（6.0.0）
+// Sample.KeysetPagination — keyset (seek) pagination continuation loop (6.0.0)
 // 运行：dotnet run --project sample/Sample.KeysetPagination
 // Run: dotnet run --project sample/Sample.KeysetPagination
 //

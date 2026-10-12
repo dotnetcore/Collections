@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **第二轴反向索引** — `TwoKeyDictionary&lt;K1,K2,V&gt;` 的第二轴查询（F09，`DotNetCore.Collections.Multi`，6.2.0）。
+> **第二轴反向索引** — `TwoKeyDictionary&lt;K1,K2,V&gt;` 的第二轴查询（`DotNetCore.Collections.Multi`，6.2.0）。
 
 ## 本示例演示什么
 

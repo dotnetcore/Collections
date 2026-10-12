@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace DotNetCore.Collections.Multi
 {
     /// <summary>
-    /// Extension entry points that build a multimap from an ordinary source (F6-45): group a
+    /// Extension entry points that build a multimap from an ordinary source (since 6.8.0): group a
     /// sequence by a key, index it uniquely, or adapt an existing read-only dictionary.
     /// </summary>
     /// <remarks>

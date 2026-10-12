@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Page member wrapping and global numbering** — each element of a page is wrapped as a `PageMember<T>` (struct): `Value` / `Offset` / `ItemNumber` (feature F46, `DotNetCore.Collections.Paginable`, 6.0.0–6.1.0).
+> **Page member wrapping and global numbering** — each element of a page is wrapped as a `PageMember<T>` (struct): `Value` / `Offset` / `ItemNumber` (`DotNetCore.Collections.Paginable`, 6.0.0–6.1.0).
 
 ## What this sample demonstrates
 
@@ -11,7 +11,7 @@ What `IPage<T>` enumerates is not a bare element but a `PageMember<T>` wrapper c
 ## When to use it
 
 - A table's "index" column: read `ItemNumber` directly, continuous across pages.
-- Lazy reads for large pages: the state form avoids materializing early (paired with F39 / F48).
+- Lazy reads for large pages: the state form avoids materializing early (paired with 6.0.0).
 - Not for: treating it as a mutable list element — it is a struct wrapper, and changing `Value` does not write back to the source.
 
 ## How to run

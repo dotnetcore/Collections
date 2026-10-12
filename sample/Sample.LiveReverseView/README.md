@@ -2,11 +2,11 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Live reverse view of a multimap** — `MultiDictionary&lt;TKey,TValue&gt;.AsReverse()` (F18, `DotNetCore.Collections.Multi`, 6.3.0).
+> **Live reverse view of a multimap** — `MultiDictionary&lt;TKey,TValue&gt;.AsReverse()` (`DotNetCore.Collections.Multi`, 6.3.0).
 
 ## What this sample demonstrates
 
-`MultiDictionary<TKey,TValue>.AsReverse()` returns a **live read-only inverted view** (`IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>>`): value → the set of keys holding it. Lookups and enumeration reflect later changes to the source map, and no mutating members are exposed. The view reads the reverse index the source already maintains (`_valueIndex` + the null-value bucket) directly, so it is zero-cost to build and O(1) per read. It is the **live half** of the two inverted-index entry points, consistent with the `ReverseMultiDictionary` snapshot (F17) at any moment.
+`MultiDictionary<TKey,TValue>.AsReverse()` returns a **live read-only inverted view** (`IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>>`): value → the set of keys holding it. Lookups and enumeration reflect later changes to the source map, and no mutating members are exposed. The view reads the reverse index the source already maintains (`_valueIndex` + the null-value bucket) directly, so it is zero-cost to build and O(1) per read. It is the **live half** of the two inverted-index entry points, consistent with the `ReverseMultiDictionary` snapshot (6.3.0) at any moment.
 
 ## When to use it
 

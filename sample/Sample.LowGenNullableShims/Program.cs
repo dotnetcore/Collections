@@ -1,5 +1,5 @@
-// Sample.LowGenNullableShims — 低代际 TFM 的可空属性垫片（F43）
-// Sample.LowGenNullableShims — nullability attribute shims for low-generation TFMs (F43)
+// Sample.LowGenNullableShims — 低代际 TFM 的可空属性垫片（6.3.0）
+// Sample.LowGenNullableShims — nullability attribute shims for low-generation TFMs (6.3.0)
 // 运行：dotnet run --project sample/Sample.LowGenNullableShims
 // Run: dotnet run --project sample/Sample.LowGenNullableShims
 //

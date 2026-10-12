@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Packed value-type bag** — `PackedBag<T>`: a dense-array histogram bag with box-free storage (feature F21, `DotNetCore.Collections.Multi`, 6.4.0).
+> **Packed value-type bag** — `PackedBag<T>`: a dense-array histogram bag with box-free storage (`DotNetCore.Collections.Multi`, 6.4.0).
 
 ## What this sample demonstrates
 
@@ -17,7 +17,7 @@ it is a histogram, not a general multi-set.
 - Histograms over an enum / small-integer domain (roughly ≤16 distinct values): a dense layout is faster and allocates less than `MultiList<T>`'s dictionary.
 - Hot `Add` / `CountOf`: no hashing, no bucket chasing.
 - Do not use for: a large / sparse value domain (use `MultiList<T>`); needing set operations (use `MultiList<T>`); reference-type elements.
-- Difference from `SpanBag<T>`: the latter additionally requires `unmanaged` and its storage comes from a stack `stackalloc` (see F22).
+- Difference from `SpanBag<T>`: the latter additionally requires `unmanaged` and its storage comes from a stack `stackalloc` (see 6.4.0).
 
 ## How to run
 

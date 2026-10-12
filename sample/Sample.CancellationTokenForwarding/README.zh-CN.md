@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **取消令牌转发** — `CancellationToken` 的承诺逐包不同：下传 / 库边界 / 不观察三类语义（对应 feature F44，Paginable 核心 / 适配器，6.0.0 引入、6.5.0 六适配器、6.6.0 SqlSugar 修复）。
+> **取消令牌转发** — `CancellationToken` 的承诺逐包不同：下传 / 库边界 / 不观察三类语义（Paginable 核心 / 适配器，6.0.0 引入、6.5.0 六适配器、6.6.0 SqlSugar 修复）。
 
 ## 本示例演示什么
 
@@ -41,5 +41,5 @@ dotnet run --project sample/Sample.CancellationTokenForwarding
 
 - **同步 `GetPage` 没有令牌参数**：不要在同步面找取消。
 - **内存 Async 只是签名对称**，不是「可取消 I/O」。
-- **异常类型**：取消是 `OperationCanceledException`（含 `TaskCanceledException` 子类）；越界仍是 `ArgumentOutOfRangeException`（F40）——勿混 catch。
-- **不要假设所有适配器中段可取消**：查 F44 表 + F50 矩阵，逐包不同；SqlSugar 6.5→6.6 后取消可能开始抛出，是修复不是回归。
+- **异常类型**：取消是 `OperationCanceledException`（含 `TaskCanceledException` 子类）；越界仍是 `ArgumentOutOfRangeException`（6.2.0）——勿混 catch。
+- **不要假设所有适配器中段可取消**：查 6.0.0 表 + 2.x 矩阵，逐包不同；SqlSugar 6.5→6.6 后取消可能开始抛出，是修复不是回归。

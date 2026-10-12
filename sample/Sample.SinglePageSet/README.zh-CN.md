@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **单页集合包装** — 把「一页已装配数据 + 全源元数据」包成 `IPaginable<T>`，`PageCount` 恒为 1（对应 feature F34，`DotNetCore.Collections.Paginable`，6.2.0）。
+> **单页集合包装** — 把「一页已装配数据 + 全源元数据」包成 `IPaginable<T>`，`PageCount` 恒为 1（`DotNetCore.Collections.Paginable`，6.2.0）。
 
 ## 本示例演示什么
 

@@ -1,5 +1,5 @@
-// Sample.OrderedMultiMap — 有序多重映射 OrderedMultiDictionary<TKey,TValue>（F08）
-// Sample.OrderedMultiMap — ordered multimap OrderedMultiDictionary<TKey,TValue> (F08)
+// Sample.OrderedMultiMap — 有序多重映射 OrderedMultiDictionary<TKey,TValue>（6.2.0）
+// Sample.OrderedMultiMap — ordered multimap OrderedMultiDictionary<TKey,TValue> (6.2.0)
 // 运行：dotnet run --project sample/Sample.OrderedMultiMap
 // Run: dotnet run --project sample/Sample.OrderedMultiMap
 //

@@ -1,5 +1,5 @@
-// Sample.ExplicitSerialization — 显式序列化模型（F10，含 6.7.1 全家桶）
-// Sample.ExplicitSerialization — Explicit serialization models (F10, including the 6.7.1 whole-family additions)
+// Sample.ExplicitSerialization — 显式序列化模型（6.2.0，含 6.7.1 全家桶）
+// Sample.ExplicitSerialization — Explicit serialization models (6.2.0, including the 6.7.1 whole-family additions)
 // 运行：dotnet run --project sample/Sample.ExplicitSerialization
 // Run: dotnet run --project sample/Sample.ExplicitSerialization
 //

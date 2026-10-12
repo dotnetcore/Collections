@@ -2,11 +2,11 @@
 
 > **中文** | [English](README.md)
 
-> **多重映射活反查视图** — `MultiDictionary&lt;TKey,TValue&gt;.AsReverse()`（F18，`DotNetCore.Collections.Multi`，6.3.0）。
+> **多重映射活反查视图** — `MultiDictionary&lt;TKey,TValue&gt;.AsReverse()`（`DotNetCore.Collections.Multi`，6.3.0）。
 
 ## 本示例演示什么
 
-`MultiDictionary<TKey,TValue>.AsReverse()` 返回**活的只读倒排视图**（`IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>>`）：值 → 持有它的键集合。查找与枚举反映源 map 的后续变化，且不暴露突变成员。视图直接读源已维护的反向索引（`_valueIndex` + null 值桶），构建零成本、每读 O(1)。它是两个倒排入口的**活半边**，与 `ReverseMultiDictionary` 快照（F17）任意时刻一致。
+`MultiDictionary<TKey,TValue>.AsReverse()` 返回**活的只读倒排视图**（`IReadOnlyDictionary<TValue, IReadOnlyCollection<TKey>>`）：值 → 持有它的键集合。查找与枚举反映源 map 的后续变化，且不暴露突变成员。视图直接读源已维护的反向索引（`_valueIndex` + null 值桶），构建零成本、每读 O(1)。它是两个倒排入口的**活半边**，与 `ReverseMultiDictionary` 快照（6.3.0）任意时刻一致。
 
 ## 什么时候用
 

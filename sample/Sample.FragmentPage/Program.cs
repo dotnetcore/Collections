@@ -1,5 +1,5 @@
-// Sample.FragmentPage — 从已切好的片段构造页面（F32）
-// Sample.FragmentPage — Build a page from an already-sliced fragment (F32)
+// Sample.FragmentPage — 从已切好的片段构造页面（6.1.0）
+// Sample.FragmentPage — Build a page from an already-sliced fragment (6.1.0)
 // 运行：dotnet run --project sample/Sample.FragmentPage
 // Run: dotnet run --project sample/Sample.FragmentPage
 //

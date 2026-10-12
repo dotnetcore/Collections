@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **页成员包装与全局编号** — 页的每个元素被包装为 `PageMember<T>`（struct）：`Value` / `Offset` / `ItemNumber`（对应 feature F46，`DotNetCore.Collections.Paginable`，6.0.0–6.1.0）。
+> **页成员包装与全局编号** — 页的每个元素被包装为 `PageMember<T>`（struct）：`Value` / `Offset` / `ItemNumber`（`DotNetCore.Collections.Paginable`，6.0.0–6.1.0）。
 
 ## 本示例演示什么
 
@@ -11,7 +11,7 @@
 ## 什么时候用
 
 - 表格「序号」列：直接读 `ItemNumber`，跨页连续。
-- 大页延迟读：状态形态避免提前物化（与 F39 / F48 配套）。
+- 大页延迟读：状态形态避免提前物化（与 6.0.0 配套）。
 - 不该用：当可变列表元素——struct 包装，改 `Value` 不回写源。
 
 ## 如何运行

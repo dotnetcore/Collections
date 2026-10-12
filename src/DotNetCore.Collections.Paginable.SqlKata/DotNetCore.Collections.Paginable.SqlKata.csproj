@@ -29,7 +29,7 @@
         <PackageReference Include="SqlKata.Execution" Version="3.2.3"/>
     </ItemGroup>
 
-    <!-- E6-03: two transitives arrive through SqlKata's own dependency graph and
+    <!-- Since 6.2.0: two transitives arrive through SqlKata's own dependency graph and
          both of its usable lines are frozen with advisories still open on them.
 
          * net451 -> SqlKata 2.2.0 targets netstandard1.x, so NETStandard.Library

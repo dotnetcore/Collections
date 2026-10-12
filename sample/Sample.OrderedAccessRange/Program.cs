@@ -1,5 +1,5 @@
-// Sample.OrderedAccessRange — 有序访问与区间查询（F06）
-// Sample.OrderedAccessRange — ordered access and range queries (F06)
+// Sample.OrderedAccessRange — 有序访问与区间查询（6.2.0）
+// Sample.OrderedAccessRange — ordered access and range queries (6.2.0)
 // 运行：dotnet run --project sample/Sample.OrderedAccessRange
 // Run: dotnet run --project sample/Sample.OrderedAccessRange
 //

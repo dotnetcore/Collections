@@ -31,7 +31,7 @@ namespace DotNetCore.Collections
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        // F7-03: an array answers every hook. Its length is the element count, it is already one
+        // Since 7.1.0: an array answers every hook. Its length is the element count, it is already one
         // contiguous block, and that block can be copied in a single step.
 
         bool IValueEnumerableHooks<T>.TryGetNonEnumeratedCount(out int count)

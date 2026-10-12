@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Ordered multimap OrderedMultiDictionary&lt;TKey,TValue&gt;** — a multimap with keys ascending and values within each key ascending (F08, `DotNetCore.Collections.Multi`, 6.2.0).
+> **Ordered multimap OrderedMultiDictionary&lt;TKey,TValue&gt;** — a multimap with keys ascending and values within each key ascending (`DotNetCore.Collections.Multi`, 6.2.0).
 
 ## What this sample demonstrates
 

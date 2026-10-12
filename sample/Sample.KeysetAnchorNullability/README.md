@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Nullable keyset pagination anchor parameter** — the `lastKey` anchor is consistent with the nullability of the key type: a nullable key can be used directly as an anchor, and `null` means "no anchor" (feature F42, `DotNetCore.Collections.Paginable` / `…EntityFrameworkCore`, 6.3.0).
+> **Nullable keyset pagination anchor parameter** — the `lastKey` anchor is consistent with the nullability of the key type: a nullable key can be used directly as an anchor, and `null` means "no anchor" (`DotNetCore.Collections.Paginable` / `…EntityFrameworkCore`, 6.3.0).
 
 ## What this sample demonstrates
 
@@ -38,6 +38,6 @@ dotnet run --project sample/Sample.KeysetAnchorNullability
 ## Notes and pitfalls
 
 - **A `null` anchor is "no anchor", not "a key value of null".** If the sort key itself can store `null`, the semantics are defined by the query provider.
-- **Non-breaking upgrade**, shipped together with F41; the runtime "anchored / not anchored" branch is unchanged.
-- **A keyset page carries no total page count** (no `COUNT(*)`, no `OFFSET`), unlike offset pagination `IPage<T>` (see F30).
+- **Non-breaking upgrade**, shipped together with 6.3.0; the runtime "anchored / not anchored" branch is unchanged.
+- **A keyset page carries no total page count** (no `COUNT(*)`, no `OFFSET`), unlike offset pagination `IPage<T>` (see 6.0.0).
 - An `IQueryable<T>` source has an `Expression<Func<T, TKey>>` overload; this sample uses the in-memory `IEnumerable<T>` `Func` overload.

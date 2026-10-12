@@ -1,5 +1,5 @@
-// Sample.OtherOrmAdapters — Chloe / DosOrm / NHibernate 三包入口名对照（F55）
-// Sample.OtherOrmAdapters — Chloe / DosOrm / NHibernate three-package entry-name cross-reference (F55)
+// Sample.OtherOrmAdapters — Chloe / DosOrm / NHibernate 三包入口名对照（2.x）
+// Sample.OtherOrmAdapters — Chloe / DosOrm / NHibernate three-package entry-name cross-reference (2.x)
 // 运行：dotnet run --project sample/Sample.OtherOrmAdapters
 // Run: dotnet run --project sample/Sample.OtherOrmAdapters
 //
@@ -28,8 +28,8 @@ Console.WriteLine($"核心契约程序集 / Core contract assembly：{typeof(IPa
 Console.WriteLine();
 
 // ---------------------------------------------------------------------------
-// 1. 三包入口名对照表（逐字来自 F55）
-// 1. Three-package entry-name cross-reference table (verbatim from F55)
+// 1. 三包入口名对照表（逐字来自 2.x）
+// 1. Three-package entry-name cross-reference table (verbatim from 2.x)
 // ---------------------------------------------------------------------------
 Console.WriteLine("=== 1. 三包入口名对照表 ===");
 Console.WriteLine("=== 1. Three-package entry-name cross-reference table ===");
@@ -77,7 +77,7 @@ Console.WriteLine();
 Console.WriteLine("=== 3. 命名规律与例外 ===");
 Console.WriteLine("=== 3. Naming rule and exception ===");
 Console.WriteLine("多数：PaginableXxxQuery<T> + XxxPage<T>；但 NHibernate 页类型是 **NhCorePage<T>**，不是 NHibernatePage<T>。 / Most: PaginableXxxQuery<T> + XxxPage<T>; but NHibernate's page type is **NhCorePage<T>**, not NHibernatePage<T>.");
-Console.WriteLine("三包都走源生成器（F56）；6.5 起异步 / 取消对齐（F44）。 / All three packages go through the source generator (F56); async / cancellation is aligned since 6.5 (F44).");
+Console.WriteLine("三包都走源生成器（6.5.0）；6.5 起异步 / 取消对齐（6.0.0）。 / All three packages go through the source generator (6.5.0); async / cancellation is aligned since 6.5 (6.0.0).");
 
 // ---------------------------------------------------------------------------
 // 4. 共享核心契约（本地可运行，不连库）
@@ -105,7 +105,7 @@ foreach (var member in page)
 Console.WriteLine();
 Console.WriteLine("=== 5. 同名 SolidPageExtensions 消歧 ===");
 Console.WriteLine("=== 5. Same-name SolidPageExtensions disambiguation ===");
-Console.WriteLine("10 处同名 SolidPageExtensions（核心 1 + 适配器 9）；混用两包须全限定名或别名（U27）。 / 10 same-named SolidPageExtensions (1 core + 9 adapters); mixing two packages requires a fully-qualified name or alias (U27).");
+Console.WriteLine("10 处同名 SolidPageExtensions（核心 1 + 适配器 9）；混用两包须全限定名或别名（6.2.0）。 / 10 same-named SolidPageExtensions (1 core + 9 adapters); mixing two packages requires a fully-qualified name or alias (6.2.0).");
 Console.WriteLine("三包 TFM **无 net451**（Chloe 5.x 亦不再支持 net451）。 / The three packages' TFM has **no net451** (Chloe 5.x no longer supports net451 either).");
 
 Console.WriteLine();

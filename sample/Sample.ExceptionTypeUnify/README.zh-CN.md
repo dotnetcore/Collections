@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **越界异常类型统一** — 全部分页入口的越界参数一律抛 `ArgumentOutOfRangeException` 并携带 `ParamName`（对应 feature F40，`DotNetCore.Collections.Paginable`，6.2.0 破坏性变更）。
+> **越界异常类型统一** — 全部分页入口的越界参数一律抛 `ArgumentOutOfRangeException` 并携带 `ParamName`（`DotNetCore.Collections.Paginable`，6.2.0 破坏性变更）。
 
 ## 本示例演示什么
 

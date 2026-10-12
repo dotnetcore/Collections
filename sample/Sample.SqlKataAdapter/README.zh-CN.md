@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **SqlKata 适配器入口面：非泛型 Query 与显式类型参数** — `SolidPageExtensions` + `PaginableSqlKataQuery<T>` + `SqlKataPage<T>`（对应 feature F54，`DotNetCore.Collections.Paginable.SqlKata`，3.2.0）。
+> **SqlKata 适配器入口面：非泛型 Query 与显式类型参数** — `SolidPageExtensions` + `PaginableSqlKataQuery<T>` + `SqlKataPage<T>`（`DotNetCore.Collections.Paginable.SqlKata`，3.2.0）。
 
 ## 本示例演示什么
 
@@ -45,5 +45,5 @@ dotnet run --project sample/Sample.SqlKataAdapter
 
 - **显式泛型参数**：`query.ToPaginable<Product>(20)`，不能写 `query.ToPaginable(20)`。
 - **SqlKata 主版本随 TFM 变**：net451→2.2.0；net8/9/10→4.0.1；其余→3.2.3。
-- **传递依赖钉死**（6.2.0 E6-03）是安全修复，不是 API 变化。
-- **同名 `SolidPageExtensions`**（U27）；net451 无生成器，靠手写成员对齐。
+- **传递依赖钉死**（6.2.0）是安全修复，不是 API 变化。
+- **同名 `SolidPageExtensions`**（6.2.0）；net451 无生成器，靠手写成员对齐。

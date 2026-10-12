@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **独立快照 Snapshot()** — `MultiList<T>` / `MultiDictionary<TKey,TValue>` 的脱离副本（6.9.0，`DotNetCore.Collections.Multi`，6.9.0）。
+> **独立快照 Snapshot()** — `MultiList<T>` / `MultiDictionary<TKey,TValue>` 的脱离副本（`DotNetCore.Collections.Multi`，6.9.0）。
 
 ## 本示例演示什么
 
@@ -14,7 +14,7 @@
 
 - 需要遍历集合，同时在遍历过程中继续修改它（安全的前提是先取快照）。
 - 需要一个「此刻为止」的稳定视图，后续改动不应影响它。
-- 不该用：需要连副本本身也不可变 → `ImmutableMultiList<T>` / `ImmutableMultiDictionary<TKey,TValue>`（F13）；
+- 不该用：需要连副本本身也不可变 → `ImmutableMultiList<T>` / `ImmutableMultiDictionary<TKey,TValue>`（6.2.0）；
   只是想读一遍活集合且不改 → 直接枚举即可。
 
 ## 如何运行
@@ -42,5 +42,5 @@ dotnet run --project sample/Sample.Snapshot
 - **浅拷贝**：元素引用是共享的（改元素本身两边都看得到），独立的是计数与内层结构。
 - **快照是脱离的**：快照构建后，对原集合的改动不会再反映到快照里。
 - **不是并发类型**：`Snapshot()` 解决的是「枚举期间修改」的稳定性，不解决多线程竞态；
-  并发场景请用 `ConcurrentMultiList<T>` / `ConcurrentMultiDictionary<TKey,TValue>`（F14）。
+  并发场景请用 `ConcurrentMultiList<T>` / `ConcurrentMultiDictionary<TKey,TValue>`（6.2.0）。
 - **命名一致**：并发类型的 `Snapshot()` 也返回非并发类型（由 `Clone()` 构建），本示例让核心类型与家族读法统一。

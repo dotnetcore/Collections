@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Readable type-name formatting** — `TypeExtensions.ToReadableString()` / `TypeNameFormat` (feature F26, `DotNetCore.Collections.Multi`, 6.6.0).
+> **Readable type-name formatting** — `TypeExtensions.ToReadableString()` / `TypeNameFormat` (`DotNetCore.Collections.Multi`, 6.6.0).
 
 ## What this sample demonstrates
 

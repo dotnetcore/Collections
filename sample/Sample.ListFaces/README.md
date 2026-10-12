@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **List interface surface** — `OrderedMultiList<T>`'s `IList<T>` / `IReadOnlyList<T>` implementations and narrowed writes (feature F25, `DotNetCore.Collections.Multi`, 6.5.0).
+> **List interface surface** — `OrderedMultiList<T>`'s `IList<T>` / `IReadOnlyList<T>` implementations and narrowed writes (`DotNetCore.Collections.Multi`, 6.5.0).
 
 ## What this sample demonstrates
 

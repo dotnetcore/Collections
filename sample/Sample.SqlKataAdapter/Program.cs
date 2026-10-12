@@ -1,5 +1,5 @@
-// Sample.SqlKataAdapter — SqlKata 适配器入口面：非泛型 Query 与显式类型参数（F54）
-// Sample.SqlKataAdapter — SqlKata adapter entry surface: non-generic Query and explicit type arguments (F54)
+// Sample.SqlKataAdapter — SqlKata 适配器入口面：非泛型 Query 与显式类型参数（3.2.0）
+// Sample.SqlKataAdapter — SqlKata adapter entry surface: non-generic Query and explicit type arguments (3.2.0)
 // 运行：dotnet run --project sample/Sample.SqlKataAdapter
 // Run: dotnet run --project sample/Sample.SqlKataAdapter
 //
@@ -111,7 +111,7 @@ foreach (var member in page)
 Console.WriteLine();
 Console.WriteLine("=== 5. TFM 漂移与为什么不真正执行 ===");
 Console.WriteLine("=== 5. TFM drift and why it is not really executed ===");
-Console.WriteLine("SqlKata 主版本随 TFM 变：net451→2.2.0；net8/9/10→4.0.1；其余→3.2.3——行为差异按 TFM 测（F57）。 / The SqlKata major version changes with the TFM: net451→2.2.0; net8/9/10→4.0.1; others→3.2.3 — test behavior differences per TFM (F57).");
+Console.WriteLine("SqlKata 主版本随 TFM 变：net451→2.2.0；net8/9/10→4.0.1；其余→3.2.3——行为差异按 TFM 测（6.0.0）。 / The SqlKata major version changes with the TFM: net451→2.2.0; net8/9/10→4.0.1; others→3.2.3 — test behavior differences per TFM (6.0.0).");
 Console.WriteLine("GetPage 经 SqlKataHelper.Count → query.Clone().Count<int>() 打库，控制台示例不连库，故只演示入口面。 / GetPage hits the database via SqlKataHelper.Count → query.Clone().Count<int>(); the console example does not connect to a database, so it only demonstrates the entry surface.");
 
 Console.WriteLine();

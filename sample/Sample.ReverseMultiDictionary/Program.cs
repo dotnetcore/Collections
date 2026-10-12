@@ -1,5 +1,5 @@
-// Sample.ReverseMultiDictionary — 反向多重字典（倒排快照）（F17）
-// Sample.ReverseMultiDictionary — reverse multidictionary (inverted snapshot) (F17)
+// Sample.ReverseMultiDictionary — 反向多重字典（倒排快照）（6.3.0）
+// Sample.ReverseMultiDictionary — reverse multidictionary (inverted snapshot) (6.3.0)
 // 运行：dotnet run --project sample/Sample.ReverseMultiDictionary
 // Run: dotnet run --project sample/Sample.ReverseMultiDictionary
 //

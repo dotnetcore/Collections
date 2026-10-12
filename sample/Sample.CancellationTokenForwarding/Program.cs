@@ -1,5 +1,5 @@
-// Sample.CancellationTokenForwarding — 取消令牌的转发 / 边界 / 不观察（F44）
-// Sample.CancellationTokenForwarding — cancellation token forwarding / boundary / unobserved (F44)
+// Sample.CancellationTokenForwarding — 取消令牌的转发 / 边界 / 不观察（6.0.0）
+// Sample.CancellationTokenForwarding — cancellation token forwarding / boundary / unobserved (6.0.0)
 // 运行：dotnet run --project sample/Sample.CancellationTokenForwarding
 // Run: dotnet run --project sample/Sample.CancellationTokenForwarding
 //
@@ -76,7 +76,7 @@ Console.WriteLine("=== 3. Contrast of the three semantics ===");
 Console.WriteLine("下传   ：EF Core / FreeSql 的 GetPageAsync 把令牌交给 CountAsync/ToListAsync（真异步，可中止 I/O） / Forward: EF Core / FreeSql's GetPageAsync hands the token to CountAsync/ToListAsync (real async, can abort I/O)");
 Console.WriteLine("库边界 ：SqlSugar 6.6 起在自有边界尊重已取消令牌（首轮往返前抛 OperationCanceledException） / Library boundary: since SqlSugar 6.6 an already-cancelled token is respected at its own boundary (throws OperationCanceledException before the first round trip)");
 Console.WriteLine("不观察 ：片段 / 内存 Async —— 无 I/O，仅签名对称（本示例演示的就是这一类） / Unobserved: fragment / in-memory Async — no I/O, only signature symmetry (this is the category this sample demonstrates)");
-Console.WriteLine("同步 GetPage 没有令牌参数；越界是 ArgumentOutOfRangeException（F40），与取消异常无关。 / The synchronous GetPage has no token parameter; out-of-range is ArgumentOutOfRangeException (F40), unrelated to cancellation exceptions.");
+Console.WriteLine("同步 GetPage 没有令牌参数；越界是 ArgumentOutOfRangeException（6.2.0），与取消异常无关。 / The synchronous GetPage has no token parameter; out-of-range is ArgumentOutOfRangeException (6.2.0), unrelated to cancellation exceptions.");
 
 // ⚠️ 异常类型提醒：取消 = OperationCanceledException（含 TaskCanceledException 子类）；
 // ⚠️ Exception type reminder: cancellation = OperationCanceledException (including the TaskCanceledException subclass);

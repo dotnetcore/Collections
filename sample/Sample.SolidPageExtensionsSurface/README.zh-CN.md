@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **`SolidPageExtensions` 入口面** — 偏移分页的扩展方法入口：`ToPaginable` / `GetPage` / `*Async`（对应 feature F45，核心包 + 9 个适配器各有同名类型）。
+> **`SolidPageExtensions` 入口面** — 偏移分页的扩展方法入口：`ToPaginable` / `GetPage` / `*Async`（对应 feature all releases，核心包 + 9 个适配器各有同名类型）。
 
 ## 本示例演示什么
 
@@ -11,8 +11,8 @@
 ## 什么时候用
 
 - 内存 / Dapper 后的 `IEnumerable`，或 `IQueryable` 源，需要一行变成可翻页集合或取页。
-- 想通过 `limitedMemberCount` 封顶（F38）。
-- 混用两个 ORM 时必须消歧（见 U27）——只写扩展方法语法通常无碍。
+- 想通过 `limitedMemberCount` 封顶（6.0.0）。
+- 混用两个 ORM 时必须消歧（见 6.2.0）——只写扩展方法语法通常无碍。
 
 ## 如何运行
 
@@ -42,5 +42,5 @@ dotnet run --project sample/Sample.SolidPageExtensionsSurface
 
 - **文档与示例提到 `SolidPageExtensions` 必须带包名 / 程序集限定**（全系列硬规则）；10 处同名，两包同引裸写类型名即 `CS0104`。
 - **动词含义**：`ToPaginable` = 建集合；`GetPage` = 从**全源**切一页；片段用 `ToPage`。
-- **空源**：`GetPage(1)` 返回空页，不抛；**越界**：`ArgumentOutOfRangeException`（F40）。
-- **异步语义随包**（F31 / F44）：核心内存 Async 不观察令牌；本示例只演示同步面。
+- **空源**：`GetPage(1)` 返回空页，不抛；**越界**：`ArgumentOutOfRangeException`（6.2.0）。
+- **异步语义随包**（6.0.0）：核心内存 Async 不观察令牌；本示例只演示同步面。

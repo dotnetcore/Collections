@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Cross-TFM read-only value-view wrapper** — the read-only value view of `MultiDictionary` (F19, `DotNetCore.Collections.Multi`, 6.4.0).
+> **Cross-TFM read-only value-view wrapper** — the read-only value view of `MultiDictionary` (`DotNetCore.Collections.Multi`, 6.4.0).
 
 ## What this sample demonstrates
 
@@ -11,7 +11,7 @@ The package has an `internal sealed` `ReadOnlyCollectionView<T>` that exposes an
 ## When to use it
 
 - Consumers have no direct scenario; this article helps explain "why the read-only value view used to throw / no longer throws on net451".
-- For feature usage see F02 (`MultiDictionary`) / F18 (`AsReverse`).
+- For feature usage see 6.0.0 (`MultiDictionary`) / 6.3.0 (`AsReverse`).
 - Do not use it for: referencing `ReadOnlyCollectionView` directly in a sample / doc (it is `internal` and will not compile).
 
 ## How to run
@@ -39,6 +39,6 @@ dotnet run --project sample/Sample.ReadOnlyCollectionView
 ## Notes and pitfalls
 
 - **Internal type**: `ReadOnlyCollectionView<T>` is `internal`; do not write it into samples / public docs as an API.
-- **A live view, not a snapshot**: view contents change after the map changes; use `ToSerializableModel` (F10) to freeze.
+- **A live view, not a snapshot**: view contents change after the map changes; use `ToSerializableModel` (6.2.0) to freeze.
 - **The problem domain is net451 / net461**: on higher TFMs `HashSet` already implements the interface, but the package wraps uniformly to avoid `#if` forks.
 - **`ToDictionary`'s outer layer is a snapshot while its inner layers are live views**: the two semantics differ, do not mix them up.

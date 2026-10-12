@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **分页计算工具 `PaginableCalc`** — 成员数上限裁剪与页数换算的单一事实源（对应 feature F47，`DotNetCore.Collections.Paginable`，6.0.0）。
+> **分页计算工具 `PaginableCalc`** — 成员数上限裁剪与页数换算的单一事实源（`DotNetCore.Collections.Paginable`，6.0.0）。
 
 ## 本示例演示什么
 
@@ -38,5 +38,5 @@ dotnet run --project sample/Sample.PaginableCalc
 
 - **在 `Internal` 命名空间但是 public**：可调用，但视为实现工具，勿当业务 API。
 - **`GetRealPageCount` 不校验 `pageSize > 0`**：由工厂校验配套，调用方保证。
-- **与 F38 `MaxMemberItems` 配套**：超过上限的结果集被拒绝或裁剪，裁剪走 `GetRealMemberCount`。
+- **与 6.0.0 `MaxMemberItems` 配套**：超过上限的结果集被拒绝或裁剪，裁剪走 `GetRealMemberCount`。
 - 各适配器手算页数会导致末页语义不一致——统一走 `PaginableCalc`。

@@ -1,5 +1,5 @@
-// Sample.MultiMapDualCache — 多重映射双缓存（F11）
-// Sample.MultiMapDualCache — Multimap dual cache (F11)
+// Sample.MultiMapDualCache — 多重映射双缓存（6.2.0）
+// Sample.MultiMapDualCache — Multimap dual cache (6.2.0)
 // 运行：dotnet run --project sample/Sample.MultiMapDualCache
 // Run: dotnet run --project sample/Sample.MultiMapDualCache
 //

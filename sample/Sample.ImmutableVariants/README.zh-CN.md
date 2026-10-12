@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **不可变变体** — `ImmutableMultiList<T>` / `ImmutableMultiDictionary<TKey,TValue>`：突变返回新实例，实例永不变（对应 feature F13，`DotNetCore.Collections.Multi`，6.2.0）。
+> **不可变变体** — `ImmutableMultiList<T>` / `ImmutableMultiDictionary<TKey,TValue>`：突变返回新实例，实例永不变（`DotNetCore.Collections.Multi`，6.2.0）。
 
 ## 本示例演示什么
 

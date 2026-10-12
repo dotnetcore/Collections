@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Secondary-axis reverse index** — second-axis queries on `TwoKeyDictionary&lt;K1,K2,V&gt;` (F09, `DotNetCore.Collections.Multi`, 6.2.0).
+> **Secondary-axis reverse index** — second-axis queries on `TwoKeyDictionary&lt;K1,K2,V&gt;` (`DotNetCore.Collections.Multi`, 6.2.0).
 
 ## What this sample demonstrates
 

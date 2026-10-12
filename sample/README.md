@@ -10,7 +10,7 @@ This directory collects an independent, runnable sample for every **feature** in
 - Coverage: `DotNetCore.Collections` (the LINQ value-type engine added in 7.1.0),
   `DotNetCore.Collections.Multi`, `DotNetCore.Collections.Paginable`,
   plus the per-package ORM adapter surface — **every feature up to and including 7.1.0**
-  (F01–F58 plus the 6.7–7.1 additions).
+  (every feature from 6.0.0 onwards, plus the 6.7–7.1 additions).
 - Target framework: mostly `net8.0`; `Sample.ValueEnumerable` / `Sample.MultiTfmSurface`
   are multi-targeted as `net8.0;net10.0`.
 - Every sample `ProjectReference`s the matching project under the repository `src/`,
@@ -45,51 +45,51 @@ dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # multi-target ne
 
 | Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [MultiSet](Sample.MultiSet) | F01 | `MultiList<T>` unordered bag: copy-count semantics, `Count` = number of copies (not distinct elements), union/intersect/difference computed on copy counts, copy-expanded enumeration |
-| [MultiMap](Sample.MultiMap) | F02 | `MultiDictionary<TKey,TValue>` multimap: `Count` = key count, `Values` is a **flattened** sequence (not grouped by key), a missing key returns an empty collection |
-| [StructuralEquality](Sample.StructuralEquality) | F03 | Multiset **structural equality**: copy counts participate in `Equals`/`GetHashCode`, independent of enumeration order, safe to put in a `HashSet` |
-| [MultiMapBatchDelete](Sample.MultiMapBatchDelete) | F04 | Contrast between `RemoveRange` (removes **one** occurrence per distinct value) and `ExceptWith` (removes **all** occurrences) |
-| [ExplicitSerialization](Sample.ExplicitSerialization) | F10 (+6.7.1) | Explicit serialization model: `ToSerializableModel`/`FromModel` round-trip, the model is a snapshot, comparers are not serialized; extended to the whole family in 6.7.1 |
-| [MultiMapDualCache](Sample.MultiMapDualCache) | F11 | Dual caching: the O(1) cost model behind `TotalValueCount` / `ContainsValue`, transparent to callers |
-| [SetOpsZeroAlloc](Sample.SetOpsZeroAlloc) | F12 | **Zero-allocation** set operations: reads in place and reuses scratch space when the argument is a same-comparer `MultiList<T>`; array arguments still materialize |
+| [MultiSet](Sample.MultiSet) | 6.0.0 | `MultiList<T>` unordered bag: copy-count semantics, `Count` = number of copies (not distinct elements), union/intersect/difference computed on copy counts, copy-expanded enumeration |
+| [MultiMap](Sample.MultiMap) | 6.0.0 | `MultiDictionary<TKey,TValue>` multimap: `Count` = key count, `Values` is a **flattened** sequence (not grouped by key), a missing key returns an empty collection |
+| [StructuralEquality](Sample.StructuralEquality) | 6.1.0 | Multiset **structural equality**: copy counts participate in `Equals`/`GetHashCode`, independent of enumeration order, safe to put in a `HashSet` |
+| [MultiMapBatchDelete](Sample.MultiMapBatchDelete) | 6.1.0 | Contrast between `RemoveRange` (removes **one** occurrence per distinct value) and `ExceptWith` (removes **all** occurrences) |
+| [ExplicitSerialization](Sample.ExplicitSerialization) | 6.2.0 (+6.7.1) | Explicit serialization model: `ToSerializableModel`/`FromModel` round-trip, the model is a snapshot, comparers are not serialized; extended to the whole family in 6.7.1 |
+| [MultiMapDualCache](Sample.MultiMapDualCache) | 6.2.0 | Dual caching: the O(1) cost model behind `TotalValueCount` / `ContainsValue`, transparent to callers |
+| [SetOpsZeroAlloc](Sample.SetOpsZeroAlloc) | 6.2.0 | **Zero-allocation** set operations: reads in place and reuses scratch space when the argument is a same-comparer `MultiList<T>`; array arguments still materialize |
 | [MultiDictionaryExtensions](Sample.MultiDictionaryExtensions) | 6.8.0 | Build a multimap from an existing source: `IndexBy` / `UniqueIndexBy` / `AsMultiDictionary` |
 
 ### Ordered sets and ordered maps
 
 | Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [OrderedMultiSet](Sample.OrderedMultiSet) | F05 | `OrderedMultiList<T>` ordered bag: ascending enumeration, the comparer defines both **order and identity**, O(log n) add/remove |
-| [OrderedAccessRange](Sample.OrderedAccessRange) | F06 | Extremes (`GetFirst`/`GetLast`) and range (`GetRange`) queries, with boundary semantics following the injected `IComparer<T>` |
-| [OrderStatisticTree](Sample.OrderStatisticTree) | F07 | The order-statistic B+ tree engine (internal): observe O(log n) rank reads and the invariants through `OrderedMultiList<T>` |
-| [OrderedMultiMap](Sample.OrderedMultiMap) | F08 | `OrderedMultiDictionary<TKey,TValue>`: keys ascending × values under a key ascending, with rank reads against the flattened sequence |
-| [SecondaryReverseIndex](Sample.SecondaryReverseIndex) | F09 | `TwoKeyDictionary` second-axis reverse index: `GetBySecondKey`/`CountOfSecondKey` without scanning the whole table |
+| [OrderedMultiSet](Sample.OrderedMultiSet) | 6.2.0 | `OrderedMultiList<T>` ordered bag: ascending enumeration, the comparer defines both **order and identity**, O(log n) add/remove |
+| [OrderedAccessRange](Sample.OrderedAccessRange) | 6.2.0 | Extremes (`GetFirst`/`GetLast`) and range (`GetRange`) queries, with boundary semantics following the injected `IComparer<T>` |
+| [OrderStatisticTree](Sample.OrderStatisticTree) | 6.2.0 | The order-statistic B+ tree engine (internal): observe O(log n) rank reads and the invariants through `OrderedMultiList<T>` |
+| [OrderedMultiMap](Sample.OrderedMultiMap) | 6.2.0 | `OrderedMultiDictionary<TKey,TValue>`: keys ascending × values under a key ascending, with rank reads against the flattened sequence |
+| [SecondaryReverseIndex](Sample.SecondaryReverseIndex) | 6.2.0 | `TwoKeyDictionary` second-axis reverse index: `GetBySecondKey`/`CountOfSecondKey` without scanning the whole table |
 
 ### Multi-keys / bijection / reverse indexes
 
 | Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [TwoKeyDictionary](Sample.TwoKeyDictionary) | F29 (+6.7.1/6.8) | Two-key composite dictionary: two-dimensional indexer plus dual-axis slicing; 6.7.1 `Values`/`ContainsValue`/`AsReverse`, 6.8 `EntrySet()` |
-| [ThreeKeyDictionary](Sample.ThreeKeyDictionary) | F15 (+6.7.1/6.8) | Three-key composite dictionary: triple indexer; **only the first axis is a prefix**, the second/third axes fall back to scanning |
-| [BiDictionary](Sample.BiDictionary) | F16 | Strict **bijective** dictionary: a right-side conflict never silently overwrites, `Add` throws / `TryAdd` returns false, O(1) both ways |
-| [ReverseMultiDictionary](Sample.ReverseMultiDictionary) | F17 (+6.7.1) | `ReverseMultiDictionary<V,K>` inverted **snapshot** (copied out at construction); 6.7.1 `AsReverse` family |
-| [LiveReverseView](Sample.LiveReverseView) | F18 | `MultiDictionary.AsReverse()` as a **live** reverse lookup view: zero-copy, the view is visible immediately after the source `Add` |
-| [MultiKeyMultiDictionary](Sample.MultiKeyMultiDictionary) | F20 (+6.8) | Composite-key multimap: homogeneous component key + one-key-many-values + prefix counting; 6.8 `EntrySet()` |
+| [TwoKeyDictionary](Sample.TwoKeyDictionary) | 6.2.0 (+6.7.1/6.8) | Two-key composite dictionary: two-dimensional indexer plus dual-axis slicing; 6.7.1 `Values`/`ContainsValue`/`AsReverse`, 6.8 `EntrySet()` |
+| [ThreeKeyDictionary](Sample.ThreeKeyDictionary) | 6.2.0 (+6.7.1/6.8) | Three-key composite dictionary: triple indexer; **only the first axis is a prefix**, the second/third axes fall back to scanning |
+| [BiDictionary](Sample.BiDictionary) | 6.3.0 | Strict **bijective** dictionary: a right-side conflict never silently overwrites, `Add` throws / `TryAdd` returns false, O(1) both ways |
+| [ReverseMultiDictionary](Sample.ReverseMultiDictionary) | 6.3.0 (+6.7.1) | `ReverseMultiDictionary<V,K>` inverted **snapshot** (copied out at construction); 6.7.1 `AsReverse` family |
+| [LiveReverseView](Sample.LiveReverseView) | 6.3.0 | `MultiDictionary.AsReverse()` as a **live** reverse lookup view: zero-copy, the view is visible immediately after the source `Add` |
+| [MultiKeyMultiDictionary](Sample.MultiKeyMultiDictionary) | 6.4.0 (+6.8) | Composite-key multimap: homogeneous component key + one-key-many-values + prefix counting; 6.8 `EntrySet()` |
 
 ### Variants and views
 
 | Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [ImmutableVariants](Sample.ImmutableVariants) | F13 | `ImmutableMultiList<T>` / `ImmutableMultiDictionary`: mutations return new instances, the Builder does batch writes |
-| [ConcurrentVariants](Sample.ConcurrentVariants) | F14 (+6.7.1) | Thread-safe variants: `ConcurrentMultiList` with single-lock linearization, `ConcurrentMultiDictionary` sharded; 6.7.1 read-only projections come from `Snapshot()` |
-| [ReadOnlyCollectionView](Sample.ReadOnlyCollectionView) | F19 | Cross-TFM read-only value view: on net451 a bare `HashSet`→`IReadOnlyCollection` cast throws, the wrapper does not, and it is a **live view** |
+| [ImmutableVariants](Sample.ImmutableVariants) | 6.2.0 | `ImmutableMultiList<T>` / `ImmutableMultiDictionary`: mutations return new instances, the Builder does batch writes |
+| [ConcurrentVariants](Sample.ConcurrentVariants) | 6.2.0 (+6.7.1) | Thread-safe variants: `ConcurrentMultiList` with single-lock linearization, `ConcurrentMultiDictionary` sharded; 6.7.1 read-only projections come from `Snapshot()` |
+| [ReadOnlyCollectionView](Sample.ReadOnlyCollectionView) | 6.4.0 | Cross-TFM read-only value view: on net451 a bare `HashSet`→`IReadOnlyCollection` cast throws, the wrapper does not, and it is a **live view** |
 
 ### The bag family (specialized multisets)
 
 | Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [PackedBag](Sample.PackedBag) | F21 | `PackedBag<T>` dense-array histogram: `where T : struct`, no boxing, faster for a small value domain (≤16) |
-| [SpanBag](Sample.SpanBag) | F22 | `SpanBag<T>` zero-heap bag on the stack: borrows `stackalloc` storage, `ref struct` lifetime enforced by the compiler |
-| [FrequencyPriorityBag](Sample.FrequencyPriorityBag) | F23 | `FrequencyPriorityBag<T>`: repeated `PeekMost`/`PopMost` yields a descending-frequency sequence, the natural shape for Top-K |
+| [PackedBag](Sample.PackedBag) | 6.4.0 | `PackedBag<T>` dense-array histogram: `where T : struct`, no boxing, faster for a small value domain (≤16) |
+| [SpanBag](Sample.SpanBag) | 6.4.0 | `SpanBag<T>` zero-heap bag on the stack: borrows `stackalloc` storage, `ref struct` lifetime enforced by the compiler |
+| [FrequencyPriorityBag](Sample.FrequencyPriorityBag) | 6.4.0 | `FrequencyPriorityBag<T>`: repeated `PeekMost`/`PopMost` yields a descending-frequency sequence, the natural shape for Top-K |
 | [BoundedBag](Sample.BoundedBag) | 6.9.0 | Fixed-capacity sliding-window bag: over capacity it **silently evicts the oldest** copy, `Add` returns `void` (nothing to report on overflow) |
 | [BagStatistics](Sample.BagStatistics) | 6.9.0 | `Mode()` / `Median()` / `Entropy()` on `IMultiSet<T>`: frequency-distribution summaries, read via `EntrySet()` |
 
@@ -97,11 +97,11 @@ dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # multi-target ne
 
 | Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [PositionalRead](Sample.PositionalRead) | F24 | Rank and quantile reads: `GetByRank`/`GetRank`/`GetMedian`/`GetQuantile`/`TotalValueCount` (lists + maps) |
-| [ListFaces](Sample.ListFaces) | F25 | The `IList<T>`/`IReadOnlyList<T>` faces of `OrderedMultiList<T>`: the indexer setter and `Insert` are narrowed |
-| [TypeReadableName](Sample.TypeReadableName) | F26 | `Type.ToReadableString()` / `TypeNameFormat`: drop the namespace, keep the shape, fold past a depth limit |
-| [SharedInterfaces](Sample.SharedInterfaces) | F27 | `IMultiSet<T>` / `IMultiDictionary<TKey,TValue>` / `IBiMap`: behavior-oriented shared abstractions and the dual meaning of `Count` |
-| [Deque](Sample.Deque) | F28 | `Deque<T>` ring-buffer double-ended queue: O(1) amortized at both ends, O(1) positional read, sliding windows |
+| [PositionalRead](Sample.PositionalRead) | 6.5.0 | Rank and quantile reads: `GetByRank`/`GetRank`/`GetMedian`/`GetQuantile`/`TotalValueCount` (lists + maps) |
+| [ListFaces](Sample.ListFaces) | 6.5.0 | The `IList<T>`/`IReadOnlyList<T>` faces of `OrderedMultiList<T>`: the indexer setter and `Insert` are narrowed |
+| [TypeReadableName](Sample.TypeReadableName) | 6.6.0 | `Type.ToReadableString()` / `TypeNameFormat`: drop the namespace, keep the shape, fold past a depth limit |
+| [SharedInterfaces](Sample.SharedInterfaces) | 6.6.0 | `IMultiSet<T>` / `IMultiDictionary<TKey,TValue>` / `IBiMap`: behavior-oriented shared abstractions and the dual meaning of `Count` |
+| [Deque](Sample.Deque) | 6.6.0 | `Deque<T>` ring-buffer double-ended queue: O(1) amortized at both ends, O(1) positional read, sliding windows |
 | [CollectionDifference](Sample.CollectionDifference) | 6.9.0 | Four-way difference comparison: `OnlyInLeft`/`OnlyInRight`/`InCommon`/`Differing` + `AreEqual` (bags by copy count, dictionaries by value) |
 | [CollectionChanged](Sample.CollectionChanged) | 6.9.0 | Home-grown change notifications: the `CollectionChanged` event on `MultiList`/`MultiDictionary` (`Add`/`Remove`/`Reset`) |
 | [Snapshot](Sample.Snapshot) | 6.9.0 | `Snapshot()` as an independent copy: a detached snapshot for "enumerate while mutating", a namesake of a different shape from `Clone()` |
@@ -117,31 +117,31 @@ dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # multi-target ne
 
 | Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [KeysetPagination](Sample.KeysetPagination) | F30 | Keyset (seek) pagination: anchor-driven continuation loop, descending order, and the "fetch one extra row for the caller to trim" contract of `BuildKeysetQuery` |
-| [AsyncPaging](Sample.AsyncPaging) | F31 | The `*Async` methods on in-memory sources are a **synchronously completed** "async shape", semantically different from true I/O async |
-| [FragmentPage](Sample.FragmentPage) | F32 | Building a page from a fragment: `CreatePage`/`ToPage` never re-apply `Skip/Take` to an **already-sliced** fragment; `PageFragmentInfo` metadata round-trip |
-| [StrictFragmentCheck](Sample.StrictFragmentCheck) | F33 | `PageCreationOptions.Lenient` (tolerates a short fragment) vs `Strict` (treats it as a bug and throws `ArgumentException`) |
-| [SinglePageSet](Sample.SinglePageSet) | F34 | Single-page set: the collection layer's `PageCount` is always 1, while the page layer keeps full-source numbering (**an intentional fork**) |
-| [AsyncFragmentEntry](Sample.AsyncFragmentEntry) | F35 | `Paginable.CreatePageAsync` is the async dual of fragment page-building: **synchronously completed**, the token is not observed |
-| [PageMetadata](Sample.PageMetadata) | F36 | Page metadata snapshot, caller-supplied input metadata, and the derivation source shared by both (`PageMetaInfo.Calculate`) |
-| [PaginableSettings](Sample.PaginableSettings) | F37 | The two global configuration knobs (`DefaultPageSize` / `MaxMemberItems`): validated on assignment, swapped atomically as a snapshot |
-| [LimitedMembers](Sample.LimitedMembers) | F38 | Member caps and the **open interval**: global `MaxMemberItems` plus a call-level `limitedMemberCount` ceiling |
-| [EnumerablePageMaterialize](Sample.EnumerablePageMaterialize) | F39 | Single `Skip/Take` materialization for `EnumerablePage<T>`: deep pages are no longer O(skip²) |
+| [KeysetPagination](Sample.KeysetPagination) | 6.0.0 | Keyset (seek) pagination: anchor-driven continuation loop, descending order, and the "fetch one extra row for the caller to trim" contract of `BuildKeysetQuery` |
+| [AsyncPaging](Sample.AsyncPaging) | 6.0.0 | The `*Async` methods on in-memory sources are a **synchronously completed** "async shape", semantically different from true I/O async |
+| [FragmentPage](Sample.FragmentPage) | 6.1.0 | Building a page from a fragment: `CreatePage`/`ToPage` never re-apply `Skip/Take` to an **already-sliced** fragment; `PageFragmentInfo` metadata round-trip |
+| [StrictFragmentCheck](Sample.StrictFragmentCheck) | 6.2.0 | `PageCreationOptions.Lenient` (tolerates a short fragment) vs `Strict` (treats it as a bug and throws `ArgumentException`) |
+| [SinglePageSet](Sample.SinglePageSet) | 6.2.0 | Single-page set: the collection layer's `PageCount` is always 1, while the page layer keeps full-source numbering (**an intentional fork**) |
+| [AsyncFragmentEntry](Sample.AsyncFragmentEntry) | 6.2.0 | `Paginable.CreatePageAsync` is the async dual of fragment page-building: **synchronously completed**, the token is not observed |
+| [PageMetadata](Sample.PageMetadata) | 6.0.0 | Page metadata snapshot, caller-supplied input metadata, and the derivation source shared by both (`PageMetaInfo.Calculate`) |
+| [PaginableSettings](Sample.PaginableSettings) | 6.0.0 | The two global configuration knobs (`DefaultPageSize` / `MaxMemberItems`): validated on assignment, swapped atomically as a snapshot |
+| [LimitedMembers](Sample.LimitedMembers) | 6.0.0 | Member caps and the **open interval**: global `MaxMemberItems` plus a call-level `limitedMemberCount` ceiling |
+| [EnumerablePageMaterialize](Sample.EnumerablePageMaterialize) | 6.0.0 | Single `Skip/Take` materialization for `EnumerablePage<T>`: deep pages are no longer O(skip²) |
 
 ### Contracts / platforms / utilities
 
 | Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [ExceptionTypeUnify](Sample.ExceptionTypeUnify) | F40 | Out-of-range exceptions unified as `ArgumentOutOfRangeException` carrying `ParamName` (a 6.2.0 breaking change, with counterexamples for the old types) |
-| [NullableAnnotations](Sample.NullableAnnotations) | F41 | The NRT nullability contract of public APIs: `T?` / `string?` is a **compile-time** promise, not a replacement for runtime null checks |
-| [KeysetAnchorNullability](Sample.KeysetAnchorNullability) | F42 | Nullable keyset anchors: a nullable key can serve directly as an anchor, where `null` means "no anchor" = the first page |
-| [LowGenNullableShims](Sample.LowGenNullableShims) | F43 | Nullable-attribute shims for low-generation TFMs (internal): net451 and friends can read the annotations too, invisibly to callers |
-| [CancellationTokenForwarding](Sample.CancellationTokenForwarding) | F44 | The three semantics of cancellation tokens: **forwarded** (EF/FreeSql) / **library boundary** (SqlSugar 6.6) / **not observed** (in-memory async) |
-| [SolidPageExtensionsSurface](Sample.SolidPageExtensionsSurface) | F45 | The extension-method entry surface: `ToPaginable`/`GetPage`/`*Async`; CS0104 disambiguation for the **same name across 10 packages** |
-| [PageMemberWrapping](Sample.PageMemberWrapping) | F46 | Page member wrapping: `PageMember<T>` (a struct) with `Value`/`Offset`/`ItemNumber` and cross-page global numbering |
-| [PaginableCalc](Sample.PaginableCalc) | F47 | `PaginableCalc`: the single source of truth for member-cap trimming and page-count conversion (in the `Internal` namespace but public) |
-| [QueryEntryState](Sample.QueryEntryState) | F48 | The covariant `IQueryEntryState<T>` contract: abstracting "where a page's elements come from" for deferred evaluation |
-| [EmptyAndSinglePage](Sample.EmptyAndSinglePage) | F49 | The layered semantics of `EmptyPage<T>` (no results never returns null) and `PaginableSinglePage<T>` |
+| [ExceptionTypeUnify](Sample.ExceptionTypeUnify) | 6.2.0 | Out-of-range exceptions unified as `ArgumentOutOfRangeException` carrying `ParamName` (a 6.2.0 breaking change, with counterexamples for the old types) |
+| [NullableAnnotations](Sample.NullableAnnotations) | 6.3.0 | The NRT nullability contract of public APIs: `T?` / `string?` is a **compile-time** promise, not a replacement for runtime null checks |
+| [KeysetAnchorNullability](Sample.KeysetAnchorNullability) | 6.3.0 | Nullable keyset anchors: a nullable key can serve directly as an anchor, where `null` means "no anchor" = the first page |
+| [LowGenNullableShims](Sample.LowGenNullableShims) | 6.3.0 | Nullable-attribute shims for low-generation TFMs (internal): net451 and friends can read the annotations too, invisibly to callers |
+| [CancellationTokenForwarding](Sample.CancellationTokenForwarding) | 6.0.0 | The three semantics of cancellation tokens: **forwarded** (EF/FreeSql) / **library boundary** (SqlSugar 6.6) / **not observed** (in-memory async) |
+| [SolidPageExtensionsSurface](Sample.SolidPageExtensionsSurface) | all releases | The extension-method entry surface: `ToPaginable`/`GetPage`/`*Async`; CS0104 disambiguation for the **same name across 10 packages** |
+| [PageMemberWrapping](Sample.PageMemberWrapping) | 6.0.0 | Page member wrapping: `PageMember<T>` (a struct) with `Value`/`Offset`/`ItemNumber` and cross-page global numbering |
+| [PaginableCalc](Sample.PaginableCalc) | 6.0.0 | `PaginableCalc`: the single source of truth for member-cap trimming and page-count conversion (in the `Internal` namespace but public) |
+| [QueryEntryState](Sample.QueryEntryState) | 6.0.0 | The covariant `IQueryEntryState<T>` contract: abstracting "where a page's elements come from" for deferred evaluation |
+| [EmptyAndSinglePage](Sample.EmptyAndSinglePage) | 6.2.0 | The layered semantics of `EmptyPage<T>` (no results never returns null) and `PaginableSinglePage<T>` |
 
 ---
 
@@ -154,14 +154,14 @@ dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # multi-target ne
 
 | Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
-| [OrmAdapterMatrix](Sample.OrmAdapterMatrix) | F50 | The isomorphic matrix of the 9 adapters and the entry-name cross-reference; notes which packages lack a standalone `Query`/`Page` pair |
-| [EfCoreAdapter](Sample.EfCoreAdapter) | F51 | EF Core **true async** (`CountAsync`/`ToListAsync`) plus async keyset; run end-to-end once with the InMemory provider |
-| [FreeSqlAdapter](Sample.FreeSqlAdapter) | F52 | The FreeSql entry surface and its unique `includeNestedMembers`; `PaginableFreeSqlQuery<T>` / `FreeSqlPage<T>` |
-| [SqlSugarAdapter](Sample.SqlSugarAdapter) | F53 | The SqlSugar entry surface and the 6.6.0 **cancellation-token boundary** (an already-canceled token throws `OperationCanceledException` before hitting the database) |
-| [SqlKataAdapter](Sample.SqlKataAdapter) | F54 | SqlKata's source type is a **non-generic** `Query`: you must write `ToPaginable<Product>(...)` / `GetPage<Product>(...)` explicitly |
-| [OtherOrmAdapters](Sample.OtherOrmAdapters) | F55 | Entry-name cross-reference for the Chloe / DosOrm / NHibernate packages and their unique overloads (`additionalQueryFunc`, `NhCorePage<T>`) |
-| [SourceGenerator](Sample.SourceGenerator) | F56 | The `[SolidPageExtensionsFor]` attribute declaration and the shape of what it generates (an analyzer, not shipped with the consumer package) |
-| [MultiTfmSurface](Sample.MultiTfmSurface) | F57 | The 11-TFM matrix and the **per-package subset differences**: EF Core is net6+ only, Chloe/Dos/NHibernate have no net451, SqlSugar has no ns2.0 |
+| [OrmAdapterMatrix](Sample.OrmAdapterMatrix) | 2.x | The isomorphic matrix of the 9 adapters and the entry-name cross-reference; notes which packages lack a standalone `Query`/`Page` pair |
+| [EfCoreAdapter](Sample.EfCoreAdapter) | 6.0.0 | EF Core **true async** (`CountAsync`/`ToListAsync`) plus async keyset; run end-to-end once with the InMemory provider |
+| [FreeSqlAdapter](Sample.FreeSqlAdapter) | 2.x | The FreeSql entry surface and its unique `includeNestedMembers`; `PaginableFreeSqlQuery<T>` / `FreeSqlPage<T>` |
+| [SqlSugarAdapter](Sample.SqlSugarAdapter) | 2.x | The SqlSugar entry surface and the 6.6.0 **cancellation-token boundary** (an already-canceled token throws `OperationCanceledException` before hitting the database) |
+| [SqlKataAdapter](Sample.SqlKataAdapter) | 3.2.0 | SqlKata's source type is a **non-generic** `Query`: you must write `ToPaginable<Product>(...)` / `GetPage<Product>(...)` explicitly |
+| [OtherOrmAdapters](Sample.OtherOrmAdapters) | 2.x | Entry-name cross-reference for the Chloe / DosOrm / NHibernate packages and their unique overloads (`additionalQueryFunc`, `NhCorePage<T>`) |
+| [SourceGenerator](Sample.SourceGenerator) | 6.5.0 | The `[SolidPageExtensionsFor]` attribute declaration and the shape of what it generates (an analyzer, not shipped with the consumer package) |
+| [MultiTfmSurface](Sample.MultiTfmSurface) | 6.0.0 | The 11-TFM matrix and the **per-package subset differences**: EF Core is net6+ only, Chloe/Dos/NHibernate have no net451, SqlSugar has no ns2.0 |
 
 ---
 
@@ -170,7 +170,7 @@ dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # multi-target ne
 | Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
 | [ValueEnumerable](Sample.ValueEnumerable) | 7.1.0 | The four `ToValueEnumerable()` entries (`T[]`/`List<T>`/`IReadOnlyList<T>`/`IEnumerable<T>`) plus five operators (`Index`/`ForEach`/`TagFirstLast`/`Pairwise`/`Scan`), and namespace governance for coexisting with `System.Linq` |
-| [SerializationEntry](Sample.SerializationEntry) | F58 | A **negative result**: there is **no** `ToSerializableModel` on the Paginable side; the correct path is `PageMetadata` + `Paginable.CreatePage` to rebuild |
+| [SerializationEntry](Sample.SerializationEntry) | 6.2.0 | A **negative result**: there is **no** `ToSerializableModel` on the Paginable side; the correct path is `PageMetadata` + `Paginable.CreatePage` to rebuild |
 
 ---
 
@@ -200,7 +200,7 @@ dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # multi-target ne
 | [Sample.Ef](Sample.Ef) | EntityFramework (EF6) adapter sample |
 | [Sample.EfCore](Sample.EfCore) | EF Core adapter sample |
 | [Sample.Multi](Sample.Multi) | Multi package basics sample |
-| [Sample.Engine](Sample.Engine) | 7.1.0 engine "dual `using`" namespace-governance verification (work item F7-07), multi-targeted `net8.0;net10.0` |
+| [Sample.Engine](Sample.Engine) | 7.1.0 engine "dual `using`" namespace-governance verification, multi-targeted `net8.0;net10.0` |
 
 ---
 

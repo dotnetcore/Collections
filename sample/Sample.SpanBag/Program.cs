@@ -1,5 +1,5 @@
-// Sample.SpanBag — 栈上临时袋（F22）
-// Sample.SpanBag — stack-based temporary bag (F22)
+// Sample.SpanBag — 栈上临时袋（6.4.0）
+// Sample.SpanBag — stack-based temporary bag (6.4.0)
 // 运行：dotnet run --project sample/Sample.SpanBag
 // Run: dotnet run --project sample/Sample.SpanBag
 //
@@ -153,8 +153,8 @@ Console.WriteLine("=== 5. Lifetime boundary ===");
 //        bag.Add(1);                    // 编译错误：ref struct 跨 await
 //                                       // compile error: ref struct crossing an await
 //    }
-//    ✅ 正确写法：方法内同步计数完就返回；需要跨 await / 跨方法请用 PackedBag<T>（F21）或 MultiList<T>。
-//    ✅ Correct: finish counting synchronously inside the method and return; if you need to cross an await / a method, use PackedBag<T> (F21) or MultiList<T>.
+//    ✅ 正确写法：方法内同步计数完就返回；需要跨 await / 跨方法请用 PackedBag<T>（6.4.0）或 MultiList<T>。
+//    ✅ Correct: finish counting synchronously inside the method and return; if you need to cross an await / a method, use PackedBag<T> (6.4.0) or MultiList<T>.
 // 另注：两段 span 必须等长，否则构造抛 ArgumentException；仅 netstandard2.1 / net6.0+ 暴露本类型。
 // Also note: the two spans must be the same length, otherwise the constructor throws ArgumentException; only netstandard2.1 / net6.0+ exposes this type.
 Console.WriteLine("SpanBag<T> 是 ref struct：不可装箱 / 字段 / 捕获 / 跨 await，容量构造时定死。 / SpanBag<T> is a ref struct: cannot be boxed / a field / captured / cross an await, and its capacity is fixed at construction.");

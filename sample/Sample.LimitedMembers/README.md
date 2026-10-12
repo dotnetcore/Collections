@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Member caps and open interval** — the global hard cap `MaxMemberItems` and the call-level cap `limitedMemberCount` (feature F38, `DotNetCore.Collections.Paginable`, 6.0.0).
+> **Member caps and open interval** — the global hard cap `MaxMemberItems` and the call-level cap `limitedMemberCount` (`DotNetCore.Collections.Paginable`, 6.0.0).
 
 ## What this sample demonstrates
 

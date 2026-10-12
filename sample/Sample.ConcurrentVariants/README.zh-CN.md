@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **并发变体** — `ConcurrentMultiList<T>` / `ConcurrentMultiDictionary<TKey,TValue>`：线程安全多重集合与映射（对应 feature F14，`DotNetCore.Collections.Multi`，6.2.0；只读投影为 6.7.1）。
+> **并发变体** — `ConcurrentMultiList<T>` / `ConcurrentMultiDictionary<TKey,TValue>`：线程安全多重集合与映射（`DotNetCore.Collections.Multi`，6.2.0；只读投影为 6.7.1）。
 
 ## 本示例演示什么
 
@@ -15,7 +15,7 @@
 
 - 多线程频次统计 / 直方图 → `ConcurrentMultiList<T>`。
 - 多线程一对多索引 → `ConcurrentMultiDictionary<TKey,TValue>`。
-- 不该用：读极多写极少 → 用 `ImmutableMultiList<T>`（F13，无锁读）。
+- 不该用：读极多写极少 → 用 `ImmutableMultiList<T>`（6.2.0，无锁读）。
 - 不该用：单线程热点 → 可变版 `MultiList<T>` 更快。
 
 ## 如何运行

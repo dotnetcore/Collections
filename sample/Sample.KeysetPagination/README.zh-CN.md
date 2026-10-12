@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **键集分页（keyset / seek pagination）** — 用排序键锚点续页，不做 `OFFSET` 扫描也不做 `COUNT(*)` 回环（对应 feature F30，`DotNetCore.Collections.Paginable`，6.0.0）。
+> **键集分页（keyset / seek pagination）** — 用排序键锚点续页，不做 `OFFSET` 扫描也不做 `COUNT(*)` 回环（`DotNetCore.Collections.Paginable`，6.0.0）。
 
 ## 本示例演示什么
 

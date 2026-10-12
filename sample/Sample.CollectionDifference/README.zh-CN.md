@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **四路差异比较 CollectionDifference&lt;TKey,TValue&gt;** — 把两个 bag / 两个字典切成四个不相交分区（6.9.0，`DotNetCore.Collections.Multi`，6.9.0）。
+> **四路差异比较 CollectionDifference&lt;TKey,TValue&gt;** — 把两个 bag / 两个字典切成四个不相交分区（`DotNetCore.Collections.Multi`，6.9.0）。
 
 ## 本示例演示什么
 
@@ -16,7 +16,7 @@
 - 对账 / 差分：比对两份快照、两次统计结果，快速定位新增、消失、变化的条目。
 - 需要「变化明细」而不是只想知道「是否相等」——`AreEqual` 只是它的一种退化用法。
 - 不该用：需要**活视图**（持续反映后续改动）——本库只提供只读视图 / 快照 / 就地三种形态，`Difference` 是**快照**；
-  只想知道两个多重集是否逐份相等 → 直接用 `AreEqual`（或集合运算，F12）。
+  只想知道两个多重集是否逐份相等 → 直接用 `AreEqual`（或集合运算，6.2.0）。
 
 ## 如何运行
 

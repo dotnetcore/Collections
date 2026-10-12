@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **频次优先袋** — `FrequencyPriorityBag<T>`：最高频元素 O(log n) 可取（对应 feature F23，`DotNetCore.Collections.Multi`，6.4.0）。
+> **频次优先袋** — `FrequencyPriorityBag<T>`：最高频元素 O(log n) 可取（`DotNetCore.Collections.Multi`，6.4.0）。
 
 ## 本示例演示什么
 

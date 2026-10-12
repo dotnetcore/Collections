@@ -1,5 +1,5 @@
-// Sample.ReadOnlyCollectionView — 跨 TFM 只读值视图包装（F19）
-// Sample.ReadOnlyCollectionView — cross-TFM read-only value-view wrapper (F19)
+// Sample.ReadOnlyCollectionView — 跨 TFM 只读值视图包装（6.4.0）
+// Sample.ReadOnlyCollectionView — cross-TFM read-only value-view wrapper (6.4.0)
 // 运行：dotnet run --project sample/Sample.ReadOnlyCollectionView
 // Run: dotnet run --project sample/Sample.ReadOnlyCollectionView
 //
@@ -90,8 +90,8 @@ Console.WriteLine("=== 4. Cross-TFM notes ===");
 // ❌ Wrong approach: new ReadOnlyCollectionView<int>(...) —— the type is internal and will not compile.
 // ✅ 正确写法：只用 map["k"] / map.AsReadOnly() / IReadOnlyCollection<T>。
 // ✅ Right approach: use only map["k"] / map.AsReadOnly() / IReadOnlyCollection<T>.
-// ⚠️ 只读视图是**活**视图，不是快照；要冻结请用 ToSerializableModel（F10）。
-// ⚠️ The read-only view is a **live** view, not a snapshot; to freeze it, use ToSerializableModel (F10).
+// ⚠️ 只读视图是**活**视图，不是快照；要冻结请用 ToSerializableModel（6.2.0）。
+// ⚠️ The read-only view is a **live** view, not a snapshot; to freeze it, use ToSerializableModel (6.2.0).
 
 Console.WriteLine("只读值视图经包装暴露：全 TFM 可读 Count 与枚举（net451/net461 不再抛）");
 Console.WriteLine("The read-only value view is exposed through the wrapper: Count and enumeration are readable on all TFMs (no longer throwing on net451/net461)");

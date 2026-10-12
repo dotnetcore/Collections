@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Double-ended queue** — `Deque<T>`: a ring-buffer double-ended queue with O(1) amortized at both ends (feature F28, `DotNetCore.Collections.Multi`, 6.6.0).
+> **Double-ended queue** — `Deque<T>`: a ring-buffer double-ended queue with O(1) amortized at both ends (`DotNetCore.Collections.Multi`, 6.6.0).
 
 ## What this sample demonstrates
 

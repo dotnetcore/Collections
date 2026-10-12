@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Explicit serialization models** — `MultiListModel<T>` / `MultiDictionaryModel<TKey,TValue>` snapshots and rebuild (F10, `DotNetCore.Collections.Multi`, 6.2.0; extended to the whole family in 6.7.1).
+> **Explicit serialization models** — `MultiListModel<T>` / `MultiDictionaryModel<TKey,TValue>` snapshots and rebuild (`DotNetCore.Collections.Multi`, 6.2.0; extended to the whole family in 6.7.1).
 
 ## What this sample demonstrates
 

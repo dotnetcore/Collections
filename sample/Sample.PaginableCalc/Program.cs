@@ -1,5 +1,5 @@
-// Sample.PaginableCalc — 分页计算工具（F47）
-// Sample.PaginableCalc — the pagination calculation utility (F47)
+// Sample.PaginableCalc — 分页计算工具（6.0.0）
+// Sample.PaginableCalc — the pagination calculation utility (6.0.0)
 // 运行：dotnet run --project sample/Sample.PaginableCalc
 // Run: dotnet run --project sample/Sample.PaginableCalc
 //

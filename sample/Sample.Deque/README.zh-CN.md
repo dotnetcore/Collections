@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **双端队列** — `Deque<T>`：环状缓冲双端队列，两端 O(1) 摊还（对应 feature F28，`DotNetCore.Collections.Multi`，6.6.0）。
+> **双端队列** — `Deque<T>`：环状缓冲双端队列，两端 O(1) 摊还（`DotNetCore.Collections.Multi`，6.6.0）。
 
 ## 本示例演示什么
 

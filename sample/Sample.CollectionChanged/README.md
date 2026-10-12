@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **A home-grown change notification, CollectionChanged** — the change events of `MultiList<T>` / `MultiDictionary<TKey,TValue>` (6.9.0, `DotNetCore.Collections.Multi`, 6.9.0).
+> **A home-grown change notification, CollectionChanged** — the change events of `MultiList<T>` / `MultiDictionary<TKey,TValue>` (`DotNetCore.Collections.Multi`, 6.9.0).
 
 ## What this sample demonstrates
 
@@ -49,4 +49,4 @@ dotnet run --project sample/Sample.CollectionChanged
 - **Only changes that actually mutate the collection fire**: e.g. `Clear()` on an already-empty bag, or an `Add` silently rejected by a de-duplicating collection, fire no event.
 - **The event fires after the new state**: inside the handler, reading the collection back shows the change just announced.
 - **Zero-cost when unsubscribed**: the arguments object is only constructed internally when a handler exists.
-- **Not thread-safe**: concurrent modification still needs external synchronization (for concurrent types see F14).
+- **Not thread-safe**: concurrent modification still needs external synchronization (for concurrent types see 6.2.0).

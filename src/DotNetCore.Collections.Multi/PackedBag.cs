@@ -11,7 +11,7 @@ namespace DotNetCore.Collections.Multi
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This is the performance-specialized corner of the bag family (F6-06). Where
+    /// This is the performance-specialized corner of the bag family (since 6.4.0). Where
     /// <see cref="MultiList{T}"/> keeps its counts in a <see cref="Dictionary{TKey,TValue}"/> —
     /// hashing every element and chasing buckets on every operation — this type stores one
     /// contiguous <c>Entry[]</c> of <c>(T Value, int Count)</c> structs: no hash table, no

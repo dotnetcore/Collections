@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **列表接口面** — `OrderedMultiList<T>` 的 `IList<T>` / `IReadOnlyList<T>` 实现与写入收窄（对应 feature F25，`DotNetCore.Collections.Multi`，6.5.0）。
+> **列表接口面** — `OrderedMultiList<T>` 的 `IList<T>` / `IReadOnlyList<T>` 实现与写入收窄（`DotNetCore.Collections.Multi`，6.5.0）。
 
 ## 本示例演示什么
 

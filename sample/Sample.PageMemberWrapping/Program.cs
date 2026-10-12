@@ -1,5 +1,5 @@
-// Sample.PageMemberWrapping — 页成员包装与全局编号（F46）
-// Sample.PageMemberWrapping — page member wrapping and global numbering (F46)
+// Sample.PageMemberWrapping — 页成员包装与全局编号（6.0.0）
+// Sample.PageMemberWrapping — page member wrapping and global numbering (6.0.0)
 // 运行：dotnet run --project sample/Sample.PageMemberWrapping
 // Run: dotnet run --project sample/Sample.PageMemberWrapping
 //

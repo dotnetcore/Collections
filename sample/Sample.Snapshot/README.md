@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **An independent snapshot, Snapshot()** — a detached copy of `MultiList<T>` / `MultiDictionary<TKey,TValue>` (6.9.0, `DotNetCore.Collections.Multi`, 6.9.0).
+> **An independent snapshot, Snapshot()** — a detached copy of `MultiList<T>` / `MultiDictionary<TKey,TValue>` (`DotNetCore.Collections.Multi`, 6.9.0).
 
 ## What this sample demonstrates
 
@@ -14,7 +14,7 @@ so it won't observe later changes during enumeration. This sample shows three fa
 
 - Needing to iterate a collection while continuing to modify it during the iteration (the safe prerequisite is to take a snapshot first).
 - Needing a stable view "as of now" that later changes should not affect.
-- Not for: needing the copy itself to be immutable → `ImmutableMultiList<T>` / `ImmutableMultiDictionary<TKey,TValue>` (F13);
+- Not for: needing the copy itself to be immutable → `ImmutableMultiList<T>` / `ImmutableMultiDictionary<TKey,TValue>` (6.2.0);
   just reading a live collection once without modifying it → enumerate it directly.
 
 ## How to run
@@ -42,5 +42,5 @@ dotnet run --project sample/Sample.Snapshot
 - **Shallow copy**: element references are shared (changing an element itself is visible on both sides); what is independent is the counts and the inner structure.
 - **A snapshot is detached**: after a snapshot is built, later changes to the original collection are not reflected in the snapshot.
 - **Not a concurrent type**: `Snapshot()` solves the stability of "modifying during enumeration", not multi-threaded races;
-  for concurrent scenarios use `ConcurrentMultiList<T>` / `ConcurrentMultiDictionary<TKey,TValue>` (F14).
+  for concurrent scenarios use `ConcurrentMultiList<T>` / `ConcurrentMultiDictionary<TKey,TValue>` (6.2.0).
 - **Consistent naming**: the concurrent types' `Snapshot()` also returns non-concurrent types (built via `Clone()`), and this sample keeps the reading consistent between the core type and the family.

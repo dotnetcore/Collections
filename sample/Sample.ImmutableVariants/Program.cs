@@ -1,5 +1,5 @@
-// Sample.ImmutableVariants — 不可变多重集合与映射（F13）
-// Sample.ImmutableVariants — immutable multi-set and multi-map (F13)
+// Sample.ImmutableVariants — 不可变多重集合与映射（6.2.0）
+// Sample.ImmutableVariants — immutable multi-set and multi-map (6.2.0)
 // 运行：dotnet run --project sample/Sample.ImmutableVariants
 // Run: dotnet run --project sample/Sample.ImmutableVariants
 //

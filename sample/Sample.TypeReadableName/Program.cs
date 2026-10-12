@@ -1,5 +1,5 @@
-// Sample.TypeReadableName — 可读类型名格式化（F26）
-// Sample.TypeReadableName — readable type-name formatting (F26)
+// Sample.TypeReadableName — 可读类型名格式化（6.6.0）
+// Sample.TypeReadableName — readable type-name formatting (6.6.0)
 // 运行：dotnet run --project sample/Sample.TypeReadableName
 // Run: dotnet run --project sample/Sample.TypeReadableName
 //

@@ -1,5 +1,5 @@
-// Sample.KeysetAnchorNullability — 键集分页锚点参数可空化（F42）
-// Sample.KeysetAnchorNullability — nullable anchor parameter for keyset pagination (F42)
+// Sample.KeysetAnchorNullability — 键集分页锚点参数可空化（6.3.0）
+// Sample.KeysetAnchorNullability — nullable anchor parameter for keyset pagination (6.3.0)
 // 运行：dotnet run --project sample/Sample.KeysetAnchorNullability
 // Run: dotnet run --project sample/Sample.KeysetAnchorNullability
 //
@@ -43,8 +43,8 @@ Console.WriteLine("=== 2. Continuation page: anchor = previous page's last key =
 
 // LastMember 是 Order?（可空返回）；Code 是 string?，所以 anchor 是 string?。
 // LastMember is Order? (a nullable return); Code is string?, so anchor is string?.
-// 这正是 F42 说的「锚点标注与键类型可空性一致」：可空键能直接当锚点用。
-// This is exactly what F42 means by "the anchor annotation is consistent with the nullability of the key type": a nullable key can be used directly as an anchor.
+// 这正是 6.3.0 说的「锚点标注与键类型可空性一致」：可空键能直接当锚点用。
+// This is exactly what 6.3.0 means by "the anchor annotation is consistent with the nullability of the key type": a nullable key can be used directly as an anchor.
 string? anchor = first.LastMember?.Code;
 Console.WriteLine($"锚点 / Anchor = {anchor ?? "<null>"}");   // B
 

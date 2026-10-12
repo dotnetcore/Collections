@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **分页配置与管理器** — 全局分页配置只有两个旋钮，赋值即校验、原子换快照（对应 feature F37，`DotNetCore.Collections.Paginable`，6.0.0）。
+> **分页配置与管理器** — 全局分页配置只有两个旋钮，赋值即校验、原子换快照（`DotNetCore.Collections.Paginable`，6.0.0）。
 
 ## 本示例演示什么
 
@@ -40,7 +40,7 @@ dotnet run --project sample/Sample.PaginableSettings
 ## 注意事项 / 陷阱
 
 - **属性 setter 校验**：`< 1` 即抛 `ArgumentOutOfRangeException`（`ParamName` 为 `value`）。
-- **`MaxMemberItems` 比较是 `>` 才拒**：默认 `10_000_000` 恰好允许（开区间，见 F38）。
+- **`MaxMemberItems` 比较是 `>` 才拒**：默认 `10_000_000` 恰好允许（开区间，见 6.0.0）。
 - **不是 `IOptions` / 非 DI**：静态管理器；测试要自行隔离（改回默认或串行）。
 - **运行中频繁 `UpdateSettings`** 可与正在构造的页交错——建议启动时一次定稿。
 - **Multi 族不读这些设置**。

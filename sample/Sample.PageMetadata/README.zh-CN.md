@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **页面元数据与校验** — 页上的元数据快照、调用方输入元数据、以及两者共用的派生源（对应 feature F36，`DotNetCore.Collections.Paginable`，6.0–6.1）。
+> **页面元数据与校验** — 页上的元数据快照、调用方输入元数据、以及两者共用的派生源（对应 feature 6.0.0，`DotNetCore.Collections.Paginable`，6.0–6.1）。
 
 ## 本示例演示什么
 
@@ -40,6 +40,6 @@ dotnet run --project sample/Sample.PageMetadata
 
 - **`PageMetadata` 是快照**，不随源变化。
 - **空源 `TotalPageCount == 1`、`RealPageCount == 0`**：判「没有页」请用 `TotalMemberCount == 0` 或 `RealPageCount == 0`。
-- **`PageFragmentInfo` 构造即校验**：越界元数据抛 `ArgumentOutOfRangeException`（F40）。
+- **`PageFragmentInfo` 构造即校验**：越界元数据抛 `ArgumentOutOfRangeException`（6.2.0）。
 - **空页 `FromMetadata` 可能抛**（无可用 pageSize）。
-- **`CurrentPageSize` 在 Lenient 短片段下是元数据值**（F33）。
+- **`CurrentPageSize` 在 Lenient 短片段下是元数据值**（6.2.0）。

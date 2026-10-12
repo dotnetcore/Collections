@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Multimap batch delete** — `MultiDictionary<TKey,TValue>.RemoveRange` removes values by key in bulk (F04, `DotNetCore.Collections.Multi`, 6.1.0).
+> **Multimap batch delete** — `MultiDictionary<TKey,TValue>.RemoveRange` removes values by key in bulk (`DotNetCore.Collections.Multi`, 6.1.0).
 
 ## What this sample demonstrates
 

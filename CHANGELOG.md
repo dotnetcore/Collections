@@ -341,7 +341,7 @@ None. No packaged defect was addressed in this window.
 
 ### Added
 
-- `Type.ToReadableString()` (F6-30) turns a `Type` into one readable line, for diagnostics, log
+- `Type.ToReadableString()` turns a `Type` into one readable line, for diagnostics, log
   messages and test failure output. Array ranks are kept, generic arguments are rendered
   recursively and namespaces are dropped, so
   `typeof(Dictionary<DateTimeOffset, IReadOnlyDictionary<string, int>>[,])` reads as
@@ -356,7 +356,7 @@ None. No packaged defect was addressed in this window.
   The output is stable enough to assert on. No existing signature changed, so there is no
   `### Breaking` entry for this.
 
-- `IMultiSet<T>`, `IMultiDictionary<TKey, TValue>` and `IBiMap<TLeft, TRight>` (F6-32) give the
+- `IMultiSet<T>`, `IMultiDictionary<TKey, TValue>` and `IBiMap<TLeft, TRight>` give the
   multiset, the multimap and the bidirectional map a shared contract, so code can be written against
   the behaviour instead of a concrete class and the implementation can be mocked, replaced or swapped.
   Each interface extends the read-only BCL abstraction that already describes it rather than restating
@@ -384,8 +384,8 @@ None. No packaged defect was addressed in this window.
   shares no code with these packages: the abstraction is only worth having if a third party can
   satisfy it.
 
-- `OrderedMultiDictionary<TKey, TValue>` gained the positional read surface (F6-36) that its list
-  counterpart received in 6.5.0 (F6-25). `GetByRank(rank)` returns the `(key, value)` pair holding the
+- `OrderedMultiDictionary<TKey, TValue>` gained the positional read surface that its list
+  counterpart received in 6.5.0. `GetByRank(rank)` returns the `(key, value)` pair holding the
   copy at a rank of the *expanded* sequence — the order the map itself enumerates in, keys ascending
   and each key's values ascending, counting copies rather than distinct values — `GetRank(key, value)`
   returns the rank of a value's first copy under the key, or `-1` when the key or the value is absent,
@@ -399,7 +399,7 @@ None. No packaged defect was addressed in this window.
   resource use — the ordering, the duplicate policy, the views and every existing member keep the
   semantics they had, which the pre-existing suite confirms by passing with no test edit at all.
 
-- `Deque<T>` (F6-31) is a double-ended queue: a sequence that can be added to and removed from
+- `Deque<T>` is a double-ended queue: a sequence that can be added to and removed from
   *both* ends in O(1) amortized time, and read at any position in O(1). The base class library
   ships no deque — `Queue<T>` and `Stack<T>` are single-ended, and `LinkedList<T>`, the only in-box
   type with two ends, keeps one heap node per element — so this fills a gap rather than adding a
@@ -468,7 +468,7 @@ None. No packaged defect was addressed in this window.
 
 - `DotNetCore.Collections.Paginable.SqlSugar`: `ToPaginableAsync` and the short `GetPageAsync`
   overload accepted a `CancellationToken` and then dropped it — it never reached the factory, so
-  cancelling had no effect on either call (F6-38). The token is now threaded through the factory and
+  cancelling had no effect on either call. The token is now threaded through the factory and
   through the page fetch, and it is honoured at the boundary this library owns: an already-cancelled
   token stops the call before the first database round-trip instead of performing it. The token could
   not simply be handed on because SqlSugar 5.1.3 exposes `CountAsync()`,
@@ -478,7 +478,7 @@ None. No packaged defect was addressed in this window.
   a token and relied on it being ignored now observe `OperationCanceledException` — the behaviour the
   parameter always promised, so there is no `### Breaking` entry for this.
 
-- `OrderedMultiDictionary<TKey, TValue>` no longer allocates per key when it is enumerated (F6-36).
+- `OrderedMultiDictionary<TKey, TValue>` no longer allocates per key when it is enumerated.
   Enumerating 65,536 keys allocated 7,340,454 bytes — a flat ≈112 bytes per key — and 459,104 bytes at
   4,096 keys, the same per-key figure at both sizes, which is what identified it as a fixed cost per key
   rather than growth. The cause was in the enumeration itself: the map walked a
@@ -510,7 +510,7 @@ None. No packaged defect was addressed in this window.
 
 ### Added
 
-- `OrderedMultiList<T>` gained its positional read surface (F6-25): `GetByRank(rank)` returns the
+- `OrderedMultiList<T>` gained its positional read surface: `GetByRank(rank)` returns the
   element sitting at a rank of the *expanded* sorted sequence — counting copies, not distinct
   elements, so the valid range is `[0, TotalCount-1]` and anything outside throws
   `ArgumentOutOfRangeException` — `GetRank(item)` returns the rank of an element's first copy or
@@ -526,7 +526,7 @@ None. No packaged defect was addressed in this window.
   distinct keys the ratios widen to 688x and 1,020x, with 0 B of garbage against 12 kB per read.
   No existing signature changed, so there is no `### Breaking` entry for this.
 
-- `OrderedMultiList<T>` now implements `IReadOnlyList<T>` and `IList<T>` (F6-27), so it can be handed
+- `OrderedMultiList<T>` now implements `IReadOnlyList<T>` and `IList<T>`, so it can be handed
   to anything expecting a list — data binding, position-based LINQ, third-party libraries — without
   copying it into a `List<T>` first. The index domain is the *expanded* sequence, matching what the
   type already did: `Count` counts copies, so `shelf[i]` is `GetByRank(i)` and `IndexOf(item)` is
@@ -624,7 +624,7 @@ None. No packaged defect was addressed in this window.
 
 ### Added
 
-- `FrequencyPriorityBag<T>` - the frequency priority bag (F6-08): a bag that knows which element
+- `FrequencyPriorityBag<T>` - the frequency priority bag: a bag that knows which element
   occurs most often, so "pop the most frequent element" and Top-K queries are first-class
   operations (`PeekMost` / `TryPeekMost` / `PopMost` / `TryPopMost`; repeated `PopMost` drains the
   bag in descending-frequency order). A `Dictionary` frequency index is the source of truth; the
@@ -642,7 +642,7 @@ None. No packaged defect was addressed in this window.
   against live data - ~3.2x faster with ~2.9x less garbage; build-once-query-once and
   churn-interleaved workloads land at parity, where sorting once is just as good - the boundary is
   documented rather than hidden. Not thread-safe.
-- `SpanBag<T>` - the stack-only temporary bag (F6-07): a fixed-capacity counting bag over
+- `SpanBag<T>` - the stack-only temporary bag: a fixed-capacity counting bag over
   `unmanaged` elements backed by caller-provided `Span<T>` storage (typically `stackalloc`), for
   short-lived frequency counting inside one method with zero heap allocation. The bag is a
   `ref struct`, so the compiler itself enforces the lifetime contract - no fields, no boxing, no
@@ -660,7 +660,7 @@ None. No packaged defect was addressed in this window.
   392 B per call - the span bag's win is the garbage-free path. Available only where `Span<T>` is
   in-box (netstandard2.1, net6.0+): the legacy targets would require the external System.Memory
   package, and the package has stayed dependency-free on every TFM so far.
-- `PackedBag<T>` - the packed value-type counting histogram (F6-06): a bag over `struct` elements
+- `PackedBag<T>` - the packed value-type counting histogram: a bag over `struct` elements
   (`int`, enums, small structs) stored as one contiguous array of `(value, count)` struct entries
   instead of a hash table - no boxing in storage, one cache line per element, zero steady-state
   allocation on add and lookup. Bag semantics mirror `MultiList<T>` where the two meet: duplicates
@@ -677,7 +677,7 @@ None. No packaged defect was addressed in this window.
   documented boundary - `null` and `Nullable<T>` are excluded by design, set operations, equality
   and comparer injection are deliberately not carried over, and `MultiList<T>` remains the
   general-purpose bag.
-- `MultiKeyMultiDictionary<TKey, TValue>` - the composite-key multimap (F6-05): a dictionary whose
+- `MultiKeyMultiDictionary<TKey, TValue>` - the composite-key multimap: a dictionary whose
   keys are sequences of components of one type (`TKey[]`) and each complete key maps to a
   *collection* of values — the combination of `MultiKeyDictionary<TKey, TValue>` (N components
   &#8594; 1 value, a trie) and `MultiDictionary<TKey, TValue>` (1 key &#8594; N values, a
@@ -700,12 +700,12 @@ None. No packaged defect was addressed in this window.
   differently typed components addressed in full. Inner value collections are exposed as
   `IReadOnlyCollection<TValue>` through an internal live wrapper rather than a bare cast, so the
   contract holds on every supported target — including net451 / net461, where the framework's
-  `HashSet<T>` does not declare that interface (the hazard F6-24 fixes for `MultiDictionary`).
+  `HashSet<T>` does not declare that interface (the hazard this release fixes for `MultiDictionary`).
 
 ### Breaking
 
 - The read-only value views of the multimaps are now served through an internal live wrapper
-  instead of a bare cast to `IReadOnlyCollection<TValue>` (F6-24, root cure): the affected
+  instead of a bare cast to `IReadOnlyCollection<TValue>` (root cure): the affected
   members are `MultiDictionary<TKey, TValue>`'s indexer / `TryGetValue` / `AsReadOnly` /
   `ToDictionary` / enumerations, its `AsReverse()` key collections, and the same surface of
   `OrderedMultiDictionary<TKey, TValue>`. **No signature changes anywhere** - every member still
@@ -729,7 +729,7 @@ None. No packaged defect was addressed in this window.
 
 ### Added
 
-- `BiDictionary<TLeft, TRight>` - a strict one-to-one (bijective) map (F6-03): every left value
+- `BiDictionary<TLeft, TRight>` - a strict one-to-one (bijective) map: every left value
   maps to exactly one right value and no right value is shared by two lefts, with both
   directions answered in O(1) by two indexes kept in step on every write path — so a removed
   or rebound entry frees its partner immediately on the other side. Conflict handling is
@@ -746,7 +746,7 @@ None. No packaged defect was addressed in this window.
   and occupies one entry); `ToDictionary()` exports an independent snapshot that omits a
   `null`-left binding, because a `Dictionary<TLeft, TRight>` can not key on `null` — the remark
   says so explicitly.
-- `ReverseMultiDictionary<V, K>` - the inverse of `MultiDictionary<TKey, TValue>` (F6-04): a
+- `ReverseMultiDictionary<V, K>` - the inverse of `MultiDictionary<TKey, TValue>`: a
   snapshot mapping every stored value to the set of keys that hold it, so "which keys store this
   value?" is answered in O(1) (with `MultiDictionary.AsReverse()` as the live counterpart, see
   below). The constructors copy the bindings out of the source map into a fully self-contained
@@ -777,7 +777,7 @@ None. No packaged defect was addressed in this window.
 ### Changed
 
 - **All eleven shipped packages now compile with nullable reference annotations enabled and
-  ship a fully annotated public API (F6-23)**: `DotNetCore.Collections.Multi`,
+  ship a fully annotated public API**: `DotNetCore.Collections.Multi`,
   `DotNetCore.Collections.Paginable` and the nine ORM integration packages build warning-free
   under `<Nullable>enable</Nullable>` across their whole target matrix — zero CS86xx
   diagnostics, none silenced with `NoWarn` — so consumers who enable nullable in their own
@@ -805,7 +805,7 @@ None. No packaged defect was addressed in this window.
 - None. This release is additive and annotation-only: the three new public types
   (`BiDictionary<TLeft,TRight>`, `ReverseMultiDictionary<V,K>`, and
   `MultiDictionary<TKey,TValue>.AsReverse()`) extend the surface without changing any
-  existing signature, and the nullable rollout (F6-23) is annotation-only —
+  existing signature, and the nullable rollout is annotation-only —
   `KeysetPage<T>.LastMember` is now declared `T?` but its IL signature and runtime
   behaviour are unchanged.
 
@@ -835,7 +835,7 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
   copies reported rather than a full traversal. As with `MultiList<T>`, the type implements
   `ICollection<T>` and `IReadOnlyCollection<T>` (copy-expanded `Count`), and its set operations
   treat their argument as a **multiset**, so multiplicities count.
-- F6-01's O(log n) claim is proved rather than timed. The storage engine is a self-implemented
+- The O(log n) claim is proved rather than timed. The storage engine is a self-implemented
   left-leaning red-black tree, and the test suite asserts the red-black invariants - black
   root, no red node with a red child, equal black height, plus the left-leaning rule - together
   with the height bound `height <= 2 * log2(n + 1)`. It re-checks them after every single
@@ -852,10 +852,9 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
   `MultiList<T>`'s legacy "a non-positive `times` is coerced to one copy" behaviour verbatim,
   which means M6-05 (`times <= 0` throws) has to cover this type as well when it lands.
 - `DotNetCore.Collections.Multi` now declares `InternalsVisibleTo` for its test assembly. The
-  red-black invariants live on internal members and asserting them is how F6-01 justifies its
+  red-black invariants live on internal members and asserting them is how the engine justifies its
   complexity, so the suite has to reach them. Nothing becomes public: the members stay internal.
-- `OrderedMultiDictionary<TKey, TValue>` - the ordered counterpart of `MultiDictionary<TKey, TValue>`
-  (F6-02): a multimap whose keys are kept in ascending order by an `IComparer<TKey>` (a
+- `OrderedMultiDictionary<TKey, TValue>` - the ordered counterpart of `MultiDictionary<TKey, TValue>`: a multimap whose keys are kept in ascending order by an `IComparer<TKey>` (a
   `SortedDictionary` axis) and whose per-key values are kept in ascending order by an
   `IComparer<TValue>` (an `OrderedMultiList<TValue>` in the default duplicating configuration, a
   `SortedSet<TValue>` when duplicate values are disallowed). Adding, looking up and removing a
@@ -871,8 +870,7 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
   follow the value comparer, sorting first under the default one), and the `notnull` key
   constraint of the annotated `SortedDictionary` is suppressed file-locally, exactly as in
   `MultiDictionary`, so `TKey` stays nullable-friendly.
-- `TwoKeyDictionary<K1, K2, V>` now answers its second axis from a maintained reverse index
-  (F6-21). The underlying trie is keyed by `(K1, K2)` in that order, so the second component is
+- `TwoKeyDictionary<K1, K2, V>` now answers its second axis from a maintained reverse index. The underlying trie is keyed by `(K1, K2)` in that order, so the second component is
   not a prefix and a subtree walk can not reach it; `GetBySecondKey`, `CountOfSecondKey`,
   `ContainsSecondKey` and `RemoveBySecondKey` therefore used to scan the whole map. They now read
   a `K2 -> set of K1` index kept in step on every write path - `Add` (both overloads), `TryAdd`,
@@ -885,8 +883,7 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
   pair, plus one temporary list per `RemoveByFirstKey` cascade. `Keys2` deliberately still walks
   the trie, preserving its first-encounter enumeration order. The `GetBySecondKey` XML docs no
   longer describe the method as O(n).
-- Explicit serialization entry points for `MultiList<T>` and `MultiDictionary<TKey, TValue>`
-  (M6-06): `ToSerializableModel()` and the static `FromModel()`, backed by two new plain models.
+- Explicit serialization entry points for `MultiList<T>` and `MultiDictionary<TKey, TValue>`: `ToSerializableModel()` and the static `FromModel()`, backed by two new plain models.
   `MultiListModel<T>` carries `Items` (the distinct elements) plus `Counts` (one multiplicity per
   item); `MultiDictionaryModel<TKey, TValue>` carries `Keys` plus `Values` (one value list per key).
   Both are ordinary mutable POCOs - public settable properties, no attributes, no interface
@@ -903,12 +900,12 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
   which is the property a serializer needs. `FromModel` validates the model rather than trusting it
   (null model, null list, mismatched lengths, non-positive copy count, null inner value list), names
   the offending argument, and merges elements a comparer calls equal in the multiset reading.
-- Two caches under `MultiDictionary<TKey, TValue>` (M6-07), both landing L-05 and L-06 and both
+- Two caches under `MultiDictionary<TKey, TValue>`, both
   invisible from the outside: **no signature changed and no behaviour moved**, so the full suite
   passes unchanged and the pair is a pure performance change. `TotalValueCount` is now a stored
-  count maintained by every mutation rather than a walk over all inner collections (L-06), and
+  count maintained by every mutation rather than a walk over all inner collections, and
   `ContainsValue` is answered by a backwards index - value &#8594; keys - maintained on the write
-  path rather than by scanning every key's values (L-05). Both caches are updated by *every* path
+  path rather than by scanning every key's values. Both caches are updated by *every* path
   that can move them, which is the whole risk of the change: `Add` (including the branch where a
   custom inner factory hands back a non-empty collection), `AddRange`, both `Remove` overloads,
   `RemoveRange`, `IntersectionWith`, `ExceptWith`, `SymmetricExceptWith`, `Clear` and `Clone`
@@ -926,7 +923,7 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
   paths is asserted to be zero via `GC.GetAllocatedBytesForCurrentThread()`. As usual the claim is
   proved by counting, not by a stopwatch. A 3,000-step randomized differential re-checks both
   caches after every single step against a naive recomputation.
-- The set operations of `MultiList<T>` no longer copy their argument (M6-08, landing L-07). Every
+- The set operations of `MultiList<T>` no longer copy their argument. Every
   one of them - `UnionWith`, `IntersectionWith`, `ExceptWith`, `SymmetricExceptWith`, the four
   subset/superset judgments, and `Equals`/`GetHashCode`'s helpers - used to start by materialising
   `other` as a whole second `MultiList<T>`, so a chained `a.UnionWith(b)` allocated a full multiset
@@ -951,9 +948,9 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
   `null` comparisons preserved. A 3,000-step randomized differential runs each operation twice,
   once with a multiset argument and once with an equivalent plain array, and requires the two
   outcomes to agree at every step.
-- `ImmutableMultiList<T>`, `ImmutableMultiDictionary<TKey, TValue>`, `ConcurrentMultiDictionary<TKey, TValue>` and `ConcurrentMultiList<T>` (M6-09, closing L-09) — the thread-safe faces of the package. The two immutable types wrap a snapshot of the mutable type that is never touched after construction, so reading needs no locks or fences. Every mutation returns a new instance, or the receiver itself when nothing would change (an immutable instance may safely be shared, so "no change" needs no copy); bulk mutation is expected through `ToBuilder()`. The builder shares the source's state until its first write — a copy-on-write the caller can observe, because `ToImmutable()` on an untouched builder hands back the very source instance — and a freeze moves the working state into the frozen instance while the builder continues on a private copy, so writes after a freeze can never leak into it. The two concurrent types keep the mutable semantics under contention. `ConcurrentMultiDictionary<TKey, TValue>` routes keys to shards, each an independent `MultiDictionary<TKey, TValue>` behind its own lock, so writes on different keys proceed in parallel, while whole-map reads take a consistent snapshot by locking every shard once, in index order. `ConcurrentMultiList<T>` deliberately stays single-lock, because a bag has one global state its operations compare against, and sharding would trade that simple semantics for little gain. Enumeration on both concurrent types is over a snapshot, immune to concurrent writes. The stress tests run eight writers over a shared key domain while three readers hammer snapshots and whole-map reads mid-flight; the settled state is exactly predictable, because every writer removes only occurrences it added itself.
-- `ThreeKeyDictionary<K1, K2, K3, V>` (M6-13) — the three-component counterpart of `TwoKeyDictionary<K1, K2, V>`, kept deliberately thin (R2-03): the same axis-tag scheme — every component stored wrapped in a tag recording the position it came from, so three same-typed axes can not collide and each axis's injected comparer is dispatched by position rather than runtime type — a typed three-axis indexer, and per-axis projections (`Keys1` / `Keys2` / `Keys3`). The first axis is a prefix and its slice (`GetByFirstKey` / `CountOfFirstKey` / `RemoveByFirstKey`) is a trie walk; the second and third axes are deliberately not backed by an index here, their slices scan at O(n), and the XML remarks say so — when a later axis must be queried hard, `MultiKeyDictionary<TKey, TValue>` with a key order that puts that axis first is the tool. No logic was sunk out of `TwoKeyDictionary` and nothing in it changed.
-- `PageCreationOptions` and strict fragment checking (F6-11). 6.1 tolerated a fragment shorter
+- `ImmutableMultiList<T>`, `ImmutableMultiDictionary<TKey, TValue>`, `ConcurrentMultiDictionary<TKey, TValue>` and `ConcurrentMultiList<T>` — the thread-safe faces of the package. The two immutable types wrap a snapshot of the mutable type that is never touched after construction, so reading needs no locks or fences. Every mutation returns a new instance, or the receiver itself when nothing would change (an immutable instance may safely be shared, so "no change" needs no copy); bulk mutation is expected through `ToBuilder()`. The builder shares the source's state until its first write — a copy-on-write the caller can observe, because `ToImmutable()` on an untouched builder hands back the very source instance — and a freeze moves the working state into the frozen instance while the builder continues on a private copy, so writes after a freeze can never leak into it. The two concurrent types keep the mutable semantics under contention. `ConcurrentMultiDictionary<TKey, TValue>` routes keys to shards, each an independent `MultiDictionary<TKey, TValue>` behind its own lock, so writes on different keys proceed in parallel, while whole-map reads take a consistent snapshot by locking every shard once, in index order. `ConcurrentMultiList<T>` deliberately stays single-lock, because a bag has one global state its operations compare against, and sharding would trade that simple semantics for little gain. Enumeration on both concurrent types is over a snapshot, immune to concurrent writes. The stress tests run eight writers over a shared key domain while three readers hammer snapshots and whole-map reads mid-flight; the settled state is exactly predictable, because every writer removes only occurrences it added itself.
+- `ThreeKeyDictionary<K1, K2, K3, V>` — the three-component counterpart of `TwoKeyDictionary<K1, K2, V>`, kept deliberately thin (R2-03): the same axis-tag scheme — every component stored wrapped in a tag recording the position it came from, so three same-typed axes can not collide and each axis's injected comparer is dispatched by position rather than runtime type — a typed three-axis indexer, and per-axis projections (`Keys1` / `Keys2` / `Keys3`). The first axis is a prefix and its slice (`GetByFirstKey` / `CountOfFirstKey` / `RemoveByFirstKey`) is a trie walk; the second and third axes are deliberately not backed by an index here, their slices scan at O(n), and the XML remarks say so — when a later axis must be queried hard, `MultiKeyDictionary<TKey, TValue>` with a key order that puts that axis first is the tool. No logic was sunk out of `TwoKeyDictionary` and nothing in it changed.
+- `PageCreationOptions` and strict fragment checking. 6.1 tolerated a fragment shorter
   than its metadata says - a concurrent delete upstream must not make the page unbuildable - and
   that stays the default: `Paginable.CreatePage(fragment, info)`, the four-argument
   `CreatePage` and `fragment.ToPage(...)` behave exactly as before. When a short fragment is
@@ -964,7 +961,7 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
   `ArgumentException` naming the fragment. Only the short-fragment behaviour differs - the
   over-long checks throw in both modes - and a `null` options argument is rejected like any
   other.
-- `Paginable.CreateSinglePageSet` and `PaginableSinglePage<T>` (P6-03) - the set shape of the same
+- `Paginable.CreateSinglePageSet` and `PaginableSinglePage<T>` - the set shape of the same
   fragment API, for callers whose signature wants an `IPaginable<T>` (or an
   `IEnumerable<IPage<T>>`) while the data in hand is one already-assembled page. The fragment is
   wrapped as-is, so `GetPage(1)` is exactly the page `CreatePage` would have built, with identical
@@ -978,7 +975,7 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
   `ArgumentOutOfRangeException`. The factories return the concrete `PaginableSinglePage<T>`, not
   the bare interface, because `IPaginable` exposes only `PageSize` and `MemberCount` - without the
   concrete type the `PageCount` guarantee would be unreadable.
-- `Paginable.CreatePageAsync` (P6-04) - the fragment entry points in an awaitable shape, so a caller
+- `Paginable.CreatePageAsync` - the fragment entry points in an awaitable shape, so a caller
   that pages asynchronously does not have to special-case the path where the data is already in
   hand. It **completes synchronously**: a fragment is already in memory, so `Task.FromResult` wraps
   the same synchronous result and the task is finished before it is returned. Nothing here pretends
@@ -992,7 +989,7 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
 ### Fixed
 
 - `DotNetCore.Collections.Paginable.SqlKata` no longer carries vulnerable transitives in its
-  dependency graph (E6-03). SqlKata's two usable lines are both frozen with advisories still open
+  dependency graph. SqlKata's two usable lines are both frozen with advisories still open
   underneath them, and neither can be upgraded past the problem: `2.2.0` is the last release that
   targets `net451`, `3.2.3` is what the `netstandard2.x` / `net6.0` / `net7.0` group can take, and
   `4.x` requires `net8.0`. The three affected transitives are therefore pinned forward, one
@@ -1008,7 +1005,7 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
   fixing the graph rather than by `NoWarn`, and the raised floors are recorded in the shipped
   `packages.lock.json`.
 - The `<example>` sections of `PaginableCalc.GetRealMemberCount` / `GetRealPageCount` show
-  correctly-arity samples (P6-02). Both were added by the same docs pass and the first called
+  correctly-arity samples. Both were added by the same docs pass and the first called
   `GetRealMemberCount(0, 50, 120)` — three arguments for a two-argument method — so the shipped
   IntelliSense sample did not compile. The pair is now a worked example that mirrors the actual
   call sites (`GetRealMemberCount(limitedMemberCount, count)` then

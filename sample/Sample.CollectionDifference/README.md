@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Four-way difference CollectionDifference&lt;TKey,TValue&gt;** — slices two bags / two dictionaries into four disjoint partitions (6.9.0, `DotNetCore.Collections.Multi`, 6.9.0).
+> **Four-way difference CollectionDifference&lt;TKey,TValue&gt;** — slices two bags / two dictionaries into four disjoint partitions (`DotNetCore.Collections.Multi`, 6.9.0).
 
 ## What this sample demonstrates
 
@@ -16,7 +16,7 @@ removed / had their multiplicity changed), two `IReadOnlyDictionary`s are compar
 - Reconciliation / diffing: compare two snapshots or two statistics results to quickly locate added, missing, and changed entries.
 - Needing "change details" rather than just "are they equal" — `AreEqual` is just a degenerate use of it.
 - Not for: needing a **live view** (continuously reflecting later changes) — this library only offers read-only views / snapshots / in-place forms, and `Difference` is a **snapshot**;
-  just wanting to know whether two multisets are equal copy by copy → use `AreEqual` directly (or set operations, F12).
+  just wanting to know whether two multisets are equal copy by copy → use `AreEqual` directly (or set operations, 6.2.0).
 
 ## How to run
 

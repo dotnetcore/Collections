@@ -1,5 +1,5 @@
-// Sample.MultiMapBatchDelete — 多重映射批量删除 RemoveRange（F04）
-// Sample.MultiMapBatchDelete — Multimap batch delete RemoveRange (F04)
+// Sample.MultiMapBatchDelete — 多重映射批量删除 RemoveRange（6.1.0）
+// Sample.MultiMapBatchDelete — Multimap batch delete RemoveRange (6.1.0)
 // 运行：dotnet run --project sample/Sample.MultiMapBatchDelete
 // Run: dotnet run --project sample/Sample.MultiMapBatchDelete
 //

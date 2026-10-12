@@ -31,7 +31,7 @@ namespace DotNetCore.Collections
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        // F7-03: the interface states only that the sequence can be indexed, so the count hook is
+        // Since 7.1.0: the interface states only that the sequence can be indexed, so the count hook is
         // always answerable while the two contiguous hooks are not - unless the object behind the
         // interface happens to be an array or a List<T>, which is the common case when a paging
         // caller hands over its own storage. That run-time probe is the cheap half of the

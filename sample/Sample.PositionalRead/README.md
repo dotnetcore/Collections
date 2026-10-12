@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Rank and quantile reads** — `GetByRank` / `GetRank` / `GetMedian` / `GetQuantile` / `TotalValueCount` (feature F24, `DotNetCore.Collections.Multi`, 6.5.0 lists + 6.6.0 maps).
+> **Rank and quantile reads** — `GetByRank` / `GetRank` / `GetMedian` / `GetQuantile` / `TotalValueCount` (`DotNetCore.Collections.Multi`, 6.5.0 lists + 6.6.0 maps).
 
 ## What this sample demonstrates
 

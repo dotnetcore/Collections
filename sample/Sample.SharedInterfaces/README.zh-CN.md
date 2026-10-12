@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **共享接口** — `IMultiSet<T>` / `IMultiDictionary<TKey,TValue>`：多重集合 / 多重映射的共享读写抽象（对应 feature F27，`DotNetCore.Collections.Multi`，6.6.0）。
+> **共享接口** — `IMultiSet<T>` / `IMultiDictionary<TKey,TValue>`：多重集合 / 多重映射的共享读写抽象（`DotNetCore.Collections.Multi`，6.6.0）。
 
 ## 本示例演示什么
 

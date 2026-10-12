@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Multiset structural equality** — `MultiList<T>`'s `Equals` / `GetHashCode` (F03, `DotNetCore.Collections.Multi`, 6.1.0).
+> **Multiset structural equality** — `MultiList<T>`'s `Equals` / `GetHashCode` (`DotNetCore.Collections.Multi`, 6.1.0).
 
 ## What this sample demonstrates
 

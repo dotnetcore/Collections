@@ -1,5 +1,5 @@
-// Sample.OrderStatisticTree — 顺序统计树引擎（经 OrderedMultiList<T> 观察，F07）
-// Sample.OrderStatisticTree — order-statistic tree engine (observed through OrderedMultiList<T>, F07)
+// Sample.OrderStatisticTree — 顺序统计树引擎（经 OrderedMultiList<T> 观察，6.2.0）
+// Sample.OrderStatisticTree — order-statistic tree engine (observed through OrderedMultiList<T>, 6.2.0)
 // 运行：dotnet run --project sample/Sample.OrderStatisticTree
 // Run: dotnet run --project sample/Sample.OrderStatisticTree
 //

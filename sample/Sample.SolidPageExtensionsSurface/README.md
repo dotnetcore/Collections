@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **The `SolidPageExtensions` entry surface** — the extension-method entry points of offset pagination: `ToPaginable` / `GetPage` / `*Async` (feature F45, core package + 9 adapters, each with a same-named type).
+> **The `SolidPageExtensions` entry surface** — the extension-method entry points of offset pagination: `ToPaginable` / `GetPage` / `*Async` (feature all releases, core package + 9 adapters, each with a same-named type).
 
 ## What this sample demonstrates
 
@@ -11,8 +11,8 @@
 ## When to use it
 
 - An in-memory / post-Dapper `IEnumerable`, or an `IQueryable` source, that needs one line to become a pageable set or to fetch a page.
-- Wanting to cap via `limitedMemberCount` (F38).
-- When mixing two ORMs you must disambiguate (see U27) — writing only the extension-method syntax is usually fine.
+- Wanting to cap via `limitedMemberCount` (6.0.0).
+- When mixing two ORMs you must disambiguate (see 6.2.0) — writing only the extension-method syntax is usually fine.
 
 ## How to run
 
@@ -42,5 +42,5 @@ dotnet run --project sample/Sample.SolidPageExtensionsSurface
 
 - **Docs and samples mentioning `SolidPageExtensions` must carry the package / assembly qualifier** (a hard rule of the whole series); there are 10 same-named ones, and referencing two packages and writing the bare type name gives `CS0104`.
 - **Verb meanings**: `ToPaginable` = build a set; `GetPage` = slice one page from a **full source**; a fragment uses `ToPage`.
-- **Empty source**: `GetPage(1)` returns an empty page and does not throw; **out-of-range**: `ArgumentOutOfRangeException` (F40).
-- **Async semantics are per package** (F31 / F44): the core in-memory Async does not observe the token; this sample only demonstrates the synchronous surface.
+- **Empty source**: `GetPage(1)` returns an empty page and does not throw; **out-of-range**: `ArgumentOutOfRangeException` (6.2.0).
+- **Async semantics are per package** (6.0.0): the core in-memory Async does not observe the token; this sample only demonstrates the synchronous surface.

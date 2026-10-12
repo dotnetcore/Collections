@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **严格片段校验选项** — `PageCreationOptions.Lenient` / `Strict` 决定片段短于元数据时是容忍还是报错（对应 feature F33，`DotNetCore.Collections.Paginable`，6.2.0）。
+> **严格片段校验选项** — `PageCreationOptions.Lenient` / `Strict` 决定片段短于元数据时是容忍还是报错（`DotNetCore.Collections.Paginable`，6.2.0）。
 
 ## 本示例演示什么
 

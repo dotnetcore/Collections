@@ -9,7 +9,7 @@ namespace DotNetCore.Collections.Multi
     /// collection as <see cref="IReadOnlyCollection{T}"/> by a plain cast relies on the inner
     /// type declaring that interface — which the framework's <see cref="HashSet{T}"/> does not
     /// on net451 / net461 (neither statically nor at runtime), so the cast throws an
-    /// <see cref="InvalidCastException"/> on exactly those supported targets (the hazard F6-24
+    /// <see cref="InvalidCastException"/> on exactly those supported targets (the hazard 6.4.0
     /// tracks for <see cref="MultiDictionary{TKey,TValue}"/>'s key sets). The wrapper is safe
     /// on every target and keeps the view live: enumeration and <see cref="Count"/> reflect
     /// subsequent changes to the wrapped collection.

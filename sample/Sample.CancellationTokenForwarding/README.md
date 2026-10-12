@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Cancellation token forwarding** — the promise of `CancellationToken` differs per package: three semantics — forward / library boundary / unobserved (feature F44, Paginable core / adapters, introduced in 6.0.0, six adapters in 6.5.0, SqlSugar fix in 6.6.0).
+> **Cancellation token forwarding** — the promise of `CancellationToken` differs per package: three semantics — forward / library boundary / unobserved (Paginable core / adapters, introduced in 6.0.0, six adapters in 6.5.0, SqlSugar fix in 6.6.0).
 
 ## What this sample demonstrates
 
@@ -41,5 +41,5 @@ dotnet run --project sample/Sample.CancellationTokenForwarding
 
 - **The synchronous `GetPage` has no token parameter**: do not look for cancellation on the synchronous surface.
 - **In-memory Async is only signature symmetry**, not "cancellable I/O".
-- **Exception types**: cancellation is `OperationCanceledException` (including the `TaskCanceledException` subclass); out-of-range is still `ArgumentOutOfRangeException` (F40) — do not mix the catches.
-- **Do not assume every adapter is cancellable mid-stream**: check the F44 table + the F50 matrix; it differs per package; after SqlSugar 6.5->6.6 cancellation may start throwing, which is a fix, not a regression.
+- **Exception types**: cancellation is `OperationCanceledException` (including the `TaskCanceledException` subclass); out-of-range is still `ArgumentOutOfRangeException` (6.2.0) — do not mix the catches.
+- **Do not assume every adapter is cancellable mid-stream**: check the 6.0.0 table + the 2.x matrix; it differs per package; after SqlSugar 6.5->6.6 cancellation may start throwing, which is a fix, not a regression.

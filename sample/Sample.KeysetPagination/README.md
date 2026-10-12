@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Keyset (seek) pagination** — continue paging with a sort-key anchor, with no `OFFSET` scan and no `COUNT(*)` round-trip (feature F30, `DotNetCore.Collections.Paginable`, 6.0.0).
+> **Keyset (seek) pagination** — continue paging with a sort-key anchor, with no `OFFSET` scan and no `COUNT(*)` round-trip (`DotNetCore.Collections.Paginable`, 6.0.0).
 
 ## What this sample demonstrates
 

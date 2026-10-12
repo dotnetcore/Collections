@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Multimap dual cache** — a total-value-count cache + a value reverse index (F11, `DotNetCore.Collections.Multi`, 6.2.0).
+> **Multimap dual cache** — a total-value-count cache + a value reverse index (`DotNetCore.Collections.Multi`, 6.2.0).
 
 ## What this sample demonstrates
 
@@ -16,7 +16,7 @@ public mutation APIs (including `Clone` rebuilding via `Add`).
 
 - Reading the total value count frequently: `TotalValueCount` is O(1), so observation and assertions no longer pay an O(keys) scan.
 - Value existence is a hot path: `ContainsValue` is O(1) and can go on the hot path.
-- A live reverse view is ready: `AsReverse` reads the reverse index directly (see F18).
+- A live reverse view is ready: `AsReverse` reads the reverse index directly (see 6.3.0).
 - When not to use it: if you only write and never read the total → the cache is nearly negligible pure overhead.
 
 ## How to run

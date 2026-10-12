@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **反向多重字典 ReverseMultiDictionary&lt;V,K&gt;** — `MultiDictionary` 的倒排快照（F17，`DotNetCore.Collections.Multi`，6.3.0；6.7.1 增强）。
+> **反向多重字典 ReverseMultiDictionary&lt;V,K&gt;** — `MultiDictionary` 的倒排快照（`DotNetCore.Collections.Multi`，6.3.0；6.7.1 增强）。
 
 ## 本示例演示什么
 
@@ -12,7 +12,7 @@
 
 - 离线倒排分析、需要**自包含**可序列化的倒排索引。
 - 需要实例构造后仍可**独立增删**。
-- 不该用：要跟源联动 → 用 `MultiDictionary.AsReverse()`（活视图，见 F18）。
+- 不该用：要跟源联动 → 用 `MultiDictionary.AsReverse()`（活视图，见 6.3.0）。
 
 ## 如何运行
 

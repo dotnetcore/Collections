@@ -6,7 +6,7 @@ using DotNetCore.Collections;
 namespace Sample.Engine
 {
     /// <summary>
-    /// F7-07: the dual-<c>using</c> proof. This file imports the BCL's LINQ surface and the engine's
+    /// Since 7.1.0: the dual-<c>using</c> proof. This file imports the BCL's LINQ surface and the engine's
     /// surface into one compilation unit, which is the exact situation R7-05 is about: the compiler
     /// must resolve every call without CS0121, and importing the engine must not change what a
     /// caller's existing <see cref="Enumerable"/> code binds to.

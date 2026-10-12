@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **栈上临时袋** — `SpanBag<T>`：栈上零堆分配的定容计数袋（对应 feature F22，`DotNetCore.Collections.Multi`，6.4.0）。
+> **栈上临时袋** — `SpanBag<T>`：栈上零堆分配的定容计数袋（`DotNetCore.Collections.Multi`，6.4.0）。
 
 ## 本示例演示什么
 

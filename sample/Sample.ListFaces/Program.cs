@@ -1,5 +1,5 @@
-// Sample.ListFaces — 列表接口面（F25）
-// Sample.ListFaces — list interface surface (F25)
+// Sample.ListFaces — 列表接口面（6.5.0）
+// Sample.ListFaces — list interface surface (6.5.0)
 // 运行：dotnet run --project sample/Sample.ListFaces
 // Run: dotnet run --project sample/Sample.ListFaces
 //
@@ -121,8 +121,8 @@ Console.WriteLine($"MultiList 是 IReadOnlyList 吗？ / Is MultiList an IReadOn
 // OrderedMultiList 有序展开序列满足稳定位置语义，故实现。
 // OrderedMultiList's ordered expanded sequence satisfies stable positional semantics, so it implements them.
 Console.WriteLine($"OrderedMultiList 是 IReadOnlyList 吗？ / Is OrderedMultiList an IReadOnlyList? {shelf is IReadOnlyList<int>}"); // True
-// Deque<T> 顺序由调用方控制，索引器 setter 与 Insert 都有意义（见 F28）。
-// Deque<T>'s order is controlled by the caller, so both the indexer setter and Insert are meaningful (see F28).
+// Deque<T> 顺序由调用方控制，索引器 setter 与 Insert 都有意义（见 6.6.0）。
+// Deque<T>'s order is controlled by the caller, so both the indexer setter and Insert are meaningful (see 6.6.0).
 Console.WriteLine("Deque<T> 完整实现列表接口，setter / Insert 均可用（对照见 Sample.Deque）。 / Deque<T> fully implements the list interfaces; both setter / Insert are usable (see Sample.Deque for comparison).");
 
 // ❌ 错误写法：把 OrderedMultiList 当 List<T> 随机插 —— Insert 非任意位置，只在相等段内。

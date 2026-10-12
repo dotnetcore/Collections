@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Composite-key multimap MultiKeyMultiDictionary&lt;TKey,TValue&gt;** — composite key + one-key-many-values (F20, `DotNetCore.Collections.Multi`, 6.4.0; enhanced in 6.8.0).
+> **Composite-key multimap MultiKeyMultiDictionary&lt;TKey,TValue&gt;** — composite key + one-key-many-values (`DotNetCore.Collections.Multi`, 6.4.0; enhanced in 6.8.0).
 
 ## What this sample demonstrates
 

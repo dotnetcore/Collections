@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Chloe / DosOrm / NHibernate three-package entry-name cross-reference** — type names differ per package, unique overloads and constraints (feature F55, `DotNetCore.Collections.Paginable.Chloe` / `.DosOrm` / `.NHibernate`, the 2.x line).
+> **Chloe / DosOrm / NHibernate three-package entry-name cross-reference** — type names differ per package, unique overloads and constraints (feature 2.x, `DotNetCore.Collections.Paginable.Chloe` / `.DosOrm` / `.NHibernate`, the 2.x line).
 
 ## What this sample demonstrates
 
@@ -42,4 +42,4 @@ dotnet run --project sample/Sample.OtherOrmAdapters
 - **Type names differ per package**; do not write analogies such as `PaginableEfCoreQuery`.
 - **`NhCorePage<T>` has a special name**: it is not `NHibernatePage<T>`.
 - **Dos's `Entity` constraint**: you cannot `ToPaginable` an arbitrary DTO directly.
-- **`additionalQueryFunc` may be null**; do not perform side effects inside it; the three packages' TFM **has no net451** (F57).
+- **`additionalQueryFunc` may be null**; do not perform side effects inside it; the three packages' TFM **has no net451** (6.0.0).

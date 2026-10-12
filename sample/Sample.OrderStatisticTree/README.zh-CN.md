@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **顺序统计树引擎** — `OrderStatisticTree&lt;TKey,TPayload&gt;`（internal）经 `OrderedMultiList&lt;T&gt;` 观察（F07，`DotNetCore.Collections.Multi`，6.2.0 / 6.5.0）。
+> **顺序统计树引擎** — `OrderStatisticTree&lt;TKey,TPayload&gt;`（internal）经 `OrderedMultiList&lt;T&gt;` 观察（`DotNetCore.Collections.Multi`，6.2.0 / 6.5.0）。
 
 ## 本示例演示什么
 
@@ -11,8 +11,8 @@
 ## 什么时候用
 
 - 需要 O(log n) 的**名次读**（第 k 个副本 / 某元素名次），而不想物化整条序列。
-- 需要中位 / 分位这类顺序统计量（见 F24）。
-- 本篇也面向需要理解有序 Multi 性能模型的读者；一般使用方直接用 F05 / F06 / F08 / F24 即可。
+- 需要中位 / 分位这类顺序统计量（见 6.5.0）。
+- 本篇也面向需要理解有序 Multi 性能模型的读者；一般使用方直接用 6.2.0 / 6.5.0 即可。
 - 不该用：直接引用引擎类型 —— 它是 `internal`，编译不过。
 
 ## 如何运行

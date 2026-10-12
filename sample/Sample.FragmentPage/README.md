@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Fragment page building** — assemble an `IPage<T>` from "an already-sliced page + caller-supplied metadata", and the fragment is never sliced again (feature F32, `DotNetCore.Collections.Paginable`, 6.1.0).
+> **Fragment page building** — assemble an `IPage<T>` from "an already-sliced page + caller-supplied metadata", and the fragment is never sliced again (`DotNetCore.Collections.Paginable`, 6.1.0).
 
 ## What this sample demonstrates
 
@@ -40,7 +40,7 @@ dotnet run --project sample/Sample.FragmentPage
 ## Notes and pitfalls
 
 - **`totalMemberCount` is the full-source total, not the fragment length**: passing `fragment.Count` makes `TotalPageCount` always 1.
-- **A fragment longer than page capacity → `ArgumentException`**; a fragment shorter than the metadata → tolerated by default (concurrent deletes are acceptable, see F33).
+- **A fragment longer than page capacity → `ArgumentException`**; a fragment shorter than the metadata → tolerated by default (concurrent deletes are acceptable, see 6.2.0).
 - **Materialization**: `CreatePage` copies the fragment into a `List<T>`, preventing the caller from mutating the collection afterwards.
 - **Do not call `GetPage` on a pre-sliced fragment**: it silently skips again; use `ToPage` / `CreatePage`.
-- **Out-of-range metadata throws `ArgumentOutOfRangeException`** (unified in F40).
+- **Out-of-range metadata throws `ArgumentOutOfRangeException`** (unified in 6.2.0).

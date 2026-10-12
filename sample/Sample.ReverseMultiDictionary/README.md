@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Reverse multidictionary ReverseMultiDictionary&lt;V,K&gt;** — an inverted snapshot of `MultiDictionary` (F17, `DotNetCore.Collections.Multi`, 6.3.0; enhanced in 6.7.1).
+> **Reverse multidictionary ReverseMultiDictionary&lt;V,K&gt;** — an inverted snapshot of `MultiDictionary` (`DotNetCore.Collections.Multi`, 6.3.0; enhanced in 6.7.1).
 
 ## What this sample demonstrates
 
@@ -12,7 +12,7 @@
 
 - Offline inverted-index analysis needing a **self-contained**, serializable inverted index.
 - You need the instance to remain **independently mutable** after construction.
-- Do not use it for: following the source → use `MultiDictionary.AsReverse()` (a live view, see F18).
+- Do not use it for: following the source → use `MultiDictionary.AsReverse()` (a live view, see 6.3.0).
 
 ## How to run
 

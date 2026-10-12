@@ -2,11 +2,11 @@
 
 > **中文** | [English](README.md)
 
-> **查询入口状态 `IQueryEntryState<T>`** — 把「一页元素从哪来」抽象成一个协变接口，供 `PageMember` 状态形态延迟取值（对应 feature F48，`DotNetCore.Collections.Paginable`，6.0.0）。
+> **查询入口状态 `IQueryEntryState<T>`** — 把「一页元素从哪来」抽象成一个协变接口，供 `PageMember` 状态形态延迟取值（`DotNetCore.Collections.Paginable`，6.0.0）。
 
 ## 本示例演示什么
 
-`IQueryEntryState<out T>` 位于 `DotNetCore.Collections.Paginable.Abstractions`，**只有一员** `IEnumerable<T> AllValues`。它把「一页的元素从哪来」抽象出来，供 `PageMember` 的状态形态（F46）延迟取值——页初始化时不必把元素全部物化成 `List`，`Value` 被读时才 `ElementAt(_offset)`。本示例展示：接口形状（只有 `AllValues`）、协变（`IQueryEntryState<Derived>` 可作 `IQueryEntryState<Base>`）、作为 `PageMember` 状态形态的来源，以及 `AllValues` 可能是延迟序列（多次枚举可能多次查询）。
+`IQueryEntryState<out T>` 位于 `DotNetCore.Collections.Paginable.Abstractions`，**只有一员** `IEnumerable<T> AllValues`。它把「一页的元素从哪来」抽象出来，供 `PageMember` 的状态形态（6.0.0）延迟取值——页初始化时不必把元素全部物化成 `List`，`Value` 被读时才 `ElementAt(_offset)`。本示例展示：接口形状（只有 `AllValues`）、协变（`IQueryEntryState<Derived>` 可作 `IQueryEntryState<Base>`）、作为 `PageMember` 状态形态的来源，以及 `AllValues` 可能是延迟序列（多次枚举可能多次查询）。
 
 ## 什么时候用
 
@@ -40,4 +40,4 @@ dotnet run --project sample/Sample.QueryEntryState
 - **实现类 `QueryEntryState<T>` 是 internal**：使用方通常经 `PageMember.Value` 间接使用；示例用自定义 `IQueryEntryState<T>` 实现来演示。
 - **不是集合类型**：不要当 `IList` 用；`ElementAt` 对非列表源是 O(n)。
 - **协变接口**：`out T` 使类型兼容更宽。
-- 热路径应一次物化（F39），避免反复读状态形态的 `Value`。
+- 热路径应一次物化（6.0.0），避免反复读状态形态的 `Value`。

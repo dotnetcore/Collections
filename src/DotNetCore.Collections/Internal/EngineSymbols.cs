@@ -1,4 +1,4 @@
-// F7-01: compile-time gate that verifies the three conditional-compilation paths
+// Since 7.1.0: compile-time gate that verifies the three conditional-compilation paths
 // are mutually exclusive and collectively exhaustive across the 11-TFM matrix.
 //
 // Path 1 (Intrinsic Span): NETCOREAPP2_1_OR_GREATER || NET5_0_OR_GREATER

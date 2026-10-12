@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Page metadata and validation** — the metadata snapshot on a page, the caller-input metadata, and the derivation source shared by both (feature F36, `DotNetCore.Collections.Paginable`, 6.0–6.1).
+> **Page metadata and validation** — the metadata snapshot on a page, the caller-input metadata, and the derivation source shared by both (feature 6.0.0, `DotNetCore.Collections.Paginable`, 6.0–6.1).
 
 ## What this sample demonstrates
 
@@ -40,6 +40,6 @@ dotnet run --project sample/Sample.PageMetadata
 
 - **`PageMetadata` is a snapshot**, unaffected by changes to the source.
 - **Empty source has `TotalPageCount == 1`, `RealPageCount == 0`**: to decide "there are no pages", use `TotalMemberCount == 0` or `RealPageCount == 0`.
-- **`PageFragmentInfo` is validated on construction**: out-of-range metadata throws `ArgumentOutOfRangeException` (F40).
+- **`PageFragmentInfo` is validated on construction**: out-of-range metadata throws `ArgumentOutOfRangeException` (6.2.0).
 - **An empty page's `FromMetadata` may throw** (no usable pageSize).
-- **`CurrentPageSize` is the metadata value under a Lenient short fragment** (F33).
+- **`CurrentPageSize` is the metadata value under a Lenient short fragment** (6.2.0).

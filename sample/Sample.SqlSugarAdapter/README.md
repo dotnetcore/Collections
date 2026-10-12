@@ -2,11 +2,11 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **SqlSugar adapter entry surface and cancellation-token boundary** — `SolidPageExtensions` + `PaginableSqlSugarQuery<T>` + `SqlSugarPage<T>` (feature F53, `DotNetCore.Collections.Paginable.SqlSugar`, 2.x).
+> **SqlSugar adapter entry surface and cancellation-token boundary** — `SolidPageExtensions` + `PaginableSqlSugarQuery<T>` + `SqlSugarPage<T>` (feature 2.x, `DotNetCore.Collections.Paginable.SqlSugar`, 2.x).
 
 ## What this sample demonstrates
 
-The SqlSugar adapter wires the pagination verbs into `SqlSugar.ISugarQueryable<T>`. This sample is a **package-backed explanatory** example: it references the **real SqlSugar adapter package**, uses reflection to read the entry types and the public verb signatures of `SolidPageExtensions` from the real assembly, and focuses on clarifying the cancellation-token boundary of **6.6.0 F6-38** — an already-cancelled token throws `OperationCanceledException` **before the first database round trip**, while mid-flight cancellation still depends on the SqlSugar version (its `CountAsync` / `ToPageListAsync` have no token overloads). The sample does not connect to a database; at the end it uses the core `Paginable.CreatePage` to build a real page, proving the page object reuses the core contract `IPage<T>`.
+The SqlSugar adapter wires the pagination verbs into `SqlSugar.ISugarQueryable<T>`. This sample is a **package-backed explanatory** example: it references the **real SqlSugar adapter package**, uses reflection to read the entry types and the public verb signatures of `SolidPageExtensions` from the real assembly, and focuses on clarifying the cancellation-token boundary of **6.6.0** — an already-cancelled token throws `OperationCanceledException` **before the first database round trip**, while mid-flight cancellation still depends on the SqlSugar version (its `CountAsync` / `ToPageListAsync` have no token overloads). The sample does not connect to a database; at the end it uses the core `Paginable.CreatePage` to build a real page, proving the page object reuses the core contract `IPage<T>`.
 
 ## When to use it
 
@@ -26,7 +26,7 @@ dotnet run --project sample/Sample.SqlSugarAdapter
 | :--- | :--- | :--- |
 | 1 | Real adapter assembly and entry types | `PaginableSqlSugarQuery<T>` / `SqlSugarPage<T>` / `SolidPageExtensions` (reflection) |
 | 2 | Real public verb signatures | `ToPaginable` / `GetPage` / `*Async` (reflection) |
-| 3 | Cancellation-token boundary (F6-38) | `GetPageAsync(1, 20, ct)` throws `OperationCanceledException` before the first round trip |
+| 3 | Cancellation-token boundary (since 6.6.0) | `GetPageAsync(1, 20, ct)` throws `OperationCanceledException` before the first round trip |
 | 4 | Shared core contract | `Paginable.CreatePage` → `IPage<T>` / `IPageMember<T>` |
 | 5 | TFM and why it is not really executed | no ns2.0; `SqlSugarHelper` hits the database |
 
@@ -39,7 +39,7 @@ dotnet run --project sample/Sample.SqlSugarAdapter
 
 ## Notes and pitfalls
 
-- **Upgrading 6.5→6.6 may newly throw `OperationCanceledException`** (the F6-38 fix, not a regression).
+- **Upgrading 6.5→6.6 may newly throw `OperationCanceledException`** (the 6.6.0 fix, not a regression).
 - **Mid-flight cancellation is not promised**: SqlSugar 5.1.3's `CountAsync` / `ToPageListAsync` have no token overloads.
 - **No netstandard2.0**; net4* uses `sqlSugar`, others use `sqlSugarCore`.
-- **Same-named `SolidPageExtensions`** (U27); out of range throws `ArgumentOutOfRangeException`.
+- **Same-named `SolidPageExtensions`** (6.2.0); out of range throws `ArgumentOutOfRangeException`.

@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **SqlKata adapter entry surface: non-generic Query and explicit type arguments** — `SolidPageExtensions` + `PaginableSqlKataQuery<T>` + `SqlKataPage<T>` (feature F54, `DotNetCore.Collections.Paginable.SqlKata`, 3.2.0).
+> **SqlKata adapter entry surface: non-generic Query and explicit type arguments** — `SolidPageExtensions` + `PaginableSqlKataQuery<T>` + `SqlKataPage<T>` (`DotNetCore.Collections.Paginable.SqlKata`, 3.2.0).
 
 ## What this sample demonstrates
 
@@ -41,5 +41,5 @@ dotnet run --project sample/Sample.SqlKataAdapter
 
 - **Explicit generic argument**: `query.ToPaginable<Product>(20)`, you cannot write `query.ToPaginable(20)`.
 - **The SqlKata major version changes with the TFM**: net451→2.2.0; net8/9/10→4.0.1; others→3.2.3.
-- **Transitive dependencies are pinned** (6.2.0 E6-03) as a security fix, not an API change.
-- **Same-named `SolidPageExtensions`** (U27); net451 has no generator and relies on hand-written members kept in sync.
+- **Transitive dependencies are pinned** (6.2.0) as a security fix, not an API change.
+- **Same-named `SolidPageExtensions`** (6.2.0); net451 has no generator and relies on hand-written members kept in sync.

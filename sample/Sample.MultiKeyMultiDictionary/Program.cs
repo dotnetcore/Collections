@@ -1,5 +1,5 @@
-// Sample.MultiKeyMultiDictionary — 复合键多重映射 MultiKeyMultiDictionary<TKey,TValue>（F20）
-// Sample.MultiKeyMultiDictionary — composite-key multimap MultiKeyMultiDictionary<TKey,TValue> (F20)
+// Sample.MultiKeyMultiDictionary — 复合键多重映射 MultiKeyMultiDictionary<TKey,TValue>（6.4.0）
+// Sample.MultiKeyMultiDictionary — composite-key multimap MultiKeyMultiDictionary<TKey,TValue> (6.4.0)
 // 运行：dotnet run --project sample/Sample.MultiKeyMultiDictionary
 // Run: dotnet run --project sample/Sample.MultiKeyMultiDictionary
 //

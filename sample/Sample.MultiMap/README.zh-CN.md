@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **多重映射 MultiDictionary&lt;TKey,TValue&gt;** — 一个键关联多个值（multimap）（F02，`DotNetCore.Collections.Multi`，6.0.0）。
+> **多重映射 MultiDictionary&lt;TKey,TValue&gt;** — 一个键关联多个值（multimap）（`DotNetCore.Collections.Multi`，6.0.0）。
 
 ## 本示例演示什么
 
@@ -14,9 +14,9 @@
 
 - 标签 / 分组 / 一对多索引：一键多值即一等语义，不必再包 `Dictionary<TKey, List<TValue>>`。
 - 缺键查询频繁：索引器缺键返回空集合，调用方少写 try/catch。
-- 需要 O(1) 的值存在性：`ContainsValue` 走反向索引（见 F11）。
-- 不该用：需要键有序 → `OrderedMultiDictionary<TKey,TValue>`（F08）；严格一对一 → `BiDictionary<TLeft,TRight>`（F16）；
-  复合键 → `MultiKeyDictionary` / `TwoKeyDictionary`（F20 / F29）。
+- 需要 O(1) 的值存在性：`ContainsValue` 走反向索引（见 6.2.0）。
+- 不该用：需要键有序 → `OrderedMultiDictionary<TKey,TValue>`（6.2.0）；严格一对一 → `BiDictionary<TLeft,TRight>`（6.3.0）；
+  复合键 → `MultiKeyDictionary` / `TwoKeyDictionary`（6.4.0 / 6.2.0）。
 
 ## 如何运行
 
@@ -47,4 +47,4 @@ dotnet run --project sample/Sample.MultiMap
 - **缺键索引器返回空集合而非抛**：`map[key].Count` 为 0 不代表键存在，需区分时用 `ContainsKey` / `TryGetValue`。
 - **`Values` 是扁平序列**（`new` 隐藏了 `IReadOnlyDictionary.Values`）：`foreach` 得到的是单个值，按组请用 `ToDictionary()` / `AsLookup()`。
 - **无值之键不存在**：最后一个值被删后键自动消失，`KeyCount` 与 `TotalValueCount` 不会出现「空键」分歧。
-- **非线程安全**：并发请用 `ConcurrentMultiDictionary<TKey,TValue>`（F14）。
+- **非线程安全**：并发请用 `ConcurrentMultiDictionary<TKey,TValue>`（6.2.0）。

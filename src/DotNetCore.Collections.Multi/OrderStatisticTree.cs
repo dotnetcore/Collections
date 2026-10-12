@@ -50,7 +50,7 @@ namespace DotNetCore.Collections.Multi
     /// the true smallest key of the sub-tree to its right and that the cached totals still add up.
     /// <see cref="Height"/> is exact and costs one descent, because all leaves are equally deep.
     /// Together they let the O(log n) claim be asserted structurally rather than inferred from
-    /// timings, which is what the F6-01 and F6-25 acceptance criteria ask for.
+    /// timings, which is what the 6.2.0 and 6.5.0 acceptance criteria ask for.
     /// </para>
     /// <para>
     /// <b>Payloads.</b> A caller may attach one value of <c>TPayload</c> to each key, stored beside

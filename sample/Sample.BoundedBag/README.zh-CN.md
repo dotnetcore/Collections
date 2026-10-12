@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **定容滑动窗口袋 BoundedBag&lt;T&gt;** — 副本总数被封顶的 bag：超容即静默淘汰最旧副本（6.9.0，`DotNetCore.Collections.Multi`，6.9.0）。
+> **定容滑动窗口袋 BoundedBag&lt;T&gt;** — 副本总数被封顶的 bag：超容即静默淘汰最旧副本（`DotNetCore.Collections.Multi`，6.9.0）。
 
 ## 本示例演示什么
 
@@ -14,8 +14,8 @@
 
 - 需要「最近 N 次」滑动窗口（最近日志、最近访问、最近 N 个样本）。
 - 容量很小、且允许最旧数据被自动挤出的场景。
-- 不该用：需要无上限增长 → `MultiList<T>`（F01）；需要按副本数做多重集运算 / 实现 `IMultiSet<T>` → `MultiList<T>`；
-  小值域直方图 → `PackedBag<T>`（F21）。
+- 不该用：需要无上限增长 → `MultiList<T>`（6.0.0）；需要按副本数做多重集运算 / 实现 `IMultiSet<T>` → `MultiList<T>`；
+  小值域直方图 → `PackedBag<T>`（6.4.0）。
 
 ## 如何运行
 

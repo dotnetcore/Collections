@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **空页与单页集合** — `EmptyPage<T>`（无结果不返回 null）与 `PaginableSinglePage<T>`（一页包成集合，`PageCount` 恒为 1）（对应 feature F49，`DotNetCore.Collections.Paginable`，6.2.0）。
+> **空页与单页集合** — `EmptyPage<T>`（无结果不返回 null）与 `PaginableSinglePage<T>`（一页包成集合，`PageCount` 恒为 1）（`DotNetCore.Collections.Paginable`，6.2.0）。
 
 ## 本示例演示什么
 

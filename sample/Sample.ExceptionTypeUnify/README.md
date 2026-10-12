@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Unified out-of-range exception type** — every paging entry point throws `ArgumentOutOfRangeException` carrying a `ParamName` for out-of-range arguments (feature F40, `DotNetCore.Collections.Paginable`, 6.2.0 breaking change).
+> **Unified out-of-range exception type** — every paging entry point throws `ArgumentOutOfRangeException` carrying a `ParamName` for out-of-range arguments (`DotNetCore.Collections.Paginable`, 6.2.0 breaking change).
 
 ## What this sample demonstrates
 

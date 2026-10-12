@@ -1,5 +1,5 @@
-// Sample.LimitedMembers — 成员上限与开区间（F38）
-// Sample.LimitedMembers — Member caps and open interval (F38)
+// Sample.LimitedMembers — 成员上限与开区间（6.0.0）
+// Sample.LimitedMembers — Member caps and open interval (6.0.0)
 // 运行：dotnet run --project sample/Sample.LimitedMembers
 // Run: dotnet run --project sample/Sample.LimitedMembers
 //

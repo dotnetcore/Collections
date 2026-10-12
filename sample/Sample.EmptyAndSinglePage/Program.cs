@@ -1,5 +1,5 @@
-// Sample.EmptyAndSinglePage — 空页与单页集合（F49）
-// Sample.EmptyAndSinglePage — empty page and single-page set (F49)
+// Sample.EmptyAndSinglePage — 空页与单页集合（6.2.0）
+// Sample.EmptyAndSinglePage — empty page and single-page set (6.2.0)
 // 运行：dotnet run --project sample/Sample.EmptyAndSinglePage
 // Run: dotnet run --project sample/Sample.EmptyAndSinglePage
 //

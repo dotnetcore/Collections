@@ -1,5 +1,5 @@
-// Sample.SecondaryReverseIndex — 第二轴反向索引（F09）
-// Sample.SecondaryReverseIndex — secondary-axis reverse index (F09)
+// Sample.SecondaryReverseIndex — 第二轴反向索引（6.2.0）
+// Sample.SecondaryReverseIndex — secondary-axis reverse index (6.2.0)
 // 运行：dotnet run --project sample/Sample.SecondaryReverseIndex
 // Run: dotnet run --project sample/Sample.SecondaryReverseIndex
 //

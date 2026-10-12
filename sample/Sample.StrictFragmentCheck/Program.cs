@@ -1,5 +1,5 @@
-// Sample.StrictFragmentCheck — 严格片段校验选项（F33）
-// Sample.StrictFragmentCheck — Strict fragment-check option (F33)
+// Sample.StrictFragmentCheck — 严格片段校验选项（6.2.0）
+// Sample.StrictFragmentCheck — Strict fragment-check option (6.2.0)
 // 运行：dotnet run --project sample/Sample.StrictFragmentCheck
 // Run: dotnet run --project sample/Sample.StrictFragmentCheck
 //

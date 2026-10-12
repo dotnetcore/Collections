@@ -1,5 +1,5 @@
-// Sample.ExceptionTypeUnify — 越界参数统一为 ArgumentOutOfRangeException（F40）
-// Sample.ExceptionTypeUnify — out-of-range arguments unified to ArgumentOutOfRangeException (F40)
+// Sample.ExceptionTypeUnify — 越界参数统一为 ArgumentOutOfRangeException（6.2.0）
+// Sample.ExceptionTypeUnify — out-of-range arguments unified to ArgumentOutOfRangeException (6.2.0)
 // 运行：dotnet run --project sample/Sample.ExceptionTypeUnify
 // Run: dotnet run --project sample/Sample.ExceptionTypeUnify
 //

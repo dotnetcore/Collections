@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **显式序列化模型** — `MultiListModel<T>` / `MultiDictionaryModel<TKey,TValue>` 快照与重建（F10，`DotNetCore.Collections.Multi`，6.2.0；6.7.1 扩展至全家桶）。
+> **显式序列化模型** — `MultiListModel<T>` / `MultiDictionaryModel<TKey,TValue>` 快照与重建（`DotNetCore.Collections.Multi`，6.2.0；6.7.1 扩展至全家桶）。
 
 ## 本示例演示什么
 

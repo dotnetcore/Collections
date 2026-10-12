@@ -11,7 +11,7 @@
 （1）`ToValueEnumerable()` 的**四个入口**（`T[]` / `List<T>` / `IReadOnlyList<T>` / `IEnumerable<T>`，最具体的重载胜出）；
 （2）五个算子 `Index` / `ForEach` / `TagFirstLast` / `Pairwise` / `Scan`（含带种子重载）；
 （3）与 `System.Linq` 共存的**命名空间治理**——同文件 `using` 两个命名空间不产生 CS0121，引擎的 `Index`
-绑到包装器，裸 `T[]` 仍绑到 BCL（net9+），既有 `Enumerable` 代码不受影响（F7-07）。工程多目标 `net8.0;net10.0`。
+绑到包装器，裸 `T[]` 仍绑到 BCL（net9+），既有 `Enumerable` 代码不受影响（7.1.0）。工程多目标 `net8.0;net10.0`。
 
 ## 什么时候用
 

@@ -1,5 +1,5 @@
-// Sample.OrmAdapterMatrix — 9 个 ORM 适配器的入口名对照矩阵（F50）
-// Sample.OrmAdapterMatrix — entry-name cross-reference matrix of the 9 ORM adapters (F50)
+// Sample.OrmAdapterMatrix — 9 个 ORM 适配器的入口名对照矩阵（2.x）
+// Sample.OrmAdapterMatrix — entry-name cross-reference matrix of the 9 ORM adapters (2.x)
 // 运行：dotnet run --project sample/Sample.OrmAdapterMatrix
 // Run: dotnet run --project sample/Sample.OrmAdapterMatrix
 //
@@ -20,16 +20,16 @@ Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 // 引用核心包只为「锚定」本示例确实在 DotNetCore.Collections.Paginable 语境下讨论适配器；
 // Referencing the core package only serves to "anchor" that this example indeed discusses adapters in the DotNetCore.Collections.Paginable context;
-// 下面打印的适配器入口名全部是文档 F50 / A11 里逐字记录的公开类型名，不是运行期推断。
-// all adapter entry names printed below are public type names recorded verbatim in docs F50 / A11, not runtime inference.
+// 下面打印的适配器入口名全部是文档 2.x / 6.2.0 里逐字记录的公开类型名，不是运行期推断。
+// all adapter entry names printed below are public type names recorded verbatim in docs 2.x / 6.2.0, not runtime inference.
 // 核心契约（所有适配器共享）：IPage / IPage<T> / IPaginable / IPaginable<T>。
 // Core contracts (shared by all adapters): IPage / IPage<T> / IPaginable / IPaginable<T>.
 Console.WriteLine($"核心契约程序集 / Core contract assembly：{typeof(IPage).Assembly.GetName().Name}");
 Console.WriteLine();
 
 // ---------------------------------------------------------------------------
-// 1. 九包入口名对照矩阵（逐字来自 F50「10,000 英尺矩阵」）
-// 1. Nine-package entry-name cross-reference matrix (verbatim from F50 "10,000-foot matrix")
+// 1. 九包入口名对照矩阵（逐字来自 2.x「10,000 英尺矩阵」）
+// 1. Nine-package entry-name cross-reference matrix (verbatim from 2.x "10,000-foot matrix")
 // ---------------------------------------------------------------------------
 Console.WriteLine("=== 1. 九包入口名对照矩阵 ===");
 Console.WriteLine("=== 1. Nine-package entry-name cross-reference matrix ===");
@@ -77,7 +77,7 @@ Console.WriteLine("=== 2. Unified verbs (same name per package, different source
 Console.WriteLine("ToPaginable(...)   建分页集合，可多次 GetPage(n) / builds a paginable collection, GetPage(n) may be called repeatedly");
 Console.WriteLine("GetPage(n[, size]) 从**全源**切一页 / slices one page from the **full source**");
 Console.WriteLine("*Async             EF Core 真异步；核心内存形态只提供形状（不观察令牌） / EF Core true async; the core in-memory form only provides the shape (does not observe the token)");
-Console.WriteLine("ToPage / Paginable.CreatePage  片段建页——**不在适配器源上使用**（那是 F32/F58 的路径） / fragment page build — **not used on adapter sources** (that is the F32/F58 path)");
+Console.WriteLine("ToPage / Paginable.CreatePage  片段建页——**不在适配器源上使用**（那是 6.1.0/6.2.0 的路径） / fragment page build — **not used on adapter sources** (that is the 6.1.0/6.2.0 path)");
 
 // ---------------------------------------------------------------------------
 // 3. 命名规律与例外（最容易被「类推」坑到的三处）
@@ -109,7 +109,7 @@ Console.WriteLine("=== 4. Same-name SolidPageExtensions disambiguation ===");
 // Each of the 10 packages has a public static class SolidPageExtensions (1 core + 9 adapters),
 // 同项目同时 using 两个适配器命名空间会 CS0104。规避：全限定静态类名或 using 别名。
 // using two adapter namespaces in the same project causes CS0104. Avoid it with a fully-qualified static class name or a using alias.
-Console.WriteLine("10 处同名 SolidPageExtensions（核心 1 + 适配器 9）；混用两包须全限定名或别名消歧（U27）。 / 10 same-named SolidPageExtensions (1 core + 9 adapters); mixing two packages requires a fully-qualified name or alias for disambiguation (U27).");
+Console.WriteLine("10 处同名 SolidPageExtensions（核心 1 + 适配器 9）；混用两包须全限定名或别名消歧（6.2.0）。 / 10 same-named SolidPageExtensions (1 core + 9 adapters); mixing two packages requires a fully-qualified name or alias for disambiguation (6.2.0).");
 
 Console.WriteLine();
 Console.WriteLine("Sample.OrmAdapterMatrix completed.");

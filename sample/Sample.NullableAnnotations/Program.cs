@@ -1,5 +1,5 @@
-// Sample.NullableAnnotations — 公开 API 的可空引用类型（NRT）契约（F41）
-// Sample.NullableAnnotations — the nullable reference type (NRT) contract of the public APIs (F41)
+// Sample.NullableAnnotations — 公开 API 的可空引用类型（NRT）契约（6.3.0）
+// Sample.NullableAnnotations — the nullable reference type (NRT) contract of the public APIs (6.3.0)
 // 运行：dotnet run --project sample/Sample.NullableAnnotations
 // Run: dotnet run --project sample/Sample.NullableAnnotations
 //
@@ -36,8 +36,8 @@ Console.WriteLine("=== 1. Nullable parameter: null falls back to the default com
 // The parameter is annotated IComparer<Order>? — the caller may legally pass null;
 // 运行时 null 被替换为 Comparer<Order>.Default（不是异常）。
 // At runtime null is replaced by Comparer<Order>.Default (not an exception).
-// 这与本包 Multi 侧 `IEqualityComparer<T>? comparer` → EqualityComparer<T>.Default 是同一约定（F41）。
-// This follows the same convention as the Multi-side `IEqualityComparer<T>? comparer` -> EqualityComparer<T>.Default (F41).
+// 这与本包 Multi 侧 `IEqualityComparer<T>? comparer` → EqualityComparer<T>.Default 是同一约定（6.3.0）。
+// This follows the same convention as the Multi-side `IEqualityComparer<T>? comparer` -> EqualityComparer<T>.Default (6.3.0).
 var byDefault = SortBy(orders, null);
 Console.WriteLine($"null  → 默认比较器 / null -> default comparer: {string.Join(",", byDefault.Select(o => o.Id))}"); // 1,2,3
 

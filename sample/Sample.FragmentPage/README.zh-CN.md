@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **片段建页** — 从「已切好的一页 + 调用方自带元数据」装配 `IPage<T>`，片段绝不再被切片（对应 feature F32，`DotNetCore.Collections.Paginable`，6.1.0）。
+> **片段建页** — 从「已切好的一页 + 调用方自带元数据」装配 `IPage<T>`，片段绝不再被切片（`DotNetCore.Collections.Paginable`，6.1.0）。
 
 ## 本示例演示什么
 
@@ -40,7 +40,7 @@ dotnet run --project sample/Sample.FragmentPage
 ## 注意事项 / 陷阱
 
 - **`totalMemberCount` 是全源总数，不是片段长度**：传 `fragment.Count` 会让 `TotalPageCount` 恒为 1。
-- **片段比页容量长 → `ArgumentException`**；片段比元数据短 → 默认容忍（并发删除可接受，见 F33）。
+- **片段比页容量长 → `ArgumentException`**；片段比元数据短 → 默认容忍（并发删除可接受，见 6.2.0）。
 - **物化**：`CreatePage` 会把片段拷进 `List<T>`，防调用方事后改集合。
 - **不要对预切片片段调用 `GetPage`**：会静默二次 skip；用 `ToPage` / `CreatePage`。
-- **越界元数据抛 `ArgumentOutOfRangeException`**（F40 统一口径）。
+- **越界元数据抛 `ArgumentOutOfRangeException`**（6.2.0 统一口径）。

@@ -2,7 +2,7 @@
 
 > **English** | [中文](README.zh-CN.md)
 
-> **Strict bijective dictionary BiDictionary&lt;TLeft,TRight&gt;** — one-to-one mapping, O(1) both ways (F16, `DotNetCore.Collections.Multi`, 6.3.0).
+> **Strict bijective dictionary BiDictionary&lt;TLeft,TRight&gt;** — one-to-one mapping, O(1) both ways (`DotNetCore.Collections.Multi`, 6.3.0).
 
 ## What this sample demonstrates
 

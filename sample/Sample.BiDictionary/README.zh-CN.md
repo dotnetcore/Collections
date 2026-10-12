@@ -2,7 +2,7 @@
 
 > **中文** | [English](README.md)
 
-> **严格双射字典 BiDictionary&lt;TLeft,TRight&gt;** — 一对一映射，双向 O(1)（F16，`DotNetCore.Collections.Multi`，6.3.0）。
+> **严格双射字典 BiDictionary&lt;TLeft,TRight&gt;** — 一对一映射，双向 O(1)（`DotNetCore.Collections.Multi`，6.3.0）。
 
 ## 本示例演示什么
 

@@ -14,7 +14,7 @@ namespace DotNetCore.Collections.Multi
     /// Represents a stack-only temporary bag: a fixed-capacity counting bag over unmanaged
     /// elements, backed by caller-provided <see cref="Span{T}"/> storage (typically
     /// <c>stackalloc</c>), for short-lived frequency counting inside one method with zero heap
-    /// allocation (F6-07).
+    /// allocation (since 6.4.0).
     /// </summary>
     /// <remarks>
     /// <para>

@@ -1,5 +1,5 @@
-// Sample.MultiMap — 多重映射 MultiDictionary<TKey,TValue>（F02）
-// Sample.MultiMap — Multimap MultiDictionary<TKey,TValue> (F02)
+// Sample.MultiMap — 多重映射 MultiDictionary<TKey,TValue>（6.0.0）
+// Sample.MultiMap — Multimap MultiDictionary<TKey,TValue> (6.0.0)
 // 运行：dotnet run --project sample/Sample.MultiMap
 // Run: dotnet run --project sample/Sample.MultiMap
 //
