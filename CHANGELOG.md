@@ -843,14 +843,14 @@ Release covering both shipped modules (`Paginable` and `Multi`); every package s
   `SortedDictionary` model; 10,000 sequentially ascending inserts stay under 30 levels where an
   unbalanced tree would be 10,000 deep. Timing baselines are deliberately avoided - they are
   noise on CI.
-- Two deliberate omissions and one carry-over, so that neither is mistaken for an oversight.
+- Three things worth stating outright, so that none of them is mistaken for an oversight.
   `OrderedMultiList<T>` does **not** override `Equals` / `GetHashCode`: the package's rule is
   that `MultiList<T>` is the only type carrying structural equality, and adding equality later
   is a non-breaking change while removing it would not be. It has no `ToDictionary()` either,
   because its `IComparer<T>` orders elements but supplies no hash codes for a dictionary to use,
-  so `EntrySet()` is the export path. And `Add(item, times)` / `Remove(item, times)` keep
-  `MultiList<T>`'s legacy "a non-positive `times` is coerced to one copy" behaviour verbatim,
-  which means M6-05 (`times <= 0` throws) has to cover this type as well when it lands.
+  so `EntrySet()` is the export path. And its `Add(item, times)` / `Remove(item, times)` reject
+  a non-positive `times` with `ArgumentOutOfRangeException`, matching `MultiList<T>`: the legacy
+  "a non-positive `times` is coerced to one copy" behaviour is **not** inherited (see Breaking).
 - `DotNetCore.Collections.Multi` now declares `InternalsVisibleTo` for its test assembly. The
   red-black invariants live on internal members and asserting them is how the engine justifies its
   complexity, so the suite has to reach them. Nothing becomes public: the members stay internal.
