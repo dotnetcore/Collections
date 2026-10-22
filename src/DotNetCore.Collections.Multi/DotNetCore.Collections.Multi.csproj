@@ -42,6 +42,14 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- 规则 C（对内对外双轨）: the set-combinator surface (CrossJoin / Interleave /
+             FullJoin) is built on this engine's operators rather than on BCL LINQ, so the
+             reference is a hard one. The engine targets the same eleven TFMs, so no target
+             loses coverage. -->
+        <ProjectReference Include="..\DotNetCore.Collections\DotNetCore.Collections.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
         <!-- The test suite asserts the order-statistic tree invariants of OrderedMultiList and the
              height bound that stands in for its O(log n) guarantee (since 6.2.0: invariants, not
              timings). Both live on internal members, so the test assembly has to see them.
