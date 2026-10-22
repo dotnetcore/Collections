@@ -48,6 +48,7 @@ namespace DotNetCore.Collections.Tests
         private static readonly string[] EnumerableMembersNewerThanTheTestTarget =
         {
             "Index",
+            "CountBy",
         };
 
         /// <summary>
@@ -62,6 +63,29 @@ namespace DotNetCore.Collections.Tests
         /// not something that slips in.
         /// </remarks>
         private const string EntryWrapperName = "ToValueEnumerable";
+
+        /// <summary>
+        /// The queryable face added by F7-12: the second family allowed to extend a BCL receiver.
+        /// </summary>
+        /// <remarks>
+        /// These take <c>IQueryable&lt;T&gt;</c> rather than an engine type because that is the shape an
+        /// ORM's adapter hands over. The rule this constant relaxes - "an extension that shares a
+        /// name with Enumerable must take an engine-owned receiver" - exists to keep CS0121 out, and
+        /// a queryable receiver is the one shape where the engine's candidate is *strictly* better:
+        /// the receiver conversion is an identity conversion while the BCL's needs an interface
+        /// conversion. That is not an argument from the spec alone; it is measured on
+        /// net451 / net8.0 / net9.0 / net10.0 for the three names the BCL acquired later, and
+        /// QueryableTranslationTests pins the resulting binding from source.
+        /// </remarks>
+        private static readonly string[] QueryFaceMembers =
+        {
+            "AsCollectionQueryable",
+            "ToQueryModel",
+            "DistinctBy",
+            "Order",
+            "OrderDescending",
+            "CountBy",
+        };
 
         private static Assembly EngineAssembly => typeof(CollectionExtensions).Assembly;
 
@@ -121,19 +145,23 @@ namespace DotNetCore.Collections.Tests
             var offenders = PublicExtensionMethods()
                 .Where(method => enumerableNames.Contains(method.Name))
                 .Where(method => !IsEngineOwned(method.GetParameters()[0].ParameterType))
+                .Where(method => !ExtendsQueryable(method))
                 .Select(Describe)
                 .OrderBy(text => text, StringComparer.Ordinal)
                 .ToArray();
 
             offenders.ShouldBeEmpty(
                 "an extension method that shares a name with System.Linq.Enumerable must take an engine-owned "
-                + "receiver. A receiver the BCL also extends makes the two candidates equally good, and once "
-                + "an Enumerable member with that name exists the call is CS0121 — see Enumerable.Index, "
-                + "added in .NET 9.");
+                + "receiver or an IQueryable<T> receiver. A receiver the BCL also extends makes the two "
+                + "candidates equally good, and once an Enumerable member with that name exists the call is "
+                + "CS0121 — see Enumerable.Index, added in .NET 9. IQueryable<T> is the documented exception "
+                + "(F7-12): identity conversion beats the BCL's interface conversion, and "
+                + "QueryableTranslationTests.The_same_name_operators_bind_to_the_engine_on_a_queryable_receiver "
+                + "pins that binding from source on every test target.");
         }
 
         [Fact]
-        public void Only_the_documented_entry_wrappers_extend_a_BCL_receiver()
+        public void Only_the_documented_faces_extend_a_BCL_receiver()
         {
             var bclReceivers = PublicExtensionMethods()
                 .Where(method => !IsEngineOwned(method.GetParameters()[0].ParameterType))
@@ -149,11 +177,26 @@ namespace DotNetCore.Collections.Tests
 
             var found = "bclReceivers: [" + string.Join(", ", bclReceivers) + "] all: [" + inventory + "]";
 
-            bclReceivers.ShouldAllBe(text => text.Contains("." + EntryWrapperName + "("), found);
+            var entryWrappers = bclReceivers.Where(text => text.Contains("." + EntryWrapperName + "(")).ToArray();
+            var queryFace = bclReceivers.Where(text => !text.Contains("." + EntryWrapperName + "(")).ToArray();
 
-            // One overload per source arm. Pinning the count as well means a new BCL-receiver
-            // overload cannot arrive unnoticed under the same name.
-            bclReceivers.Length.ShouldBe(4, found);
+            // One overload per source arm: a new BCL-receiver overload cannot arrive unnoticed.
+            entryWrappers.Length.ShouldBe(4, found);
+
+            // AsCollectionQueryable x2 (IQueryable / IEnumerable) + ToQueryModel + four operators.
+            queryFace.Length.ShouldBe(7, found);
+
+            queryFace.ShouldAllBe(
+                text => QueryFaceMembers.Any(name => text.Contains("." + name + "(")),
+                found);
+
+            bclReceivers.Length.ShouldBe(11, found);
+        }
+
+        private static bool ExtendsQueryable(MethodInfo method)
+        {
+            var receiver = method.GetParameters()[0].ParameterType;
+            return receiver.IsGenericType && receiver.GetGenericTypeDefinition() == typeof(IQueryable<>);
         }
 
         private static IEnumerable<MethodInfo> PublicExtensionMethods() =>

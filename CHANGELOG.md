@@ -4,6 +4,34 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [Unreleased]
+
+### Added
+
+- **A translatable query face.** The engine now extends `IQueryable<T>` alongside the
+  value-enumerable arms, so a query built on an ORM's queryable can be described once and rendered
+  by an adapter instead of being pulled into memory. `AsCollectionQueryable()` enters the face from
+  either a queryable or a plain sequence, `ToQueryModel()` returns the provider-agnostic model, and
+  the operators the BCL does not own — `DistinctBy`, `Order` / `OrderDescending` and `CountBy` —
+  join the operators the subset covers: filtering, projection, paging, grouping, joining, ordering
+  and the five aggregates.
+
+  The subset is closed on purpose. An operator outside it fails with `NotSupportedException` naming
+  the operator and pointing at `AsEnumerable()`, rather than being bent into a translation it does
+  not have: `Skip` / `Take` take a count, `GroupBy` is key-only or key-plus-element, a `Join` takes a
+  closed-over inner sequence, and the comparer overloads stay on the value-enumerable face.
+
+- **`QueryModel`, the translated form of a query.** A query becomes an ordered list of stages plus an
+  optional terminal aggregate, each stage carrying the lambda expressions it was built from — which
+  is what an adapter renders. The engine also ships a reference executor that replays a model in
+  memory, so a translation is verifiable without an ORM in the loop.
+
+- **`IQueryable<T>` as a documented receiver.** The engine's three keyed operators and the two entry
+  points now take a queryable receiver. The BCL extends `IEnumerable<T>`, so for a queryable
+  receiver the engine's candidate is strictly better — an identity conversion against an interface
+  conversion — and the call resolves to the engine even on targets whose `Enumerable` has since
+  grown a member of the same name (`DistinctBy` in .NET 6, `Order` in .NET 7, `CountBy` in .NET 9).
+
 ## [7.3.0] - 2026-10-22
 
 ### Added
