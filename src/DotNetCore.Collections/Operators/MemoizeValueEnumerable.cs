@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using DotNetCore.Collections.Internal;
 
 namespace DotNetCore.Collections
@@ -72,15 +73,39 @@ namespace DotNetCore.Collections
 
     /// <summary>
     /// The shared cache behind <c>Memoize</c>. A list of already-seen elements plus a flag that
-    /// says whether the source has been fully drained. A lock protects the fill path so that two
-    /// enumerators advancing at the same time do not double-fill or corrupt the buffer.
+    /// says whether the source has been fully drained.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The fill path takes a lock so that two enumerators advancing at the same time do not
+    /// double-fill or corrupt the buffer. The read path deliberately does not: it is the hot path
+    /// by a wide margin - replaying a cached element is what every <c>Skip</c> step and every
+    /// second walk does - and a monitor acquire per element costs far more than the walk it saves.
+    /// A lock there made the operator a net loss for exactly the replay pattern it exists to serve,
+    /// so reads go through a published fill count instead.
+    /// </para>
+    /// <para>
+    /// The publication is a release/acquire pair. <see cref="TryGetOrAdvance"/> appends under the
+    /// lock and then publishes the new length with <c>Volatile.Write</c>; a reader that sees that
+    /// length with <c>Volatile.Read</c> is guaranteed to see the element it refers to. Indices
+    /// below the published length are append-only, so reading them needs no lock even while another
+    /// thread fills: <see cref="List{T}"/> only ever grows by copying the prefix it already holds,
+    /// so either the old or the new backing array yields the same element at a published index.
+    /// </para>
+    /// </remarks>
     public sealed class MemoizeCache<T>
     {
         private readonly List<T> _buffer;
         private readonly object _gate;
+
+        /// <summary>
+        /// The number of elements that have been published as readable. Only ever increased, and
+        /// only inside the lock, so a reader may treat it as a high-water mark.
+        /// </summary>
+        private int _filled;
+
         private IEnumerator<T>? _sourceEnumerator;
-        private bool _fullyMaterialized;
+        private volatile bool _fullyMaterialized;
 
         internal MemoizeCache()
         {
@@ -88,15 +113,9 @@ namespace DotNetCore.Collections
             _gate = new object();
         }
 
-        internal int Count
-        {
-            get { lock (_gate) { return _buffer.Count; } }
-        }
+        internal int Count => Volatile.Read(ref _filled);
 
-        internal bool IsFullyMaterialized
-        {
-            get { lock (_gate) { return _fullyMaterialized; } }
-        }
+        internal bool IsFullyMaterialized => _fullyMaterialized;
 
         internal void Initialize<TSource, TEnumerator>(TSource source)
             where TSource : struct, IValueEnumerable<T, TEnumerator>
@@ -113,45 +132,72 @@ namespace DotNetCore.Collections
 
         internal bool TryGetCached(int index, out T value)
         {
+            // Lock-free fast path. The unsigned comparison folds the negative case (the enumerator
+            // starts at -1 and asks for index 0 first) into the same branch.
+            if ((uint) index < (uint) Volatile.Read(ref _filled))
+            {
+                value = _buffer[index];
+                return true;
+            }
+
+            value = default!;
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the element at <paramref name="index"/>, filling the cache forward from the
+        /// source as far as that index if it is not there yet.
+        /// </summary>
+        /// <returns><see langword="true"/> if the source had an element at that index.</returns>
+        /// <remarks>
+        /// The fill is driven <b>to a requested index</b> rather than "one more element", which is
+        /// what makes concurrent enumerators correct. Two enumerators can sit at the same position
+        /// and both miss the cache; if the loser of that race simply advanced the source once, it
+        /// would be handed the element at <c>index + 1</c> and report it at <c>index</c>. Filling
+        /// until the wanted index exists makes the loser's fill a no-op instead.
+        /// </remarks>
+        internal bool TryGetOrAdvance(int index, out T value)
+        {
+            if (TryGetCached(index, out value))
+            {
+                return true;
+            }
+
             lock (_gate)
             {
+                // Another enumerator may have filled this index while we waited for the lock.
                 if (index < _buffer.Count)
                 {
                     value = _buffer[index];
                     return true;
                 }
 
-                value = default!;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Tries to advance the source enumerator and cache the next element. Returns
-        /// <see langword="true"/> if an element was produced.
-        /// </summary>
-        internal bool TryAdvance(out T value)
-        {
-            lock (_gate)
-            {
-                if (_fullyMaterialized || _sourceEnumerator == null)
+                while (_buffer.Count <= index)
                 {
-                    value = default!;
-                    return false;
+                    if (_fullyMaterialized || _sourceEnumerator == null)
+                    {
+                        value = default!;
+                        return false;
+                    }
+
+                    if (!_sourceEnumerator.MoveNext())
+                    {
+                        _sourceEnumerator.Dispose();
+                        _sourceEnumerator = null;
+                        _fullyMaterialized = true;
+                        value = default!;
+                        return false;
+                    }
+
+                    _buffer.Add(_sourceEnumerator.Current);
+
+                    // Publish only after the element is in the buffer: this release write pairs
+                    // with the acquire read in TryGetCached.
+                    Volatile.Write(ref _filled, _buffer.Count);
                 }
 
-                if (_sourceEnumerator.MoveNext())
-                {
-                    value = _sourceEnumerator.Current;
-                    _buffer.Add(value);
-                    return true;
-                }
-
-                _sourceEnumerator.Dispose();
-                _sourceEnumerator = null;
-                _fullyMaterialized = true;
-                value = default!;
-                return false;
+                value = _buffer[index];
+                return true;
             }
         }
     }
@@ -190,17 +236,13 @@ namespace DotNetCore.Collections
         {
             var next = _position + 1;
 
-            if (_cache.TryGetCached(next, out var cached))
+            // One call, targeted at this enumerator's own index. Splitting it into "read the cache,
+            // else advance the source once" is what used to hand a concurrent enumerator the wrong
+            // element; see MemoizeCache.TryGetOrAdvance.
+            if (_cache.TryGetOrAdvance(next, out var value))
             {
                 _position = next;
-                _current = cached;
-                return true;
-            }
-
-            if (_cache.TryAdvance(out var advanced))
-            {
-                _position = next;
-                _current = advanced;
+                _current = value;
                 return true;
             }
 
