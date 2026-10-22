@@ -12,7 +12,13 @@ namespace DotNetCore.Collections.Paginable.OrmQueryTests
         public int Id { get; set; }
 
         /// <summary>Gets or sets the row's name. Ordered on, so it has to be a string.</summary>
-        public string? Name { get; set; }
+        /// <remarks>
+        /// Declared without a nullable annotation on purpose: this project compiles in a
+        /// nullable-oblivious context, where the annotation is itself the warning (CS8632). EF Core
+        /// maps a reference-typed property to a nullable column by convention either way, so the
+        /// model is unchanged.
+        /// </remarks>
+        public string Name { get; set; }
 
         /// <summary>Gets or sets the amount. Filtered and aggregated on.</summary>
         public int Amount { get; set; }

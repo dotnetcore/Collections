@@ -40,6 +40,36 @@ repository ships the same version (see `build/version.props`).
   join whose inner sequence was resolved to a value stays on the client side — each refused by name
   rather than approximated.
 
+- **The P3 tier: eleven operators, for the parts of a pipeline that are about failure rather than
+  about data.** The engine so far has been a faster walk; these decide what a walk does when it goes
+  wrong, or build a sequence out of something that is not one yet: `Do`; `Catch`, `Retry` and
+  `OnErrorResumeNext`; `Using` and `Defer`; `Repeat`, which repeats a sequence rather than an
+  element; `Throw` and `Return`, which build a failing and a one-element sequence; and
+  `OrderedMerge` with `SortedMerge`.
+
+  All but `Do` are recovery or factory machines: a recovery operator holds the enumerator it may
+  have to abandon next to the one it may have to continue with, so it is built from a class-backed
+  sequence and pays one heap object per walk instead of staying on the per-element struct path.
+  `Do` does stay on it — it is the one operator of the tier that is a pure per-element decoration,
+  which is exactly the shape a counter or a logger in the middle of a hot pipeline needs.
+  `Return`, `Throw`, `Defer` and `Using` are factory methods rather than extension methods: a
+  factory has no receiver to extend, and extending `Func<T>` or a bare element would put engine
+  candidates on receiver shapes the BCL owns.
+
+- **`Retry` re-walks, and says so.** A sequence cannot be resumed from the element after the one
+  that failed — an enumerator offers no such operation — so a retry restarts the source and
+  therefore re-yields the elements that were already handed over. That is a property of retrying a
+  sequence rather than a request, it is stated at the operator, and it is why the count it takes is
+  the number of *extra* attempts: `0` lets the first failure through.
+
+- **`OrderedMerge` and `SortedMerge` are deliberately different operators.** `OrderedMerge` merges
+  two sequences that are already ordered: O(n), constant memory, and it will stream an endless
+  source. `SortedMerge` assumes nothing about its inputs, so it sorts both sides first — O(n log n)
+  and a buffer of both — and it sorts them stably, because two equal elements from the same side
+  swapping places is an observable difference. Both take ties from the first side. One operator
+  could not be both, and shipping the streaming one alone would silently produce the wrong order for
+  input that was never sorted.
+
 ## [7.3.0] - 2026-10-22
 
 ### Added
