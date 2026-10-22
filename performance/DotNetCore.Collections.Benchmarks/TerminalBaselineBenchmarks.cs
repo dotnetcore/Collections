@@ -16,6 +16,7 @@ namespace DotNetCore.Collections.Benchmarks
     /// behaviour is pinned by the F7-03 unit tests, not by a timing row.
     /// </summary>
     [MemoryDiagnoser]
+    [Config(typeof(GateConfig))]
     public class AnyArrayBaseline
     {
         private int[] _source;
@@ -43,6 +44,7 @@ namespace DotNetCore.Collections.Benchmarks
 
     /// <summary><c>Any</c> over a <see cref="List{T}"/>, walking the whole sequence.</summary>
     [MemoryDiagnoser]
+    [Config(typeof(GateConfig))]
     public class AnyListBaseline
     {
         private List<int> _source;
@@ -77,6 +79,7 @@ namespace DotNetCore.Collections.Benchmarks
     /// no-walk path.
     /// </summary>
     [MemoryDiagnoser]
+    [Config(typeof(GateConfig))]
     public class CountArrayBaseline
     {
         private int[] _source;
@@ -122,6 +125,7 @@ namespace DotNetCore.Collections.Benchmarks
     /// the hook with the same value.
     /// </summary>
     [MemoryDiagnoser]
+    [Config(typeof(GateConfig))]
     public class CountListBaseline
     {
         private List<int> _source;

@@ -45,6 +45,21 @@ namespace DotNetCore.Collections.Benchmarks
             return values;
         }
 
+        /// <summary>
+        /// Builds the <see cref="IReadOnlyList{T}"/> arm's source: a read-only view over a list, so the
+        /// engine's arm reaches the elements through an interface indexer rather than through a field.
+        /// </summary>
+        /// <returns>The read-only-list arm's source.</returns>
+        internal static IReadOnlyList<int> CreateReadOnlyList() => new ReadOnlyListAdapter(CreateList());
+
+        /// <summary>
+        /// Builds the <see cref="IEnumerable{T}"/> arm's source: a plain sequence that carries neither
+        /// <see cref="ICollection{T}"/> nor <see cref="IReadOnlyCollection{T}"/>, so the engine has no
+        /// count to answer from and must delegate to the sequence's own enumerator.
+        /// </summary>
+        /// <returns>The enumerable arm's source.</returns>
+        internal static IEnumerable<int> CreateSequence() => new SequenceSource(Length);
+
         /// <summary>Keeps half the elements. A bit test rather than <c>% 2</c>: an integer division
         /// costs ~20-40 cycles and would swamp the enumeration overhead the suite measures.</summary>
         internal static bool IsEven(int value) => (value & 1) == 0;

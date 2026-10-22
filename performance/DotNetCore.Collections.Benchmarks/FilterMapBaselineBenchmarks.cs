@@ -29,6 +29,7 @@ namespace DotNetCore.Collections.Benchmarks
     /// generic enumerator is a class); the engine arm indexes the array directly.
     /// </summary>
     [MemoryDiagnoser]
+    [Config(typeof(GateConfig))]
     public class WhereArrayBaseline
     {
         private int[] _source;
@@ -76,6 +77,7 @@ namespace DotNetCore.Collections.Benchmarks
 
     /// <summary><c>Where</c> over a <see cref="List{T}"/>.</summary>
     [MemoryDiagnoser]
+    [Config(typeof(GateConfig))]
     public class WhereListBaseline
     {
         private List<int> _source;
@@ -123,6 +125,7 @@ namespace DotNetCore.Collections.Benchmarks
 
     /// <summary><c>Select</c> over an <see cref="System.Array"/>.</summary>
     [MemoryDiagnoser]
+    [Config(typeof(GateConfig))]
     public class SelectArrayBaseline
     {
         private int[] _source;
@@ -170,6 +173,7 @@ namespace DotNetCore.Collections.Benchmarks
 
     /// <summary><c>Select</c> over a <see cref="List{T}"/>.</summary>
     [MemoryDiagnoser]
+    [Config(typeof(GateConfig))]
     public class SelectListBaseline
     {
         private List<int> _source;
@@ -222,6 +226,7 @@ namespace DotNetCore.Collections.Benchmarks
     /// surviving element to hand it to the selector.
     /// </summary>
     [MemoryDiagnoser]
+    [Config(typeof(GateConfig))]
     public class WhereSelectArrayBaseline
     {
         private int[] _source;
@@ -270,6 +275,7 @@ namespace DotNetCore.Collections.Benchmarks
 
     /// <summary>The headline arm, over a <see cref="List{T}"/>.</summary>
     [MemoryDiagnoser]
+    [Config(typeof(GateConfig))]
     public class WhereSelectListBaseline
     {
         private List<int> _source;

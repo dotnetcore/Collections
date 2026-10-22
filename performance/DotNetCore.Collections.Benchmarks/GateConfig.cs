@@ -4,14 +4,19 @@ using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Jobs;
 using Perfolizer.Horology;
 
-[assembly: Config(typeof(DotNetCore.Collections.Benchmarks.GateConfig))]
-
 namespace DotNetCore.Collections.Benchmarks
 {
     /// <summary>
-    /// The job every F7-04 benchmark runs under.
+    /// The job every F7-04 benchmark runs under, and the job the F7-15 Gate rows run under.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// This config is attached per class (<c>[Config(typeof(GateConfig))]</c>) rather than through an
+    /// assembly-level attribute. F7-15 added a second config, <see cref="MatrixConfig"/>, and
+    /// BenchmarkDotNet <em>unions</em> the configs that apply to a benchmark: an assembly-level job
+    /// plus a type-level job would mean every benchmark ran twice, once under each. Attaching exactly
+    /// one config to each class keeps one job per benchmark.
+    /// </para>
     /// <para>
     /// This replaces <c>Job.Default</c> on purpose, and the reason is measurement, not taste. The
     /// first pass of this suite ran on the default job; BenchmarkDotNet resolved it to roughly a
