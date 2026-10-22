@@ -4,6 +4,118 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [7.3.0] - 2026-10-22
+
+### Added
+
+- **Eleven more operators: the P2 tier.** Eight window and time-series operators and eight join,
+  product, traversal, extreme and shuffle operators, all following the same four-arm dispatch
+  pattern as the rest of the engine — one overload per source shape (`T[]`, `List<T>`,
+  `IReadOnlyList<T>`, `IEnumerable<T>`), so the enumerator stays a value type end to end.
+
+  **Window and time-series (8):** `Window` / `WindowLeft` (sliding windows, complete-only and
+  padded respectively); `GroupAdjacent` (groups of *consecutive* equal keys — `[1, 1, 2, 1]` is
+  three groups, not two); `Split` (in both the separator-value and the predicate form, keeping
+  empty segments); `Lag` / `Lead` (neighbours kept on the edge rows, missing neighbour arriving as
+  `default`, which is the SQL window-function convention rather than truncation); `ZipLongest`
+  (runs to the longer side, unlike `Zip`); `Interleave` (round-robin, stopping when either side
+  runs out).
+
+  **Join, product, traversal, extreme, shuffle (8):** `FullJoin` and `FullGroupJoin` (the BCL still
+  has no full outer join, so this is a genuine gap rather than a polyfill); `Cartesian` (two- and
+  three-source); `TraverseBreadthFirst` / `TraverseDepthFirst` (tree traversal over a child
+  selector, with and without a result selector); `Maxima` / `Minima` (every tied extreme, and an
+  empty source yields an empty sequence rather than throwing — deliberately the complement of
+  `MaxBy` / `MinBy`); `Shuffle` (Fisher-Yates, injectable `Random` for reproducible runs).
+
+  One deviation from the plan is worth recording: `Cartesian` was scoped as "seven overloads"
+  following the arity-2-to-8 convention, but the engine requires an engine-owned receiver for
+  every extension method, so arity cannot be an overload axis. It ships as eight overloads across
+  the four source shapes and the two arities; higher arities compose by chaining, and the result
+  stays inside the engine.
+
+- **`MultiSetCombinators` in the `Multi` module.** `CrossJoin`, `Interleave` and `FullJoin`, all
+  defined on `IMultiSet<T>` and each delegating to the corresponding engine operator. They differ
+  in what multiplicity means, deliberately: `CrossJoin` multiplies it (two copies of `a` crossed
+  with three copies of `b` gives six copies of the pair), `Interleave` keeps both sides' copies and
+  only decides order — which is why it returns a list rather than a multiset, a multiset not
+  carrying order — and `FullJoin` emits the cross product of the values sharing a key and projects
+  one-sided values against `default`.
+
+- **`PaginableSettings.MemoizeLazySources`, off by default.** When on, a paginable built from a
+  lazy sequence memoizes that sequence so the member-count pass and every later page read share one
+  walk of the source instead of each restarting from the beginning. A full pass over P pages used
+  to cost `O(P^2 * pageSize)` pulls; it now costs `O(memberCount)`. Two source shapes are excluded
+  regardless of the setting, because for them the cache is pure overhead or actively harmful:
+  `ICollection<T>` (already cheap to re-enumerate, with an `O(1)` count) and `IQueryable<T>`
+  (memoizing it would evaluate the whole result set on the client and defeat the provider's
+  `Skip` / `Take`).
+
+### Changed
+
+- **`Paginable` and `Multi` now depend on the engine.** Both modules' internals were meant to run
+  on this engine rather than falling back to `System.Linq`, but neither package referenced it — the
+  three packages were independent, so there was nothing to consume. Both now carry a project
+  reference to `DotNetCore.Collections`. The nine ORM integrations inherit the dependency
+  transitively. Nothing in either package's public surface exposes an engine type: the engine is
+  used internally and its results are handed back as `IEnumerable<T>`.
+
+- **In-memory keyset paging orders with `PartialSortBy` instead of `OrderBy`.** The two
+  `IEnumerable<T>` keyset overloads need `pageSize + 1` members and were sorting the whole source
+  to get them, `O(n log n)` for a constant-size cut. They now take a heap of that size,
+  `O(n log k)`. The `IQueryable<T>` overloads are untouched: `OrderBy().Take()` already translates
+  to `ORDER BY ... FETCH` there, and a client-side partial sort could not. Two consequences are
+  documented on the methods — the partial sort is not stable, and the key selector runs once per
+  sift rather than once per element — and both are invisible as long as the ordering key is unique,
+  which keyset pagination requires anyway.
+
+- **The engine's test suite grew from 330 to 334 tests; `Multi.Tests` from 1434 to 1451;
+  `Paginable.Tests` from 184 to 203.** All pass, and `Multi.NetFxTests` remains at 40.
+
+### Fixed
+
+- **`Memoize` could hand a concurrent enumerator the wrong element.** The shared cache filled "one
+  more element" rather than "up to the index the caller asked for", so of two enumerators missing
+  the same slot, the loser of the race was given the element at `index + 1` and reported it at
+  `index`. Filling to the requested index makes the loser's fill a no-op instead.
+
+- **`Memoize` was a net loss on in-memory sources because of a per-element lock.** The read path
+  took the same monitor as the fill path, and replaying a cached element is the hot path — every
+  `Skip` step and every second walk. A monitor acquire per element cost more than the walk it
+  saved: on the paging benchmark, reading every page of one paging set took 1126 us memoized
+  against 410 us not memoized, a 2.75x regression against the operator's own purpose. Reads now go
+  through a published fill count, release/acquire paired with the append. The same benchmark then
+  runs at 529 us memoized against 555 us not, with the allocation column down from 1187 KB to
+  260 KB. The single-page case is still slower (30 us to 126 us), because the count pass has
+  already walked the whole source and only the fill cost is left to pay — which is why the switch
+  defaults to off.
+
+### Breaking
+
+- **None.** No source or binary contract changed. The evidence:
+
+  1. **No `.csproj` in the packing face lost anything.** Three project files changed in this
+     release: the two modules gained a `ProjectReference` (an addition, above) and the polyfill
+     sample gained one. No `PackageReference` was removed, no TFM was dropped, and no `.nuspec`
+     changed.
+  2. **Nothing was deleted or renamed under `src/`.** `git diff 7.2.0..HEAD --diff-filter=D` and
+     `--diff-filter=R` are both empty over `src/`.
+  3. **No `public` declaration line was removed.** Every `-` line matching `public` across the whole
+     `src/` diff is empty; the 162 deleted lines are all implementation bodies, comments and
+     `#if`-gated internals. `MemoizeCache<T>`'s fill method was `internal` and stays internal under
+     a new name.
+  4. **Every new member is additive.** Eleven operators, `MultiSetCombinators`, and
+     `PaginableSettings.MemoizeLazySources` add to the surface; none overrides, shadows or
+     re-signs an existing member.
+  5. **The two behaviour changes are defect repairs, not semantics changes.** `Memoize` still
+     memoizes, and keyset paging still returns the same pages in the same order whenever the
+     ordering key is unique — which is the only shape keyset pagination is defined for.
+
+  **One thing to check when upgrading, though it is not a code change:** `Paginable` and `Multi`
+  now pull `DotNetCore.Collections` transitively. If you pin transitive package versions, re-check
+  the pin; on `net451` / `net461` the engine also brings `System.ValueTuple`. Existing code
+  compiles and runs unchanged, and no upgrade step is required.
+
 ## [7.2.0] - 2026-10-13
 
 ### Added

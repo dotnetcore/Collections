@@ -14,16 +14,19 @@ modules.
 | **Engine** | `DotNetCore.Collections` | A LINQ engine built on value-type enumerators: zero-allocation hot paths, one code path across `net451` – `net10.0`. |
 
 See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
-**7.2.0** release: the engine now ships **nineteen polyfill operators** for the BCL's version-gapped
-APIs — thirteen in the P0 layer (`DistinctBy`, `ExceptBy`, `IntersectBy`, `UnionBy`, `MaxBy`, `MinBy`,
-`Chunk`, `Order`, `OrderDescending`, `CountBy`, `AggregateBy`, `LeftJoin`, `RightJoin`) and six in
-the P1 layer (`DistinctUntilChanged`, `Memoize`, `FallbackIfEmpty`, `AtLeast` / `Exactly` /
-`CountBetween`, `PartialSortBy`, `Choose`). All nineteen follow the same four-arm dispatch pattern
-as the engine's existing operators, so the enumerator stays a value type end to end. A cross-TFM
-behavior consistency suite verifies that the P0 polyfill operators behave identically to the BCL on
-`net8.0`. The package is additive: `Paginable` and `Multi` are untouched, and importing the engine
-cannot change what existing `System.Linq` code binds to — a property the build verifies rather than
-assumes. There is no **Breaking** change in this release.
+**7.3.0** release: the engine gains **eleven more operators** — window and time-series ones
+(`Window` / `WindowLeft`, `GroupAdjacent`, `Split`, `Lag` / `Lead`, `ZipLongest`, `Interleave`) and
+the join / product / traversal / extreme / shuffle group (`FullJoin`, `FullGroupJoin`, `Cartesian`,
+`TraverseBreadthFirst` / `TraverseDepthFirst`, `Maxima` / `Minima`, `Shuffle`). `FullJoin` and
+`FullGroupJoin` remain a genuine gap in `System.Linq`, not a polyfill. More importantly, the
+engine is now **actually used** rather than merely shipped: `Paginable` and `Multi` both reference
+it, `Paginable` can memoize a lazy source so paging through P pages costs one walk instead of
+`P` of them (off by default, and never applied to `IQueryable` — that would defeat the provider's
+`Skip` / `Take`), in-memory keyset paging orders with a partial sort instead of a full one, and
+`Multi` gains `CrossJoin` / `Interleave` / `FullJoin`. The same work turned up two real defects in
+`Memoize` — a concurrent enumerator could be handed a neighbouring element, and a per-element lock
+made the operator slower than not memoizing at all; both are fixed. There is no **Breaking**
+change in this release.
 
 ## Contents
 
@@ -1077,7 +1080,7 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 
 Publishing is automated by the GitHub Actions `Release` workflow
 (`.github/workflows/release.yml`); no local tooling is involved. It runs on a version-tag push —
-`7.2.0` or `v7.2.0` — and can also be started manually through `workflow_dispatch`:
+`7.3.0` or `v7.3.0` — and can also be started manually through `workflow_dispatch`:
 
 1. **Pack** — all 12 projects are packed in Release configuration into `nuget_pub` on a
    `windows-latest` runner, with the full git history fetched so SourceLink can attach sources to
@@ -1106,7 +1109,7 @@ The policy owner must own all 12 `DotNetCore.Collections.*` packages. See
 
 Versions are driven by `build/version.props`, which is the single source of truth for every
 package — bump the version there and all 12 packages follow. Tag the commit with the matching
-version (`7.2.0` or `v7.2.0`) to trigger the automated publish; see [Publishing](#publishing) for
+version (`7.3.0` or `v7.3.0`) to trigger the automated publish; see [Publishing](#publishing) for
 what the release workflow does and the one-time nuget.org policy it requires.
 
 ## License
