@@ -169,6 +169,17 @@ namespace DotNetCore.Collections.Paginable
         /// var lastId = first.LastMember.Id;
         /// </code>
         /// </example>
+        /// <remarks>
+        /// The in-memory overloads order with the engine's <c>PartialSortBy</c> rather than with
+        /// <c>OrderBy</c>: only <c>pageSize + 1</c> members are ever needed, so a heap of that size
+        /// costs <c>O(n log k)</c> instead of the <c>O(n log n)</c> a full sort pays. Two
+        /// consequences follow, and both are invisible as long as the ordering key is unique, which
+        /// is what keyset pagination requires anyway. First, the partial sort is not stable, so
+        /// members whose keys tie may come back in a different order than a stable sort would give
+        /// them, and which of them survives the cut is arbitrary. Second, the key selector is
+        /// invoked once per sift rather than once per element, so a genuinely expensive selector is
+        /// better served by ordering and slicing by hand.
+        /// </remarks>
         public static KeysetPage<T> GetFirstPageByKeyset<T, TKey>(
             this IEnumerable<T> source,
             Func<T, TKey> keySelector,
@@ -182,10 +193,7 @@ namespace DotNetCore.Collections.Paginable
             if (pageSize < 1)
                 throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
 
-            var ordered = descending
-                ? source.OrderByDescending(keySelector).Take(pageSize + 1)
-                : source.OrderBy(keySelector).Take(pageSize + 1);
-            var candidates = ordered.ToList();
+            var candidates = source.ToValueEnumerable().PartialSortBy(pageSize + 1, keySelector, descending);
 
             return BuildResult(candidates, pageSize, isFirstPage: true);
         }
@@ -204,6 +212,13 @@ namespace DotNetCore.Collections.Paginable
         /// var hasMore = next.HasNext;
         /// </code>
         /// </example>
+        /// <remarks>
+        /// Same in-memory ordering as <see cref="GetFirstPageByKeyset{T, TKey}(IEnumerable{T}, Func{T, TKey}, int, bool)"/>:
+        /// the anchor filter runs as a plain <c>Where</c> and the surviving members are ordered with
+        /// the engine's <c>PartialSortBy</c>, so the cost is <c>O(n log k)</c> for
+        /// <c>k = pageSize + 1</c> rather than <c>O(n log n)</c>. The stability and
+        /// key-selector-frequency caveats documented there apply here too.
+        /// </remarks>
         public static KeysetPage<T> GetPageByKeyset<T, TKey>(
             this IEnumerable<T> source,
             Func<T, TKey> keySelector,
@@ -222,10 +237,7 @@ namespace DotNetCore.Collections.Paginable
             var filtered = descending
                 ? source.Where(x => comparer.Compare(keySelector(x), lastKey) < 0)
                 : source.Where(x => comparer.Compare(keySelector(x), lastKey) > 0);
-            var ordered = descending
-                ? filtered.OrderByDescending(keySelector).Take(pageSize + 1)
-                : filtered.OrderBy(keySelector).Take(pageSize + 1);
-            var candidates = ordered.ToList();
+            var candidates = filtered.ToValueEnumerable().PartialSortBy(pageSize + 1, keySelector, descending);
 
             return BuildResult(candidates, pageSize, isFirstPage: false);
         }

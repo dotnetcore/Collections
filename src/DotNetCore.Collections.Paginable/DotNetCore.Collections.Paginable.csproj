@@ -10,6 +10,23 @@
         <AssemblyName>DotNetCore.Collections.Paginable</AssemblyName>
         <PackageId>DotNetCore.Collections.Paginable</PackageId>
         <Description>Paginable extension for collection.</Description>
+        <!-- Since 7.3.0 the engine reference below makes its polyfill packages transitive
+             (System.Buffers / System.Memory / System.Numerics.Vectors / Unsafe on net461,
+             System.IO.Hashing on net6.0 and net7.0), and each of them carries an
+             "unsupported TFM" build warning. The engine and Multi suppress the same set the
+             same way; SuppressTfmSupportBuildWarnings does not flow across a ProjectReference,
+             so every consuming project has to declare it. Build-time only: the produced
+             package and the compiled IL are unaffected. -->
+        <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 规则 C（对内对外双轨）: the paging internals are required to run on this engine
+             rather than fall back to the BCL, so the reference is a hard one. The engine
+             targets the same eleven TFMs, so no target loses coverage; the dependency it
+             adds to this package is deliberate and shows up as a NuGet dependency of every
+             provider integration that builds on top of it. -->
+        <ProjectReference Include="..\DotNetCore.Collections\DotNetCore.Collections.csproj" />
+    </ItemGroup>
 
 </Project>

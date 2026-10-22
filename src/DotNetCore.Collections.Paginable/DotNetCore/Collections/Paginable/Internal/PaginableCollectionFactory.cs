@@ -29,12 +29,43 @@ namespace DotNetCore.Collections.Paginable.Internal
             var size = pageSize.Value;
             if (size < 1)
                 throw new ArgumentOutOfRangeException(nameof(pageSize), $"{nameof(pageSize)} can not be less than one");
-            var realMemberCount = PaginableCalc.GetRealMemberCount(limitedMemberCount, enumerable.Count());
+            var source = PrepareSource(enumerable);
+            var realMemberCount = PaginableCalc.GetRealMemberCount(limitedMemberCount, source.Count());
             var realPageCount = PaginableCalc.GetRealPageCount(realMemberCount, size);
 
             return limitedMemberCount.IsValid() && limitedMemberCount.HasValue
-                ? new PaginableEnumerable<T>(enumerable, size, realPageCount, realMemberCount, limitedMemberCount.Value)
-                : new PaginableEnumerable<T>(enumerable, size, realPageCount, realMemberCount);
+                ? new PaginableEnumerable<T>(source, size, realPageCount, realMemberCount, limitedMemberCount.Value)
+                : new PaginableEnumerable<T>(source, size, realPageCount, realMemberCount);
+        }
+
+        /// <summary>
+        /// Decides what sequence the paging set should hold, applying the
+        /// <see cref="PaginableSettings.MemoizeLazySources"/> switch.
+        /// </summary>
+        /// <remarks>
+        /// Without memoization a lazy source is walked once for the member count and then once more
+        /// per page, each time from the beginning, so a full pass over P pages costs
+        /// <c>O(P^2 * pageSize)</c> pulls. The engine's <c>Memoize</c> makes all of those walks
+        /// share one cache, bringing it down to <c>O(memberCount)</c>.
+        /// <para>
+        /// The memoized sequence is returned here rather than wrapped later so that the count pass
+        /// below is the one that fills the cache: the pages then replay it and never touch the
+        /// source again.
+        /// </para>
+        /// </remarks>
+        private static IEnumerable<T> PrepareSource<T>(IEnumerable<T> enumerable)
+        {
+            if (!PaginableSettingsManager.Settings.MemoizeLazySources)
+                return enumerable;
+
+            // A materialised collection already re-enumerates for free and counts in O(1), so a
+            // cache would only add an allocation. An IQueryable must keep its provider
+            // translation: memoizing it would evaluate the whole result set on the client and
+            // throw away the server-side Skip/Take.
+            if (enumerable is ICollection<T> || enumerable is IQueryable<T>)
+                return enumerable;
+
+            return enumerable.ToValueEnumerable().Memoize();
         }
 
         /// <summary>

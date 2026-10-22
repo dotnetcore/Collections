@@ -5,6 +5,12 @@ using Xunit;
 
 namespace DotNetCore.Collections.Paginable.Tests
 {
+    /// <remarks>
+    /// The settings are a process-wide snapshot, so this class shares a collection with
+    /// <see cref="MemoizeLazySourceTest"/> to keep the two from observing each other's
+    /// intermediate snapshots.
+    /// </remarks>
+    [Collection("PaginableSettings")]
     public class PaginableSettingsTest
     {
         [Fact]
