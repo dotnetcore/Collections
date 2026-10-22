@@ -14,7 +14,7 @@ modules.
 | **Engine** | `DotNetCore.Collections` | A LINQ engine built on value-type enumerators: zero-allocation hot paths, one code path across `net451` – `net10.0`. |
 
 See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
-**7.3.0** release: the engine gains **eleven more operators** — window and time-series ones
+**7.3.0** release: the engine gains **sixteen more operators** — window and time-series ones
 (`Window` / `WindowLeft`, `GroupAdjacent`, `Split`, `Lag` / `Lead`, `ZipLongest`, `Interleave`) and
 the join / product / traversal / extreme / shuffle group (`FullJoin`, `FullGroupJoin`, `Cartesian`,
 `TraverseBreadthFirst` / `TraverseDepthFirst`, `Maxima` / `Minima`, `Shuffle`). `FullJoin` and

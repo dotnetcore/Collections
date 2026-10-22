@@ -8,7 +8,7 @@ repository ships the same version (see `build/version.props`).
 
 ### Added
 
-- **Eleven more operators: the P2 tier.** Eight window and time-series operators and eight join,
+- **Sixteen more operators: the P2 tier.** Eight window and time-series operators and eight join,
   product, traversal, extreme and shuffle operators, all following the same four-arm dispatch
   pattern as the rest of the engine — one overload per source shape (`T[]`, `List<T>`,
   `IReadOnlyList<T>`, `IEnumerable<T>`), so the enumerator stays a value type end to end.
@@ -104,7 +104,7 @@ repository ships the same version (see `build/version.props`).
      `src/` diff is empty; the 162 deleted lines are all implementation bodies, comments and
      `#if`-gated internals. `MemoizeCache<T>`'s fill method was `internal` and stays internal under
      a new name.
-  4. **Every new member is additive.** Eleven operators, `MultiSetCombinators`, and
+  4. **Every new member is additive.** Sixteen operators, `MultiSetCombinators`, and
      `PaginableSettings.MemoizeLazySources` add to the surface; none overrides, shadows or
      re-signs an existing member.
   5. **The two behaviour changes are defect repairs, not semantics changes.** `Memoize` still
