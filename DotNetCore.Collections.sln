@@ -92,6 +92,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCore.Collections.Fram
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCore.Collections.Benchmarks", "performance\DotNetCore.Collections.Benchmarks\DotNetCore.Collections.Benchmarks.csproj", "{A5F1C3D2-7E64-4B90-9C18-3D2A6F0B8E51}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCore.Collections.Paginable.OrmQueryTests", "tests\DotNetCore.Collections.Paginable.OrmQueryTests\DotNetCore.Collections.Paginable.OrmQueryTests.csproj", "{4E855F90-6048-4AFC-A55E-09B93FFE440F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -450,6 +452,18 @@ Global
 		{A5F1C3D2-7E64-4B90-9C18-3D2A6F0B8E51}.Release|x64.Build.0 = Release|Any CPU
 		{A5F1C3D2-7E64-4B90-9C18-3D2A6F0B8E51}.Release|x86.ActiveCfg = Release|Any CPU
 		{A5F1C3D2-7E64-4B90-9C18-3D2A6F0B8E51}.Release|x86.Build.0 = Release|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Debug|x64.Build.0 = Debug|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Debug|x86.Build.0 = Debug|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Release|x64.ActiveCfg = Release|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Release|x64.Build.0 = Release|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Release|x86.ActiveCfg = Release|Any CPU
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -488,6 +502,7 @@ Global
 		{68B14A22-CCA8-47C8-AD36-192763D71587} = {26527A0B-471B-4AF2-AFF3-C20CDB9AB6F1}
 		{792BACED-5C8E-48B2-B010-593937C8A862} = {26527A0B-471B-4AF2-AFF3-C20CDB9AB6F1}
 		{A5F1C3D2-7E64-4B90-9C18-3D2A6F0B8E51} = {4B773909-B5F7-4379-98A6-D95A8BB779FE}
+		{4E855F90-6048-4AFC-A55E-09B93FFE440F} = {DFA5B15E-B0B0-4DC3-9D3F-6A59BBE33D90}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {71513A6C-8231-46C2-ADE8-0288FD4654D8}

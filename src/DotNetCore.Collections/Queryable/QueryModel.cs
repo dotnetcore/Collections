@@ -366,6 +366,56 @@ namespace DotNetCore.Collections
         /// sequence.</summary>
         public QueryTerminal? Terminal { get; }
 
+        /// <summary>
+        /// Replays this model onto a query provider, producing the expression tree the provider
+        /// translates into its own query language.
+        /// </summary>
+        /// <param name="source">The provider's queryable, over the same element type as the query started from.</param>
+        /// <returns>A queryable over the stages of this model.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="source"/> has a different element type than the query started from.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// The model ends in an aggregate, or contains a stage a query language cannot express.
+        /// </exception>
+        /// <remarks>
+        /// <para>
+        /// This is how an adapter integration consumes the model: the model says what the query does
+        /// in provider-neutral terms, and this method turns that back into the provider's own
+        /// vocabulary without any part of the adapter having to understand an expression tree.
+        /// </para>
+        /// <para>
+        /// Three things are deliberately not replayed, because a provider has no form for them and
+        /// inventing one is exactly what the R7-03 ruling forbids:
+        /// </para>
+        /// <list type="bullet">
+        /// <item><description>
+        /// An aggregate terminal. <c>Count</c> / <c>LongCount</c> / <c>Sum</c> / <c>Min</c> /
+        /// <c>Max</c> are applied through the provider's own aggregate API, so the adapter reads
+        /// <see cref="Terminal"/> and calls its provider's counterpart rather than folding the
+        /// aggregate into the row query.
+        /// </description></item>
+        /// <item><description>
+        /// <c>DistinctBy</c> and <c>CountBy</c>. Both are keyed operators the engine owns; no query
+        /// language has them, and the <c>GroupBy</c> rewrite that would imitate them is not the same
+        /// query. Apply them over the rows the provider returns.
+        /// </description></item>
+        /// <item><description>
+        /// A join whose inner sequence was closed over. The stage holds a value, not a row set, so
+        /// there is nothing for the provider to join against; such a join stays on the client side.
+        /// </description></item>
+        /// </list>
+        /// <para>
+        /// Refusing is per stage, not per model: a model that mixes a translatable prefix with an
+        /// untranslatable suffix still fails here rather than silently dropping the suffix, and the
+        /// exception names the operator so the caller knows which call to move behind
+        /// <c>AsEnumerable()</c>.
+        /// </para>
+        /// </remarks>
+        public System.Linq.IQueryable AsQueryable(System.Linq.IQueryable source) =>
+            QueryModelRenderer.Render(this, source);
+
         /// <summary>Renders the whole model as a single line, for diagnostics and tests.</summary>
         /// <returns>A human-readable description of the model.</returns>
         public string Describe()

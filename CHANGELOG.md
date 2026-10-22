@@ -32,6 +32,14 @@ repository ships the same version (see `build/version.props`).
   conversion — and the call resolves to the engine even on targets whose `Enumerable` has since
   grown a member of the same name (`DistinctBy` in .NET 6, `Order` in .NET 7, `CountBy` in .NET 9).
 
+- **`QueryModel.AsQueryable()`, which turns a model back into a provider's own query.** A model says
+  what a query does in provider-neutral terms; this replays it onto any `IQueryable` as the
+  expression tree that provider translates, which is the whole of what an adapter integration needs.
+  What it will not do is invent a translation: an aggregate terminal is applied through the
+  provider's own `Count` / `Sum` / `Min` / `Max`, `DistinctBy` and `CountBy` stay in memory, and a
+  join whose inner sequence was resolved to a value stays on the client side — each refused by name
+  rather than approximated.
+
 ## [7.3.0] - 2026-10-22
 
 ### Added
