@@ -118,8 +118,14 @@
         "resolved": "10.0.12",
         "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
       },
-      "dotnetcore.collections.paginable": {
+      "dotnetcore.collections": {
         "type": "Project"
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections": "[7.2.0, )"
+        }
       }
     },
     "net6.0": {
@@ -238,8 +244,14 @@
         "resolved": "10.0.12",
         "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
       },
-      "dotnetcore.collections.paginable": {
+      "dotnetcore.collections": {
         "type": "Project"
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections": "[7.2.0, )"
+        }
       }
     },
     "net7.0": {
@@ -358,8 +370,14 @@
         "resolved": "10.0.12",
         "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
       },
-      "dotnetcore.collections.paginable": {
+      "dotnetcore.collections": {
         "type": "Project"
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections": "[7.2.0, )"
+        }
       }
     },
     "net8.0": {
@@ -479,8 +497,14 @@
         "resolved": "10.0.12",
         "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
       },
-      "dotnetcore.collections.paginable": {
+      "dotnetcore.collections": {
         "type": "Project"
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections": "[7.2.0, )"
+        }
       }
     },
     "net9.0": {
@@ -600,8 +624,14 @@
         "resolved": "10.0.12",
         "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
       },
-      "dotnetcore.collections.paginable": {
+      "dotnetcore.collections": {
         "type": "Project"
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections": "[7.2.0, )"
+        }
       }
     }
   }

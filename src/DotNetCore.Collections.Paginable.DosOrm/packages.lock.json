@@ -568,8 +568,17 @@
           "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         }
       },
+      "dotnetcore.collections": {
+        "type": "Project",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "[6.1.2, )"
+        }
+      },
       "dotnetcore.collections.paginable": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections": "[7.2.0, )"
+        }
       }
     },
     "net10.0": {
@@ -1042,8 +1051,14 @@
         "resolved": "0.8.6",
         "contentHash": "iP4jVLQoQmUjMU88g1WObiNr6YKZGvh4aOXn3yOJsHqZsflwRsxZPcIBvNXgjXO3vQKSLctXGLTpcBPLnWPS8A=="
       },
-      "dotnetcore.collections.paginable": {
+      "dotnetcore.collections": {
         "type": "Project"
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections": "[7.2.0, )"
+        }
       }
     },
     "net6.0": {
@@ -1553,8 +1568,14 @@
         "resolved": "0.8.6",
         "contentHash": "iP4jVLQoQmUjMU88g1WObiNr6YKZGvh4aOXn3yOJsHqZsflwRsxZPcIBvNXgjXO3vQKSLctXGLTpcBPLnWPS8A=="
       },
-      "dotnetcore.collections.paginable": {
+      "dotnetcore.collections": {
         "type": "Project"
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections": "[7.2.0, )"
+        }
       }
     },
     "net7.0": {
@@ -2068,8 +2089,14 @@
         "resolved": "0.8.6",
         "contentHash": "iP4jVLQoQmUjMU88g1WObiNr6YKZGvh4aOXn3yOJsHqZsflwRsxZPcIBvNXgjXO3vQKSLctXGLTpcBPLnWPS8A=="
       },
-      "dotnetcore.collections.paginable": {
+      "dotnetcore.collections": {
         "type": "Project"
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections": "[7.2.0, )"
+        }
       }
     },
     "net8.0": {
@@ -2576,8 +2603,14 @@
         "resolved": "0.8.6",
         "contentHash": "iP4jVLQoQmUjMU88g1WObiNr6YKZGvh4aOXn3yOJsHqZsflwRsxZPcIBvNXgjXO3vQKSLctXGLTpcBPLnWPS8A=="
       },
-      "dotnetcore.collections.paginable": {
+      "dotnetcore.collections": {
         "type": "Project"
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections": "[7.2.0, )"
+        }
       }
     },
     "net9.0": {
@@ -3083,8 +3116,14 @@
         "resolved": "0.8.6",
         "contentHash": "iP4jVLQoQmUjMU88g1WObiNr6YKZGvh4aOXn3yOJsHqZsflwRsxZPcIBvNXgjXO3vQKSLctXGLTpcBPLnWPS8A=="
       },
-      "dotnetcore.collections.paginable": {
+      "dotnetcore.collections": {
         "type": "Project"
+      },
+      "dotnetcore.collections.paginable": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetCore.Collections": "[7.2.0, )"
+        }
       }
     }
   }
