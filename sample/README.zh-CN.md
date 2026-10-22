@@ -6,9 +6,9 @@
 **一个 feature 一个控制台项目**：每个 `Sample.<Focus>/` 自带 `Program.cs`（中英双语注释）、
 `README.md`（英文，讲清本 sample 的侧重点）、`README.zh-CN.md`（中文）与 `.csproj`。
 
-- 覆盖范围：`DotNetCore.Collections`（7.1.0 新增的 LINQ 值类型引擎）、
+- 覆盖范围：`DotNetCore.Collections`（7.1.0 新增的 LINQ 值类型引擎，算子面在 7.2.0 补齐）、
   `DotNetCore.Collections.Multi`、`DotNetCore.Collections.Paginable`，
-  以及逐包 ORM 适配器面——**截止到 7.1.0 版本（含）**的全部 feature（6.0.0 起，加 6.7–7.1 新增）。
+  以及逐包 ORM 适配器面——**截止到 7.2.0 版本（含）**的全部 feature（6.0.0 起，加 6.7–7.2 新增）。
 - 目标框架：绝大多数为 `net8.0`；`Sample.ValueEnumerable` / `Sample.MultiTfmSurface` 为多目标 `net8.0;net10.0`。
 - 每个 sample 直接 `ProjectReference` 仓库 `src/` 下的对应工程，因此**始终针对当前工作树构建**。
 
@@ -153,11 +153,12 @@ dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # 多目标需指
 
 ---
 
-## 四、`DotNetCore.Collections` — 7.1.0 新增 LINQ 值类型引擎
+## 四、`DotNetCore.Collections` — 7.1.0 / 7.2.0 新增的 LINQ 值类型引擎
 
 | Sample | Feature | 侧重点 / 演示的能力 |
 | :--- | :--- | :--- |
 | [ValueEnumerable](Sample.ValueEnumerable) | 7.1.0 | `ToValueEnumerable()` 四入口（`T[]`/`List<T>`/`IReadOnlyList<T>`/`IEnumerable<T>`）+ 五算子（`Index`/`ForEach`/`TagFirstLast`/`Pairwise`/`Scan`）+ 与 `System.Linq` 共存的命名空间治理 |
+| [Engine.Polyfills](Sample.Engine.Polyfills) | 7.2.0 | 十九个 polyfill 算子全部走一遍（P0 层 13 个补 BCL 版本差异 + P1 层 6 个引擎独有），末段与 `System.Linq` 逐项对拍，证明引擎答案在 `net8.0` 上与 BCL 逐字相同 |
 | [SerializationEntry](Sample.SerializationEntry) | 6.2.0 | **负结果**：Paginable 侧**没有** `ToSerializableModel`；正确路径 = `PageMetadata` + `Paginable.CreatePage` 重建 |
 
 ---
@@ -176,7 +177,7 @@ dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # 多目标需指
 | **分页核心** | KeysetPagination、AsyncPaging、FragmentPage、SinglePageSet、EnumerablePageMaterialize、PageMetadata |
 | **分页契约 / 配置** | PaginableSettings、LimitedMembers、PaginableCalc、ExceptionTypeUnify、NullableAnnotations、KeysetAnchorNullability、QueryEntryState、EmptyAndSinglePage |
 | **适配器 / 平台** | OrmAdapterMatrix、EfCoreAdapter、FreeSqlAdapter、SqlSugarAdapter、SqlKataAdapter、OtherOrmAdapters、SourceGenerator、MultiTfmSurface、SolidPageExtensionsSurface |
-| **引擎（7.1.0）** | ValueEnumerable |
+| **引擎（7.1.0 / 7.2.0）** | ValueEnumerable、Engine.Polyfills |
 
 ---
 

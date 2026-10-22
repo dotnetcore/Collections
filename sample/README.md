@@ -7,10 +7,10 @@ This directory collects an independent, runnable sample for every **feature** in
 **One feature, one console project**: each `Sample.<Focus>/` ships its own `Program.cs`
 (richly commented), a `README.md` (explaining what the sample focuses on), and a `.csproj`.
 
-- Coverage: `DotNetCore.Collections` (the LINQ value-type engine added in 7.1.0),
-  `DotNetCore.Collections.Multi`, `DotNetCore.Collections.Paginable`,
-  plus the per-package ORM adapter surface — **every feature up to and including 7.1.0**
-  (every feature from 6.0.0 onwards, plus the 6.7–7.1 additions).
+- Coverage: `DotNetCore.Collections` (the LINQ value-type engine added in 7.1.0, its operator
+  surface completed in 7.2.0), `DotNetCore.Collections.Multi`, `DotNetCore.Collections.Paginable`,
+  plus the per-package ORM adapter surface — **every feature up to and including 7.2.0**
+  (every feature from 6.0.0 onwards, plus the 6.7–7.2 additions).
 - Target framework: mostly `net8.0`; `Sample.ValueEnumerable` / `Sample.MultiTfmSurface`
   are multi-targeted as `net8.0;net10.0`.
 - Every sample `ProjectReference`s the matching project under the repository `src/`,
@@ -165,11 +165,12 @@ dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # multi-target ne
 
 ---
 
-## 4. `DotNetCore.Collections` — the LINQ value-type engine added in 7.1.0
+## 4. `DotNetCore.Collections` — the LINQ value-type engine added in 7.1.0 and 7.2.0
 
 | Sample | Feature | Focus / demonstrated capability |
 | :--- | :--- | :--- |
 | [ValueEnumerable](Sample.ValueEnumerable) | 7.1.0 | The four `ToValueEnumerable()` entries (`T[]`/`List<T>`/`IReadOnlyList<T>`/`IEnumerable<T>`) plus five operators (`Index`/`ForEach`/`TagFirstLast`/`Pairwise`/`Scan`), and namespace governance for coexisting with `System.Linq` |
+| [Engine.Polyfills](Sample.Engine.Polyfills) | 7.2.0 | All nineteen polyfill operators (thirteen P0 for the BCL's version gaps + six P1 engine-only groups), plus a per-operator comparison showing the engine's answers match `System.Linq` verbatim on `net8.0` |
 | [SerializationEntry](Sample.SerializationEntry) | 6.2.0 | A **negative result**: there is **no** `ToSerializableModel` on the Paginable side; the correct path is `PageMetadata` + `Paginable.CreatePage` to rebuild |
 
 ---
@@ -188,7 +189,7 @@ dotnet run --project sample/Sample.ValueEnumerable -f net8.0   # multi-target ne
 | **Pagination core** | KeysetPagination, AsyncPaging, FragmentPage, SinglePageSet, EnumerablePageMaterialize, PageMetadata |
 | **Pagination contracts / configuration** | PaginableSettings, LimitedMembers, PaginableCalc, ExceptionTypeUnify, NullableAnnotations, KeysetAnchorNullability, QueryEntryState, EmptyAndSinglePage |
 | **Adapters / platforms** | OrmAdapterMatrix, EfCoreAdapter, FreeSqlAdapter, SqlSugarAdapter, SqlKataAdapter, OtherOrmAdapters, SourceGenerator, MultiTfmSurface, SolidPageExtensionsSurface |
-| **Engine (7.1.0)** | ValueEnumerable |
+| **Engine (7.1.0 / 7.2.0)** | ValueEnumerable, Engine.Polyfills |
 
 ---
 
