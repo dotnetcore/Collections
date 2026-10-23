@@ -12,6 +12,14 @@
     <Description>Paginable extension with SqlSugar for collection.</Description>
   </PropertyGroup>
 
+  <!-- sqlSugarCore carries SQLitePCLRaw.lib.e_sqlite3, whose runtime.json advertises
+       alpine/linux-musl RIDs that are absent from the RID graph the SDK uses here.
+       NETSDK1206 is dependency-side noise (no supported combination is being dropped
+       for our consumers) and never affects the emitted IL or the package contents. -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NETSDK1206</NoWarn>
+  </PropertyGroup>
+
   <!-- .NET Framework consumes the plain sqlSugar (nfx assemblies); every other target
        consumes sqlSugarCore (netstandard2.1). -->
   <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
