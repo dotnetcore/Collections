@@ -14,19 +14,21 @@ modules.
 | **Engine** | `DotNetCore.Collections` | A LINQ engine built on value-type enumerators: zero-allocation hot paths, one code path across `net451` – `net10.0`. |
 
 See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
-**7.3.0** release: the engine gains **sixteen more operators** — window and time-series ones
-(`Window` / `WindowLeft`, `GroupAdjacent`, `Split`, `Lag` / `Lead`, `ZipLongest`, `Interleave`) and
-the join / product / traversal / extreme / shuffle group (`FullJoin`, `FullGroupJoin`, `Cartesian`,
-`TraverseBreadthFirst` / `TraverseDepthFirst`, `Maxima` / `Minima`, `Shuffle`). `FullJoin` and
-`FullGroupJoin` remain a genuine gap in `System.Linq`, not a polyfill. More importantly, the
-engine is now **actually used** rather than merely shipped: `Paginable` and `Multi` both reference
-it, `Paginable` can memoize a lazy source so paging through P pages costs one walk instead of
-`P` of them (off by default, and never applied to `IQueryable` — that would defeat the provider's
-`Skip` / `Take`), in-memory keyset paging orders with a partial sort instead of a full one, and
-`Multi` gains `CrossJoin` / `Interleave` / `FullJoin`. The same work turned up two real defects in
-`Memoize` — a concurrent enumerator could be handed a neighbouring element, and a per-element lock
-made the operator slower than not memoizing at all; both are fixed. There is no **Breaking**
-change in this release.
+**7.4.0** release: the engine can now **describe** a query, not only execute one. A query built on
+an `IQueryable<T>` — an ORM's own queryable included — is captured as a **`QueryModel`**: an ordered
+list of stages plus an optional terminal aggregate, each stage carrying the lambda it was built
+from. `ToQueryModel()` produces it, `QueryModel.AsQueryable()` replays it onto any provider as the
+expression tree that provider translates, and an in-memory executor replays it so a translation is
+checkable without an ORM in the loop. The subset is closed on purpose: an operator outside it fails
+with `NotSupportedException` naming itself and pointing at `AsEnumerable()`, rather than being bent
+into a translation it does not have. The engine also gains its **P3 tier — eleven operators** for the
+parts of a pipeline that are about failure rather than data: `Do`; `Catch` / `Retry` /
+`OnErrorResumeNext`; `Using` / `Defer`; `Repeat`; `Throw` / `Return`; `OrderedMerge` /
+`SortedMerge`. Measured on the release's own matrix — fifty operators across the four source shapes,
+plus a nineteen-case gate on two runtimes — the contiguous arms are at parity with the BCL on
+`net8.0` within measurement noise and allocate nothing on streaming operators, where the BCL
+allocates one iterator per stage, and on `net461` they are faster on all nineteen gate cases. There
+is no **Breaking** change in this release.
 
 ## Contents
 
@@ -1080,7 +1082,7 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 
 Publishing is automated by the GitHub Actions `Release` workflow
 (`.github/workflows/release.yml`); no local tooling is involved. It runs on a version-tag push —
-`7.3.0` or `v7.3.0` — and can also be started manually through `workflow_dispatch`:
+`7.4.0` or `v7.4.0` — and can also be started manually through `workflow_dispatch`:
 
 1. **Pack** — all 12 projects are packed in Release configuration into `nuget_pub` on a
    `windows-latest` runner, with the full git history fetched so SourceLink can attach sources to
@@ -1109,7 +1111,7 @@ The policy owner must own all 12 `DotNetCore.Collections.*` packages. See
 
 Versions are driven by `build/version.props`, which is the single source of truth for every
 package — bump the version there and all 12 packages follow. Tag the commit with the matching
-version (`7.3.0` or `v7.3.0`) to trigger the automated publish; see [Publishing](#publishing) for
+version (`7.4.0` or `v7.4.0`) to trigger the automated publish; see [Publishing](#publishing) for
 what the release workflow does and the one-time nuget.org policy it requires.
 
 ## License

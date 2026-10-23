@@ -4,7 +4,7 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
-## [Unreleased]
+## [7.4.0] - 2026-10-23
 
 ### Added
 
@@ -69,6 +69,36 @@ repository ships the same version (see `build/version.props`).
   swapping places is an observable difference. Both take ties from the first side. One operator
   could not be both, and shipping the streaming one alone would silently produce the wrong order for
   input that was never sorted.
+
+### Breaking
+
+- **None.** No source or binary contract changed. The evidence:
+
+  1. **No packed project changed at all.** The only project file added in this release is a test
+     project (`tests/DotNetCore.Collections.Paginable.OrmQueryTests`), which is not packed. No
+     `PackageReference` was removed, no target framework was dropped, no `.nuspec` changed, and no
+     packed project gained a dependency — the query face takes no ORM dependency on purpose, which
+     is why the three provider smoke tests live in a test project instead.
+  2. **Nothing was deleted or renamed under `src/`.** `git diff 7.3.0..HEAD --diff-filter=D` and
+     `--diff-filter=R` are both empty over `src/`.
+  3. **Not one line was removed from `src/`.** The sixteen files that changed under `src/` are all
+     additions — 3,978 inserted lines, 0 deleted — so there is no removed `public` declaration to
+     look for, not merely none that matters.
+  4. **Every new member is additive.** Nineteen public types join the surface, along with eleven
+     operators, the query face's seven extension members and `QueryModel.AsQueryable()`; none
+     overrides, shadows or re-signs an existing member.
+  5. **Existing `System.Linq` code binds exactly as before.** The new receivers are `IQueryable<T>`,
+     which the BCL does not extend, and the namespace stays `DotNetCore.Collections` — nothing is
+     injected into `System.Linq`. The build verifies this at source level rather than assuming it:
+     the same-name operators bind to the engine on a queryable receiver and still bind to the BCL on
+     a sequence receiver, on every target framework.
+
+  **One thing to check when upgrading, though it is not a code change:** the engine now offers
+  extension candidates that take an `IQueryable<T>` receiver, including three names the BCL also
+  owns (`DistinctBy`, `Order`, `CountBy`). If your own library defines an extension method with one
+  of those names on an `IQueryable<T>` receiver and also imports `DotNetCore.Collections`, a call
+  site could become ambiguous. No existing call changes meaning: a new candidate can only be reached
+  by new code.
 
 ## [7.3.0] - 2026-10-22
 
