@@ -20,6 +20,22 @@
         <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     </PropertyGroup>
 
+    <ItemGroup Condition="'$(TargetFramework)' == 'net461' Or '$(TargetFramework)' == 'net47' Or '$(TargetFramework)' == 'net48' Or '$(TargetFramework)' == 'netstandard2.0'">
+        <!-- F8-01 / F8-02: the streaming face (ToPagesAsync) is typed on IAsyncEnumerable<T>.
+             That type is in-box from netstandard2.1 and from .NET 6 upwards, so the four lower
+             targets take the polyfill - the same TFM set the engine uses for System.Memory /
+             System.Buffers / Unsafe.
+
+             Version note: 1.1.1 is the LAST release that ships a net461 asset. 8.0.0 and later
+             carry net462 / netstandard2.0 / netstandard2.1 only, so pinning a newer version
+             would silently drop net461 from the streaming face while net47 still has it.
+             Measured 2026-10-23 (F8-02 probe): on net461 / net48 / netstandard2.0 the package
+             restores, binds and runs an async iterator, await foreach, cancellation and
+             release-on-break; on net451 restore fails with NU1202 (no compatible asset), which
+             is why the whole streaming face is compiled out there (#if !NET451). -->
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />
+    </ItemGroup>
+
     <ItemGroup>
         <!-- 规则 C（对内对外双轨）: the paging internals are required to run on this engine
              rather than fall back to the BCL, so the reference is a hard one. The engine

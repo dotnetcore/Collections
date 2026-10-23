@@ -283,7 +283,7 @@
       "dotnetcore.collections.paginable": {
         "type": "Project",
         "dependencies": {
-          "DotNetCore.Collections": "[7.2.0, )"
+          "DotNetCore.Collections": "[7.4.0, )"
         }
       }
     },
@@ -333,6 +333,14 @@
         "resolved": "2.8.26",
         "contentHash": "OiKusGL20vby4uDEswj2IgkdchC1yQ6rwbIkZDVBPIR6al2b7n3pC91elBul9q33KaBgRKhbZH3+2Ur4fnWx2A=="
       },
+      "Microsoft.Bcl.AsyncInterfaces": {
+        "type": "Transitive",
+        "resolved": "1.1.1",
+        "contentHash": "yuvf07qFWFqtK3P/MRkEKLhn5r2UbSpVueRziSqj0yJQIKFwG1pq9mOayK3zE5qZCTs0CbrwL9M6R8VwqyGy2w==",
+        "dependencies": {
+          "System.Threading.Tasks.Extensions": "4.5.4"
+        }
+      },
       "Microsoft.NETFramework.ReferenceAssemblies.net461": {
         "type": "Transitive",
         "resolved": "1.0.3",
@@ -368,6 +376,14 @@
         "resolved": "6.1.2",
         "contentHash": "2hBr6zdbIBTDE3EhK7NSVNdX58uTK6iHW/P/Axmm9sl1xoGSLqDvMtpecn226TNwHByFokYwJmt/aQQNlO5CRw=="
       },
+      "System.Threading.Tasks.Extensions": {
+        "type": "Transitive",
+        "resolved": "4.5.4",
+        "contentHash": "zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg==",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "4.5.3"
+        }
+      },
       "System.ValueTuple": {
         "type": "Transitive",
         "resolved": "4.5.0",
@@ -385,7 +401,8 @@
       "dotnetcore.collections.paginable": {
         "type": "Project",
         "dependencies": {
-          "DotNetCore.Collections": "[7.2.0, )"
+          "DotNetCore.Collections": "[7.4.0, )",
+          "Microsoft.Bcl.AsyncInterfaces": "[1.1.1, )"
         }
       }
     },
@@ -435,6 +452,14 @@
         "resolved": "2.8.26",
         "contentHash": "OiKusGL20vby4uDEswj2IgkdchC1yQ6rwbIkZDVBPIR6al2b7n3pC91elBul9q33KaBgRKhbZH3+2Ur4fnWx2A=="
       },
+      "Microsoft.Bcl.AsyncInterfaces": {
+        "type": "Transitive",
+        "resolved": "1.1.1",
+        "contentHash": "yuvf07qFWFqtK3P/MRkEKLhn5r2UbSpVueRziSqj0yJQIKFwG1pq9mOayK3zE5qZCTs0CbrwL9M6R8VwqyGy2w==",
+        "dependencies": {
+          "System.Threading.Tasks.Extensions": "4.5.4"
+        }
+      },
       "Microsoft.NETFramework.ReferenceAssemblies.net47": {
         "type": "Transitive",
         "resolved": "1.0.3",
@@ -470,6 +495,14 @@
         "resolved": "6.1.2",
         "contentHash": "2hBr6zdbIBTDE3EhK7NSVNdX58uTK6iHW/P/Axmm9sl1xoGSLqDvMtpecn226TNwHByFokYwJmt/aQQNlO5CRw=="
       },
+      "System.Threading.Tasks.Extensions": {
+        "type": "Transitive",
+        "resolved": "4.5.4",
+        "contentHash": "zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg==",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "4.5.3"
+        }
+      },
       "dotnetcore.collections": {
         "type": "Project",
         "dependencies": {
@@ -481,7 +514,8 @@
       "dotnetcore.collections.paginable": {
         "type": "Project",
         "dependencies": {
-          "DotNetCore.Collections": "[7.2.0, )"
+          "DotNetCore.Collections": "[7.4.0, )",
+          "Microsoft.Bcl.AsyncInterfaces": "[1.1.1, )"
         }
       }
     },
@@ -526,6 +560,14 @@
         "type": "Transitive",
         "resolved": "2.8.26",
         "contentHash": "OiKusGL20vby4uDEswj2IgkdchC1yQ6rwbIkZDVBPIR6al2b7n3pC91elBul9q33KaBgRKhbZH3+2Ur4fnWx2A=="
+      },
+      "Microsoft.Bcl.AsyncInterfaces": {
+        "type": "Transitive",
+        "resolved": "1.1.1",
+        "contentHash": "yuvf07qFWFqtK3P/MRkEKLhn5r2UbSpVueRziSqj0yJQIKFwG1pq9mOayK3zE5qZCTs0CbrwL9M6R8VwqyGy2w==",
+        "dependencies": {
+          "System.Threading.Tasks.Extensions": "4.5.4"
+        }
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
@@ -579,6 +621,14 @@
         "resolved": "6.1.2",
         "contentHash": "2hBr6zdbIBTDE3EhK7NSVNdX58uTK6iHW/P/Axmm9sl1xoGSLqDvMtpecn226TNwHByFokYwJmt/aQQNlO5CRw=="
       },
+      "System.Threading.Tasks.Extensions": {
+        "type": "Transitive",
+        "resolved": "4.5.4",
+        "contentHash": "zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg==",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "4.5.3"
+        }
+      },
       "dotnetcore.collections": {
         "type": "Project",
         "dependencies": {
@@ -590,7 +640,8 @@
       "dotnetcore.collections.paginable": {
         "type": "Project",
         "dependencies": {
-          "DotNetCore.Collections": "[7.2.0, )"
+          "DotNetCore.Collections": "[7.4.0, )",
+          "Microsoft.Bcl.AsyncInterfaces": "[1.1.1, )"
         }
       }
     },
@@ -664,6 +715,14 @@
         "type": "Transitive",
         "resolved": "2.8.26",
         "contentHash": "OiKusGL20vby4uDEswj2IgkdchC1yQ6rwbIkZDVBPIR6al2b7n3pC91elBul9q33KaBgRKhbZH3+2Ur4fnWx2A=="
+      },
+      "Microsoft.Bcl.AsyncInterfaces": {
+        "type": "Transitive",
+        "resolved": "1.1.1",
+        "contentHash": "yuvf07qFWFqtK3P/MRkEKLhn5r2UbSpVueRziSqj0yJQIKFwG1pq9mOayK3zE5qZCTs0CbrwL9M6R8VwqyGy2w==",
+        "dependencies": {
+          "System.Threading.Tasks.Extensions": "4.5.4"
+        }
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
@@ -805,6 +864,14 @@
           "System.Runtime.CompilerServices.Unsafe": "4.7.0"
         }
       },
+      "System.Threading.Tasks.Extensions": {
+        "type": "Transitive",
+        "resolved": "4.5.4",
+        "contentHash": "zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg==",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "4.5.3"
+        }
+      },
       "dotnetcore.collections": {
         "type": "Project",
         "dependencies": {
@@ -816,7 +883,8 @@
       "dotnetcore.collections.paginable": {
         "type": "Project",
         "dependencies": {
-          "DotNetCore.Collections": "[7.2.0, )"
+          "DotNetCore.Collections": "[7.4.0, )",
+          "Microsoft.Bcl.AsyncInterfaces": "[1.1.1, )"
         }
       }
     },
@@ -973,7 +1041,7 @@
       "dotnetcore.collections.paginable": {
         "type": "Project",
         "dependencies": {
-          "DotNetCore.Collections": "[7.2.0, )"
+          "DotNetCore.Collections": "[7.4.0, )"
         }
       }
     },
@@ -1040,7 +1108,7 @@
       "dotnetcore.collections.paginable": {
         "type": "Project",
         "dependencies": {
-          "DotNetCore.Collections": "[7.2.0, )"
+          "DotNetCore.Collections": "[7.4.0, )"
         }
       }
     },
@@ -1144,7 +1212,7 @@
       "dotnetcore.collections.paginable": {
         "type": "Project",
         "dependencies": {
-          "DotNetCore.Collections": "[7.2.0, )"
+          "DotNetCore.Collections": "[7.4.0, )"
         }
       }
     },
@@ -1248,7 +1316,7 @@
       "dotnetcore.collections.paginable": {
         "type": "Project",
         "dependencies": {
-          "DotNetCore.Collections": "[7.2.0, )"
+          "DotNetCore.Collections": "[7.4.0, )"
         }
       }
     },
@@ -1315,7 +1383,7 @@
       "dotnetcore.collections.paginable": {
         "type": "Project",
         "dependencies": {
-          "DotNetCore.Collections": "[7.2.0, )"
+          "DotNetCore.Collections": "[7.4.0, )"
         }
       }
     },
@@ -1382,7 +1450,7 @@
       "dotnetcore.collections.paginable": {
         "type": "Project",
         "dependencies": {
-          "DotNetCore.Collections": "[7.2.0, )"
+          "DotNetCore.Collections": "[7.4.0, )"
         }
       }
     }

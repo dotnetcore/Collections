@@ -4,6 +4,35 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
+## [Unreleased]
+
+### Added
+
+- **`ToPagesAsync`, a stream of pages.** Any paged source now streams as an
+  `IAsyncEnumerable<IPage<T>>`, so pages can be consumed one at a time instead of being
+  materialised as a set: `await foreach (var page in list.ToPagesAsync(50, ct))`. The stream is
+  lazy — page *N* is materialised when the consumer moves to it, nothing is prefetched, and
+  `break` stops the walk where it stands — and cancellation is observed *between* pages, so an
+  already cancelled token stops the stream before the first page is fetched. Pages come from the
+  same cached page sets the synchronous API uses, so a page read during a stream is the same page
+  read again afterwards.
+
+  Three public methods join the surface, on one new public type: `ToPagesAsync` on
+  `IPaginable<T>`, plus the two `IEnumerable<T>` overloads (configured default page size, and an
+  explicit page size). The existing single-page API is untouched — this is not a rewrite of
+  `GetPageAsync` / `ToPaginableAsync` — and argument validation stays synchronous, exactly like
+  the `GetPage` family: the exceptions leave the call itself, not a faulted task and not the first
+  `MoveNextAsync`.
+
+- **`IAsyncEnumerable<T>` on every target framework but `net451`.** The type is in-box from
+  `netstandard2.1` and from .NET 6 upwards. The four lower assets (`net461` / `net47` / `net48` /
+  `netstandard2.0`) take it from `Microsoft.Bcl.AsyncInterfaces`, which those assets of
+  `DotNetCore.Collections.Paginable` now depend on — pinned to 1.1.1, the last release that ships
+  a `net461` asset. On `net451` there is no reachable `IAsyncEnumerable<T>` at all (the polyfill
+  has no `net451` asset, and that generation caps at `netstandard1.2`), so the streaming face is
+  compiled out there: `net451` keeps the synchronous face unchanged, and no packed target lost a
+  member it had.
+
 ## [7.4.0] - 2026-10-23
 
 ### Added

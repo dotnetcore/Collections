@@ -269,6 +269,31 @@ using(var context = new ExampleDbContext())
 is already in memory, so validation throws from the call itself (catch it with `try`, not `await`)
 and the `CancellationToken` is accepted for signature symmetry only.
 
+#### Streaming pages
+
+`ToPagesAsync` turns a paged source into an `IAsyncEnumerable<IPage<T>>`, so pages can be consumed
+one at a time without materialising the whole set:
+
+```c#
+await foreach (var page in list.ToPagesAsync(pageSize: 50, cancellationToken: ct))
+{
+    // one page at a time; nothing is prefetched
+}
+```
+
+The stream is lazy — page *N* is materialised when the consumer moves to it, so `break` stops the
+walk where it stands — and cancellation is observed *between* pages: an already cancelled token
+stops the stream before the first page is fetched. Pages come from the same cached page sets the
+synchronous API uses, so a page read during a stream is the same page read again afterwards. The
+single-page API is untouched; this is a new method, not a rewrite.
+
+**Target framework availability.** `IAsyncEnumerable<T>` is in-box from `netstandard2.1` and .NET 6
+upwards. On `net461` / `net47` / `net48` / `netstandard2.0` it comes from the
+`Microsoft.Bcl.AsyncInterfaces` polyfill, which those four assets of the package depend on (pinned
+to 1.1.1, the last release with a `net461` asset). On `net451` there is no reachable
+`IAsyncEnumerable<T>` at all, so `ToPagesAsync` is not compiled there — `net451` keeps the
+synchronous `GetPage` / `ToPaginable` face, unchanged.
+
 ### Configuration
 
 `PaginableSettingsManager` holds a process-wide, validated settings snapshot. Configure it once at
