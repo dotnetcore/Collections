@@ -285,31 +285,54 @@ The stream is lazy — page *N* is materialised when the consumer moves to it, s
 walk where it stands — and cancellation is observed *between* pages: an already cancelled token
 stops the stream before the first page is fetched, raising `OperationCanceledException` from the
 move that would have fetched it, so a caller can tell cancellation apart from the end of the
-sequence. Pages come from the same cached page sets the
-synchronous API uses, so a page read during a stream is the same page read again afterwards. The
-single-page API is untouched; this is a new method, not a rewrite.
+sequence.
 
-`ToPagesAsync` is an asynchronous *shape* over the page set's own page fetch, and that fetch is
-synchronous: a provider-backed page set still runs each provider call on the calling thread. What
-the stream adds is that no page is fetched until it is asked for, that the walk stops where the
-consumer stops, and that a cancelled token stops it before the next provider call. When the page
-fetch itself must not block, use the provider's own asynchronous entry — see the table below.
+`ToPagesAsync` has two tiers, and the difference is where the fetch happens.
+
+**Over a page set or a plain sequence** it is an asynchronous *shape* over a synchronous fetch: a
+page set offers only a synchronous `GetPage`, so each page is materialised on the calling thread.
+What the stream adds is that no page is fetched until it is asked for, that the walk stops where the
+consumer stops, and that a cancelled token stops it before the next fetch. Pages come from the same
+cached page sets the synchronous API uses, so a page read during a stream is the same page read
+again afterwards.
+
+**Over a provider query** — the EF Core, FreeSql and SqlSugar integrations — the same method name
+runs the fetch itself asynchronously, because a query is the thing that can be executed
+asynchronously:
+
+```c#
+var query = context.Samples.OrderBy(x => x.Id);
+
+await foreach (var page in query.ToPagesAsync(pageSize: 50, cancellationToken: ct))
+{
+    // one CountAsync for the whole walk, one ToListAsync per page, nothing prefetched
+}
+```
+
+The member count is read once, each page costs one round trip, and the token is observed before
+every provider call. A page set built with `ToPaginableAsync` streams the same way
+(`paginable.ToPagesAsync(ct)`) and reuses the member count it already knows, so a page set of *N*
+pages issues *N* queries rather than *N + 1*. Pages from this tier are built from each page's
+materialised members: equal in content and metadata to the page set's own, but not its cached
+instances.
+
+The single-page API is untouched; this is a new method, not a rewrite.
 
 **Asynchronous page fetch per integration.** The nine integrations do not all expose the same
 asynchronous face. This is the whole matrix, and it is asserted by the test suite rather than
 maintained by hand:
 
-| Integration | Async page fetch | `CancellationToken` |
-|---|---|---|
-| Entity Framework Core | `GetPageAsync` / `ToPaginableAsync` | yes — forwarded to `CountAsync` / `ToListAsync` |
-| FreeSql | `GetPageAsync` / `ToPaginableAsync` | yes — forwarded to the provider |
-| SqlSugar | `GetPageAsync` / `ToPaginableAsync` | yes — forwarded to the provider |
-| FreeSql.DbContext | `GetPageAsync` | no — the entry takes no token |
-| NHibernate | `GetPageAsync` | no — the entry takes no token |
-| SqlKata | `GetPageAsync` | no — the entry takes no token |
-| Chloe | none | — loop the synchronous `GetPage` |
-| Dos.ORM | none | — loop the synchronous `GetPage` |
-| Entity Framework 6 | none | — loop the synchronous `GetPage` |
+| Integration | Async page fetch | Async page stream | `CancellationToken` |
+|---|---|---|---|
+| Entity Framework Core | `GetPageAsync` / `ToPaginableAsync` | `ToPagesAsync` | yes — forwarded to `CountAsync` / `ToListAsync` |
+| FreeSql | `GetPageAsync` / `ToPaginableAsync` | `ToPagesAsync` | yes — forwarded to the provider |
+| SqlSugar | `GetPageAsync` / `ToPaginableAsync` | `ToPagesAsync` | declared, but observed before each call — SqlSugar 5.1.3 has no token overload to forward to |
+| FreeSql.DbContext | `GetPageAsync` | — the asynchronous shape only | no — the entry takes no token |
+| NHibernate | `GetPageAsync` | — the asynchronous shape only | no — the entry takes no token |
+| SqlKata | `GetPageAsync` | — the asynchronous shape only | no — the entry takes no token |
+| Chloe | none | — the asynchronous shape only | — loop the synchronous `GetPage` |
+| Dos.ORM | none | — the asynchronous shape only | — loop the synchronous `GetPage` |
+| Entity Framework 6 | none | — the asynchronous shape only | — loop the synchronous `GetPage` |
 
 One call-form note: because this package's own `ToPaginableAsync(IEnumerable<T>, int, …)` and the
 EF Core integration's `ToPaginableAsync(IQueryable<T>, int?, …)` differ in the page-size type, the

@@ -197,6 +197,10 @@ namespace DotNetCore.Collections.Paginable.OrmQueryTests
 
             var synchronous = paginable.Select(page => page.CurrentPageNumber).ToArray();
 
+            // This call is also the load-bearing proof that the receiver decides the tier: the
+            // page set is an IPaginable<T> (core, asynchronous shape) and a PaginableQueryable<T>
+            // (integration, real asynchronous fetch), and the more specific receiver wins without
+            // the call site naming either.
             var streamed = new List<int>();
             await foreach (var page in paginable.ToPagesAsync())
             {
@@ -250,6 +254,79 @@ namespace DotNetCore.Collections.Paginable.OrmQueryTests
 
             core.ShouldBe(typeof(int));
             efCore.ShouldBe(typeof(int?));
+        }
+
+        [Theory]
+        [InlineData(EntityFrameworkCore)]
+        [InlineData(FreeSql)]
+        [InlineData(SqlSugar)]
+        public void A_true_async_stream_is_offered_wherever_the_page_fetch_is_asynchronous(string assemblyName)
+        {
+            // The streaming face has two tiers: the core one is an asynchronous shape over a
+            // synchronous fetch, and these three integrations add a second one that runs the fetch
+            // itself asynchronously over their own query. That second tier is what makes the
+            // cancellation token reach the provider, so its absence is a documentation defect.
+            var streams = StaticMethods(assemblyName).Where(method => method.Name == "ToPagesAsync").ToArray();
+
+            streams.ShouldNotBeEmpty(
+                $"{assemblyName} fetches pages through a provider-native asynchronous call, so it must " +
+                "also expose the streaming entry that runs that fetch. Its absence makes the README " +
+                "matrix claim false.");
+
+            foreach (var stream in streams)
+            {
+                HasCancellationToken(stream).ShouldBeTrue(
+                    $"{assemblyName}: {Describe(stream)} streams pages without a CancellationToken, so " +
+                    "a consumer could not stop the walk between provider round trips.");
+            }
+        }
+
+        [Theory]
+        [InlineData(EntityFrameworkCore)]
+        [InlineData(FreeSql)]
+        [InlineData(SqlSugar)]
+        public void The_stream_page_size_is_typed_exactly_like_the_core_overload(string assemblyName)
+        {
+            // Pinned because the shape is what makes overload resolution deterministic. With an
+            // int? page size, `query.ToPagesAsync(50)` would have no winner - the adapter has the
+            // better receiver, the core overload the better argument conversion - which is exactly
+            // the ambiguity the synchronous builder already has to document. Matching the core
+            // parameter types keeps the receiver as the only deciding factor.
+            var withPageSize = StaticMethods(assemblyName)
+                .Where(method => method.Name == "ToPagesAsync")
+                .Where(method => method.GetParameters().Length == 3)
+                .ToArray();
+
+            withPageSize.ShouldNotBeEmpty($"{assemblyName} has no streaming entry taking a page size.");
+
+            foreach (var method in withPageSize)
+            {
+                var parameters = method.GetParameters();
+
+                parameters[1].ParameterType.ShouldBe(
+                    typeof(int),
+                    $"{assemblyName}: {Describe(method)} types the page size as " +
+                    $"{parameters[1].ParameterType.Name}; a nullable one reintroduces CS0121 on the call site.");
+                parameters[2].ParameterType.ShouldBe(typeof(CancellationToken));
+            }
+        }
+
+        [Theory]
+        [InlineData(FreeSqlDbContext)]
+        [InlineData(NHibernate)]
+        [InlineData(SqlKata)]
+        [InlineData(Chloe)]
+        [InlineData(DosOrm)]
+        [InlineData(EntityFramework)]
+        public void A_stream_is_absent_where_the_fetch_cannot_be_asynchronous(string assemblyName)
+        {
+            // No second tier exists here, so a streaming entry on these would be the asynchronous
+            // shape wearing the name of the asynchronous implementation.
+            var streams = StaticMethods(assemblyName).Where(method => method.Name == "ToPagesAsync").ToArray();
+
+            streams.ShouldBeEmpty(
+                $"{assemblyName} is documented as having no true asynchronous streaming entry, but " +
+                $"{Describe(streams)} now exists. Update the README matrix and the F8-04 note.");
         }
 
         // ----- helpers -------------------------------------------------------
@@ -331,16 +408,29 @@ namespace DotNetCore.Collections.Paginable.OrmQueryTests
             string.Join(", ", method.GetParameters().Select(parameter => parameter.ParameterType.Name)) + ")";
 
         /// <summary>
-        /// An <see cref="IQueryProvider"/> that remembers the token handed to it and then delegates,
-        /// so "the token reached the provider" can be asserted directly.
+        /// An <see cref="IQueryProvider"/> that remembers the token handed to it and counts the
+        /// calls classified as a member-count read, so "the token reached the provider" and "the
+        /// count was read once" can both be asserted directly.
         /// </summary>
-        private sealed class RecordingQueryProvider : IAsyncQueryProvider
+        internal sealed class RecordingQueryProvider : IAsyncQueryProvider
         {
             private readonly IQueryProvider _inner;
 
             internal RecordingQueryProvider(IQueryProvider inner) => _inner = inner;
 
             internal CancellationToken LastToken { get; private set; }
+
+            /// <summary>Gets the number of asynchronous executions whose expression reads a count.</summary>
+            internal int CountExecutions { get; private set; }
+
+            /// <summary>
+            /// Gets the number of times an asynchronous enumerator was created on a query this
+            /// provider produced. One per page fetch: <c>ToListAsync</c> reaches the provider
+            /// through <c>AsAsyncEnumerable</c> rather than through <see cref="ExecuteAsync{TResult}"/>.
+            /// </summary>
+            internal int Enumerations { get; private set; }
+
+            internal void RecordEnumeration() => Enumerations++;
 
             public IQueryable CreateQuery(Expression expression) => _inner.CreateQuery(expression);
 
@@ -354,7 +444,31 @@ namespace DotNetCore.Collections.Paginable.OrmQueryTests
             public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken)
             {
                 LastToken = cancellationToken;
+
+                if (ReadsCount(expression))
+                    CountExecutions++;
+
                 return ((IAsyncQueryProvider)_inner).ExecuteAsync<TResult>(expression, cancellationToken);
+            }
+
+            private static bool ReadsCount(Expression expression)
+            {
+                var finder = new CountFinder();
+                finder.Visit(expression);
+                return finder.Found;
+            }
+
+            private sealed class CountFinder : ExpressionVisitor
+            {
+                internal bool Found;
+
+                protected override Expression VisitMethodCall(MethodCallExpression node)
+                {
+                    if (node.Method.Name == "Count" || node.Method.Name == "LongCount")
+                        Found = true;
+
+                    return base.VisitMethodCall(node);
+                }
             }
         }
 
@@ -369,7 +483,7 @@ namespace DotNetCore.Collections.Paginable.OrmQueryTests
         /// <see cref="IAsyncEnumerable{T}"/> — a plain <see cref="IQueryable{T}"/> wrapper makes EF
         /// throw instead of enumerating.
         /// </remarks>
-        private sealed class RecordingQuery<T> : IOrderedQueryable<T>, IAsyncEnumerable<T>
+        internal sealed class RecordingQuery<T> : IOrderedQueryable<T>, IAsyncEnumerable<T>
         {
             private readonly IQueryProvider _provider;
             private readonly IQueryable<T> _inner;
@@ -390,8 +504,13 @@ namespace DotNetCore.Collections.Paginable.OrmQueryTests
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-            public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
-                _inner.AsAsyncEnumerable().GetAsyncEnumerator(cancellationToken);
+            public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                // The one place a page fetch becomes visible: EF Core's ToListAsync asks the source
+                // for its async enumerator instead of executing through the provider.
+                (_provider as RecordingQueryProvider)?.RecordEnumeration();
+                return _inner.AsAsyncEnumerable().GetAsyncEnumerator(cancellationToken);
+            }
         }
     }
 }

@@ -22,6 +22,23 @@ namespace DotNetCore.Collections.Paginable
             _sqlSugarQuery = select;
         }
 
+        /// <summary>
+        /// Gets the SqlSugar query this page set pages over.
+        /// </summary>
+        /// <remarks>
+        /// Read-only, and it hands back the very instance the page set was built from. It is
+        /// exposed so the asynchronous streaming entry can fetch each page through SqlSugar's own
+        /// asynchronous API over the same query, which is what lets the cancellation token reach
+        /// the provider instead of stopping at the page boundary.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var paginable = await query.ToPaginableAsync(50);
+        /// var sameQuery = paginable.Queryable;
+        /// </code>
+        /// </example>
+        public ISugarQueryable<T> Queryable => _sqlSugarQuery;
+
         /// <inheritdoc />
         protected override Lazy<IPage<T>> GetSpecifiedPage(int currentPageNumber, int pageSize, int realMemberCount)
         {

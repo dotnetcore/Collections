@@ -24,6 +24,26 @@ repository ships the same version (see `build/version.props`).
   the `GetPage` family: the exceptions leave the call itself, not a faulted task and not the first
   `MoveNextAsync`.
 
+- **A real asynchronous page fetch when streaming a query.** The same `ToPagesAsync` name is also
+  defined by the Entity Framework Core, FreeSql and SqlSugar integrations on their own query types,
+  where the fetch itself can be asynchronous: one `CountAsync` for the whole walk, then one
+  `ToListAsync` — or the provider's equivalent — per page, with the token observed before every
+  provider call. A page set built with `ToPaginableAsync` streams the same way and reuses the member
+  count it already knows, so *N* pages cost *N* queries rather than *N + 1*; a consumer that reads
+  two of ten pages issues three round trips, not eleven. Pages from this tier are built from each
+  page's materialised members — equal in content and metadata to the page set's own, but not its
+  cached instances. The plain page-set and `IEnumerable<T>` overloads stay what they were, an
+  asynchronous shape over a synchronous fetch, and the README states which overload is which.
+
+  This is the same mechanism the package already uses for `GetPageAsync` — same name, more specific
+  receiver, identical parameter types — so a call site upgrades to the asynchronous implementation
+  by referencing an integration, without changing a character. The page size is typed `int` on both
+  tiers on purpose: a nullable one would make `query.ToPagesAsync(50)` ambiguous between the better
+  receiver and the better argument conversion. Nothing was removed, retyped or resealed; the page
+  sets gained three read-only properties (`Queryable` on `PaginableQueryable<T>` and
+  `PaginableSqlSugarQuery<T>`, `Queryable` plus `IncludeNestedMembers` on `PaginableFreeSqlQuery<T>`)
+  so the asynchronous fetch can use the very query the set pages over.
+
 - **`IAsyncEnumerable<T>` on every target framework but `net451`.** The type is in-box from
   `netstandard2.1` and from .NET 6 upwards. The four lower assets (`net461` / `net47` / `net48` /
   `netstandard2.0`) take it from `Microsoft.Bcl.AsyncInterfaces`, which those assets of
@@ -37,9 +57,10 @@ repository ships the same version (see `build/version.props`).
 
 - **A documented, asserted asynchronous seam across the nine integrations.** The availability of an
   async page fetch, and whether it accepts a `CancellationToken`, now differs by integration and is
-  stated in one table in the README: Entity Framework Core, FreeSql and SqlSugar forward the token
-  to the provider; FreeSql.DbContext, NHibernate and SqlKata expose an async entry without a token;
-  Chloe, Dos.ORM and Entity Framework 6 have no async entry at all. The table is backed by tests
+  stated in one table in the README: Entity Framework Core and FreeSql forward the token to the
+  provider; SqlSugar declares one and observes it before each call, because 5.1.3 exposes no token
+  overload to forward to; FreeSql.DbContext, NHibernate and SqlKata expose an async entry without a
+  token; Chloe, Dos.ORM and Entity Framework 6 have no async entry at all. The table is backed by tests
   rather than prose — a signature matrix over the nine adapter assemblies plus, for the integrations
   that can run without a server, runtime cases on EF Core's in-memory provider. Nothing in the suite
   contacts a database, so it runs in the same gate as the unit tests.
