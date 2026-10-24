@@ -51,6 +51,14 @@ jobs:
       - name: Run unit tests
         run: dotnet test tests/DotNetCore.Collections.Paginable.Tests/DotNetCore.Collections.Paginable.Tests.csproj -c Release
 
+      - name: Run integration seam tests (no database)
+        # F8-03: the asynchronous seam of the nine integrations is asserted as a signature matrix
+        # over the adapter assemblies, plus runtime cases on EF Core's in-memory provider. No
+        # connection is opened, so it belongs in the job that has no database rather than in
+        # db-tests. This project was previously not run by CI at all, which left F7-13's SQL
+        # equivalence and this matrix unguarded.
+        run: dotnet test tests/DotNetCore.Collections.Paginable.OrmQueryTests/DotNetCore.Collections.Paginable.OrmQueryTests.csproj -c Release
+
   db-tests:
     name: Db tests (SQL Server container)
     runs-on: ubuntu-latest

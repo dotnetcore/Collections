@@ -24,8 +24,38 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- F8-03: the provider packages the nine integrations are built against. The async seam
+         suite reflects over the adapter assemblies, which means the CLR has to resolve the
+         providers' own types (ISelect, ISugarQueryable, IQueryOver, Query, DbContext, ...) while
+         walking their signatures, so the providers are a compile-time need here even though no
+         connection is ever opened. Versions match the adapter projects exactly. -->
+    <PackageReference Include="Chloe" Version="5.56.0" />
+    <PackageReference Include="Dos.ORM" Version="8.2.7" />
+    <PackageReference Include="EntityFramework" Version="6.5.2" />
+    <PackageReference Include="FreeSql.DbContext" Version="3.5.311" />
+    <PackageReference Include="NHibernate" Version="5.7.0" />
+    <PackageReference Include="SqlKata.Execution" Version="4.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\DotNetCore.Collections\DotNetCore.Collections.csproj" />
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable\DotNetCore.Collections.Paginable.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- F8-03: all nine integrations, so the async seam can be pinned for every one of them in a
+         single suite. Referencing all of them here (instead of one project per provider) keeps the
+         matrix in one file, which is the only way the "who forwards the token" claim can be read
+         and asserted side by side. -->
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.Chloe\DotNetCore.Collections.Paginable.Chloe.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.DosOrm\DotNetCore.Collections.Paginable.DosOrm.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.EntityFramework\DotNetCore.Collections.Paginable.EntityFramework.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.EntityFrameworkCore\DotNetCore.Collections.Paginable.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.FreeSql\DotNetCore.Collections.Paginable.FreeSql.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.FreeSql.DbContext\DotNetCore.Collections.Paginable.FreeSql.DbContext.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.NHibernate\DotNetCore.Collections.Paginable.NHibernate.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.SqlKata\DotNetCore.Collections.Paginable.SqlKata.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCore.Collections.Paginable.SqlSugar\DotNetCore.Collections.Paginable.SqlSugar.csproj" />
   </ItemGroup>
 
 </Project>

@@ -26,11 +26,19 @@
              targets take the polyfill - the same TFM set the engine uses for System.Memory /
              System.Buffers / Unsafe.
 
-             Version note: 1.1.1 is the LAST release that ships a net461 asset. 8.0.0 and later
-             carry net462 / netstandard2.0 / netstandard2.1 only, so pinning a newer version
-             would silently drop net461 from the streaming face while net47 still has it.
-             Measured 2026-10-23 (F8-02 probe): on net461 / net48 / netstandard2.0 the package
-             restores, binds and runs an async iterator, await foreach, cancellation and
+             Version note: 1.1.1 is a net461-capable release, not the newest one. Measured from
+             the package cache (F8-03 review): a net461 asset exists in 1.0.0, 1.1.0, 1.1.1, 5.0.0
+             and 6.0.0, and is gone from 7.0.0 upwards (net462 / netstandard2.0 / netstandard2.1
+             only). 6.0.0 is therefore the last net461-capable release, while 1.1.1 is the one
+             chosen here: it carries the complete shape this face needs (IAsyncEnumerable<T>,
+             IAsyncEnumerator<T>, EnumeratorCancellationAttribute,
+             ConfiguredCancelableAsyncEnumerable<T> - all four verified in its net461 asset) with
+             the lowest dependency floor, and both 1.1.1 and 6.0.0 depend only on
+             System.Threading.Tasks.Extensions 4.5.4. Raising the pin is a deliberate decision,
+             not a correction: anything from 7.0.0 up drops net461 from the streaming face while
+             net47 keeps it.
+             Measured 2026-10-23 (F8-02 probe): on net461 / net47 / net48 / netstandard2.0 the
+             package restores, binds and runs an async iterator, await foreach, cancellation and
              release-on-break; on net451 restore fails with NU1202 (no compatible asset), which
              is why the whole streaming face is compiled out there (#if !NET451). -->
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />

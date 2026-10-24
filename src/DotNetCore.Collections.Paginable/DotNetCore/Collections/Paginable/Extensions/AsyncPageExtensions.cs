@@ -31,10 +31,20 @@ namespace DotNetCore.Collections.Paginable
     /// </para>
     /// <para>
     /// Cancellation is observed <b>between</b> pages: an already cancelled token stops the stream
-    /// before the next page is fetched, and a page that is being materialised is not interrupted.
-    /// Providers that fetch pages natively asynchronously (EF Core, FreeSql, SqlSugar,
-    /// NHibernate) forward the token all the way down through their own <c>GetPageAsync</c>
-    /// overloads; the sources handled here are the ones this package itself owns.
+    /// before the next page is fetched, the move that would have fetched it raises
+    /// <see cref="OperationCanceledException"/>, and a page that is being materialised is not
+    /// interrupted.
+    /// </para>
+    /// <para>
+    /// This is an asynchronous <b>shape</b> over the page set's own page fetch, which is
+    /// synchronous: pages arrive through <see cref="IPaginable{T}.GetPage"/> by way of the page
+    /// set's enumerator, so a provider-backed page set still runs each provider call on the
+    /// calling thread. What the stream adds is that no page is fetched until it is asked for, that
+    /// the walk stops where the consumer stops, and that a cancelled token stops it before the
+    /// next provider call. For a page fetch that is itself non-blocking, use the provider's own
+    /// asynchronous entry: EF Core, FreeSql and SqlSugar accept a <see cref="CancellationToken"/>
+    /// there, FreeSql.DbContext, NHibernate and SqlKata do not, and Chloe, DosOrm and
+    /// EntityFramework 6 have no asynchronous entry at all.
     /// </para>
     /// </remarks>
     /// <example>

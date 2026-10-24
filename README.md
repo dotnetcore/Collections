@@ -283,16 +283,50 @@ await foreach (var page in list.ToPagesAsync(pageSize: 50, cancellationToken: ct
 
 The stream is lazy — page *N* is materialised when the consumer moves to it, so `break` stops the
 walk where it stands — and cancellation is observed *between* pages: an already cancelled token
-stops the stream before the first page is fetched. Pages come from the same cached page sets the
+stops the stream before the first page is fetched, raising `OperationCanceledException` from the
+move that would have fetched it, so a caller can tell cancellation apart from the end of the
+sequence. Pages come from the same cached page sets the
 synchronous API uses, so a page read during a stream is the same page read again afterwards. The
 single-page API is untouched; this is a new method, not a rewrite.
 
+`ToPagesAsync` is an asynchronous *shape* over the page set's own page fetch, and that fetch is
+synchronous: a provider-backed page set still runs each provider call on the calling thread. What
+the stream adds is that no page is fetched until it is asked for, that the walk stops where the
+consumer stops, and that a cancelled token stops it before the next provider call. When the page
+fetch itself must not block, use the provider's own asynchronous entry — see the table below.
+
+**Asynchronous page fetch per integration.** The nine integrations do not all expose the same
+asynchronous face. This is the whole matrix, and it is asserted by the test suite rather than
+maintained by hand:
+
+| Integration | Async page fetch | `CancellationToken` |
+|---|---|---|
+| Entity Framework Core | `GetPageAsync` / `ToPaginableAsync` | yes — forwarded to `CountAsync` / `ToListAsync` |
+| FreeSql | `GetPageAsync` / `ToPaginableAsync` | yes — forwarded to the provider |
+| SqlSugar | `GetPageAsync` / `ToPaginableAsync` | yes — forwarded to the provider |
+| FreeSql.DbContext | `GetPageAsync` | no — the entry takes no token |
+| NHibernate | `GetPageAsync` | no — the entry takes no token |
+| SqlKata | `GetPageAsync` | no — the entry takes no token |
+| Chloe | none | — loop the synchronous `GetPage` |
+| Dos.ORM | none | — loop the synchronous `GetPage` |
+| Entity Framework 6 | none | — loop the synchronous `GetPage` |
+
+One call-form note: because this package's own `ToPaginableAsync(IEnumerable<T>, int, …)` and the
+EF Core integration's `ToPaginableAsync(IQueryable<T>, int?, …)` differ in the page-size type, the
+positional call is ambiguous for an `IQueryable<T>` receiver. Leave the page size to the configured
+default (`await query.ToPaginableAsync(cancellationToken: ct)`) or pass it to
+`new PaginableQueryable<T>(query, pageSize, pageCount, memberCount)` directly.
+
 **Target framework availability.** `IAsyncEnumerable<T>` is in-box from `netstandard2.1` and .NET 6
 upwards. On `net461` / `net47` / `net48` / `netstandard2.0` it comes from the
-`Microsoft.Bcl.AsyncInterfaces` polyfill, which those four assets of the package depend on (pinned
-to 1.1.1, the last release with a `net461` asset). On `net451` there is no reachable
-`IAsyncEnumerable<T>` at all, so `ToPagesAsync` is not compiled there — `net451` keeps the
-synchronous `GetPage` / `ToPaginable` face, unchanged.
+`Microsoft.Bcl.AsyncInterfaces` polyfill, which those four assets of the package depend on. The pin
+is `1.1.1`: not the newest release with a `net461` asset — that is `6.0.0`, and the asset is gone
+from `7.0.0` upwards — but the lowest-floor release that carries the complete shape this face needs
+(`IAsyncEnumerable<T>`, `IAsyncEnumerator<T>`, `EnumeratorCancellationAttribute`,
+`ConfiguredCancelableAsyncEnumerable<T>`), at the same `System.Threading.Tasks.Extensions 4.5.4`
+dependency as `6.0.0`. On `net451` there is no reachable `IAsyncEnumerable<T>` at all, so
+`ToPagesAsync` is not compiled there — `net451` keeps the synchronous `GetPage` / `ToPaginable`
+face, unchanged.
 
 ### Configuration
 

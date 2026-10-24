@@ -27,11 +27,22 @@ repository ships the same version (see `build/version.props`).
 - **`IAsyncEnumerable<T>` on every target framework but `net451`.** The type is in-box from
   `netstandard2.1` and from .NET 6 upwards. The four lower assets (`net461` / `net47` / `net48` /
   `netstandard2.0`) take it from `Microsoft.Bcl.AsyncInterfaces`, which those assets of
-  `DotNetCore.Collections.Paginable` now depend on — pinned to 1.1.1, the last release that ships
-  a `net461` asset. On `net451` there is no reachable `IAsyncEnumerable<T>` at all (the polyfill
-  has no `net451` asset, and that generation caps at `netstandard1.2`), so the streaming face is
-  compiled out there: `net451` keeps the synchronous face unchanged, and no packed target lost a
-  member it had.
+  `DotNetCore.Collections.Paginable` now depend on — pinned to 1.1.1, the lowest-floor release that
+  still carries a complete `net461` asset (`IAsyncEnumerable<T>`, `IAsyncEnumerator<T>`,
+  `EnumeratorCancellationAttribute`, `ConfiguredCancelableAsyncEnumerable<T>`). The last release
+  with a `net461` asset at all is 6.0.0; it disappears from 7.0.0 upwards. On `net451` there is no
+  reachable `IAsyncEnumerable<T>` at all (the polyfill has no `net451` asset, and that generation
+  caps at `netstandard1.2`), so the streaming face is compiled out there: `net451` keeps the
+  synchronous face unchanged, and no packed target lost a member it had.
+
+- **A documented, asserted asynchronous seam across the nine integrations.** The availability of an
+  async page fetch, and whether it accepts a `CancellationToken`, now differs by integration and is
+  stated in one table in the README: Entity Framework Core, FreeSql and SqlSugar forward the token
+  to the provider; FreeSql.DbContext, NHibernate and SqlKata expose an async entry without a token;
+  Chloe, Dos.ORM and Entity Framework 6 have no async entry at all. The table is backed by tests
+  rather than prose — a signature matrix over the nine adapter assemblies plus, for the integrations
+  that can run without a server, runtime cases on EF Core's in-memory provider. Nothing in the suite
+  contacts a database, so it runs in the same gate as the unit tests.
 
 ## [7.4.0] - 2026-10-23
 
