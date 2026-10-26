@@ -4,7 +4,7 @@ All notable changes to the `DotNetCore.Collections` packages are documented here
 Versions follow [Semantic Versioning](https://semver.org/); every package in this
 repository ships the same version (see `build/version.props`).
 
-## [Unreleased]
+## [8.0.0] - 2026-10-26
 
 ### Added
 
@@ -64,6 +64,50 @@ repository ships the same version (see `build/version.props`).
   rather than prose — a signature matrix over the nine adapter assemblies plus, for the integrations
   that can run without a server, runtime cases on EF Core's in-memory provider. Nothing in the suite
   contacts a database, so it runs in the same gate as the unit tests.
+
+### Breaking
+
+- **None.** No source or binary contract changed. The evidence:
+
+  1. **No packed project lost anything; two project files changed, both additively.**
+     `DotNetCore.Collections.Paginable.csproj` gains one conditioned `PackageReference`
+     (`Microsoft.Bcl.AsyncInterfaces` 1.1.1, on `net461` / `net47` / `net48` / `netstandard2.0`
+     only) — the polyfill the new streaming face needs on targets where the type is not in-box. It
+     is a new dependency, not a changed or removed one: no existing reference moved, no target
+     framework was dropped, no `PackageId` or pack item changed, and the assets above
+     `netstandard2.1` keep taking `IAsyncEnumerable<T>` from the box.
+     `DotNetCore.Collections.Paginable.SqlSugar.csproj` gains a build-time `<NoWarn>` for
+     `NETSDK1206`, a dependency-side warning from `SQLitePCLRaw`'s RID graph that never affects the
+     emitted IL or the package contents — verified: the packed assembly still reports `7.4.0.0`
+     after that commit.
+  2. **Nothing was deleted or renamed under `src/`.** `git diff 7.4.0..HEAD --diff-filter=D` and
+     `--diff-filter=R` are both empty over `src/`.
+  3. **Not one line of source was removed.** The seven `.cs` files that changed under `src/` are all
+     additions — 753 inserted lines, 0 deleted. The 86 deleted lines elsewhere under `src/` are all
+     inside `packages.lock.json` files, regenerated lock entries for the new dependency edge, not
+     source.
+  4. **Every new member is additive.** One new public type (`AsyncPageExtensions`) and three
+     integration-local `AsyncPageStreamExtensions` classes join the surface, with `ToPagesAsync`
+     overloads and three read-only page-set properties (`Queryable` on `PaginableQueryable<T>` and
+     `PaginableSqlSugarQuery<T>`, `Queryable` plus `IncludeNestedMembers` on
+     `PaginableFreeSqlQuery<T>`); none overrides, shadows or re-signs an existing member. The
+     existing `GetPage` / `GetPageAsync` / `ToPaginable` / `ToPaginableAsync` signatures are
+     untouched.
+  5. **Existing `System.Linq` code binds exactly as before.** Nothing was injected into
+     `System.Linq` and the engine's query face was not touched in this release. The source-level
+     binding tests are still in place and still pass: the same-name operators bind to the engine on
+     a queryable receiver and still bind to the BCL on a sequence receiver, on every target
+     framework.
+
+  **One thing to check when upgrading, though it is not a code change:** the four lower assets
+  (`net461` / `net47` / `net48` / `netstandard2.0`) of `DotNetCore.Collections.Paginable` now carry
+  a transitive dependency on `Microsoft.Bcl.AsyncInterfaces` 1.1.1. If your project pins that
+  package to a different version, NuGet will unify to the higher of the two; if you deliberately
+  kept it off the graph entirely, that is no longer possible on those four assets. `net451` and the
+  `netstandard2.1` / `net6.0`+ assets are unaffected. `ToPaginableAsync(50)` on an `IQueryable<T>`
+  receiver is already ambiguous with the Entity Framework Core adapter present (`int` vs `int?`
+  page size) — that predates this release and is unchanged; omit the page size or construct the
+  page set directly.
 
 ## [7.4.0] - 2026-10-23
 

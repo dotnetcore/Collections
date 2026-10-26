@@ -14,21 +14,23 @@ modules.
 | **Engine** | `DotNetCore.Collections` | A LINQ engine built on value-type enumerators: zero-allocation hot paths, one code path across `net451` – `net10.0`. |
 
 See [CHANGELOG.md](CHANGELOG.md) for the full per-release history. Highlights of the current
-**7.4.0** release: the engine can now **describe** a query, not only execute one. A query built on
-an `IQueryable<T>` — an ORM's own queryable included — is captured as a **`QueryModel`**: an ordered
-list of stages plus an optional terminal aggregate, each stage carrying the lambda it was built
-from. `ToQueryModel()` produces it, `QueryModel.AsQueryable()` replays it onto any provider as the
-expression tree that provider translates, and an in-memory executor replays it so a translation is
-checkable without an ORM in the loop. The subset is closed on purpose: an operator outside it fails
-with `NotSupportedException` naming itself and pointing at `AsEnumerable()`, rather than being bent
-into a translation it does not have. The engine also gains its **P3 tier — eleven operators** for the
-parts of a pipeline that are about failure rather than data: `Do`; `Catch` / `Retry` /
-`OnErrorResumeNext`; `Using` / `Defer`; `Repeat`; `Throw` / `Return`; `OrderedMerge` /
-`SortedMerge`. Measured on the release's own matrix — fifty operators across the four source shapes,
-plus a nineteen-case gate on two runtimes — the contiguous arms are at parity with the BCL on
-`net8.0` within measurement noise and allocate nothing on streaming operators, where the BCL
-allocates one iterator per stage, and on `net461` they are faster on all nineteen gate cases. There
-is no **Breaking** change in this release.
+**8.0.0** release: a paged source can now be **streamed**, not only materialised as a set.
+`ToPagesAsync` turns any paginable source into an `IAsyncEnumerable<IPage<T>>` — page *N* is
+fetched when the consumer moves to it, nothing is prefetched, `break` stops the walk where it
+stands, and an already cancelled token stops the stream before the first page is fetched. The name
+has two tiers, and the difference is where the fetch happens. Over a page set or a plain sequence
+it is an asynchronous *shape* over a synchronous fetch. Over a query — Entity Framework Core,
+FreeSql, SqlSugar — the fetch itself is asynchronous: one count for the whole walk, then one query
+per page, so reading two of ten pages costs three round trips, not eleven; a page set built with
+`ToPaginableAsync` reuses the count it already knows and pays *N* queries for *N* pages. A call
+site upgrades to the real implementation by referencing an integration, without changing a
+character — same name, more specific receiver, identical parameters. Every target framework but
+`net451` carries the streaming face (`net461` through `netstandard2.0` take the
+`Microsoft.Bcl.AsyncInterfaces` polyfill, pinned to 1.1.1 for its `net461` asset); `net451` keeps
+the synchronous face unchanged, and no packed target lost a member it had. Whether an integration
+can fetch asynchronously, and whether it forwards the `CancellationToken` to the provider, differs
+across the nine adapters and is stated in one table in the README — backed by a signature matrix
+and runtime cases rather than prose. There is no **Breaking** change in this release.
 
 ## Contents
 
@@ -1164,7 +1166,7 @@ Two GitHub Actions workflows gate the `dev` and `master` branches:
 
 Publishing is automated by the GitHub Actions `Release` workflow
 (`.github/workflows/release.yml`); no local tooling is involved. It runs on a version-tag push —
-`7.4.0` or `v7.4.0` — and can also be started manually through `workflow_dispatch`:
+`8.0.0` or `v8.0.0` — and can also be started manually through `workflow_dispatch`:
 
 1. **Pack** — all 12 projects are packed in Release configuration into `nuget_pub` on a
    `windows-latest` runner, with the full git history fetched so SourceLink can attach sources to
@@ -1193,7 +1195,7 @@ The policy owner must own all 12 `DotNetCore.Collections.*` packages. See
 
 Versions are driven by `build/version.props`, which is the single source of truth for every
 package — bump the version there and all 12 packages follow. Tag the commit with the matching
-version (`7.4.0` or `v7.4.0`) to trigger the automated publish; see [Publishing](#publishing) for
+version (`8.0.0` or `v8.0.0`) to trigger the automated publish; see [Publishing](#publishing) for
 what the release workflow does and the one-time nuget.org policy it requires.
 
 ## License
