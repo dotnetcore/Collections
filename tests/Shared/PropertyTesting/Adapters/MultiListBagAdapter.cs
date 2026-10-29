@@ -35,6 +35,13 @@ namespace DotNetCore.Collections.Testing.PropertyTesting.Adapters
         }
 
         /// <inheritdoc />
+        public MultiList<T> AddRange(MultiList<T> bag, IEnumerable<T> items)
+        {
+            bag.AddRange(items);
+            return bag;
+        }
+
+        /// <inheritdoc />
         public MultiList<T> RemoveOne(MultiList<T> bag, T item, out int remainingCopies)
         {
             remainingCopies = bag.Remove(item);

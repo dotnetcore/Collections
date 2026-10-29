@@ -57,6 +57,20 @@ namespace DotNetCore.Collections.Testing.PropertyTesting
         TBag AddCopies(TBag bag, T item, int times);
 
         /// <summary>
+        /// Adds one copy of each element of the specified sequence.
+        /// </summary>
+        /// <param name="bag">The current instance.</param>
+        /// <param name="items">The elements to add.</param>
+        /// <returns>The instance to use afterwards.</returns>
+        /// <remarks>
+        /// An adapter whose implementation has no bulk member composes this from
+        /// <see cref="Add"/>, so the suite can still express the operation. The number of distinct
+        /// elements in the result must not depend on the order of <paramref name="items"/>, which is
+        /// what <c>BagBulkOperationTests</c> asserts.
+        /// </remarks>
+        TBag AddRange(TBag bag, IEnumerable<T> items);
+
+        /// <summary>
         /// Removes a single copy of the element.
         /// </summary>
         /// <param name="bag">The current instance.</param>
