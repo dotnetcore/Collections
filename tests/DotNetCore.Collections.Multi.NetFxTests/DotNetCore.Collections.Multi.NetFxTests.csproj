@@ -24,4 +24,14 @@
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Multi\DotNetCore.Collections.Multi.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The property-testing kit and its suites are shared source, linked in alongside the
+         net8.0 suite so both runtime generations run the same code against the same properties.
+         Nothing here may use C# 8 syntax: this project compiles it at the default language
+         version for a .NET Framework target, and it deliberately avoids named tuples so
+         System.ValueTuple stays out of the dependency graph. -->
+    <Compile Include="..\Shared\PropertyTesting\**\*.cs"
+             Link="Shared\PropertyTesting\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>
