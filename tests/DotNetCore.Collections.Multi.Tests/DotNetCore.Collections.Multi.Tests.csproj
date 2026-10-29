@@ -19,4 +19,13 @@
     <ProjectReference Include="..\..\src\DotNetCore.Collections.Multi\DotNetCore.Collections.Multi.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The property-testing kit is shared source, not a shared package: the same files are
+         linked into DotNetCore.Collections.Multi.NetFxTests (net462) so that one suite covers
+         both runtime generations without adding a project or a dependency. The sources stay at
+         C# 7.3 because the net462 project compiles them at its default language version. -->
+    <Compile Include="..\Shared\PropertyTesting\**\*.cs"
+             Link="Shared\PropertyTesting\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>
