@@ -176,6 +176,75 @@ namespace DotNetCore.Collections.Multi.Tests
             map.Contains(1, 49).ShouldBeTrue("the newest surviving copy must survive");
         }
 
+        [Fact]
+        public void A_neighbour_in_slot_thirty_one_still_resolves()
+        {
+            // The four hashes below differ at the first level in two pairs and at the second level in
+            // the other two, so both merge paths are exercised: two keys meeting an inline entry, and
+            // a collision cluster meeting a key with a different hash. Each pair ends with slot 31 on
+            // one side, whose bit is the only negative one - ordering children by that bit rather than
+            // by the slot number put the highest slot first and sent every lookup in that node to the
+            // wrong child. Both insertion orders are checked because the merge is not symmetric.
+            var comparer = new SlotBoundaryComparer();
+
+            var ascending = new PersistentMultiDictionary<int, int>(comparer);
+            foreach (var key in new[] { 10, 20, 30, 40 })
+            {
+                ascending = ascending.Add(key, key * 2);
+            }
+
+            var descending = new PersistentMultiDictionary<int, int>(comparer);
+            foreach (var key in new[] { 40, 30, 20, 10 })
+            {
+                descending = descending.Add(key, key * 2);
+            }
+
+            foreach (var key in new[] { 10, 20, 30, 40 })
+            {
+                ascending.ContainsKey(key).ShouldBeTrue("ascending order, key " + key);
+                descending.ContainsKey(key).ShouldBeTrue("descending order, key " + key);
+                ascending.Contains(key, key * 2).ShouldBeTrue("ascending order, value of key " + key);
+                descending.Contains(key, key * 2).ShouldBeTrue("descending order, value of key " + key);
+            }
+
+            ascending.KeyCount.ShouldBe(4);
+            descending.KeyCount.ShouldBe(4);
+        }
+
+        private sealed class SlotBoundaryComparer : IEqualityComparer<int>
+        {
+            public bool Equals(int x, int y)
+            {
+                return x == y;
+            }
+
+            public int GetHashCode(int obj)
+            {
+                // 0 and 992 share slot 0 at the first level and differ at the second (0 versus 31);
+                // 5 and 997 do the same one slot higher. 50 and 60 share 992 outright, and 70 sits at
+                // the same first-level slot as that pair.
+                switch (obj)
+                {
+                    case 10:
+                        return 0;
+                    case 20:
+                        return 5;
+                    case 30:
+                        return 992;
+                    case 40:
+                        return 997;
+                    case 50:
+                        return 992;
+                    case 60:
+                        return 992;
+                    case 70:
+                        return 0;
+                    default:
+                        return 992;
+                }
+            }
+        }
+
         private sealed class FixedHashComparer : IEqualityComparer<int>
         {
             private readonly int _hash;

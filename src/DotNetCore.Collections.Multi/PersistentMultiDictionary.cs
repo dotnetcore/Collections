@@ -47,6 +47,12 @@ namespace DotNetCore.Collections.Multi
     {
         private static readonly TValue[] NoValues = new TValue[0];
 
+        /// <summary>
+        /// The payload kind this collection stores under a key: one cell per copy, so that copies of
+        /// two different values stay distinguishable.
+        /// </summary>
+        private static readonly PersistentPayloadFactory<TKey, TValue> Payloads = PersistentPayloadFactory<TKey, TValue>.ValueCells;
+
         private readonly PersistentNode<TKey, TValue>? _root;
         private readonly IEqualityComparer<TKey> _keyComparer;
         private readonly bool _allowDuplicateValues;
@@ -180,7 +186,7 @@ namespace DotNetCore.Collections.Multi
 
             if (_root == null)
             {
-                var first = new PersistentEntry<TKey, TValue>(hash, key, new PersistentValueCell<TValue>(value, null));
+                var first = new PersistentEntry<TKey, TValue>(hash, key, Payloads.Create(value, 1));
                 return new PersistentMultiDictionary<TKey, TValue>(
                     new CollisionNode<TKey, TValue>(hash, new[] { first }),
                     _keyComparer,
@@ -192,7 +198,7 @@ namespace DotNetCore.Collections.Multi
             var hadKey = _root.TryGetEntry(hash, key, _keyComparer, out _);
 
             bool changed;
-            var root = _root.Add(0, hash, key, value, _keyComparer, _allowDuplicateValues, out changed);
+            var root = _root.Add(0, hash, key, value, _keyComparer, _allowDuplicateValues, Payloads, 1, out changed);
 
             if (!changed)
             {
@@ -280,10 +286,10 @@ namespace DotNetCore.Collections.Multi
 
             var hash = HashOf(key);
 
-            bool removed;
-            var root = _root.RemoveValue(0, hash, key, value, _keyComparer, out removed);
+            int removed;
+            var root = _root.RemoveValue(0, hash, key, value, 1, _keyComparer, out removed);
 
-            if (!removed)
+            if (removed == 0)
             {
                 return this;
             }
@@ -295,7 +301,7 @@ namespace DotNetCore.Collections.Multi
                 _keyComparer,
                 _allowDuplicateValues,
                 keyGone ? _keyCount - 1 : _keyCount,
-                _valueCount - 1);
+                _valueCount - removed);
         }
 
         /// <summary>
@@ -361,22 +367,12 @@ namespace DotNetCore.Collections.Multi
         {
             PersistentEntry<TKey, TValue> entry;
 
-            if (!TryFindEntry(key, out entry))
+            if (!TryFindEntry(key, out entry) || entry.Payload == null)
             {
                 return false;
             }
 
-            var comparer = EqualityComparer<TValue>.Default;
-
-            for (var cell = entry.Values; cell != null; cell = cell.Next)
-            {
-                if (comparer.Equals(cell.Value, value))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return entry.Payload.Contains(value);
         }
 
         /// <summary>
@@ -386,16 +382,11 @@ namespace DotNetCore.Collections.Multi
         /// <returns><c>true</c> when at least one copy is present.</returns>
         public bool ContainsValue(TValue value)
         {
-            var comparer = EqualityComparer<TValue>.Default;
-
             foreach (var entry in CollectEntries())
             {
-                for (var cell = entry.Values; cell != null; cell = cell.Next)
+                if (entry.Payload != null && entry.Payload.Contains(value))
                 {
-                    if (comparer.Equals(cell.Value, value))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -417,7 +408,7 @@ namespace DotNetCore.Collections.Multi
                 return NoValues;
             }
 
-            return Materialize(entry.Values);
+            return Materialize(entry);
         }
 
         /// <summary>
@@ -437,7 +428,7 @@ namespace DotNetCore.Collections.Multi
                 return false;
             }
 
-            values = Materialize(entry.Values);
+            values = Materialize(entry);
             return true;
         }
 
@@ -449,9 +440,14 @@ namespace DotNetCore.Collections.Multi
         {
             foreach (var entry in CollectEntries())
             {
-                for (var cell = entry.Values; cell != null; cell = cell.Next)
+                if (entry.Payload == null)
                 {
-                    yield return new KeyValuePair<TKey, TValue>(entry.Key, cell.Value);
+                    continue;
+                }
+
+                foreach (var value in entry.Payload.Enumerate())
+                {
+                    yield return new KeyValuePair<TKey, TValue>(entry.Key, value);
                 }
             }
         }
@@ -514,30 +510,27 @@ namespace DotNetCore.Collections.Multi
         {
             foreach (var entry in CollectEntries())
             {
-                for (var cell = entry.Values; cell != null; cell = cell.Next)
+                if (entry.Payload == null)
                 {
-                    yield return cell.Value;
+                    continue;
+                }
+
+                foreach (var value in entry.Payload.Enumerate())
+                {
+                    yield return value;
                 }
             }
         }
 
-        private static TValue[] Materialize(PersistentValueCell<TValue>? values)
+        private static TValue[] Materialize(PersistentEntry<TKey, TValue> entry)
         {
-            if (values == null)
+            if (entry.Payload == null || entry.Payload.Count == 0)
             {
                 return NoValues;
             }
 
-            // The list is newest-first; filling the array backwards restores insertion order.
-            var result = new TValue[values.Count];
-            var index = result.Length - 1;
-
-            for (var cell = values; cell != null; cell = cell.Next)
-            {
-                result[index] = cell.Value;
-                index--;
-            }
-
+            var result = new TValue[entry.Payload.Count];
+            entry.Payload.Expand(result);
             return result;
         }
     }
